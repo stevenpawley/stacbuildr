@@ -13,8 +13,8 @@
 #'   represented by this Item, formatted according to RFC 7946, section 3.1 (for 
 #'   geometry) or section 3.2 (if no geometry). Must be a valid GeoJSON 
 #'   geometry object (e.g., Point, Polygon, MultiPolygon) or `NULL` for non-spatial 
-#'   items. Coordinates should be in WGS 84 (EPSG:4326) as [longitude, latitude] 
-#'   or [longitude, latitude, elevation].
+#'   items. Coordinates should be in WGS 84 (EPSG:4326) as (longitude, latitude) 
+#'   or (longitude, latitude, elevation).
 #' @param bbox (numeric vector, required if geometry is not NULL) Bounding Box 
 #'   of the asset represented by this Item, formatted according to RFC 7946, section 5. 
 #'   Must be a numeric vector of either 4 values `c(west, south, east, north)` 
@@ -108,7 +108,6 @@
 #' * [add_item()] for adding Items to Collections or Catalogs
 #' * [stac_collection()] for creating STAC Collections
 #' * [add_link()] for adding links to Items
-#' * [bbox_from_geometry()] for calculating bbox from geometry
 #'
 #' @references
 #' STAC Item Specification: 
@@ -263,10 +262,9 @@ stac_item <- function(id,
   if (!is.null(datetime) && (!is.null(start_datetime) || !is.null(end_datetime))) {
     warning(paste(
       "Both 'datetime' and 'start_datetime'/'end_datetime' provided.",
-      "Using 'datetime' and ignoring range values."
+      "Using 'start_datetime' and 'end_datetime'."
     ))
-    start_datetime <- NULL
-    end_datetime <- NULL
+    datetime <- NULL
   }
   
   # Build properties object

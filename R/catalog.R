@@ -26,11 +26,6 @@
 #'   only contain extensions that extend the Catalog specification itself, not
 #'   extensions for Items or Collections. Each extension should be a full URI to
 #'   the extension's JSON schema. Default is `NULL` (no extensions).
-#' @param links (list, optional) An array of Link objects relating this Catalog
-#'   to other resources. A `self` link and a `root` link are strongly recommended.
-#'   Non-root Catalogs should include a `parent` link. Use helper functions like
-#'   `add_link()`, `add_child()`, or `add_item()` to populate this field after
-#'   catalog creation. Defaults to an empty list.
 #' @param conformsTo (character vector, optional) A list of URIs declaring
 #'   conformance to STAC API specifications or other standards. Typically used
 #'   when the catalog is served via an API. Introduced in STAC 1.1.0. Default
@@ -46,7 +41,6 @@
 #' * `stac_version`: STAC specification version (currently "1.1.0")
 #' * `id`: Unique identifier for the catalog
 #' * `description`: Detailed description of the catalog
-#' * `links`: Array of link objects (can be empty initially)
 #'
 #' ## Recommended Fields
 #' * `title`: Short, human-readable title
@@ -61,7 +55,9 @@
 #' * `item`: URL to a STAC Item
 #'
 #' Use the helper functions `add_self_link()`, `add_root_link()`, `add_parent_link()`,
-#' `add_child()`, and `add_item()` to manage links after creating the catalog.
+#' `add_child()`, and `add_item()` to manage links after creating the catalog. 
+#' A `self` link and a `root` link are strongly recommended.
+#' Non-root Catalogs should include a `parent` link.
 #'
 #' ## Extensions
 #' STAC extensions provide additional fields and capabilities. When using
@@ -145,7 +141,6 @@ stac_catalog <- function(
   stac_version = "1.1.0",
   type = "Catalog",
   stac_extensions = NULL,
-  links = list(),
   conformsTo = NULL,
   ...
 ) {
@@ -170,7 +165,7 @@ stac_catalog <- function(
     catalog$conformsTo <- conformsTo
   }
 
-  catalog$links <- links
+  catalog$links <- list()
 
   # Add any extra fields
   extra_fields <- list(...)
@@ -184,7 +179,69 @@ stac_catalog <- function(
   )
 }
 
-# Create a link object
+
+#' Create a STAC link object
+#'
+#' @description
+#' Creates a link object following the STAC specification. Links are used to
+#' connect STAC resources (catalogs, collections, and items) and establish
+#' relationships between them.
+#'
+#' @param rel (character, required) The link relation type. Common values include
+#'   `"self"`, `"root"`, `"parent"`, `"child"`, `"item"`, `"collection"`,
+#'   `"license"`, `"derived_from"`, and `"via"`. See the STAC specification
+#'   for a complete list of relation types.
+#' @param href (character, required) The URL or path to the linked resource.
+#'   Can be absolute or relative.
+#' @param type (character, optional) The media type of the linked resource.
+#'   Common values include `"application/json"`, `"application/geo+json"`,
+#'   and `"text/html"`. Default is `NULL`.
+#' @param title (character, optional) A human-readable title for the link.
+#'   Default is `NULL`.
+#' @param method (character, optional) The HTTP method to use when following
+#'   the link (e.g., `"GET"`, `"POST"`). Default is `NULL`.
+#' @param headers (list or named vector, optional) HTTP headers to include
+#'   when following the link. Default is `NULL`.
+#' @param body (list, optional) The HTTP body to include when following the
+#'   link (typically used with POST requests). Default is `NULL`.
+#' @param merge (logical, optional) Whether to merge the link body with the
+#'   current resource when following the link. Default is `FALSE`.
+#'
+#' @return A list representing a STAC link object with NULL values removed.
+#'
+#' @seealso
+#' * [add_link()] for adding links to STAC objects
+#' * [add_self_link()], [add_root_link()], [add_parent_link()] for convenience functions
+#'
+#' @references
+#' STAC Link Object specification:
+#' \url{https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md#link-object}
+#'
+#' @examples
+#' # Create a simple link
+#' link <- stac_link(
+#'   rel = "self",
+#'   href = "https://example.com/catalog.json"
+#' )
+#'
+#' # Create a link with additional properties
+#' link <- stac_link(
+#'   rel = "child",
+#'   href = "./child-catalog.json",
+#'   type = "application/json",
+#'   title = "Child Catalog"
+#' )
+#'
+#' # Create a link with HTTP method and headers
+#' link <- stac_link(
+#'   rel = "search",
+#'   href = "https://api.example.com/search",
+#'   method = "POST",
+#'   headers = list("Content-Type" = "application/json"),
+#'   body = list(limit = 10)
+#' )
+#'
+#' @keywords internal
 stac_link <- function(
   rel,
   href,
@@ -223,14 +280,109 @@ stac_link <- function(
   link[!sapply(link, is.null)]
 }
 
-# Add a link to a catalog
+
+#' Add a link to a STAC catalog
+#'
+#' @description
+#' Adds a link object to a STAC Catalog, Collection, or Item. Links are used
+#' to connect STAC resources and provide relationships between catalogs, collections,
+#' and items.
+#'
+#' @param catalog A STAC catalog, collection, or item object.
+#' @param rel (character, required) The link relation type. Common values include
+#'   `"self"`, `"root"`, `"parent"`, `"child"`, and `"item"`. See the STAC
+#'   specification for a full list of relation types.
+#' @param href (character, required) The URL or path to the linked resource.
+#'   Can be absolute or relative.
+#' @param ... Additional link properties passed to `stac_link()`, such as `type`,
+#'   `title`, `method`, `headers`, `body`, or `merge`.
+#'
+#' @return The modified catalog object with the new link added.
+#'
+#' @seealso
+#' * [add_self_link()] for adding a self link
+#' * [add_root_link()] for adding a root link
+#' * [add_parent_link()] for adding a parent link
+#' * [add_child()] for adding a child catalog or collection
+#'
+#' @examples
+#' catalog <- stac_catalog(
+#'   id = "my-catalog",
+#'   description = "Example catalog"
+#' )
+#'
+#' # Add a self link
+#' catalog <- add_link(
+#'   catalog,
+#'   rel = "self",
+#'   href = "https://example.com/catalog.json",
+#'   type = "application/json"
+#' )
+#'
+#' # Add a related link with a title
+#' catalog <- add_link(
+#'   catalog,
+#'   rel = "related",
+#'   href = "https://example.com/metadata.html",
+#'   type = "text/html",
+#'   title = "Additional metadata"
+#' )
+#'
+#' @export
 add_link <- function(catalog, rel, href, ...) {
   new_link <- stac_link(rel = rel, href = href, ...)
   catalog$links <- c(catalog$links, list(new_link))
   catalog
 }
 
-# Add a child catalog/collection
+
+#' Add a child catalog or collection
+#'
+#' @description
+#' Adds a child STAC Catalog or Collection to a parent catalog by creating a
+#' link with relation type `"child"`. The child resource can be another catalog
+#' or a collection.
+#'
+#' @param catalog A STAC catalog or collection object to add the child to.
+#' @param child A STAC catalog or collection object to add as a child.
+#' @param href (character, optional) The URL or path to the child resource.
+#'   If `NULL` (default), automatically generates a path using the pattern
+#'   `"./<child_id>/catalog.json"`.
+#' @param title (character, optional) A title for the link. If `NULL`, uses
+#'   the child's `title` field if available.
+#'
+#' @return The modified parent catalog object with the child link added.
+#'
+#' @seealso
+#' * [add_link()] for adding arbitrary links
+#' * [add_item()] for adding STAC Items
+#' * [stac_catalog()] for creating catalogs
+#' * [stac_collection()] for creating collections
+#'
+#' @examples
+#' parent <- stac_catalog(
+#'   id = "parent-catalog",
+#'   description = "Parent catalog"
+#' )
+#'
+#' child <- stac_catalog(
+#'   id = "child-catalog",
+#'   title = "Child Catalog",
+#'   description = "A child catalog"
+#' )
+#'
+#' # Add child with automatic href generation
+#' parent <- add_child(parent, child)
+#'
+#' # Add child with custom href and title
+#' parent <- add_child(
+#'   parent,
+#'   child,
+#'   href = "./children/custom-catalog.json",
+#'   title = "Custom Child"
+#' )
+#'
+#' @export
 add_child <- function(catalog, child, href = NULL, title = NULL) {
   if (is.null(href)) {
     href = paste0("./", child$id, "/catalog.json")
@@ -247,23 +399,33 @@ add_child <- function(catalog, child, href = NULL, title = NULL) {
   catalog
 }
 
-# Add an item
-add_item <- function(catalog, item, href = NULL) {
-  if (is.null(href)) {
-    href = paste0("./", item$id, ".json")
-  }
 
-  catalog <- add_link(
-    catalog,
-    rel = "item",
-    href = href,
-    type = "application/geo+json"
-  )
-
-  catalog
-}
-
-# Add self link
+#' Add a self link to a STAC catalog
+#'
+#' @description
+#' Adds a self link to a STAC Catalog, Collection, or Item. A self link provides
+#' the absolute URL to the current resource and is strongly recommended by the
+#' STAC specification.
+#'
+#' @param catalog A STAC catalog, collection, or item object.
+#' @param href (character, required) The absolute URL to the current resource.
+#'
+#' @return The modified catalog object with the self link added.
+#'
+#' @seealso
+#' * [add_root_link()] for adding a root link
+#' * [add_parent_link()] for adding a parent link
+#' * [add_link()] for adding arbitrary links
+#'
+#' @examples
+#' catalog <- stac_catalog(
+#'   id = "my-catalog",
+#'   description = "Example catalog"
+#' )
+#'
+#' catalog <- add_self_link(catalog, "https://example.com/catalog.json")
+#'
+#' @export
 add_self_link <- function(catalog, href) {
   catalog <- add_link(
     catalog,
@@ -274,7 +436,34 @@ add_self_link <- function(catalog, href) {
   catalog
 }
 
-# Add root link
+
+#' Add a root link to a STAC catalog
+#'
+#' @description
+#' Adds a root link to a STAC Catalog, Collection, or Item. A root link provides
+#' the URL to the root catalog of the STAC hierarchy and is strongly recommended
+#' by the STAC specification.
+#'
+#' @param catalog A STAC catalog, collection, or item object.
+#' @param href (character, required) The URL to the root catalog. Can be absolute
+#'   or relative.
+#'
+#' @return The modified catalog object with the root link added.
+#'
+#' @seealso
+#' * [add_self_link()] for adding a self link
+#' * [add_parent_link()] for adding a parent link
+#' * [add_link()] for adding arbitrary links
+#'
+#' @examples
+#' catalog <- stac_catalog(
+#'   id = "my-catalog",
+#'   description = "Example catalog"
+#' )
+#'
+#' catalog <- add_root_link(catalog, "https://example.com/catalog.json")
+#'
+#' @export
 add_root_link <- function(catalog, href) {
   catalog <- add_link(
     catalog,
@@ -285,7 +474,34 @@ add_root_link <- function(catalog, href) {
   catalog
 }
 
-# Add parent link
+
+#' Add a parent link to a STAC catalog
+#'
+#' @description
+#' Adds a parent link to a STAC Catalog, Collection, or Item. A parent link provides
+#' the URL to the parent catalog or collection in the STAC hierarchy. Non-root
+#' catalogs should include a parent link.
+#'
+#' @param catalog A STAC catalog, collection, or item object.
+#' @param href (character, required) The URL to the parent catalog or collection.
+#'   Can be absolute or relative.
+#'
+#' @return The modified catalog object with the parent link added.
+#'
+#' @seealso
+#' * [add_self_link()] for adding a self link
+#' * [add_root_link()] for adding a root link
+#' * [add_link()] for adding arbitrary links
+#'
+#' @examples
+#' catalog <- stac_catalog(
+#'   id = "child-catalog",
+#'   description = "A child catalog"
+#' )
+#'
+#' catalog <- add_parent_link(catalog, "../parent/catalog.json")
+#'
+#' @export
 add_parent_link <- function(catalog, href) {
   catalog <- add_link(
     catalog,

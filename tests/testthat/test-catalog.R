@@ -81,7 +81,7 @@ test_that("collection structure matches pystac output", {
     license = collection_license,
     extent = list(
       spatial = list(bbox = list(c(-180, -90, 180, 90))),
-      temporal = list(interval = list(c(NA, NA)))
+      temporal = list(interval = c(NA_character_, NA_character_))
     )
   )
 
@@ -133,6 +133,7 @@ test_that("item structure matches pystac output", {
   skip_if_not(reticulate::py_module_available("pystac"), "pystac not available")
 
   pystac <- reticulate::import("pystac")
+  datetime <- reticulate::import("datetime", convert = FALSE)
 
   # Common item parameters
   item_id <- "test-item"
@@ -147,14 +148,13 @@ test_that("item structure matches pystac output", {
       c(-105, 40)
     ))
   )
-  datetime_str <- "2023-06-15T17:30:00Z"
 
   # Create R item
   r_item <- stac_item(
     id = item_id,
     geometry = geometry,
     bbox = bbox,
-    datetime = datetime_str,
+    datetime = "2023-06-15T17:30:00Z",
     properties = list()
   )
 
@@ -163,10 +163,7 @@ test_that("item structure matches pystac output", {
     id = item_id,
     geometry = geometry,
     bbox = bbox,
-    datetime = reticulate::py_eval(sprintf(
-      "__import__('datetime').datetime.fromisoformat('%s'.replace('Z', '+00:00'))",
-      gsub("Z$", "", datetime_str)
-    )),
+    datetime = datetime$datetime$fromisoformat("2023-06-15T17:30:00Z"),
     properties = reticulate::dict()
   )
 
@@ -201,4 +198,45 @@ test_that("item structure matches pystac output", {
   r_validation <- validate_stac(r_item)
   expect_true(r_validation$valid)
   expect_length(r_validation$errors, 0)
+})
+
+test_that("catalog with child catalogs matches pystac", {
+  skip_if_not_installed("reticulate")
+  skip_if_no_pystac()
+  
+  pystac <- reticulate::import("pystac")
+  
+  # Create R parent and child catalogs
+  r_parent <- stac_catalog(
+    id = "parent-catalog",
+    description = "Parent catalog",
+    title = "Parent"
+  )
+  
+  r_child <- stac_catalog(
+    id = "child-catalog",
+    description = "Child catalog",
+    title = "Child"
+  )
+  
+  # Create Python parent and child catalogs
+  py_parent <- pystac$Catalog(
+    id = "parent-catalog",
+    description = "Parent catalog",
+    title = "Parent"
+  )
+  
+  py_child <- pystac$Catalog(
+    id = "child-catalog",
+    description = "Child catalog",
+    title = "Child"
+  )
+  
+  # Validate both
+  expect_true(validate_stac(r_parent)$valid)
+  expect_true(validate_stac(r_child)$valid)
+  
+  # Check structure
+  expect_equal(r_parent$type, "Catalog")
+  expect_equal(r_child$type, "Catalog")
 })
