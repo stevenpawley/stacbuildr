@@ -16,7 +16,8 @@ Imports:
     terra,
     jsonvalidate,
     httr,
-    uuid
+    uuid,
+    S7
 Suggests:
     stars,
     rstac,
