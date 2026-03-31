@@ -99,9 +99,10 @@
 #' Items to link back to the Collection. Use `add_item()` with 
 #' `add_parent_links = TRUE` to properly establish this relationship.
 #'
-#' @return An object of class `c("stac_item", "list")` containing the Item 
-#'   metadata formatted as a GeoJSON Feature. The object can be converted to 
-#'   JSON using `jsonlite::toJSON()` with `auto_unbox = TRUE`.
+#' @return An S7 object of class `stac_item` containing the Item metadata
+#'   formatted as a GeoJSON Feature. Convert to a plain list for JSON
+#'   serialization with `as.list()`, or write directly to disk using
+#'   `write_item()`.
 #'
 #' @seealso 
 #' * [stac_asset()] for creating asset objects
@@ -211,108 +212,139 @@
 #' cat(item_json)
 #'
 #' @export
-stac_item <- function(id,
-                     geometry,
-                     bbox,
-                     datetime = NULL,
-                     properties = list(),
-                     assets = list(),
-                     links = list(),
-                     stac_version = "1.1.0",
-                     type = "Feature",
-                     stac_extensions = NULL,
-                     collection = NULL,
-                     start_datetime = NULL,
-                     end_datetime = NULL,
-                     ...) {
-  
-  # Validate required arguments
-  if (missing(id) || is.null(id) || nchar(id) == 0) {
-    stop("'id' is required and must be a non-empty string")
-  }
-  
-  if (missing(geometry)) {
-    stop("'geometry' is required (use NULL for non-spatial items)")
-  }
-  
-  # Validate bbox requirement based on geometry
-  if (!is.null(geometry)) {
-    if (missing(bbox) || is.null(bbox)) {
-      stop("'bbox' is required when geometry is not NULL")
+stac_item <- S7::new_class(
+  "stac_item",
+  properties = list(
+    type            = S7::new_property(S7::class_character, default = "Feature"),
+    stac_version    = S7::new_property(S7::class_character, default = "1.1.0"),
+    id              = S7::class_character,
+    geometry        = S7::new_property(S7::new_union(S7::class_list, NULL), default = NULL),
+    bbox            = S7::new_property(S7::new_union(S7::class_numeric, NULL), default = NULL),
+    properties      = S7::new_property(S7::class_list, default = list()),
+    links           = S7::new_property(S7::class_list, default = list()),
+    assets          = S7::new_property(S7::class_list, default = list()),
+    stac_extensions = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
+    collection      = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL)
+  ),
+  constructor = function(id,
+                         geometry,
+                         bbox = NULL,
+                         datetime = NULL,
+                         properties = list(),
+                         assets = list(),
+                         links = list(),
+                         stac_version = "1.1.0",
+                         type = "Feature",
+                         stac_extensions = NULL,
+                         collection = NULL,
+                         start_datetime = NULL,
+                         end_datetime = NULL,
+                         ...) {
+    # Resolve datetime: start/end takes precedence if both provided
+    if (!is.null(datetime) && (!is.null(start_datetime) || !is.null(end_datetime))) {
+      warning(
+        "Both 'datetime' and 'start_datetime'/'end_datetime' provided. ",
+        "Using 'start_datetime' and 'end_datetime'."
+      )
+      datetime <- NULL
     }
-    # Validate bbox length (must be 4 or 6)
-    if (!length(bbox) %in% c(4, 6)) {
-      stop("'bbox' must have length 4 (2D) or 6 (3D)")
+
+    # Merge datetime into properties
+    props <- properties
+    if (!is.null(datetime)) {
+      props$datetime <- datetime
+    } else {
+      props$datetime        <- NULL
+      props$start_datetime  <- start_datetime
+      props$end_datetime    <- end_datetime
     }
-  } else {
-    # geometry is NULL
-    if (!missing(bbox) && !is.null(bbox)) {
-      stop("'bbox' is prohibited when geometry is NULL")
+
+    # Merge ... into properties (not top-level, unlike catalog/collection)
+    extra_props <- list(...)
+    if (length(extra_props) > 0) {
+      props <- c(props, extra_props)
     }
+
+    obj <- S7::new_object(
+      S7::S7_object(),
+      type            = type,
+      stac_version    = stac_version,
+      id              = id,
+      geometry        = geometry,
+      bbox            = bbox,
+      properties      = props,
+      links           = links,
+      assets          = assets,
+      stac_extensions = stac_extensions,
+      collection      = collection
+    )
+    structure(obj, class = append(class(obj), "stac_item", after = 1L))
+  },
+  validator = function(self) {
+    if (length(self@id) == 0 || nchar(self@id) == 0) {
+      return("'id' must be a non-empty string")
+    }
+    if (self@type != "Feature") {
+      return("'type' must be 'Feature'")
+    }
+    if (!is.null(self@geometry) && is.null(self@bbox)) {
+      return("'bbox' is required when 'geometry' is not NULL")
+    }
+    if (is.null(self@geometry) && !is.null(self@bbox)) {
+      return("'bbox' is prohibited when 'geometry' is NULL")
+    }
+    if (!is.null(self@bbox) && !length(self@bbox) %in% c(4, 6)) {
+      return("'bbox' must have length 4 (2D) or 6 (3D)")
+    }
+    has_datetime <- !is.null(self@properties$datetime)
+    has_start    <- !is.null(self@properties$start_datetime)
+    has_end      <- !is.null(self@properties$end_datetime)
+    if (!has_datetime && !(has_start && has_end)) {
+      return("'properties' must contain 'datetime' or both 'start_datetime' and 'end_datetime'")
+    }
+    NULL
   }
-  
-  # Validate datetime requirement
-  if (is.null(datetime) && (is.null(start_datetime) || is.null(end_datetime))) {
-    stop(paste(
-      "'datetime' is required unless both 'start_datetime' and",
-      "'end_datetime' are provided"
-    ))
-  }
-  
-  if (!is.null(datetime) && (!is.null(start_datetime) || !is.null(end_datetime))) {
-    warning(paste(
-      "Both 'datetime' and 'start_datetime'/'end_datetime' provided.",
-      "Using 'start_datetime' and 'end_datetime'."
-    ))
-    datetime <- NULL
-  }
-  
-  # Build properties object
-  props <- properties
-  
-  # Add datetime or start/end datetime
-  if (!is.null(datetime)) {
-    props$datetime <- datetime
-  } else {
-    props$datetime <- NULL  # Explicitly NULL when using range
-    props$start_datetime <- start_datetime
-    props$end_datetime <- end_datetime
-  }
-  
-  # Add any extra properties from ...
-  extra_props <- list(...)
-  if (length(extra_props) > 0) {
-    props <- c(props, extra_props)
-  }
-  
-  # Build the item object with required fields
-  item <- list(
-    type = type,
-    stac_version = stac_version,
-    id = id,
-    geometry = geometry,
-    properties = props,
-    links = links,
-    assets = assets
+)
+
+S7::method(as.list, stac_item) <- function(x, ...) {
+  out <- list(
+    type         = x@type,
+    stac_version = x@stac_version,
+    id           = x@id,
+    geometry     = x@geometry,
+    properties   = x@properties,
+    links        = x@links,
+    assets       = x@assets
   )
-  
-  # Add bbox (after properties in spec order)
-  if (!is.null(bbox)) {
-    item$bbox <- bbox
+  if (!is.null(x@bbox)) {
+    out$bbox <- x@bbox
   }
-  
-  # Add optional fields
-  if (!is.null(stac_extensions) && length(stac_extensions) > 0) {
-    item$stac_extensions <- stac_extensions
+  if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
+    out$stac_extensions <- x@stac_extensions
   }
-  
-  if (!is.null(collection)) {
-    item$collection <- collection
+  if (!is.null(x@collection)) {
+    out$collection <- x@collection
   }
-  
-  # Set class and return
-  structure(
-    item,
-    class = c("stac_item", "list")
-  )
+  out
+}
+
+`$.stac_item` <- function(x, name) {
+  if (inherits(x, "S7_object") && name %in% S7::prop_names(x)) {
+    S7::prop(x, name)
+  } else if (inherits(x, "S7_object")) {
+    attr(x, name)
+  } else {
+    x[[name]]
+  }
+}
+
+`$<-.stac_item` <- function(x, name, value) {
+  if (inherits(x, "S7_object") && name %in% S7::prop_names(x)) {
+    S7::prop(x, name) <- value
+  } else if (inherits(x, "S7_object")) {
+    attr(x, name) <- value
+  } else {
+    x[[name]] <- value
+  }
+  x
 }

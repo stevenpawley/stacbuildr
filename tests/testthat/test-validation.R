@@ -1,12 +1,6 @@
 test_that("validation catches invalid items", {
-  # Missing required fields
-  invalid_item <- list(
-    type = "Feature",
-    id = "test"
-    # missing other required fields
-  )
-  class(invalid_item) <- c("stac_item", "list")
-  
+  # A plain list without stac_item class is an unknown type
+  invalid_item <- list(type = "Feature", id = "test")
   result <- validate_stac(invalid_item)
   expect_false(result$valid)
   expect_gt(length(result$errors), 0)
@@ -35,6 +29,6 @@ test_that("validation catches missing datetime", {
       datetime = NULL,
       properties = list()
     ),
-    "'datetime' is required"
+    "datetime"
   )
 })

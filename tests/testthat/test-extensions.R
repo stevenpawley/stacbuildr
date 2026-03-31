@@ -16,11 +16,9 @@ test_that("item with extensions matches pystac", {
     bbox = bbox,
     datetime = "2023-06-15T17:30:00Z",
     properties = list(),
-    stac_extensions = list(
-      "https://stac-extensions.github.io/eo/v1.0.0/schema.json"
-    )
+    stac_extensions = c("https://stac-extensions.github.io/eo/v1.0.0/schema.json")
   )
-  
+
   # Create Python item with extensions
   py_item <- pystac$Item(
     id = item_id,
@@ -39,5 +37,5 @@ test_that("item with extensions matches pystac", {
   
   # Check extensions
   expect_length(r_item$stac_extensions, 1)
-  expect_true(grepl("eo", r_item$stac_extensions[[1]]))
+  expect_true(grepl("eo", r_item$stac_extensions[1]))
 })

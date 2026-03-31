@@ -28,8 +28,9 @@
 #'     first bbox describes the overall spatial extent.
 #'   * `temporal`: A list with element `interval` - a list of one or more time 
 #'     intervals. Each interval is a character vector of length 2 with ISO 8601 
-#'     datetime strings: `c("start", "end")`. Use `NULL` for open-ended intervals 
-#'     (e.g., `c("2020-01-01T00:00:00Z", NULL)` for ongoing data).
+#'     datetime strings: `list("start", "end")`. Use `NULL` for open-ended intervals
+#'     (e.g., `list("2020-01-01T00:00:00Z", NULL)` for ongoing data). Note: use
+#'     `list()` not `c()` — `c()` drops `NULL`, which would produce an invalid interval.
 #'   
 #'   Use the helper function `stac_extent()` to create this structure easily.
 #' @param title (character, optional) A short descriptive one-line title for the 
@@ -117,9 +118,9 @@
 #' * Range with min/max: `list(gsd = list(minimum = 15, maximum = 30))`
 #' * JSON Schema: For complex validation rules
 #'
-#' @return An object of class `c("stac_collection", "stac_catalog", "list")` 
-#'   containing the collection metadata. The object can be converted to JSON using 
-#'   `jsonlite::toJSON()` or written to disk using `write_stac()`.
+#' @return An S7 object of class `stac_collection` (extending `stac_catalog`)
+#'   containing the collection metadata. Convert to a plain list for JSON
+#'   serialization with `as.list()`, or write directly to disk using `write_stac()`.
 #'
 #' @seealso 
 #' * [stac_catalog()] for creating STAC Catalogs
@@ -141,7 +142,7 @@
 #'   license = "CC0-1.0",
 #'   extent = list(
 #'     spatial = list(bbox = list(c(-180, -90, 180, 90))),
-#'     temporal = list(interval = list(c("2013-04-11T00:00:00Z", NULL)))
+#'     temporal = list(interval = list(list("2013-04-11T00:00:00Z", NULL)))
 #'   )
 #' )
 #'
@@ -156,7 +157,7 @@
 #'   license = "proprietary",
 #'   extent = stac_extent(
 #'     spatial_bbox = list(c(-180, -90, 180, 90)),
-#'     temporal_interval = list(c("2015-06-27T00:00:00Z", NULL))
+#'     temporal_interval = list(list("2015-06-27T00:00:00Z", NULL))
 #'   ),
 #'   keywords = c("sentinel", "esa", "msi", "copernicus", "earth observation"),
 #'   providers = list(
@@ -205,111 +206,113 @@
 #'            title = "Custom license for commercial data")
 #'
 #' # Convert to JSON
-#' collection_json <- jsonlite::toJSON(collection, auto_unbox = TRUE, pretty = TRUE)
+#' collection_json <- jsonlite::toJSON(as.list(collection), auto_unbox = TRUE, pretty = TRUE)
 #' cat(collection_json)
 #'
 #' @export
-stac_collection <- function(id,
-                           description,
-                           license,
-                           extent,
-                           title = NULL,
-                           stac_version = "1.1.0",
-                           type = "Collection",
-                           stac_extensions = NULL,
-                           keywords = NULL,
-                           providers = NULL,
-                           links = list(),
-                           summaries = NULL,
-                           assets = NULL,
-                           conformsTo = NULL,
-                           ...) {
-  
-  # Validate required arguments
-  if (missing(id) || is.null(id) || nchar(id) == 0) {
-    stop("'id' is required and must be a non-empty string")
+stac_collection <- S7::new_class(
+  "stac_collection",
+  parent = stac_catalog,
+  properties = list(
+    license   = S7::class_character,
+    extent    = Extent,
+    keywords  = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
+    providers = S7::new_property(S7::new_union(S7::class_list, NULL), default = NULL),
+    summaries = S7::new_property(S7::new_union(S7::class_list, NULL), default = NULL),
+    assets    = S7::new_property(S7::new_union(S7::class_list, NULL), default = NULL)
+  ),
+  constructor = function(id,
+                         description,
+                         license,
+                         extent,
+                         title = NULL,
+                         stac_version = "1.1.0",
+                         type = "Collection",
+                         stac_extensions = NULL,
+                         keywords = NULL,
+                         providers = NULL,
+                         links = list(),
+                         summaries = NULL,
+                         assets = NULL,
+                         conformsTo = NULL,
+                         ...) {
+    # Accept a plain list for backwards compatibility, converting to Extent
+    if (!S7::S7_inherits(extent, Extent)) {
+      if (!is.list(extent) || !all(c("spatial", "temporal") %in% names(extent))) {
+        stop("'extent' must be an Extent object (from stac_extent()) or a list with 'spatial' and 'temporal' elements")
+      }
+      extent <- Extent(
+        spatial  = SpatialExtent(bbox = extent$spatial$bbox),
+        temporal = TemporalExtent(interval = extent$temporal$interval)
+      )
+    }
+    obj <- S7::new_object(
+      stac_catalog(
+        id              = id,
+        description     = description,
+        title           = title,
+        stac_version    = stac_version,
+        type            = type,
+        stac_extensions = stac_extensions,
+        conformsTo      = conformsTo,
+        links           = links,
+        ...
+      ),
+      license   = license,
+      extent    = extent,
+      keywords  = keywords,
+      providers = providers,
+      summaries = summaries,
+      assets    = assets
+    )
+    structure(obj, class = append(class(obj), c("stac_collection", "stac_catalog"), after = 1L))
+  },
+  validator = function(self) {
+    if (length(self@license) == 0 || nchar(self@license) == 0) {
+      return("'license' must be a non-empty string")
+    }
+    if (self@type != "Collection") {
+      return("'type' must be 'Collection'")
+    }
+    NULL
   }
-  
-  if (missing(description) || is.null(description) || nchar(description) == 0) {
-    stop("'description' is required and must be a non-empty string")
-  }
-  
-  if (missing(license) || is.null(license) || nchar(license) == 0) {
-    stop("'license' is required and must be a non-empty string")
-  }
-  
-  if (missing(extent) || is.null(extent)) {
-    stop("'extent' is required")
-  }
-  
-  # Validate extent structure
-  if (!is.list(extent) || 
-      !all(c("spatial", "temporal") %in% names(extent))) {
-    stop("'extent' must be a list with 'spatial' and 'temporal' elements")
-  }
-  
-  if (!is.list(extent$spatial) || !"bbox" %in% names(extent$spatial)) {
-    stop("'extent$spatial' must be a list with a 'bbox' element")
-  }
-  
-  if (!is.list(extent$temporal) || !"interval" %in% names(extent$temporal)) {
-    stop("'extent$temporal' must be a list with an 'interval' element")
-  }
-  
-  # Build the collection object with required fields
-  collection <- list(
-    type = type,
-    stac_version = stac_version,
-    id = id,
-    description = description,
-    license = license,
-    extent = extent
+)
+
+S7::method(as.list, stac_collection) <- function(x, ...) {
+  out <- list(
+    type         = x@type,
+    stac_version = x@stac_version,
+    id           = x@id,
+    description  = x@description,
+    license      = x@license,
+    extent       = as.list(x@extent)
   )
-  
-  # Add optional fields if provided (in spec order)
-  if (!is.null(title)) {
-    collection$title <- title
+  if (!is.null(x@title)) {
+    out$title <- x@title
   }
-  
-  if (!is.null(keywords) && length(keywords) > 0) {
-    collection$keywords <- keywords
+  if (!is.null(x@keywords) && length(x@keywords) > 0) {
+    out$keywords <- x@keywords
   }
-  
-  if (!is.null(providers) && length(providers) > 0) {
-    collection$providers <- providers
+  if (!is.null(x@providers) && length(x@providers) > 0) {
+    out$providers <- x@providers
   }
-  
-  if (!is.null(stac_extensions) && length(stac_extensions) > 0) {
-    collection$stac_extensions <- stac_extensions
+  if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
+    out$stac_extensions <- x@stac_extensions
   }
-  
-  # Add links (required field, but can be empty)
-  collection$links <- links
-  
-  # Add optional Collection-specific fields
-  if (!is.null(summaries) && length(summaries) > 0) {
-    collection$summaries <- summaries
+  out$links <- x@links
+  if (!is.null(x@summaries) && length(x@summaries) > 0) {
+    out$summaries <- x@summaries
   }
-  
-  if (!is.null(assets) && length(assets) > 0) {
-    collection$assets <- assets
+  if (!is.null(x@assets) && length(x@assets) > 0) {
+    out$assets <- x@assets
   }
-  
-  if (!is.null(conformsTo) && length(conformsTo) > 0) {
-    collection$conformsTo <- conformsTo
+  if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
+    out$conformsTo <- x@conformsTo
   }
-  
-  # Add any extra fields from ...
-  extra_fields <- list(...)
-  if (length(extra_fields) > 0) {
-    collection <- c(collection, extra_fields)
+  if (length(x@extra_fields) > 0) {
+    out <- c(out, x@extra_fields)
   }
-  
-  # Set class and return (note: Collection is also a Catalog)
-  structure(
-    collection,
-    class = c("stac_collection", "stac_catalog", "list")
-  )
+  out
 }
 
 
@@ -322,23 +325,24 @@ stac_collection <- function(id,
 #'   of 4 values `c(west, south, east, north)` or 6 values for 3D 
 #'   `c(west, south, min_elev, east, north, max_elev)`. The first bbox is the 
 #'   overall extent.
-#' @param temporal_interval List of time intervals. Each interval should be a 
-#'   character vector of length 2: `c("start", "end")`. Use `NULL` for open-ended 
-#'   intervals. Times should be in ISO 8601 format.
+#' @param temporal_interval List of time intervals. Each interval should be a
+#'   list of length 2: `list("start", "end")`. Use `NULL` for open-ended
+#'   intervals: `list("start", NULL)`. Times should be in ISO 8601 format.
+#'   Note: use `list()` not `c()` — `c()` drops `NULL`, producing an invalid interval.
 #'
-#' @return A list with `spatial` and `temporal` elements formatted for STAC Collections.
+#' @return An `Extent` S7 object formatted for STAC Collections.
 #'
 #' @examples
 #' # Simple global extent
 #' extent <- stac_extent(
 #'   spatial_bbox = list(c(-180, -90, 180, 90)),
-#'   temporal_interval = list(c("2020-01-01T00:00:00Z", "2020-12-31T23:59:59Z"))
+#'   temporal_interval = list(list("2020-01-01T00:00:00Z", "2020-12-31T23:59:59Z"))
 #' )
 #'
 #' # Open-ended temporal extent (ongoing collection)
 #' extent <- stac_extent(
 #'   spatial_bbox = list(c(-120, 30, -110, 40)),
-#'   temporal_interval = list(c("2015-01-01T00:00:00Z", NULL))
+#'   temporal_interval = list(list("2015-01-01T00:00:00Z", NULL))
 #' )
 #'
 #' # Multiple spatial extents (e.g., disjoint regions)
@@ -348,14 +352,14 @@ stac_collection <- function(id,
 #'     c(-120, 30, -110, 40),  # Western US
 #'     c(-10, 35, 5, 45)       # Western Europe
 #'   ),
-#'   temporal_interval = list(c("2020-01-01T00:00:00Z", "2023-12-31T23:59:59Z"))
+#'   temporal_interval = list(list("2020-01-01T00:00:00Z", "2023-12-31T23:59:59Z"))
 #' )
 #'
 #' @export
 stac_extent <- function(spatial_bbox, temporal_interval) {
-  list(
-    spatial = list(bbox = spatial_bbox),
-    temporal = list(interval = temporal_interval)
+  Extent(
+    spatial = SpatialExtent(bbox = spatial_bbox),
+    temporal = TemporalExtent(interval = temporal_interval)
   )
 }
 

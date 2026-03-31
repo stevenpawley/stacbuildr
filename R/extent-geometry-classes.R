@@ -36,7 +36,7 @@ Bbox <- S7::new_class(
 SpatialExtent <- S7::new_class(
   "SpatialExtent",
   properties = list(
-    bbox = S7::new_property(class_list, default = list())
+    bbox = S7::new_property(S7::class_list, default = list())
   ),
   validator = function(self) {
     if (length(self@bbox) == 0) {
@@ -60,7 +60,7 @@ SpatialExtent <- S7::new_class(
 TemporalExtent <- S7::new_class(
   "TemporalExtent",
   properties = list(
-    interval = class_list
+    interval = S7::class_list
   ),
   validator = function(self) {
     if (length(self@interval) == 0) {
@@ -90,7 +90,7 @@ Extent <- S7::new_class(
 Geometry <- S7::new_class(
   "Geometry",
   properties = list(
-    type = class_character,
+    type = S7::class_character,
     coordinates = S7::class_any  # varies by geometry type
   ),
   validator = function(self) {
@@ -111,16 +111,16 @@ Geometry <- S7::new_class(
   }
 )
 
-# Methods to support serialization ot JSON
-method(as.list, SpatialExtent) <- function(x, ...) {
+# Methods to support serialization to JSON
+S7::method(as.list, SpatialExtent) <- function(x, ...) {
   list(bbox = x@bbox)
 }
 
-method(as.list, TemporalExtent) <- function(x, ...) {
+S7::method(as.list, TemporalExtent) <- function(x, ...) {
   list(interval = x@interval)
 }
 
-method(as.list, Extent) <- function(x, ...) {
+S7::method(as.list, Extent) <- function(x, ...) {
   list(
     spatial = as.list(x@spatial),
     temporal = as.list(x@temporal)

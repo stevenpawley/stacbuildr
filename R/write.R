@@ -84,7 +84,7 @@
 #'   license = "CC0-1.0",
 #'   extent = stac_extent(
 #'     spatial_bbox = list(c(-180, -90, 180, 90)),
-#'     temporal_interval = list(c("2013-04-11T00:00:00Z", NULL))
+#'     temporal_interval = list(list("2013-04-11T00:00:00Z", NULL))
 #'   )
 #' )
 #' 
@@ -205,7 +205,12 @@ write_catalog <- function(catalog,
   
   # Remove stored objects before writing (keep only the JSON structure)
   catalog_clean <- strip_stored_objects(catalog)
-  
+
+  # Convert S7 objects to plain list for JSON serialization
+  if (inherits(catalog_clean, "S7_object")) {
+    catalog_clean <- as.list(catalog_clean)
+  }
+
   # Write JSON
   json <- jsonlite::toJSON(
     catalog_clean,
@@ -267,7 +272,12 @@ write_item <- function(item,
   
   # Remove any stored attributes before writing
   item_clean <- strip_stored_objects(item)
-  
+
+  # Convert S7 objects to plain list for JSON serialization
+  if (inherits(item_clean, "S7_object")) {
+    item_clean <- as.list(item_clean)
+  }
+
   # Write JSON
   json <- jsonlite::toJSON(
     item_clean,

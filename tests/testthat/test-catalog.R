@@ -27,7 +27,7 @@ test_that("catalog structure matches pystac output", {
 
   # Convert to JSON-like structures for comparison
   r_json <- jsonlite::fromJSON(
-    jsonlite::toJSON(r_catalog, auto_unbox = TRUE),
+    jsonlite::toJSON(as.list(r_catalog), auto_unbox = TRUE),
     simplifyVector = FALSE
   )
 
@@ -81,7 +81,7 @@ test_that("collection structure matches pystac output", {
     license = collection_license,
     extent = list(
       spatial = list(bbox = list(c(-180, -90, 180, 90))),
-      temporal = list(interval = c(NA_character_, NA_character_))
+      temporal = list(interval = list(list(NULL, NULL)))
     )
   )
 
@@ -95,7 +95,7 @@ test_that("collection structure matches pystac output", {
 
   # Convert to JSON-like structures
   r_json <- jsonlite::fromJSON(
-    jsonlite::toJSON(r_collection, auto_unbox = TRUE, null = "null"),
+    jsonlite::toJSON(as.list(r_collection), auto_unbox = TRUE, null = "null"),
     simplifyVector = FALSE
   )
 
@@ -169,7 +169,7 @@ test_that("item structure matches pystac output", {
 
   # Convert to JSON-like structures
   r_json <- jsonlite::fromJSON(
-    jsonlite::toJSON(r_item, auto_unbox = TRUE),
+    jsonlite::toJSON(as.list(r_item), auto_unbox = TRUE),
     simplifyVector = FALSE
   )
 

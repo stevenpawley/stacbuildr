@@ -3,7 +3,7 @@ test_that("STAC Item creation works", {
     id = "test-item",
     geometry = list(type = "Point", coordinates = c(-105, 40)),
     bbox = c(-105, 40, -105, 40),
-    datetime = Sys.time()
+    datetime = "2023-06-15T10:30:00Z"
   )
 
   expect_s3_class(item, "stac_item")
@@ -86,7 +86,7 @@ test_that("item with assets matches pystac", {
 
   # Check assets exist and match
   r_json <- jsonlite::fromJSON(
-    jsonlite::toJSON(r_item, auto_unbox = TRUE),
+    jsonlite::toJSON(as.list(r_item), auto_unbox = TRUE),
     simplifyVector = FALSE
   )
 
@@ -169,7 +169,7 @@ test_that("item with links matches pystac", {
 
   # Check links structure
   r_json <- jsonlite::fromJSON(
-    jsonlite::toJSON(r_item, auto_unbox = TRUE),
+    jsonlite::toJSON(as.list(r_item), auto_unbox = TRUE),
     simplifyVector = FALSE
   )
 
@@ -253,7 +253,7 @@ test_that("item with assets matches pystac", {
 
   # Check assets exist and match
   r_json <- jsonlite::fromJSON(
-    jsonlite::toJSON(r_item, auto_unbox = TRUE),
+    jsonlite::toJSON(as.list(r_item), auto_unbox = TRUE),
     simplifyVector = FALSE
   )
 
@@ -336,7 +336,7 @@ test_that("item with links matches pystac", {
 
   # Check links structure
   r_json <- jsonlite::fromJSON(
-    jsonlite::toJSON(r_item, auto_unbox = TRUE),
+    jsonlite::toJSON(as.list(r_item), auto_unbox = TRUE),
     simplifyVector = FALSE
   )
 
@@ -362,7 +362,7 @@ test_that("collection with items matches pystac", {
     license = "CC-BY-4.0",
     extent = list(
       spatial = list(bbox = list(c(-180, -90, 180, 90))),
-      temporal = list(interval = list(c(NA, NA)))
+      temporal = list(interval = list(list(NULL, NULL)))
     )
   )
 
@@ -465,7 +465,7 @@ test_that("items with different geometry types match pystac", {
 
     # Compare structure
     r_json <- jsonlite::fromJSON(
-      jsonlite::toJSON(r_item, auto_unbox = TRUE),
+      jsonlite::toJSON(as.list(r_item), auto_unbox = TRUE),
       simplifyVector = FALSE
     )
 
@@ -513,7 +513,7 @@ test_that("item with null geometry matches pystac", {
 
   # Compare
   r_json <- jsonlite::fromJSON(
-    jsonlite::toJSON(r_item, auto_unbox = TRUE, null = "null"),
+    jsonlite::toJSON(as.list(r_item), auto_unbox = TRUE, null = "null"),
     simplifyVector = FALSE
   )
 

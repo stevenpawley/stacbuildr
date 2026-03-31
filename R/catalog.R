@@ -4,25 +4,27 @@
 #' Creates a STAC (SpatioTemporal Asset Catalog) Catalog object following the
 #' STAC specification version 1.1.0. A Catalog is a top-level organizational
 #' structure that groups related Collections and Items, providing a hierarchical
-#' structure for organizing geospatial assets.
+#' structure for organizing geospatial assets, making them indexable and
+#' discoverable.
 #'
 #' @param id (character, required) Identifier for the Catalog. Must be unique
 #'   within the parent catalog if one exists. Should contain only alphanumeric
-#'   characters, hyphens, and underscores.
+#'   characters, hyphens, and underscores. This field is required by the STAC
+#'   specification.
 #' @param description (character, required) Detailed multi-line description to
-#'   fully explain the Catalog. CommonMark 0.29 syntax may be used for rich text
-#'   representation. This field should provide comprehensive information about the
-#'   catalog's contents, purpose, and scope.
+#'   fully explain the Catalog. This field should provide comprehensive information 
+#'   about the catalog's contents, purpose, and scope. This field is required by 
+#'   the STAC specification.
 #' @param title (character, optional) A short descriptive one-line title for the
-#'   Catalog. Recommended for human-readable identification. If not provided,
-#'   the `id` may be used for display purposes.
-#' @param stac_version (character, optional) The STAC version the Catalog
+#'   Catalog. Recommended for human-readable identification.
+#' @param stac_version (character, required) The STAC version the Catalog
 #'   implements. Defaults to `"1.1.0"`. This field is required by the STAC
 #'   specification.
 #' @param type (character, optional) Must be set to `"Catalog"` for catalogs.
 #'   Defaults to `"Catalog"`. For collections, this would be `"Collection"`.
+#'   This field is required by the STAC specification.
 #' @param stac_extensions (character vector, optional) A list of extension
-#'   identifiers (URIs) that the Catalog implements. Extensions listed here must
+#'   URLs that the Catalog implements. Extensions listed here must
 #'   only contain extensions that extend the Catalog specification itself, not
 #'   extensions for Items or Collections. Each extension should be a full URI to
 #'   the extension's JSON schema. Default is `NULL` (no extensions).
@@ -55,7 +57,7 @@
 #' * `item`: URL to a STAC Item
 #'
 #' Use the helper functions `add_self_link()`, `add_root_link()`, `add_parent_link()`,
-#' `add_child()`, and `add_item()` to manage links after creating the catalog. 
+#' `add_child()`, and `add_item()` to manage links after creating the catalog.
 #' A `self` link and a `root` link are strongly recommended.
 #' Non-root Catalogs should include a `parent` link.
 #'
@@ -65,9 +67,9 @@
 #' parameter with their full schema URI. Note that most extensions apply to
 #' Items or Collections rather than Catalogs.
 #'
-#' @return An object of class `c("stac_catalog", "list")` containing the catalog
-#'   metadata. The object can be converted to JSON using `jsonlite::toJSON()` or
-#'   written to disk using `write_stac()`.
+#' @return An S7 object of class `stac_catalog` containing the catalog metadata.
+#'   Convert to a plain list for JSON serialization with `as.list()`, or write
+#'   directly to disk using `write_stac()`.
 #'
 #' @seealso
 #' * [stac_collection()] for creating STAC Collections
@@ -134,49 +136,101 @@
 #' cat(catalog_json)
 #'
 #' @export
-stac_catalog <- function(
-  id,
-  description,
-  title = NULL,
-  stac_version = "1.1.0",
-  type = "Catalog",
-  stac_extensions = NULL,
-  conformsTo = NULL,
-  ...
-) {
-  # Build the catalog object
-  catalog <- list(
-    type = type,
-    stac_version = stac_version,
-    id = id,
-    description = description
+stac_catalog <- S7::new_class(
+  "stac_catalog",
+  properties = list(
+    type            = S7::new_property(S7::class_character, default = "Catalog"),
+    stac_version    = S7::new_property(S7::class_character, default = "1.1.0"),
+    id              = S7::class_character,
+    description     = S7::class_character,
+    title           = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
+    stac_extensions = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
+    conformsTo      = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
+    links           = S7::new_property(S7::class_list, default = list()),
+    extra_fields    = S7::new_property(S7::class_list, default = list())
+  ),
+  constructor = function(id,
+                         description,
+                         title = NULL,
+                         stac_version = "1.1.0",
+                         type = "Catalog",
+                         stac_extensions = NULL,
+                         conformsTo = NULL,
+                         links = list(),
+                         ...) {
+    obj <- S7::new_object(
+      S7::S7_object(),
+      type            = type,
+      stac_version    = stac_version,
+      id              = id,
+      description     = description,
+      title           = title,
+      stac_extensions = stac_extensions,
+      conformsTo      = conformsTo,
+      links           = links,
+      extra_fields    = list(...)
+    )
+    # When loaded as a package, S7 qualifies class names (e.g. "buildstac::stac_catalog").
+    # Insert the unqualified name so that inherits() and $ S3 dispatch work correctly.
+    # Use structure() rather than class<- to avoid triggering S7's mutation mechanism.
+    structure(obj, class = append(class(obj), "stac_catalog", after = 1L))
+  },
+  validator = function(self) {
+    if (length(self@id) == 0 || nchar(self@id) == 0) {
+      return("'id' must be a non-empty string")
+    }
+    if (length(self@description) == 0 || nchar(self@description) == 0) {
+      return("'description' must be a non-empty string")
+    }
+    NULL
+  }
+)
+
+S7::method(as.list, stac_catalog) <- function(x, ...) {
+  out <- list(
+    type         = x@type,
+    stac_version = x@stac_version,
+    id           = x@id,
+    description  = x@description
   )
-
-  # Add optional fields if provided
-  if (!is.null(title)) {
-    catalog$title <- title
+  if (!is.null(x@title)) {
+    out$title <- x@title
   }
-
-  if (!is.null(stac_extensions) && length(stac_extensions) > 0) {
-    catalog$stac_extensions <- stac_extensions
+  if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
+    out$stac_extensions <- x@stac_extensions
   }
-
-  if (!is.null(conformsTo) && length(conformsTo) > 0) {
-    catalog$conformsTo <- conformsTo
+  if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
+    out$conformsTo <- x@conformsTo
   }
-
-  catalog$links <- list()
-
-  # Add any extra fields
-  extra_fields <- list(...)
-  if (length(extra_fields) > 0) {
-    catalog <- c(catalog, extra_fields)
+  out$links <- x@links
+  if (length(x@extra_fields) > 0) {
+    out <- c(out, x@extra_fields)
   }
+  out
+}
 
-  structure(
-    catalog,
-    class = c("stac_catalog", "list")
-  )
+# Allow $ access to S7 properties (and fallback to attributes for stac_children,
+# stac_items, etc. stored via attr()) so all existing helper functions work unchanged.
+
+`$.stac_catalog` <- function(x, name) {
+  if (inherits(x, "S7_object") && name %in% S7::prop_names(x)) {
+    S7::prop(x, name)
+  } else if (inherits(x, "S7_object")) {
+    attr(x, name)
+  } else {
+    x[[name]]
+  }
+}
+
+`$<-.stac_catalog` <- function(x, name, value) {
+  if (inherits(x, "S7_object") && name %in% S7::prop_names(x)) {
+    S7::prop(x, name) <- value
+  } else if (inherits(x, "S7_object")) {
+    attr(x, name) <- value
+  } else {
+    x[[name]] <- value
+  }
+  x
 }
 
 

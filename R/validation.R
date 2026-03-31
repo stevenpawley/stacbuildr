@@ -18,19 +18,20 @@ validate_stac <- function(stac_object, strict = FALSE) {
   errors <- character()
   warnings <- character()
 
-  # Validate item/collection/catalog
-  result <- switch(
-    class(stac_object)[1],
-    stac_item = validate_item(stac_object, strict),
-    stac_collection = validate_collection(stac_object, strict),
-    stac_catalog = validate_catalog(stac_object, strict),
-    {
-      errors <- "Object must be a stac_catalog, stac_collection, or stac_item"
-      return(list(valid = FALSE, errors = errors, warnings = character()))
-    }
-  )
-
-  result
+  # Validate item/collection/catalog (use inherits() to handle S7 qualified class names)
+  if (inherits(stac_object, "stac_item")) {
+    validate_item(stac_object, strict)
+  } else if (inherits(stac_object, "stac_collection")) {
+    validate_collection(stac_object, strict)
+  } else if (inherits(stac_object, "stac_catalog")) {
+    validate_catalog(stac_object, strict)
+  } else {
+    list(
+      valid = FALSE,
+      errors = "Object must be a stac_catalog, stac_collection, or stac_item",
+      warnings = character()
+    )
+  }
 }
 
 
@@ -292,10 +293,12 @@ validate_assets <- function(assets) {
       errors <- c(errors, paste0("Asset '", key, "' must have 'href' field"))
     }
 
-    # Validate roles if present
+    # Validate roles if present (accept character vector or list of strings)
     if (!is.null(asset$roles)) {
-      if (!is.character(asset$roles)) {
-        errors <- c(errors, paste0("Asset '", key, "' 'roles' must be a character vector"))
+      roles_ok <- is.character(asset$roles) ||
+        (is.list(asset$roles) && all(vapply(asset$roles, is.character, logical(1))))
+      if (!roles_ok) {
+        errors <- c(errors, paste0("Asset '", key, "' 'roles' must be a character vector or list of strings"))
       }
     }
   }
@@ -324,6 +327,11 @@ validate_assets <- function(assets) {
 validate_extent <- function(extent) {
   errors <- character()
 
+  # Convert S7 Extent objects to plain list for validation
+  if (inherits(extent, "S7_object")) {
+    extent <- as.list(extent)
+  }
+
   if (!is.list(extent)) {
     return("Field 'extent' must be a list object")
   }
@@ -332,31 +340,35 @@ validate_extent <- function(extent) {
   if (is.null(extent$spatial)) {
     errors <- c(errors, "Field 'extent$spatial' is required")
   } else {
-    if (is.null(extent$spatial$bbox)) {
+    spatial <- if (inherits(extent$spatial, "S7_object")) as.list(extent$spatial) else extent$spatial
+    if (is.null(spatial$bbox)) {
       errors <- c(errors, "Field 'extent$spatial$bbox' is required")
-    } else if (!is.list(extent$spatial$bbox)) {
+    } else if (!is.list(spatial$bbox)) {
       errors <- c(errors, "Field 'extent$spatial$bbox' must be a list object")
     } else {
-      for (i in seq_along(extent$spatial$bbox)) {
-        bbox <- extent$spatial$bbox[[i]]
+      for (i in seq_along(spatial$bbox)) {
+        bbox <- spatial$bbox[[i]]
         bbox_errors <- validate_bbox(bbox, prefix = paste0("extent$spatial$bbox[", i, "]"))
         errors <- c(errors, bbox_errors)
       }
     }
   }
 
-  # Check temporal extent
-  # intervals is a vector of two POSIXct with one element potentially being NA
-  # for open-sided intervals
+  # Check temporal extent — interval is a list of list(start, end) pairs
   if (is.null(extent$temporal)) {
     errors <- c(errors, "Field 'extent$temporal' is required")
   } else {
-    if (is.null(extent$temporal$interval)) {
+    temporal <- if (inherits(extent$temporal, "S7_object")) as.list(extent$temporal) else extent$temporal
+    if (is.null(temporal$interval)) {
       errors <- c(errors, "Field 'extent$temporal$interval' is required")
-    } else if (!is.character(extent$temporal$interval)) {
-      errors <- c(errors, "Field 'extent$temporal$interval' must be a character")
-      if (length(extent$temporal$interval) != 2) {
-        errors <- c(errors, "Field 'extent$spatial$interval' must have length 2")
+    } else if (!is.list(temporal$interval)) {
+      errors <- c(errors, "Field 'extent$temporal$interval' must be a list of intervals")
+    } else {
+      for (i in seq_along(temporal$interval)) {
+        iv <- temporal$interval[[i]]
+        if (length(iv) != 2) {
+          errors <- c(errors, sprintf("extent$temporal$interval[[%d]] must have exactly 2 elements", i))
+        }
       }
     }
   }

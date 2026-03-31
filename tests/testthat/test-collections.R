@@ -13,7 +13,7 @@ test_that("collection with providers matches pystac", {
     license = "CC-BY-4.0",
     extent = list(
       spatial = list(bbox = list(c(-180, -90, 180, 90))),
-      temporal = list(interval = list(c(NA, NA)))
+      temporal = list(interval = list(list(NULL, NULL)))
     ),
     providers = list(
       list(
@@ -66,7 +66,7 @@ test_that("collection with summaries matches pystac", {
     license = "CC-BY-4.0",
     extent = list(
       spatial = list(bbox = list(c(-180, -90, 180, 90))),
-      temporal = list(interval = list(c(NA, NA)))
+      temporal = list(interval = list(list(NULL, NULL)))
     ),
     summaries = list(
       platform = list("landsat-8", "landsat-9"),

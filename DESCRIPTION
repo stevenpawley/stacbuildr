@@ -25,5 +25,18 @@ Suggests:
     knitr,
     rmarkdown
 Config/testthat/edition: 3
+Collate:
+    'extent-geometry-classes.R'
+    'catalog.R'
+    'collection.R'
+    'item.R'
+    'asset.R'
+    'item-helpers.R'
+    'extension-eo.R'
+    'extension-raster.R'
+    'integrations.R'
+    'validation.R'
+    'write.R'
+    'zzz.R'
 URL: https://github.com/stevenpawley/buildstac
 BugReports: https://github.com/stevenpawley/buildstac/issues
