@@ -9,8 +9,8 @@ add_root_link(catalog, href)
 \arguments{
 \item{catalog}{A STAC catalog, collection, or item object.}
 
-\item{href}{(character, required) The URL to the root catalog. Can be absolute
-or relative.}
+\item{href}{(character, required) The URL to the root catalog. Can be
+absolute or relative.}
 }
 \value{
 The modified catalog object with the root link added.

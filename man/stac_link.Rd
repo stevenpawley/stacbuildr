@@ -16,29 +16,29 @@ stac_link(
 )
 }
 \arguments{
-\item{rel}{(character, required) The link relation type. Common values include
-\code{"self"}, \code{"root"}, \code{"parent"}, \code{"child"}, \code{"item"}, \code{"collection"},
-\code{"license"}, \code{"derived_from"}, and \code{"via"}. See the STAC specification
-for a complete list of relation types.}
+\item{rel}{(character, required) The link relation type. Common values
+include \code{"self"}, \code{"root"}, \code{"parent"}, \code{"child"}, \code{"item"},
+\code{"collection"}, \code{"license"}, \code{"derived_from"}, and \code{"via"}. See the STAC
+specification for a complete list of relation types.}
 
-\item{href}{(character, required) The URL or path to the linked resource.
-Can be absolute or relative.}
+\item{href}{(character, required) The URL or path to the linked resource. Can
+be absolute or relative.}
 
 \item{type}{(character, optional) The media type of the linked resource.
-Common values include \code{"application/json"}, \code{"application/geo+json"},
-and \code{"text/html"}. Default is \code{NULL}.}
+Common values include \code{"application/json"}, \code{"application/geo+json"}, and
+\code{"text/html"}. Default is \code{NULL}.}
 
 \item{title}{(character, optional) A human-readable title for the link.
 Default is \code{NULL}.}
 
-\item{method}{(character, optional) The HTTP method to use when following
-the link (e.g., \code{"GET"}, \code{"POST"}). Default is \code{NULL}.}
+\item{method}{(character, optional) The HTTP method to use when following the
+link (e.g., \code{"GET"}, \code{"POST"}). Default is \code{NULL}.}
 
-\item{headers}{(list or named vector, optional) HTTP headers to include
-when following the link. Default is \code{NULL}.}
+\item{headers}{(list or named vector, optional) HTTP headers to include when
+following the link. Default is \code{NULL}.}
 
-\item{body}{(list, optional) The HTTP body to include when following the
-link (typically used with POST requests). Default is \code{NULL}.}
+\item{body}{(list, optional) The HTTP body to include when following the link
+(typically used with POST requests). Default is \code{NULL}.}
 
 \item{merge}{(logical, optional) Whether to merge the link body with the
 current resource when following the link. Default is \code{FALSE}.}

@@ -9,23 +9,23 @@ add_link(catalog, rel, href, ...)
 \arguments{
 \item{catalog}{A STAC catalog, collection, or item object.}
 
-\item{rel}{(character, required) The link relation type. Common values include
-\code{"self"}, \code{"root"}, \code{"parent"}, \code{"child"}, and \code{"item"}. See the STAC
-specification for a full list of relation types.}
+\item{rel}{(character, required) The link relation type. Common values
+include \code{"self"}, \code{"root"}, \code{"parent"}, \code{"child"}, and \code{"item"}. See the
+STAC specification for a full list of relation types.}
 
 \item{href}{(character, required) The URL or path to the linked resource.
 Can be absolute or relative.}
 
-\item{...}{Additional link properties passed to \code{stac_link()}, such as \code{type},
-\code{title}, \code{method}, \code{headers}, \code{body}, or \code{merge}.}
+\item{...}{Additional link properties passed to \code{stac_link()}, such as
+\code{type}, \code{title}, \code{method}, \code{headers}, \code{body}, or \code{merge}.}
 }
 \value{
 The modified catalog object with the new link added.
 }
 \description{
-Adds a link object to a STAC Catalog, Collection, or Item. Links are used
-to connect STAC resources and provide relationships between catalogs, collections,
-and items.
+Adds a link object to a STAC Catalog, Collection, or Item. Links are used to
+connect STAC resources and provide relationships between catalogs,
+collections, and items.
 }
 \examples{
 catalog <- stac_catalog(

@@ -14,8 +14,9 @@ stac_asset(
 )
 }
 \arguments{
-\item{href}{(character, required) URI to the asset object. Can be relative
-or absolute. Examples: \code{"./data/image.tif"}, \code{"https://example.com/image.tif"}.}
+\item{href}{(character, required) URI to the asset object. Can be relative or
+absolute. Examples: \code{"./data/image.tif"},
+\code{"https://example.com/image.tif"}.}
 
 \item{title}{(character, optional) Displayed title for the asset.}
 
@@ -29,8 +30,9 @@ See \url{https://www.iana.org/assignments/media-types/media-types.xhtml}.}
 values include: \code{"thumbnail"}, \code{"overview"}, \code{"data"}, \code{"metadata"},
 \code{"visual"}, \code{"composite"}.}
 
-\item{...}{Additional fields for the asset. This allows for extension-specific
-properties like \code{"eo:bands"}, \code{"raster:bands"}, \code{"proj:shape"}, etc.}
+\item{...}{Additional fields for the asset. This allows for
+extension-specific properties like \code{"eo:bands"}, \code{"raster:bands"},
+\code{"proj:shape"}, etc.}
 }
 \value{
 A list representing a STAC asset object.

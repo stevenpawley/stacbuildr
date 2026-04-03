@@ -16,9 +16,9 @@ Can be absolute or relative.}
 The modified catalog object with the parent link added.
 }
 \description{
-Adds a parent link to a STAC Catalog, Collection, or Item. A parent link provides
-the URL to the parent catalog or collection in the STAC hierarchy. Non-root
-catalogs should include a parent link.
+Adds a parent link to a STAC Catalog, Collection, or Item. A parent link
+provides the URL to the parent catalog or collection in the STAC hierarchy.
+Non-root catalogs should include a parent link.
 }
 \examples{
 catalog <- stac_catalog(

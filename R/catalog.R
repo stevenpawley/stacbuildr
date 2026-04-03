@@ -1,3 +1,22 @@
+property_id <- S7::new_property(
+  class = S7::class_character,
+  validator = function(value) {
+    if (length(value) == 0 || nchar(value) == 0) {
+      return("'id' must be a non-empty character string")
+    }
+  }
+)
+
+property_description <- S7::new_property(
+  class = S7::class_character,
+  validator = function(value) {
+    if (length(value) == 0 || nchar(value) == 0) {
+      return("'description' must be a non-empty character string")
+    }
+  }
+)
+
+
 #' Create a STAC Catalog
 #'
 #' @description
@@ -139,36 +158,25 @@
 stac_catalog <- S7::new_class(
   "stac_catalog",
   properties = list(
-    type = S7::new_property(S7::class_character, default = "Catalog"),
+    id = property_id,
+    description = property_description,
+    title = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
     stac_version = S7::new_property(S7::class_character, default = "1.1.0"),
-    id = S7::class_character,
-    description = S7::class_character,
-    title = S7::new_property(
-      S7::new_union(S7::class_character, NULL),
-      default = NULL
-    ),
-    stac_extensions = S7::new_property(
-      S7::new_union(S7::class_character, NULL),
-      default = NULL
-    ),
-    conformsTo = S7::new_property(
-      S7::new_union(S7::class_character, NULL),
-      default = NULL
-    ),
+    type = S7::new_property(S7::class_character, default = "Catalog"),
+    stac_extensions = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
+    conformsTo = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
     links = S7::new_property(S7::class_list, default = list()),
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
-  constructor = function(
-    id,
-    description,
-    title = NULL,
-    stac_version = "1.1.0",
-    type = "Catalog",
-    stac_extensions = NULL,
-    conformsTo = NULL,
-    links = list(),
-    ...
-  ) {
+  constructor = function(id,
+                         description,
+                         title = NULL,
+                         stac_version = "1.1.0",
+                         type = "Catalog",
+                         stac_extensions = NULL,
+                         conformsTo = NULL,
+                         links = list(),
+                         ...) {
     obj <- S7::new_object(
       S7::S7_object(),
       type = type,
@@ -185,15 +193,6 @@ stac_catalog <- S7::new_class(
     # Insert the unqualified name so that inherits() and $ S3 dispatch work correctly.
     # Use structure() rather than class<- to avoid triggering S7's mutation mechanism.
     structure(obj, class = append(class(obj), "stac_catalog", after = 1L))
-  },
-  validator = function(self) {
-    if (length(self@id) == 0 || nchar(self@id) == 0) {
-      return("'id' must be a non-empty string")
-    }
-    if (length(self@description) == 0 || nchar(self@description) == 0) {
-      return("'description' must be a non-empty string")
-    }
-    NULL
   }
 )
 
@@ -207,7 +206,8 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
   if (!is.null(x@title)) {
     out$title <- x@title
   }
-  if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
+  if (!is.null(x@stac_extensions) &&
+      length(x@stac_extensions) > 0) {
     out$stac_extensions <- as.list(x@stac_extensions)
   }
   if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
@@ -253,23 +253,23 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
 #' connect STAC resources (catalogs, collections, and items) and establish
 #' relationships between them.
 #'
-#' @param rel (character, required) The link relation type. Common values include
-#'   `"self"`, `"root"`, `"parent"`, `"child"`, `"item"`, `"collection"`,
-#'   `"license"`, `"derived_from"`, and `"via"`. See the STAC specification
-#'   for a complete list of relation types.
-#' @param href (character, required) The URL or path to the linked resource.
-#'   Can be absolute or relative.
+#' @param rel (character, required) The link relation type. Common values
+#'   include `"self"`, `"root"`, `"parent"`, `"child"`, `"item"`,
+#'   `"collection"`, `"license"`, `"derived_from"`, and `"via"`. See the STAC
+#'   specification for a complete list of relation types.
+#' @param href (character, required) The URL or path to the linked resource. Can
+#'   be absolute or relative.
 #' @param type (character, optional) The media type of the linked resource.
-#'   Common values include `"application/json"`, `"application/geo+json"`,
-#'   and `"text/html"`. Default is `NULL`.
+#'   Common values include `"application/json"`, `"application/geo+json"`, and
+#'   `"text/html"`. Default is `NULL`.
 #' @param title (character, optional) A human-readable title for the link.
 #'   Default is `NULL`.
-#' @param method (character, optional) The HTTP method to use when following
-#'   the link (e.g., `"GET"`, `"POST"`). Default is `NULL`.
-#' @param headers (list or named vector, optional) HTTP headers to include
-#'   when following the link. Default is `NULL`.
-#' @param body (list, optional) The HTTP body to include when following the
-#'   link (typically used with POST requests). Default is `NULL`.
+#' @param method (character, optional) The HTTP method to use when following the
+#'   link (e.g., `"GET"`, `"POST"`). Default is `NULL`.
+#' @param headers (list or named vector, optional) HTTP headers to include when
+#'   following the link. Default is `NULL`.
+#' @param body (list, optional) The HTTP body to include when following the link
+#'   (typically used with POST requests). Default is `NULL`.
 #' @param merge (logical, optional) Whether to merge the link body with the
 #'   current resource when following the link. Default is `FALSE`.
 #'
@@ -308,20 +308,15 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
 #' )
 #'
 #' @keywords internal
-stac_link <- function(
-  rel,
-  href,
-  type = NULL,
-  title = NULL,
-  method = NULL,
-  headers = NULL,
-  body = NULL,
-  merge = FALSE
-) {
-  link <- list(
-    rel = rel,
-    href = href
-  )
+stac_link <- function(rel,
+                      href,
+                      type = NULL,
+                      title = NULL,
+                      method = NULL,
+                      headers = NULL,
+                      body = NULL,
+                      merge = FALSE) {
+  link <- list(rel = rel, href = href)
 
   if (!is.null(type)) {
     link$type <- type
@@ -350,18 +345,18 @@ stac_link <- function(
 #' Add a link to a STAC catalog
 #'
 #' @description
-#' Adds a link object to a STAC Catalog, Collection, or Item. Links are used
-#' to connect STAC resources and provide relationships between catalogs, collections,
-#' and items.
+#' Adds a link object to a STAC Catalog, Collection, or Item. Links are used to
+#' connect STAC resources and provide relationships between catalogs,
+#' collections, and items.
 #'
 #' @param catalog A STAC catalog, collection, or item object.
-#' @param rel (character, required) The link relation type. Common values include
-#'   `"self"`, `"root"`, `"parent"`, `"child"`, and `"item"`. See the STAC
-#'   specification for a full list of relation types.
+#' @param rel (character, required) The link relation type. Common values
+#'   include `"self"`, `"root"`, `"parent"`, `"child"`, and `"item"`. See the
+#'   STAC specification for a full list of relation types.
 #' @param href (character, required) The URL or path to the linked resource.
 #'   Can be absolute or relative.
-#' @param ... Additional link properties passed to `stac_link()`, such as `type`,
-#'   `title`, `method`, `headers`, `body`, or `merge`.
+#' @param ... Additional link properties passed to `stac_link()`, such as
+#'   `type`, `title`, `method`, `headers`, `body`, or `merge`.
 #'
 #' @return The modified catalog object with the new link added.
 #'
@@ -449,7 +444,10 @@ add_link <- function(catalog, rel, href, ...) {
 #' )
 #'
 #' @export
-add_child <- function(catalog, child, href = NULL, title = NULL) {
+add_child <- function(catalog,
+                      child,
+                      href = NULL,
+                      title = NULL) {
   if (!inherits(child, "stac_catalog")) {
     stop("'child' must be a stac_catalog or stac_collection object")
   }
@@ -509,12 +507,10 @@ add_child <- function(catalog, child, href = NULL, title = NULL) {
 #'
 #' @export
 add_self_link <- function(catalog, href) {
-  catalog <- add_link(
-    catalog,
-    rel = "self",
-    href = href,
-    type = "application/json"
-  )
+  catalog <- add_link(catalog,
+                      rel = "self",
+                      href = href,
+                      type = "application/json")
   catalog
 }
 
@@ -527,8 +523,8 @@ add_self_link <- function(catalog, href) {
 #' by the STAC specification.
 #'
 #' @param catalog A STAC catalog, collection, or item object.
-#' @param href (character, required) The URL to the root catalog. Can be absolute
-#'   or relative.
+#' @param href (character, required) The URL to the root catalog. Can be
+#'   absolute or relative.
 #'
 #' @return The modified catalog object with the root link added.
 #'
@@ -547,12 +543,10 @@ add_self_link <- function(catalog, href) {
 #'
 #' @export
 add_root_link <- function(catalog, href) {
-  catalog <- add_link(
-    catalog,
-    rel = "root",
-    href = href,
-    type = "application/json"
-  )
+  catalog <- add_link(catalog,
+                      rel = "root",
+                      href = href,
+                      type = "application/json")
   catalog
 }
 
@@ -560,9 +554,9 @@ add_root_link <- function(catalog, href) {
 #' Add a parent link to a STAC catalog
 #'
 #' @description
-#' Adds a parent link to a STAC Catalog, Collection, or Item. A parent link provides
-#' the URL to the parent catalog or collection in the STAC hierarchy. Non-root
-#' catalogs should include a parent link.
+#' Adds a parent link to a STAC Catalog, Collection, or Item. A parent link
+#' provides the URL to the parent catalog or collection in the STAC hierarchy.
+#' Non-root catalogs should include a parent link.
 #'
 #' @param catalog A STAC catalog, collection, or item object.
 #' @param href (character, required) The URL to the parent catalog or collection.
@@ -585,11 +579,9 @@ add_root_link <- function(catalog, href) {
 #'
 #' @export
 add_parent_link <- function(catalog, href) {
-  catalog <- add_link(
-    catalog,
-    rel = "parent",
-    href = href,
-    type = "application/json"
-  )
+  catalog <- add_link(catalog,
+                      rel = "parent",
+                      href = href,
+                      type = "application/json")
   catalog
 }
