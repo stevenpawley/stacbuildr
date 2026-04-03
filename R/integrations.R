@@ -134,10 +134,10 @@ item_from_raster <- function(
       item <- add_asset(
         item,
         key = asset_name,
-        href = asset$href,
-        title = asset$title,
-        type = asset$type,
-        roles = asset$roles
+        href = asset@href,
+        title = asset@title,
+        type = asset@type,
+        roles = asset@roles
       )
     }
   }
@@ -359,31 +359,31 @@ extract_stars_spatial_metadata <- function(stars_obj, reproject_to_wgs84 = TRUE)
 add_projection_metadata_stars <- function(item, stars_obj) {
   ext_uri <- "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
 
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
+  if (is.null(item@stac_extensions)) {
+    item@stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
+  if (!ext_uri %in% item@stac_extensions) {
+    item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
   crs <- sf::st_crs(stars_obj)
   dims <- stars::st_dimensions(stars_obj)
 
   if (!is.na(crs$epsg)) {
-    item$properties$`proj:epsg` <- as.integer(crs$epsg)
+    item@properties$`proj:epsg` <- as.integer(crs$epsg)
   }
 
-  item$properties$`proj:wkt2` <- crs$wkt
+  item@properties$`proj:wkt2` <- crs$wkt
 
   x_dim <- dims[["x"]]
   y_dim <- dims[["y"]]
-  item$properties$`proj:shape` <- c(
+  item@properties$`proj:shape` <- c(
     y_dim$to - y_dim$from + 1L,
     x_dim$to - x_dim$from + 1L
   )
 
-  item$properties$`proj:transform` <- c(
+  item@properties$`proj:transform` <- c(
     x_dim$delta, 0, x_dim$offset,
     0, y_dim$delta, y_dim$offset
   )
@@ -527,17 +527,14 @@ extent_from_items <- function(items) {
   datetimes <- character()
 
   for (item in items) {
-    if (
-      !is.null(item$properties$datetime) &&
-        item$properties$datetime != "null"
-    ) {
-      datetimes <- c(datetimes, item$properties$datetime)
-    } else if (!is.null(item$properties$start_datetime)) {
-      datetimes <- c(datetimes, item$properties$start_datetime)
+    if (!is.null(item@properties$datetime) && item$properties$datetime != "null") {
+      datetimes <- c(datetimes, item@properties$datetime)
+    } else if (!is.null(item@properties$start_datetime)) {
+      datetimes <- c(datetimes, item@properties$start_datetime)
     }
 
-    if (!is.null(item$properties$end_datetime)) {
-      datetimes <- c(datetimes, item$properties$end_datetime)
+    if (!is.null(item@properties$end_datetime)) {
+      datetimes <- c(datetimes, item@properties$end_datetime)
     }
   }
 
@@ -813,7 +810,7 @@ items_from_directory <- function(
           ...
         )
         items[[length(items) + 1]] <- item
-        message(sprintf("  \u2713 Created item: %s", item$id))
+        message(sprintf("  \u2713 Created item: %s", item@id))
       },
       error = function(e) {
         warning(sprintf(

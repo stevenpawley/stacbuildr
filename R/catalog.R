@@ -220,32 +220,6 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
   out
 }
 
-# Allow $ access to S7 properties (and fallback to attributes for stac_children,
-# stac_items, etc. stored via attr()) so all existing helper functions work unchanged.
-#' @export
-`$.stac_catalog` <- function(x, name) {
-  if (inherits(x, "S7_object") && name %in% S7::prop_names(x)) {
-    S7::prop(x, name)
-  } else if (inherits(x, "S7_object")) {
-    attr(x, name)
-  } else {
-    x[[name]]
-  }
-}
-
-#' @export
-`$<-.stac_catalog` <- function(x, name, value) {
-  if (inherits(x, "S7_object") && name %in% S7::prop_names(x)) {
-    S7::prop(x, name) <- value
-  } else if (inherits(x, "S7_object")) {
-    attr(x, name) <- value
-  } else {
-    x[[name]] <- value
-  }
-  x
-}
-
-
 #' Create a STAC link object
 #'
 #' @description
@@ -392,7 +366,7 @@ stac_link <- function(rel,
 #' @export
 add_link <- function(catalog, rel, href, ...) {
   new_link <- stac_link(rel = rel, href = href, ...)
-  catalog$links <- c(catalog$links, list(new_link))
+  catalog@links <- c(catalog@links, list(new_link))
   catalog
 }
 
@@ -454,9 +428,9 @@ add_child <- function(catalog,
 
   if (is.null(href)) {
     if (inherits(child, "stac_collection")) {
-      href <- paste0("./", child$id, "/collection.json")
+      href <- paste0("./", child@id, "/collection.json")
     } else {
-      href <- paste0("./", child$id, "/catalog.json")
+      href <- paste0("./", child@id, "/catalog.json")
     }
   }
 
@@ -465,7 +439,7 @@ add_child <- function(catalog,
     rel = "child",
     href = href,
     type = "application/json",
-    title = title %||% child$title
+    title = title %||% child@title
   )
 
   # Store child object so write_stac() can recurse into it
@@ -473,7 +447,7 @@ add_child <- function(catalog,
   if (is.null(stored_children)) {
     stored_children <- list()
   }
-  stored_children[[child$id]] <- child
+  stored_children[[child@id]] <- child
   attr(catalog, "stac_children") <- stored_children
 
   catalog

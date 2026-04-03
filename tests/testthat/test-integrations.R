@@ -15,15 +15,15 @@ test_that("item_from_raster creates a valid item from a stars object", {
   )
 
   expect_s3_class(item, "stac_item")
-  expect_equal(item$id, "L7_ETMs")
-  expect_equal(item$type, "Feature")
-  expect_equal(item$properties$datetime, "2023-06-15T10:30:00Z")
+  expect_equal(item@id, "L7_ETMs")
+  expect_equal(item@type, "Feature")
+  expect_equal(item@properties$datetime, "2023-06-15T10:30:00Z")
 
   # Geometry should be a polygon (extent reprojected to WGS84)
-  expect_equal(item$geometry$type, "Polygon")
+  expect_equal(item@geometry$type, "Polygon")
 
   # bbox should be in WGS84 (northeast Brazil, ~35°W / 8°S)
-  bbox <- item$bbox
+  bbox <- item@bbox
   expect_length(bbox, 4)
   expect_true(bbox[1] > -36 && bbox[1] < -34) # xmin
   expect_true(bbox[2] > -9 && bbox[2] < -7) # ymin
@@ -40,7 +40,7 @@ test_that("item_from_raster derives id from href when id is NULL", {
     datetime = "2023-06-15T10:30:00Z"
   )
 
-  expect_equal(item$id, "L7_ETMs")
+  expect_equal(item@id, "L7_ETMs")
 })
 
 test_that("item_from_raster adds the main asset with correct fields", {
@@ -55,10 +55,10 @@ test_that("item_from_raster adds the main asset with correct fields", {
     asset_roles = c("data")
   )
 
-  expect_true("data" %in% names(item$assets))
-  expect_equal(item$assets$data$href, tif)
-  expect_equal(item$assets$data$type, "image/tiff; application=geotiff")
-  expect_equal(item$assets$data$roles, c("data"))
+  expect_true("data" %in% names(item@assets))
+  expect_equal(item@assets$data$href, tif)
+  expect_equal(item@assets$data$type, "image/tiff; application=geotiff")
+  expect_equal(item@assets$data$roles, c("data"))
 })
 
 test_that("item_from_raster adds raster extension with 6 band objects", {
@@ -73,9 +73,9 @@ test_that("item_from_raster adds raster extension with 6 band objects", {
   )
 
   raster_ext <- "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
-  expect_true(raster_ext %in% item$stac_extensions)
+  expect_true(raster_ext %in% item@stac_extensions)
 
-  bands <- item$assets$data$`raster:bands`
+  bands <- item@assets$data$`raster:bands`
   expect_length(bands, 6)
   expect_equal(bands[[1]]$data_type, "float64")
   expect_equal(bands[[1]]$`raster:spatial_resolution`, 28.5)
@@ -93,8 +93,8 @@ test_that("item_from_raster skips raster extension when add_raster_bands is FALS
   )
 
   raster_ext <- "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
-  expect_false(raster_ext %in% item$stac_extensions)
-  expect_null(item$assets$data$`raster:bands`)
+  expect_false(raster_ext %in% item@stac_extensions)
+  expect_null(item@assets$data$`raster:bands`)
 })
 
 test_that("item_from_raster adds projection extension for non-WGS84 CRS", {
@@ -108,14 +108,14 @@ test_that("item_from_raster adds projection extension for non-WGS84 CRS", {
   )
 
   proj_ext <- "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
-  expect_true(proj_ext %in% item$stac_extensions)
+  expect_true(proj_ext %in% item@stac_extensions)
 
-  expect_equal(item$properties$`proj:epsg`, 31985L)
-  expect_false(is.null(item$properties$`proj:wkt2`))
-  expect_equal(item$properties$`proj:shape`, c(352L, 349L)) # rows (y), cols (x)
-  expect_length(item$properties$`proj:transform`, 6)
-  expect_equal(item$properties$`proj:transform`[[1]], 28.5) # x pixel size
-  expect_equal(item$properties$`proj:transform`[[5]], -28.5) # y pixel size (negative)
+  expect_equal(item@properties$`proj:epsg`, 31985L)
+  expect_false(is.null(item@properties$`proj:wkt2`))
+  expect_equal(item@properties$`proj:shape`, c(352L, 349L)) # rows (y), cols (x)
+  expect_length(item@properties$`proj:transform`, 6)
+  expect_equal(item@properties$`proj:transform`[[1]], 28.5) # x pixel size
+  expect_equal(item@properties$`proj:transform`[[5]], -28.5) # y pixel size (negative)
 })
 
 test_that("item_from_raster validates correctly", {
@@ -176,8 +176,8 @@ test_that("item_from_raster works without href when id is supplied", {
     datetime = "2023-06-15T10:30:00Z"
   )
 
-  expect_equal(item$id, "L7_ETMs")
-  expect_length(item$assets, 0)
+  expect_equal(item@id, "L7_ETMs")
+  expect_length(item@assets, 0)
 })
 
 test_that("item_from_raster errors when both href and id are NULL", {

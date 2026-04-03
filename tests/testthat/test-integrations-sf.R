@@ -9,9 +9,9 @@ test_that("item_from_sf creates a valid item from a multi-feature sf object", {
   item <- item_from_sf(nc, id = "nc", datetime = "2025-01-01T00:00:00Z")
 
   expect_s3_class(item, "stac_item")
-  expect_equal(item$id, "nc")
-  expect_equal(item$type, "Feature")
-  expect_equal(item$properties$datetime, "2025-01-01T00:00:00Z")
+  expect_equal(item@id, "nc")
+  expect_equal(item@type, "Feature")
+  expect_equal(item@properties$datetime, "2025-01-01T00:00:00Z")
 })
 
 test_that("item_from_sf unions all features into a single geometry", {
@@ -20,8 +20,8 @@ test_that("item_from_sf unions all features into a single geometry", {
   item <- item_from_sf(nc, id = "nc", datetime = "2025-01-01T00:00:00Z")
 
   # 100 county polygons should be unioned into one MultiPolygon
-  expect_equal(item$geometry$type, "MultiPolygon")
-  expect_false(is.null(item$geometry$coordinates))
+  expect_equal(item@geometry$type, "MultiPolygon")
+  expect_false(is.null(item@geometry$coordinates))
 })
 
 test_that("item_from_sf reprojects non-WGS84 input to WGS84", {
@@ -32,7 +32,7 @@ test_that("item_from_sf reprojects non-WGS84 input to WGS84", {
   item <- item_from_sf(nc, id = "nc", datetime = "2025-01-01T00:00:00Z")
 
   # bbox should cover North Carolina in WGS84 degrees
-  bbox <- item$bbox
+  bbox <- item@bbox
   expect_length(bbox, 4)
   expect_true(bbox[1] > -85 && bbox[1] < -84) # xmin
   expect_true(bbox[2] > 33 && bbox[2] < 34) # ymin
@@ -50,17 +50,15 @@ test_that("item_from_sf adds a source asset when href is provided", {
     href = sf_file
   )
 
-  expect_true("source" %in% names(item$assets))
-  expect_equal(item$assets$source$href, sf_file)
-  expect_equal(item$assets$source$roles, c("data"))
+  expect_true("source" %in% names(item@assets))
+  expect_equal(item@assets$source$href, sf_file)
+  expect_equal(item@assets$source$roles, c("data"))
 })
 
 test_that("item_from_sf creates no assets when href is not provided", {
   nc <- sf::st_read(sf_file, quiet = TRUE)
-
   item <- item_from_sf(nc, id = "nc", datetime = "2025-01-01T00:00:00Z")
-
-  expect_length(item$assets, 0)
+  expect_length(item@assets, 0)
 })
 
 test_that("item_from_sf passes additional properties through", {
@@ -73,7 +71,7 @@ test_that("item_from_sf passes additional properties through", {
     properties = list(title = "North Carolina Counties")
   )
 
-  expect_equal(item$properties$title, "North Carolina Counties")
+  expect_equal(item@properties$title, "North Carolina Counties")
 })
 
 test_that("item_from_sf produces a valid STAC item", {

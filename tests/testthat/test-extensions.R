@@ -35,6 +35,6 @@ test_that("item with extensions matches pystac", {
   expect_true(r_validation$valid)
 
   # Check extensions
-  expect_length(r_item$stac_extensions, 1)
-  expect_true(grepl("eo", r_item$stac_extensions[1]))
+  expect_length(r_item@stac_extensions, 1)
+  expect_true(grepl("eo", r_item@stac_extensions[1]))
 })

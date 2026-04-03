@@ -345,25 +345,3 @@ S7::method(as.list, stac_item) <- function(x, ...) {
   }
   out
 }
-
-#' @export
-`$.stac_item` <- function(x, name) {
-  if (inherits(x, "S7_object") && name %in% S7::prop_names(x)) {
-    S7::prop(x, name)
-  } else if (inherits(x, "S7_object")) {
-    attr(x, name)
-  } else {
-    x[[name]]
-  }
-}
-
-`$<-.stac_item` <- function(x, name, value) {
-  if (inherits(x, "S7_object") && name %in% S7::prop_names(x)) {
-    S7::prop(x, name) <- value
-  } else if (inherits(x, "S7_object")) {
-    attr(x, name) <- value
-  } else {
-    x[[name]] <- value
-  }
-  x
-}

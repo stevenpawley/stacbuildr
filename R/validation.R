@@ -43,42 +43,42 @@ validate_catalog <- function(catalog, strict = FALSE) {
   warnings <- character()
 
   # Check required fields
-  if (is.null(catalog$type) || catalog$type != "Catalog") {
+  if (is.null(catalog@type) || catalog@type != "Catalog") {
     errors <- c(errors, "Field 'type' must be 'Catalog'")
   }
 
-  if (is.null(catalog$stac_version)) {
+  if (is.null(catalog@stac_version)) {
     errors <- c(errors, "Field 'stac_version' is required")
   }
 
-  if (is.null(catalog$id) || nchar(catalog$id) == 0) {
+  if (is.null(catalog@id) || nchar(catalog@id) == 0) {
     errors <- c(errors, "Field 'id' is required and must be non-empty")
   }
 
-  if (is.null(catalog$description) || nchar(catalog$description) == 0) {
+  if (is.null(catalog@description) || nchar(catalog@description) == 0) {
     errors <- c(errors, "Field 'description' is required and must be non-empty")
   }
 
-  if (is.null(catalog$links)) {
+  if (is.null(catalog@links)) {
     errors <- c(errors, "Field 'links' is required (can be empty list)")
-  } else if (!is.list(catalog$links)) {
+  } else if (!is.list(catalog@links)) {
     errors <- c(errors, "Field 'links' must be a list")
   }
 
   # Validate links
-  if (!is.null(catalog$links) && length(catalog$links) > 0) {
-    link_errors <- validate_links(catalog$links)
+  if (!is.null(catalog@links) && length(catalog@links) > 0) {
+    link_errors <- validate_links(catalog@links)
     errors <- c(errors, link_errors)
   }
 
   # Check recommended fields
-  if (strict && is.null(catalog$title)) {
+  if (strict && is.null(catalog@title)) {
     warnings <- c(warnings, "Field 'title' is recommended")
   }
 
   # Validate stac_extensions if present
-  if (!is.null(catalog$stac_extensions)) {
-    if (!is.character(catalog$stac_extensions)) {
+  if (!is.null(catalog@stac_extensions)) {
+    if (!is.character(catalog@stac_extensions)) {
       errors <- c(errors, "Field 'stac_extensions' must be an array of strings")
     }
   }
@@ -99,62 +99,62 @@ validate_collection <- function(collection, strict = FALSE) {
   warnings <- character()
 
   # Check required fields
-  if (is.null(collection$type) || collection$type != "Collection") {
+  if (is.null(collection@type) || collection@type != "Collection") {
     errors <- c(errors, "Field 'type' must be 'Collection'")
   }
 
-  if (is.null(collection$stac_version)) {
+  if (is.null(collection@stac_version)) {
     errors <- c(errors, "Field 'stac_version' is required")
   }
 
-  if (is.null(collection$id) || nchar(collection$id) == 0) {
+  if (is.null(collection@id) || nchar(collection@id) == 0) {
     errors <- c(errors, "Field 'id' is required and must be non-empty")
   }
 
-  if (is.null(collection$description) || nchar(collection$description) == 0) {
+  if (is.null(collection@description) || nchar(collection@description) == 0) {
     errors <- c(errors, "Field 'description' is required and must be non-empty")
   }
 
-  if (is.null(collection$license) || nchar(collection$license) == 0) {
+  if (is.null(collection@license) || nchar(collection@license) == 0) {
     errors <- c(errors, "Field 'license' is required and must be non-empty")
   }
 
   # Validate extent
-  if (is.null(collection$extent)) {
+  if (is.null(collection@extent)) {
     errors <- c(errors, "Field 'extent' is required")
   } else {
-    extent_errors <- validate_extent(collection$extent)
+    extent_errors <- validate_extent(collection@extent)
     errors <- c(errors, extent_errors)
   }
 
-  if (is.null(collection$links)) {
+  if (is.null(collection@links)) {
     errors <- c(errors, "Field 'links' is required (can be empty array)")
-  } else if (!is.list(collection$links)) {
+  } else if (!is.list(collection@links)) {
     errors <- c(errors, "Field 'links' must be an array")
   }
 
   # Validate links
-  if (!is.null(collection$links) && length(collection$links) > 0) {
-    link_errors <- validate_links(collection$links)
+  if (!is.null(collection@links) && length(collection@links) > 0) {
+    link_errors <- validate_links(collection@links)
     errors <- c(errors, link_errors)
   }
 
   # Check recommended fields
   if (strict) {
-    if (is.null(collection$title)) {
+    if (is.null(collection@title)) {
       warnings <- c(warnings, "Field 'title' is recommended")
     }
-    if (is.null(collection$keywords)) {
+    if (is.null(collection@keywords)) {
       warnings <- c(warnings, "Field 'keywords' is recommended")
     }
-    if (is.null(collection$providers)) {
+    if (is.null(collection@providers)) {
       warnings <- c(warnings, "Field 'providers' is recommended")
     }
   }
 
   # Validate providers if present
-  if (!is.null(collection$providers)) {
-    provider_errors <- validate_providers(collection$providers)
+  if (!is.null(collection@providers)) {
+    provider_errors <- validate_providers(collection@providers)
     errors <- c(errors, provider_errors)
   }
 
@@ -174,64 +174,64 @@ validate_item <- function(item, strict = FALSE) {
   warnings <- character()
 
   # Check required fields
-  if (is.null(item$type) || item$type != "Feature") {
+  if (is.null(item@type) || item@type != "Feature") {
     errors <- c(errors, "Field 'type' must be 'Feature'")
   }
 
-  if (is.null(item$stac_version)) {
+  if (is.null(item@stac_version)) {
     errors <- c(errors, "Field 'stac_version' is required")
   }
 
-  if (is.null(item$id) || nchar(item$id) == 0) {
+  if (is.null(item@id) || nchar(item@id) == 0) {
     errors <- c(errors, "Field 'id' is required and must be non-empty")
   }
 
   # Validate geometry and bbox
-  if (!is.null(item$geometry)) {
-    geom_errors <- validate_geometry(item$geometry)
+  if (!is.null(item@geometry)) {
+    geom_errors <- validate_geometry(item@geometry)
     errors <- c(errors, geom_errors)
 
-    if (is.null(item$bbox)) {
+    if (is.null(item@bbox)) {
       errors <- c(errors, "Field 'bbox' is required when geometry is not null")
     } else {
-      bbox_errors <- validate_bbox(item$bbox)
+      bbox_errors <- validate_bbox(item@bbox)
       errors <- c(errors, bbox_errors)
     }
   } else {
-    if (!is.null(item$bbox)) {
+    if (!is.null(item@bbox)) {
       errors <- c(errors, "Field 'bbox' is prohibited when geometry is null")
     }
   }
 
   # Validate properties
-  if (is.null(item$properties)) {
+  if (is.null(item@properties)) {
     errors <- c(errors, "Field 'properties' is required")
   } else {
-    prop_errors <- validate_item_properties(item$properties)
+    prop_errors <- validate_item_properties(item@properties)
     errors <- c(errors, prop_errors)
   }
 
-  if (is.null(item$links)) {
+  if (is.null(item@links)) {
     errors <- c(errors, "Field 'links' is required (can be empty array)")
-  } else if (!is.list(item$links)) {
+  } else if (!is.list(item@links)) {
     errors <- c(errors, "Field 'links' must be an array")
   }
 
-  if (is.null(item$assets)) {
+  if (is.null(item@assets)) {
     errors <- c(errors, "Field 'assets' is required (can be empty object)")
-  } else if (!is.list(item$assets)) {
+  } else if (!is.list(item@assets)) {
     errors <- c(errors, "Field 'assets' must be an object")
   }
 
   # Validate links
-  if (!is.null(item$links) && length(item$links) > 0) {
-    link_errors <- validate_links(item$links)
+  if (!is.null(item@links) && length(item@links) > 0) {
+    link_errors <- validate_links(item@links)
     errors <- c(errors, link_errors)
   }
 
   # Validate assets
-  if (!is.null(item$assets) && length(item$assets) > 0) {
-    asset_errors <- validate_assets(item$assets)
+  if (!is.null(item@assets) && length(item@assets) > 0) {
+    asset_errors <- validate_assets(item@assets)
     errors <- c(errors, asset_errors)
   }
 
@@ -296,16 +296,11 @@ validate_assets <- function(assets) {
     # Validate roles if present (accept character vector or list of strings)
     if (!is.null(asset$roles)) {
       roles_ok <- is.character(asset$roles) ||
-        (is.list(asset$roles) &&
-          all(vapply(asset$roles, is.character, logical(1))))
+        (is.list(asset$roles) && all(vapply(asset$roles, is.character, logical(1))))
       if (!roles_ok) {
         errors <- c(
           errors,
-          paste0(
-            "Asset '",
-            key,
-            "' 'roles' must be a character vector or list of strings"
-          )
+          paste0("Asset '", key, "' 'roles' must be a character vector or list of strings")
         )
       }
     }

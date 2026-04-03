@@ -7,8 +7,8 @@ test_that("STAC Item creation works", {
   )
 
   expect_s3_class(item, "stac_item")
-  expect_equal(item$type, "Feature")
-  expect_equal(item$stac_version, "1.1.0")
+  expect_equal(item@type, "Feature")
+  expect_equal(item@stac_version, "1.1.0")
   expect_true(validate_stac(item)$valid)
 })
 
@@ -36,7 +36,7 @@ test_that("item with assets matches pystac", {
     properties = list()
   )
 
-  r_item$assets <- list(
+  r_item@assets <- list(
     thumbnail = list(
       href = "https://example.com/thumbnail.png",
       type = "image/png",
@@ -124,7 +124,7 @@ test_that("item with links matches pystac", {
     properties = list()
   )
 
-  r_item$links <- list(
+  r_item@links <- list(
     list(
       rel = "self",
       href = "https://example.com/item.json",
@@ -203,7 +203,7 @@ test_that("item with assets matches pystac", {
     properties = list()
   )
 
-  r_item$assets <- list(
+  r_item@assets <- list(
     thumbnail = list(
       href = "https://example.com/thumbnail.png",
       type = "image/png",
@@ -291,7 +291,7 @@ test_that("item with links matches pystac", {
     properties = list()
   )
 
-  r_item$links <- list(
+  r_item@links <- list(
     list(
       rel = "self",
       href = "https://example.com/item.json",
@@ -407,7 +407,7 @@ test_that("collection with items matches pystac", {
   expect_true(r_validation_item$valid)
 
   # Check collection field
-  expect_equal(r_item$collection, py_item$collection_id)
+  expect_equal(r_item@collection, py_item$collection_id)
 })
 
 test_that("items with different geometry types match pystac", {
@@ -546,10 +546,10 @@ test_that("add_asset works with inline parameters and pre-built asset", {
     roles = c("thumbnail")
   )
 
-  expect_true("thumbnail" %in% names(item$assets))
-  expect_equal(item$assets$thumbnail$href, "https://example.com/thumb.png")
-  expect_equal(item$assets$thumbnail$title, "Thumbnail")
-  expect_equal(item$assets$thumbnail$type, "image/png")
+  expect_true("thumbnail" %in% names(item@assets))
+  expect_equal(item@assets$thumbnail$href, "https://example.com/thumb.png")
+  expect_equal(item@assets$thumbnail$title, "Thumbnail")
+  expect_equal(item@assets$thumbnail$type, "image/png")
 
   # Add asset using a pre-built stac_asset()
   data_asset <- stac_asset(
@@ -560,13 +560,13 @@ test_that("add_asset works with inline parameters and pre-built asset", {
 
   item <- add_asset(item, key = "data", asset = data_asset)
 
-  expect_true("data" %in% names(item$assets))
-  expect_equal(item$assets$data$href, "https://example.com/data.tif")
-  expect_equal(item$assets$data$type, "image/tiff; application=geotiff")
-  expect_equal(item$assets$data$roles, c("data"))
+  expect_true("data" %in% names(item@assets))
+  expect_equal(item@assets$data$href, "https://example.com/data.tif")
+  expect_equal(item@assets$data$type, "image/tiff; application=geotiff")
+  expect_equal(item@assets$data$roles, c("data"))
 
   # Both assets present
-  expect_length(item$assets, 2)
+  expect_length(item@assets, 2)
 
   # Error on invalid asset
   expect_error(
@@ -612,6 +612,6 @@ test_that("item with temporal range matches pystac", {
   expect_true(r_validation$valid)
 
   # Check both have temporal properties
-  expect_true(!is.null(r_item$properties$start_datetime))
-  expect_true(!is.null(r_item$properties$end_datetime))
+  expect_true(!is.null(r_item@properties$start_datetime))
+  expect_true(!is.null(r_item@properties$end_datetime))
 })

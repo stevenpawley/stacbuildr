@@ -233,6 +233,6 @@ test_that("catalog with child catalogs matches pystac", {
   expect_true(validate_stac(r_child)$valid)
 
   # Check structure
-  expect_equal(r_parent$type, "Catalog")
-  expect_equal(r_child$type, "Catalog")
+  expect_equal(r_parent@type, "Catalog")
+  expect_equal(r_child@type, "Catalog")
 })

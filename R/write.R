@@ -370,25 +370,25 @@ write_catalog_recursive <- function(
   # Write items — each item gets its own subdirectory: {id}/{id}.json
   if (!is.null(stored_items) && length(stored_items) > 0) {
     for (item in stored_items) {
-      item_dir <- file.path(path, item$id)
+      item_dir <- file.path(path, item@id)
       if (!dir.exists(item_dir)) {
         dir.create(item_dir, recursive = TRUE)
       }
-      item_file <- file.path(item_dir, paste0(item$id, ".json"))
+      item_file <- file.path(item_dir, paste0(item@id, ".json"))
 
       # Items live one level below the collection dir, so relative hrefs
       # from inside the item dir are one level deeper than the collection.
       if (catalog_type == "absolute") {
         item <- update_item_links(
           item,
-          paste0(base_url, "/", item$id, "/", item$id, ".json"),
+          paste0(base_url, "/", item@id, "/", item@id, ".json"),
           paste0(base_url, "/", catalog_file),
           if (is_root) paste0(base_url, "/", catalog_file) else NULL
         )
       } else {
         item <- update_item_links(
           item,
-          paste0("./", item$id, ".json"),
+          paste0("./", item@id, ".json"),
           paste0("../", catalog_file),
           if (is_root) paste0("../", catalog_file) else "../../catalog.json"
         )
@@ -440,12 +440,12 @@ update_catalog_links <- function(
   }
 
   # Remove existing self link and add updated one
-  catalog$links <- Filter(function(x) x$rel != "self", catalog$links)
+  catalog@links <- Filter(function(x) x$rel != "self", catalog@links)
   catalog <- add_self_link(catalog, self_href)
 
   # Add root link
   if (is_root) {
-    catalog$links <- Filter(function(x) x$rel != "root", catalog$links)
+    catalog@links <- Filter(function(x) x$rel != "root", catalog@links)
     catalog <- add_root_link(catalog, self_href)
   } else {
     # For non-root catalogs, root points to the root
@@ -456,12 +456,12 @@ update_catalog_links <- function(
       # Calculate relative path to root (this assumes single-level nesting)
       root_href <- "../catalog.json"
     }
-    catalog$links <- Filter(function(x) x$rel != "root", catalog$links)
+    catalog@links <- Filter(function(x) x$rel != "root", catalog@links)
     catalog <- add_root_link(catalog, root_href)
 
     # Add parent link
     if (!is.null(parent_href)) {
-      catalog$links <- Filter(function(x) x$rel != "parent", catalog$links)
+      catalog@links <- Filter(function(x) x$rel != "parent", catalog@links)
       catalog <- add_parent_link(catalog, parent_href)
     }
   }
@@ -470,7 +470,7 @@ update_catalog_links <- function(
   stored_children <- attr(catalog, "stac_children")
   if (!is.null(stored_children) && length(stored_children) > 0) {
     # Remove existing child links
-    catalog$links <- Filter(function(x) x$rel != "child", catalog$links)
+    catalog@links <- Filter(function(x) x$rel != "child", catalog@links)
 
     # Add updated child links
     for (child_id in names(stored_children)) {
@@ -493,7 +493,7 @@ update_catalog_links <- function(
         rel = "child",
         href = child_href,
         type = "application/json",
-        title = child$title
+        title = child@title
       )
     }
   }
@@ -502,14 +502,14 @@ update_catalog_links <- function(
   stored_items <- attr(catalog, "stac_items")
   if (!is.null(stored_items) && length(stored_items) > 0) {
     # Remove existing item links
-    catalog$links <- Filter(function(x) x$rel != "item", catalog$links)
+    catalog@links <- Filter(function(x) x$rel != "item", catalog@links)
 
     # Add updated item links
     for (item in stored_items) {
       if (catalog_type == "absolute") {
-        item_href <- paste0(base_url, "/", item$id, "/", item$id, ".json")
+        item_href <- paste0(base_url, "/", item@id, "/", item@id, ".json")
       } else {
-        item_href <- paste0("./", item$id, "/", item$id, ".json")
+        item_href <- paste0("./", item@id, "/", item@id, ".json")
       }
 
       catalog <- add_link(
@@ -517,7 +517,7 @@ update_catalog_links <- function(
         rel = "item",
         href = item_href,
         type = "application/geo+json",
-        title = item$properties$title
+        title = item@properties$title
       )
     }
   }
@@ -534,7 +534,7 @@ update_catalog_links <- function(
 #' @keywords internal
 update_item_links <- function(item, self_href, parent_href, root_href) {
   # Update self link
-  item$links <- Filter(function(x) x$rel != "self", item$links)
+  item@links <- Filter(function(x) x$rel != "self", item@links)
   item <- add_link(
     item,
     rel = "self",
@@ -544,7 +544,7 @@ update_item_links <- function(item, self_href, parent_href, root_href) {
 
   # Update parent link
   if (!is.null(parent_href)) {
-    item$links <- Filter(function(x) x$rel != "parent", item$links)
+    item@links <- Filter(function(x) x$rel != "parent", item@links)
     item <- add_link(
       item,
       rel = "parent",
@@ -553,7 +553,7 @@ update_item_links <- function(item, self_href, parent_href, root_href) {
     )
 
     # If parent is a collection, also update collection link
-    item$links <- Filter(function(x) x$rel != "collection", item$links)
+    item@links <- Filter(function(x) x$rel != "collection", item@links)
     item <- add_link(
       item,
       rel = "collection",
@@ -564,7 +564,7 @@ update_item_links <- function(item, self_href, parent_href, root_href) {
 
   # Update root link
   if (!is.null(root_href)) {
-    item$links <- Filter(function(x) x$rel != "root", item$links)
+    item@links <- Filter(function(x) x$rel != "root", item@links)
     item <- add_link(
       item,
       rel = "root",

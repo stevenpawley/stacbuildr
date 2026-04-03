@@ -143,25 +143,25 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
   # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
 
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
+  if (is.null(item@stac_extensions)) {
+    item@stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
+  if (!ext_uri %in% item@stac_extensions) {
+    item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
   # Add bands to asset or item properties
   if (!is.null(asset_key)) {
     # Add to specific asset
-    if (is.null(item$assets[[asset_key]])) {
+    if (is.null(item@assets[[asset_key]])) {
       stop(sprintf("Asset '%s' does not exist in item", asset_key))
     }
 
-    item$assets[[asset_key]]$`raster:bands` <- bands
+    item@assets[[asset_key]]$`raster:bands` <- bands
   } else {
     # Add to item properties
-    item$properties$`raster:bands` <- bands
+    item@properties$`raster:bands` <- bands
   }
 
   item
