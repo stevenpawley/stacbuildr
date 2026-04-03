@@ -158,12 +158,12 @@ add_asset <- function(item,
   }
 
   # Initialize the assets list if it doesn't exist in the item
-  if (is.null(item$assets)) {
-    item$assets <- list()
+  if (is.null(item@assets)) {
+    item@assets <- list()
   }
 
   # Assign the asset to the specified key in the item's assets
-  item$assets[[key]] <- asset
+  item@assets[[key]] <- asset
 
   return(item)
 }

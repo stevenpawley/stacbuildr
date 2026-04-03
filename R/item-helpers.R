@@ -12,7 +12,7 @@
 #'   list of Items to add multiple items at once.
 #' @param href (character, optional) The relative or absolute path where the
 #'   Item JSON file will be located. If `NULL` (default), generates a path
-#'   based on the item's ID: `"./items/{item$id}.json"`. Can be a vector of
+#'   based on the item's ID: `"./items/{item@id}.json"`. Can be a vector of
 #'   paths when `item` is a list.
 #' @param add_parent_links (logical, optional) If `TRUE`, modifies the Item(s)
 #'   to include reciprocal links back to the parent catalog. Adds `"parent"` and
@@ -158,7 +158,7 @@ add_item <- function(
     href <- vapply(
       items_list,
       function(it) {
-        paste0("./", it$id, "/", it$id, ".json")
+        paste0("./", it@id, "/", it@id, ".json")
       },
       character(1)
     )
@@ -203,13 +203,13 @@ add_item <- function(
       rel = "item",
       href = current_href,
       type = "application/geo+json",
-      title = current_item$properties$title
+      title = current_item@properties$title
     )
 
     # Always set top-level collection field when parent is a collection
     # (STAC 1.1 requires this whenever a collection link is present)
     if (is_collection) {
-      current_item$collection <- catalog$id
+      current_item@collection <- catalog@id
     }
 
     # Add parent links to item if requested
@@ -325,7 +325,7 @@ remove_item <- function(catalog, item_id = NULL, href = NULL, all = FALSE) {
 
   if (all) {
     # Remove all item links
-    catalog$links <- Filter(function(link) link$rel != "item", catalog$links)
+    catalog$links <- Filter(function(link) link$rel != "item", catalog@links)
     return(catalog)
   }
 
@@ -352,7 +352,7 @@ remove_item <- function(catalog, item_id = NULL, href = NULL, all = FALSE) {
     TRUE
   }
 
-  catalog$links <- Filter(should_keep, catalog$links)
+  catalog@links <- Filter(should_keep, catalog@links)
   catalog
 }
 
@@ -376,12 +376,12 @@ count_items <- function(catalog) {
     stop("'catalog' must be a stac_catalog or stac_collection object")
   }
 
-  if (is.null(catalog$links) || length(catalog$links) == 0) {
+  if (is.null(catalog@links) || length(catalog@links) == 0) {
     return(0L)
   }
 
   sum(vapply(
-    catalog$links,
+    catalog@links,
     function(link) {
       !is.null(link$rel) && link$rel == "item"
     },
@@ -416,7 +416,7 @@ get_item_links <- function(catalog, as_dataframe = FALSE) {
     stop("'catalog' must be a stac_catalog or stac_collection object")
   }
 
-  if (is.null(catalog$links) || length(catalog$links) == 0) {
+  if (is.null(catalog@links) || length(catalog@links) == 0) {
     return(if (as_dataframe) data.frame() else list())
   }
 
@@ -424,7 +424,7 @@ get_item_links <- function(catalog, as_dataframe = FALSE) {
     function(link) {
       !is.null(link$rel) && link$rel == "item"
     },
-    catalog$links
+    catalog@links
   )
 
   if (as_dataframe && length(item_links) > 0) {
