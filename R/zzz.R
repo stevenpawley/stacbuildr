@@ -1,3 +1,5 @@
+pystac <- NULL
+
 .onLoad <- function(libname, pkgname) {
   S7::methods_register()
 
@@ -9,7 +11,20 @@
 
   for (cls in c("stac_catalog", "stac_item")) {
     qualified <- paste0(pkgname, "::", cls)
-    registerS3method("$",   qualified, get(paste0("$.",   cls), envir = ns), envir = ns)
-    registerS3method("$<-", qualified, get(paste0("$<-.", cls), envir = ns), envir = ns)
+    registerS3method(
+      "$",
+      qualified,
+      get(paste0("$.", cls), envir = ns),
+      envir = ns
+    )
+    registerS3method(
+      "$<-",
+      qualified,
+      get(paste0("$<-.", cls), envir = ns),
+      envir = ns
+    )
   }
+
+
+  pystac <<- reticulate::import("pystac", delay_load = TRUE)
 }

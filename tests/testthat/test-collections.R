@@ -1,7 +1,7 @@
 test_that("collection with providers matches pystac", {
+  # Import pystac
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
 
   collection_id <- "test-collection-providers"
@@ -53,8 +53,7 @@ test_that("collection with providers matches pystac", {
 
 test_that("collection with summaries matches pystac", {
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
 
   collection_id <- "test-collection-summaries"
@@ -99,4 +98,3 @@ test_that("collection with summaries matches pystac", {
   expect_true(!is.null(r_collection$summaries))
   expect_true("platform" %in% names(r_collection$summaries))
 })
-

@@ -2,10 +2,11 @@
 % Please edit documentation in R/integrations.R
 \name{item_from_raster}
 \alias{item_from_raster}
-\title{Create a STAC Item from a Raster File}
+\title{Create a STAC Item from a Stars Object}
 \usage{
 item_from_raster(
-  file,
+  stars_obj,
+  href = NULL,
   id = NULL,
   datetime = NULL,
   properties = list(),
@@ -20,9 +21,13 @@ item_from_raster(
 )
 }
 \arguments{
-\item{file}{(character, required) Path to the raster file (GeoTIFF, NetCDF, etc.).}
+\item{stars_obj}{A \code{stars} object.}
 
-\item{id}{(character, optional) Item ID. If NULL, uses the filename without extension.}
+\item{href}{(character, optional) URI for the main raster asset. If provided,
+the raster is added as an asset and \code{id} is derived from the basename when
+not explicitly set. If NULL, no asset is added and \code{id} must be supplied.}
+
+\item{id}{(character, optional) Item ID. If NULL, derived from \code{href} basename.}
 
 \item{datetime}{(character, optional) ISO 8601 datetime string. If NULL, uses
 current time.}
@@ -58,21 +63,11 @@ WGS84. Default is TRUE.}
 A STAC Item object with the raster metadata.
 }
 \description{
-Creates a STAC Item from a raster file using the terra package. Automatically
-extracts spatial metadata including geometry, bbox, CRS, and optionally band
+Creates a STAC Item from a \code{stars} raster object. Automatically extracts
+spatial metadata including geometry, bbox, CRS, and optionally band
 information and statistics.
 }
 \details{
-This function automates the creation of STAC Items from raster files by:
-\enumerate{
-\item Reading the raster metadata using terra
-\item Extracting the spatial extent and converting to bbox
-\item Creating a geometry polygon from the extent
-\item Reprojecting to WGS84 if necessary (STAC standard)
-\item Optionally extracting band metadata and statistics
-\item Creating the STAC Item with appropriate extensions
-}
-
 \strong{STAC CRS Requirement:}
 STAC Items must use WGS84 (EPSG:4326) for geometry and bbox. If your raster
 uses a different CRS, the geometry will be reprojected automatically when
@@ -80,27 +75,23 @@ uses a different CRS, the geometry will be reprojected automatically when
 }
 \examples{
 \dontrun{
-# Basic item creation
+library(stars)
+
+r <- read_stars("path/to/image.tif")
+
 item <- item_from_raster(
-  file = "path/to/image.tif",
+  r,
+  href = "path/to/image.tif",
   datetime = "2023-06-15T10:30:00Z"
 )
 
-# With statistics
 item <- item_from_raster(
-  file = "landsat8.tif",
+  r,
+  href = "https://example.com/image.tif",
   id = "LC08_001",
   datetime = "2023-06-15T10:30:00Z",
   properties = list(platform = "landsat-8"),
   calculate_statistics = TRUE
-)
-
-# With custom asset configuration
-item <- item_from_raster(
-  file = "sentinel2.tif",
-  asset_key = "visual",
-  asset_roles = c("data", "visual"),
-  add_eo_bands = TRUE
 )
 }
 

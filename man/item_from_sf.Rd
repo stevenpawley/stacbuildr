@@ -4,7 +4,7 @@
 \alias{item_from_sf}
 \title{Create a STAC Item from an sf Object}
 \usage{
-item_from_sf(sf_obj, id, datetime, properties = list(), asset_href = NULL, ...)
+item_from_sf(sf_obj, id, datetime, properties = list(), href = NULL, ...)
 }
 \arguments{
 \item{sf_obj}{An sf object (point, line, polygon, etc.).}
@@ -15,7 +15,7 @@ item_from_sf(sf_obj, id, datetime, properties = list(), asset_href = NULL, ...)
 
 \item{properties}{(list, optional) Additional properties for the item.}
 
-\item{asset_href}{(character, optional) If provided, creates an asset pointing
+\item{href}{(character, optional) If provided, creates an asset pointing
 to the original file.}
 
 \item{...}{Additional arguments passed to \code{stac_item()}.}

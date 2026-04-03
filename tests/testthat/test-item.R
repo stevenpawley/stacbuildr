@@ -14,8 +14,7 @@ test_that("STAC Item creation works", {
 
 test_that("item with assets matches pystac", {
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -103,9 +102,9 @@ test_that("item with assets matches pystac", {
 })
 
 test_that("item with links matches pystac", {
+  # Import pystac
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -180,9 +179,9 @@ test_that("item with links matches pystac", {
 })
 
 test_that("item with assets matches pystac", {
+  # Import pystac
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -270,9 +269,9 @@ test_that("item with assets matches pystac", {
 })
 
 test_that("item with links matches pystac", {
+  # Import pystac
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -347,9 +346,9 @@ test_that("item with links matches pystac", {
 })
 
 test_that("collection with items matches pystac", {
+  # Import pystac
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -412,9 +411,9 @@ test_that("collection with items matches pystac", {
 })
 
 test_that("items with different geometry types match pystac", {
+  # Import pystac
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -476,14 +475,15 @@ test_that("items with different geometry types match pystac", {
     )
 
     expect_equal(r_json$geometry$type, py_json$geometry$type,
-                 info = paste("Geometry type:", geom_name))
+      info = paste("Geometry type:", geom_name)
+    )
   }
 })
 
 test_that("item with null geometry matches pystac", {
+  # Import pystac
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -528,10 +528,57 @@ test_that("item with null geometry matches pystac", {
   expect_null(r_json$bbox)
 })
 
-test_that("item with temporal range matches pystac", {
-  skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
+test_that("add_asset works with inline parameters and pre-built asset", {
+  item <- stac_item(
+    id = "test-add-asset",
+    geometry = list(type = "Point", coordinates = c(-105, 40)),
+    bbox = c(-105, 40, -105, 40),
+    datetime = "2023-01-01T00:00:00Z"
+  )
 
+  # Add asset using inline parameters
+  item <- add_asset(
+    item,
+    key = "thumbnail",
+    href = "https://example.com/thumb.png",
+    title = "Thumbnail",
+    type = "image/png",
+    roles = c("thumbnail")
+  )
+
+  expect_true("thumbnail" %in% names(item$assets))
+  expect_equal(item$assets$thumbnail$href, "https://example.com/thumb.png")
+  expect_equal(item$assets$thumbnail$title, "Thumbnail")
+  expect_equal(item$assets$thumbnail$type, "image/png")
+
+  # Add asset using a pre-built stac_asset()
+  data_asset <- stac_asset(
+    href = "https://example.com/data.tif",
+    type = "image/tiff; application=geotiff",
+    roles = c("data")
+  )
+
+  item <- add_asset(item, key = "data", asset = data_asset)
+
+  expect_true("data" %in% names(item$assets))
+  expect_equal(item$assets$data$href, "https://example.com/data.tif")
+  expect_equal(item$assets$data$type, "image/tiff; application=geotiff")
+  expect_equal(item$assets$data$roles, c("data"))
+
+  # Both assets present
+  expect_length(item$assets, 2)
+
+  # Error on invalid asset
+  expect_error(
+    add_asset(item, key = "bad", asset = list(title = "no href")),
+    "'asset' must be a list with at least an 'href' field"
+  )
+})
+
+test_that("item with temporal range matches pystac", {
+  # Import pystac
+  skip_if_not_installed("reticulate")
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 

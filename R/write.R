@@ -1,43 +1,43 @@
 #' Write a STAC Catalog Structure to Disk
 #'
 #' @description
-#' Writes a complete STAC Catalog structure to the filesystem, including all 
-#' child catalogs, collections, and items. This function recursively writes the 
+#' Writes a complete STAC Catalog structure to the filesystem, including all
+#' child catalogs, collections, and items. This function recursively writes the
 #' entire catalog tree, creating the necessary directory structure and JSON files.
 #' Children and items are automatically retrieved from the catalog's stored objects.
 #'
-#' @param catalog A STAC Catalog or Collection object created with `stac_catalog()` 
+#' @param catalog A STAC Catalog or Collection object created with `stac_catalog()`
 #'   or `stac_collection()`.
-#' @param path (character, required) Root directory path where the catalog should 
+#' @param path (character, required) Root directory path where the catalog should
 #'   be written. Will be created if it doesn't exist.
 #' @param catalog_type (character, optional) Type of catalog to create. One of:
-#'   * `"self-contained"`: All links use relative paths within the catalog structure. 
+#'   * `"self-contained"`: All links use relative paths within the catalog structure.
 #'     Best for portability and publishing.
 #'   * `"relative"`: Links use relative paths but may reference external resources.
 #'   * `"absolute"`: All links use absolute URLs. Best for web-served catalogs.
 #'   Default is `"self-contained"`.
-#' @param overwrite (logical, optional) If `TRUE`, overwrites existing files. If 
+#' @param overwrite (logical, optional) If `TRUE`, overwrites existing files. If
 #'   `FALSE`, throws an error if files already exist. Default is `FALSE`.
-#' @param pretty (logical, optional) If `TRUE`, writes formatted JSON with 
+#' @param pretty (logical, optional) If `TRUE`, writes formatted JSON with
 #'   indentation. If `FALSE`, writes compact JSON. Default is `TRUE`.
-#' @param base_url (character, optional) Base URL for absolute links when 
-#'   `catalog_type = "absolute"`. For example, `"https://example.com/stac"`. 
+#' @param base_url (character, optional) Base URL for absolute links when
+#'   `catalog_type = "absolute"`. For example, `"https://example.com/stac"`.
 #'   Required when using absolute catalog type.
 #'
 #' @details
 #' ## Catalog Types
-#' 
+#'
 #' **Self-Contained Catalogs:**
-#' All links use relative paths and all referenced resources are within the 
-#' catalog directory structure. This is the most portable option and recommended 
+#' All links use relative paths and all referenced resources are within the
+#' catalog directory structure. This is the most portable option and recommended
 #' for sharing or archiving catalogs.
-#' 
+#'
 #' **Relative Catalogs:**
-#' Links use relative paths but may reference resources outside the catalog tree. 
+#' Links use relative paths but may reference resources outside the catalog tree.
 #' Useful when integrating with existing file structures.
-#' 
+#'
 #' **Absolute Catalogs:**
-#' All links use absolute URLs. Required when the catalog will be served from a 
+#' All links use absolute URLs. Required when the catalog will be served from a
 #' web server. Requires `base_url` to be specified.
 #'
 #' ## Directory Structure
@@ -47,8 +47,9 @@
 #'   catalog.json                    # Root catalog
 #'   collection1/
 #'     collection.json               # Collection
-#'     items/
-#'       item1.json                  # Items
+#'     item1/
+#'       item1.json                  # Items (each in own subdirectory)
+#'     item2/
 #'       item2.json
 #'   collection2/
 #'     collection.json
@@ -57,13 +58,13 @@
 #' ```
 #'
 #' ## Automatic Object Retrieval
-#' When you use `add_child()` or `add_item()`, the child catalogs and items are 
-#' automatically stored as attributes on the parent catalog. The `write_stac()` 
+#' When you use `add_child()` or `add_item()`, the child catalogs and items are
+#' automatically stored as attributes on the parent catalog. The `write_stac()`
 #' function retrieves these stored objects and writes them recursively.
 #'
 #' @return Invisibly returns the path where the catalog was written.
 #'
-#' @seealso 
+#' @seealso
 #' * [write_catalog()] for writing a single catalog/collection file
 #' * [write_item()] for writing a single item file
 #' * [read_stac()] for reading STAC catalogs from disk
@@ -77,7 +78,7 @@
 #'   id = "my-catalog",
 #'   description = "Example STAC catalog"
 #' )
-#' 
+#'
 #' collection <- stac_collection(
 #'   id = "landsat-8",
 #'   description = "Landsat 8 imagery",
@@ -87,59 +88,60 @@
 #'     temporal_interval = list(list("2013-04-11T00:00:00Z", NULL))
 #'   )
 #' )
-#' 
+#'
 #' item <- stac_item(
 #'   id = "LC08_001",
 #'   geometry = my_geometry,
 #'   bbox = my_bbox,
 #'   datetime = "2023-01-01T00:00:00Z"
 #' )
-#' 
+#'
 #' # Add item to collection (automatically stored)
 #' collection <- add_item(collection, item)
-#' 
+#'
 #' # Add collection to catalog (automatically stored)
 #' catalog <- add_child(catalog, collection)
-#' 
+#'
 #' # Write entire structure - children and items are automatically written!
 #' write_stac(catalog, "output/stac")
-#' 
+#'
 #' # Write as absolute catalog for web serving
 #' write_stac(
-#'   catalog, 
+#'   catalog,
 #'   "output/stac",
 #'   catalog_type = "absolute",
 #'   base_url = "https://example.com/stac"
 #' )
-#' 
+#'
 #' # Overwrite existing catalog
 #' write_stac(catalog, "output/stac", overwrite = TRUE)
 #' }
 #'
 #' @export
-write_stac <- function(catalog,
-                      path,
-                      catalog_type = c("self-contained", "relative", "absolute"),
-                      overwrite = FALSE,
-                      pretty = TRUE,
-                      base_url = NULL) {
-  
+write_stac <- function(
+  catalog,
+  path,
+  catalog_type = c("self-contained", "relative", "absolute"),
+  overwrite = FALSE,
+  pretty = TRUE,
+  base_url = NULL
+) {
   if (!inherits(catalog, "stac_catalog")) {
     stop("'catalog' must be a stac_catalog or stac_collection object")
   }
-  
+
   catalog_type <- match.arg(catalog_type)
-  
+
   # Validate base_url requirement for absolute catalogs
   if (catalog_type == "absolute" && is.null(base_url)) {
     stop("'base_url' is required when catalog_type is 'absolute'")
   }
-  
+
   # Create root directory if it doesn't exist
   if (!dir.exists(path)) {
     dir.create(path, recursive = TRUE)
   }
-  
+
   # Write the catalog recursively
   write_catalog_recursive(
     catalog,
@@ -151,7 +153,7 @@ write_stac <- function(catalog,
     is_root = TRUE,
     parent_href = NULL
   )
-  
+
   message(sprintf("STAC catalog written to: %s", path))
   invisible(path)
 }
@@ -160,15 +162,15 @@ write_stac <- function(catalog,
 #' Write a Single STAC Catalog or Collection File
 #'
 #' @description
-#' Writes a single STAC Catalog or Collection to a JSON file. Unlike `write_stac()`, 
-#' this does not recursively write children or items, and does not include the 
+#' Writes a single STAC Catalog or Collection to a JSON file. Unlike `write_stac()`,
+#' this does not recursively write children or items, and does not include the
 #' stored child/item objects in the output (only the links).
 #'
 #' @param catalog A STAC Catalog or Collection object.
 #' @param file (character, required) Path to the output JSON file.
-#' @param overwrite (logical, optional) If `TRUE`, overwrites existing file. 
+#' @param overwrite (logical, optional) If `TRUE`, overwrites existing file.
 #'   Default is `FALSE`.
-#' @param pretty (logical, optional) If `TRUE`, writes formatted JSON. Default 
+#' @param pretty (logical, optional) If `TRUE`, writes formatted JSON. Default
 #'   is `TRUE`.
 #'
 #' @return Invisibly returns the file path.
@@ -179,30 +181,29 @@ write_stac <- function(catalog,
 #'   id = "my-catalog",
 #'   description = "Example catalog"
 #' )
-#' 
+#'
 #' write_catalog(catalog, "catalog.json")
 #' }
 #'
 #' @export
-write_catalog <- function(catalog,
-                         file,
-                         overwrite = FALSE,
-                         pretty = TRUE) {
-  
+write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
   if (!inherits(catalog, "stac_catalog")) {
     stop("'catalog' must be a stac_catalog or stac_collection object")
   }
-  
+
   if (file.exists(file) && !overwrite) {
-    stop(sprintf("File '%s' already exists. Use overwrite = TRUE to replace.", file))
+    stop(sprintf(
+      "File '%s' already exists. Use overwrite = TRUE to replace.",
+      file
+    ))
   }
-  
+
   # Create parent directory if needed
   dir_path <- dirname(file)
   if (!dir.exists(dir_path)) {
     dir.create(dir_path, recursive = TRUE)
   }
-  
+
   # Remove stored objects before writing (keep only the JSON structure)
   catalog_clean <- strip_stored_objects(catalog)
 
@@ -218,7 +219,7 @@ write_catalog <- function(catalog,
     pretty = pretty,
     null = "null"
   )
-  
+
   writeLines(json, file)
   invisible(file)
 }
@@ -231,9 +232,9 @@ write_catalog <- function(catalog,
 #'
 #' @param item A STAC Item object created with `stac_item()`.
 #' @param file (character, required) Path to the output JSON file.
-#' @param overwrite (logical, optional) If `TRUE`, overwrites existing file. 
+#' @param overwrite (logical, optional) If `TRUE`, overwrites existing file.
 #'   Default is `FALSE`.
-#' @param pretty (logical, optional) If `TRUE`, writes formatted JSON. Default 
+#' @param pretty (logical, optional) If `TRUE`, writes formatted JSON. Default
 #'   is `TRUE`.
 #'
 #' @return Invisibly returns the file path.
@@ -246,30 +247,29 @@ write_catalog <- function(catalog,
 #'   bbox = c(-105, 40, -105, 40),
 #'   datetime = "2023-01-01T00:00:00Z"
 #' )
-#' 
+#'
 #' write_item(item, "items/my-item.json")
 #' }
 #'
 #' @export
-write_item <- function(item,
-                      file,
-                      overwrite = FALSE,
-                      pretty = TRUE) {
-  
+write_item <- function(item, file, overwrite = FALSE, pretty = TRUE) {
   if (!inherits(item, "stac_item")) {
     stop("'item' must be a stac_item object")
   }
-  
+
   if (file.exists(file) && !overwrite) {
-    stop(sprintf("File '%s' already exists. Use overwrite = TRUE to replace.", file))
+    stop(sprintf(
+      "File '%s' already exists. Use overwrite = TRUE to replace.",
+      file
+    ))
   }
-  
+
   # Create parent directory if needed
   dir_path <- dirname(file)
   if (!dir.exists(dir_path)) {
     dir.create(dir_path, recursive = TRUE)
   }
-  
+
   # Remove any stored attributes before writing
   item_clean <- strip_stored_objects(item)
 
@@ -285,7 +285,7 @@ write_item <- function(item,
     pretty = pretty,
     null = "null"
   )
-  
+
   writeLines(json, file)
   invisible(file)
 }
@@ -298,22 +298,23 @@ write_item <- function(item,
 #' Retrieves stored child and item objects and writes them to the appropriate locations.
 #'
 #' @keywords internal
-write_catalog_recursive <- function(catalog,
-                                   path,
-                                   catalog_type,
-                                   base_url,
-                                   overwrite,
-                                   pretty,
-                                   is_root = FALSE,
-                                   parent_href = NULL) {
-  
+write_catalog_recursive <- function(
+  catalog,
+  path,
+  catalog_type,
+  base_url,
+  overwrite,
+  pretty,
+  is_root = FALSE,
+  parent_href = NULL
+) {
   # Determine the catalog filename
   if (inherits(catalog, "stac_collection")) {
     catalog_file <- "collection.json"
   } else {
     catalog_file <- "catalog.json"
   }
-  
+
   # Update catalog links
   catalog <- update_catalog_links(
     catalog,
@@ -323,35 +324,35 @@ write_catalog_recursive <- function(catalog,
     is_root,
     parent_href
   )
-  
+
   # Get stored children and items
   stored_children <- attr(catalog, "stac_children")
   stored_items <- attr(catalog, "stac_items")
-  
+
   # Write children recursively
   if (!is.null(stored_children) && length(stored_children) > 0) {
     for (child_id in names(stored_children)) {
       child <- stored_children[[child_id]]
       child_path <- file.path(path, child_id)
-      
+
       # Create child directory
       if (!dir.exists(child_path)) {
         dir.create(child_path, recursive = TRUE)
       }
-      
+
       # Calculate child base_url for absolute catalogs
       child_base_url <- NULL
       if (catalog_type == "absolute" && !is.null(base_url)) {
         child_base_url <- paste0(base_url, "/", child_id)
       }
-      
+
       # Calculate parent href for child
       if (catalog_type == "absolute") {
         child_parent_href <- paste0(base_url, "/", catalog_file)
       } else {
         child_parent_href <- paste0("../", catalog_file)
       }
-      
+
       # Recursively write child
       write_catalog_recursive(
         child,
@@ -365,42 +366,47 @@ write_catalog_recursive <- function(catalog,
       )
     }
   }
-  
-  # Write items
+
+  # Write items — each item gets its own subdirectory: {id}/{id}.json
   if (!is.null(stored_items) && length(stored_items) > 0) {
-    items_dir <- file.path(path, "items")
-    if (!dir.exists(items_dir)) {
-      dir.create(items_dir, recursive = TRUE)
-    }
-    
     for (item in stored_items) {
-      item_file <- file.path(items_dir, paste0(item$id, ".json"))
-      
-      # Update item links if needed
+      item_dir <- file.path(path, item$id)
+      if (!dir.exists(item_dir)) {
+        dir.create(item_dir, recursive = TRUE)
+      }
+      item_file <- file.path(item_dir, paste0(item$id, ".json"))
+
+      # Items live one level below the collection dir, so relative hrefs
+      # from inside the item dir are one level deeper than the collection.
       if (catalog_type == "absolute") {
         item <- update_item_links(
           item,
-          paste0(base_url, "/items/", item$id, ".json"),
+          paste0(base_url, "/", item$id, "/", item$id, ".json"),
           paste0(base_url, "/", catalog_file),
           if (is_root) paste0(base_url, "/", catalog_file) else NULL
         )
       } else {
         item <- update_item_links(
           item,
-          paste0("./items/", item$id, ".json"),
-          paste0("./", catalog_file),
-          if (is_root) paste0("./", catalog_file) else "../catalog.json"
+          paste0("./", item$id, ".json"),
+          paste0("../", catalog_file),
+          if (is_root) paste0("../", catalog_file) else "../../catalog.json"
         )
       }
-      
+
       write_item(item, item_file, overwrite = overwrite, pretty = pretty)
     }
   }
-  
+
   # Write the catalog file itself
   catalog_filepath <- file.path(path, catalog_file)
-  write_catalog(catalog, catalog_filepath, overwrite = overwrite, pretty = pretty)
-  
+  write_catalog(
+    catalog,
+    catalog_filepath,
+    overwrite = overwrite,
+    pretty = pretty
+  )
+
   invisible(path)
 }
 
@@ -411,31 +417,32 @@ write_catalog_recursive <- function(catalog,
 #' Internal function to update links in a catalog to match the filesystem structure.
 #'
 #' @keywords internal
-update_catalog_links <- function(catalog,
-                                 path,
-                                 catalog_type,
-                                 base_url = NULL,
-                                 is_root = FALSE,
-                                 parent_href = NULL) {
-  
+update_catalog_links <- function(
+  catalog,
+  path,
+  catalog_type,
+  base_url = NULL,
+  is_root = FALSE,
+  parent_href = NULL
+) {
   # Determine the catalog filename
   if (inherits(catalog, "stac_collection")) {
     catalog_file <- "collection.json"
   } else {
     catalog_file <- "catalog.json"
   }
-  
+
   # Build self link
   if (catalog_type == "absolute") {
     self_href <- paste0(base_url, "/", catalog_file)
   } else {
     self_href <- paste0("./", catalog_file)
   }
-  
+
   # Remove existing self link and add updated one
   catalog$links <- Filter(function(x) x$rel != "self", catalog$links)
   catalog <- add_self_link(catalog, self_href)
-  
+
   # Add root link
   if (is_root) {
     catalog$links <- Filter(function(x) x$rel != "root", catalog$links)
@@ -451,36 +458,36 @@ update_catalog_links <- function(catalog,
     }
     catalog$links <- Filter(function(x) x$rel != "root", catalog$links)
     catalog <- add_root_link(catalog, root_href)
-    
+
     # Add parent link
     if (!is.null(parent_href)) {
       catalog$links <- Filter(function(x) x$rel != "parent", catalog$links)
       catalog <- add_parent_link(catalog, parent_href)
     }
   }
-  
+
   # Update child links based on stored children
   stored_children <- attr(catalog, "stac_children")
   if (!is.null(stored_children) && length(stored_children) > 0) {
     # Remove existing child links
     catalog$links <- Filter(function(x) x$rel != "child", catalog$links)
-    
+
     # Add updated child links
     for (child_id in names(stored_children)) {
       child <- stored_children[[child_id]]
-      
+
       if (inherits(child, "stac_collection")) {
         child_file <- "collection.json"
       } else {
         child_file <- "catalog.json"
       }
-      
+
       if (catalog_type == "absolute") {
         child_href <- paste0(base_url, "/", child_id, "/", child_file)
       } else {
         child_href <- paste0("./", child_id, "/", child_file)
       }
-      
+
       catalog <- add_link(
         catalog,
         rel = "child",
@@ -490,21 +497,21 @@ update_catalog_links <- function(catalog,
       )
     }
   }
-  
+
   # Update item links based on stored items
   stored_items <- attr(catalog, "stac_items")
   if (!is.null(stored_items) && length(stored_items) > 0) {
     # Remove existing item links
     catalog$links <- Filter(function(x) x$rel != "item", catalog$links)
-    
+
     # Add updated item links
     for (item in stored_items) {
       if (catalog_type == "absolute") {
-        item_href <- paste0(base_url, "/items/", item$id, ".json")
+        item_href <- paste0(base_url, "/", item$id, "/", item$id, ".json")
       } else {
-        item_href <- paste0("./items/", item$id, ".json")
+        item_href <- paste0("./", item$id, "/", item$id, ".json")
       }
-      
+
       catalog <- add_link(
         catalog,
         rel = "item",
@@ -514,7 +521,7 @@ update_catalog_links <- function(catalog,
       )
     }
   }
-  
+
   catalog
 }
 
@@ -526,27 +533,46 @@ update_catalog_links <- function(catalog,
 #'
 #' @keywords internal
 update_item_links <- function(item, self_href, parent_href, root_href) {
-  
   # Update self link
   item$links <- Filter(function(x) x$rel != "self", item$links)
-  item <- add_link(item, rel = "self", href = self_href, type = "application/geo+json")
-  
+  item <- add_link(
+    item,
+    rel = "self",
+    href = self_href,
+    type = "application/geo+json"
+  )
+
   # Update parent link
   if (!is.null(parent_href)) {
     item$links <- Filter(function(x) x$rel != "parent", item$links)
-    item <- add_link(item, rel = "parent", href = parent_href, type = "application/json")
-    
+    item <- add_link(
+      item,
+      rel = "parent",
+      href = parent_href,
+      type = "application/json"
+    )
+
     # If parent is a collection, also update collection link
     item$links <- Filter(function(x) x$rel != "collection", item$links)
-    item <- add_link(item, rel = "collection", href = parent_href, type = "application/json")
+    item <- add_link(
+      item,
+      rel = "collection",
+      href = parent_href,
+      type = "application/json"
+    )
   }
-  
+
   # Update root link
   if (!is.null(root_href)) {
     item$links <- Filter(function(x) x$rel != "root", item$links)
-    item <- add_link(item, rel = "root", href = root_href, type = "application/json")
+    item <- add_link(
+      item,
+      rel = "root",
+      href = root_href,
+      type = "application/json"
+    )
   }
-  
+
   item
 }
 
@@ -583,14 +609,13 @@ strip_stored_objects <- function(stac_obj) {
 #'
 #' @export
 read_stac <- function(file) {
-  
   if (!file.exists(file)) {
     stop(sprintf("File not found: %s", file))
   }
-  
+
   # Read JSON
   stac_obj <- jsonlite::fromJSON(file, simplifyVector = FALSE)
-  
+
   # Determine type and assign appropriate class
   if (stac_obj$type == "Catalog") {
     class(stac_obj) <- c("stac_catalog", "list")
@@ -602,7 +627,7 @@ read_stac <- function(file) {
     warning(sprintf("Unknown STAC type: %s", stac_obj$type))
     class(stac_obj) <- "list"
   }
-  
+
   stac_obj
 }
 
@@ -619,7 +644,7 @@ read_stac <- function(file) {
 #' @examples
 #' \dontrun{
 #' children <- get_children(catalog)
-#' names(children)  # Get IDs of child catalogs
+#' names(children) # Get IDs of child catalogs
 #' }
 #'
 #' @export
@@ -643,7 +668,7 @@ get_children <- function(catalog) {
 #' @examples
 #' \dontrun{
 #' items <- get_items(collection)
-#' length(items)  # Number of items
+#' length(items) # Number of items
 #' }
 #'
 #' @export

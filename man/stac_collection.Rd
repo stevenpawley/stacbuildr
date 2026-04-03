@@ -49,8 +49,9 @@ for 2D or \code{c(west, south, min_elev, east, north, max_elev)} for 3D. The
 first bbox describes the overall spatial extent.
 \item \code{temporal}: A list with element \code{interval} - a list of one or more time
 intervals. Each interval is a character vector of length 2 with ISO 8601
-datetime strings: \code{c("start", "end")}. Use \code{NULL} for open-ended intervals
-(e.g., \code{c("2020-01-01T00:00:00Z", NULL)} for ongoing data).
+datetime strings: \code{list("start", "end")}. Use \code{NULL} for open-ended intervals
+(e.g., \code{list("2020-01-01T00:00:00Z", NULL)} for ongoing data). Note: use
+\code{list()} not \code{c()} — \code{c()} drops \code{NULL}, which would produce an invalid interval.
 }
 
 Use the helper function \code{stac_extent()} to create this structure easily.}
@@ -102,9 +103,9 @@ to STAC API specifications or other standards. Introduced in STAC 1.1.0.}
 extensions or additional metadata beyond the core specification.}
 }
 \value{
-An object of class \code{c("stac_collection", "stac_catalog", "list")}
-containing the collection metadata. The object can be converted to JSON using
-\code{jsonlite::toJSON()} or written to disk using \code{write_stac()}.
+An S7 object of class \code{stac_collection} (extending \code{stac_catalog})
+containing the collection metadata. Convert to a plain list for JSON
+serialization with \code{as.list()}, or write directly to disk using \code{write_stac()}.
 }
 \description{
 Creates a STAC (SpatioTemporal Asset Catalog) Collection object following the
@@ -185,7 +186,7 @@ collection <- stac_collection(
   license = "CC0-1.0",
   extent = list(
     spatial = list(bbox = list(c(-180, -90, 180, 90))),
-    temporal = list(interval = list(c("2013-04-11T00:00:00Z", NULL)))
+    temporal = list(interval = list(list("2013-04-11T00:00:00Z", NULL)))
   )
 )
 
@@ -200,7 +201,7 @@ collection <- stac_collection(
   license = "proprietary",
   extent = stac_extent(
     spatial_bbox = list(c(-180, -90, 180, 90)),
-    temporal_interval = list(c("2015-06-27T00:00:00Z", NULL))
+    temporal_interval = list(list("2015-06-27T00:00:00Z", NULL))
   ),
   keywords = c("sentinel", "esa", "msi", "copernicus", "earth observation"),
   providers = list(
@@ -243,13 +244,15 @@ multi_license_collection <- stac_collection(
     temporal_interval = list(c("2020-01-01T00:00:00Z", "2023-12-31T23:59:59Z"))
   )
 ) |>
-  add_link("license", "https://creativecommons.org/licenses/by/4.0/", 
-           title = "CC-BY-4.0 for Landsat data") |>
+  add_link("license", "https://creativecommons.org/licenses/by/4.0/",
+    title = "CC-BY-4.0 for Landsat data"
+  ) |>
   add_link("license", "https://example.com/custom-license.txt",
-           title = "Custom license for commercial data")
+    title = "Custom license for commercial data"
+  )
 
 # Convert to JSON
-collection_json <- jsonlite::toJSON(collection, auto_unbox = TRUE, pretty = TRUE)
+collection_json <- jsonlite::toJSON(as.list(collection), auto_unbox = TRUE, pretty = TRUE)
 cat(collection_json)
 
 }

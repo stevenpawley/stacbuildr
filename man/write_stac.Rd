@@ -73,8 +73,9 @@ The function creates a directory structure based on the catalog hierarchy:
   catalog.json                    # Root catalog
   collection1/
     collection.json               # Collection
-    items/
-      item1.json                  # Items
+    item1/
+      item1.json                  # Items (each in own subdirectory)
+    item2/
       item2.json
   collection2/
     collection.json
@@ -104,7 +105,7 @@ collection <- stac_collection(
   license = "CC0-1.0",
   extent = stac_extent(
     spatial_bbox = list(c(-180, -90, 180, 90)),
-    temporal_interval = list(c("2013-04-11T00:00:00Z", NULL))
+    temporal_interval = list(list("2013-04-11T00:00:00Z", NULL))
   )
 )
 
@@ -126,7 +127,7 @@ write_stac(catalog, "output/stac")
 
 # Write as absolute catalog for web serving
 write_stac(
-  catalog, 
+  catalog,
   "output/stac",
   catalog_type = "absolute",
   base_url = "https://example.com/stac"

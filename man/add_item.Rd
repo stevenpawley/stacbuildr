@@ -100,7 +100,7 @@ collection <- stac_collection(
   license = "CC0-1.0",
   extent = stac_extent(
     spatial_bbox = list(c(-180, -90, 180, 90)),
-    temporal_interval = list(c("2013-04-11T00:00:00Z", NULL))
+    temporal_interval = list(list("2013-04-11T00:00:00Z", NULL))
   )
 )
 
@@ -123,7 +123,7 @@ collection <- add_item(collection, item)
 
 # Add the item with parent links
 collection <- add_item(
-  collection, 
+  collection,
   item,
   add_parent_links = TRUE,
   parent_href = "./collection.json",

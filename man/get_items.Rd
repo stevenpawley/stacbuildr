@@ -18,7 +18,7 @@ Retrieves the stored items from a catalog or collection object.
 \examples{
 \dontrun{
 items <- get_items(collection)
-length(items)  # Number of items
+length(items) # Number of items
 }
 
 }

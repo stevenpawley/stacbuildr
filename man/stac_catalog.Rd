@@ -12,32 +12,34 @@ stac_catalog(
   type = "Catalog",
   stac_extensions = NULL,
   conformsTo = NULL,
+  links = list(),
   ...
 )
 }
 \arguments{
 \item{id}{(character, required) Identifier for the Catalog. Must be unique
 within the parent catalog if one exists. Should contain only alphanumeric
-characters, hyphens, and underscores.}
+characters, hyphens, and underscores. This field is required by the STAC
+specification.}
 
 \item{description}{(character, required) Detailed multi-line description to
-fully explain the Catalog. CommonMark 0.29 syntax may be used for rich text
-representation. This field should provide comprehensive information about the
-catalog's contents, purpose, and scope.}
+fully explain the Catalog. This field should provide comprehensive
+information about the catalog's contents, purpose, and scope. This field is
+required by the STAC specification.}
 
 \item{title}{(character, optional) A short descriptive one-line title for the
-Catalog. Recommended for human-readable identification. If not provided,
-the \code{id} may be used for display purposes.}
+Catalog. Recommended for human-readable identification.}
 
-\item{stac_version}{(character, optional) The STAC version the Catalog
+\item{stac_version}{(character, required) The STAC version the Catalog
 implements. Defaults to \code{"1.1.0"}. This field is required by the STAC
 specification.}
 
 \item{type}{(character, optional) Must be set to \code{"Catalog"} for catalogs.
-Defaults to \code{"Catalog"}. For collections, this would be \code{"Collection"}.}
+Defaults to \code{"Catalog"}. For collections, this would be \code{"Collection"}.
+This field is required by the STAC specification.}
 
 \item{stac_extensions}{(character vector, optional) A list of extension
-identifiers (URIs) that the Catalog implements. Extensions listed here must
+URLs that the Catalog implements. Extensions listed here must
 only contain extensions that extend the Catalog specification itself, not
 extensions for Items or Collections. Each extension should be a full URI to
 the extension's JSON schema. Default is \code{NULL} (no extensions).}
@@ -52,15 +54,16 @@ arguments will be added to the catalog object. This allows for custom
 extensions or additional metadata beyond the core specification.}
 }
 \value{
-An object of class \code{c("stac_catalog", "list")} containing the catalog
-metadata. The object can be converted to JSON using \code{jsonlite::toJSON()} or
-written to disk using \code{write_stac()}.
+An S7 object of class \code{stac_catalog} containing the catalog metadata.
+Convert to a plain list for JSON serialization with \code{as.list()}, or write
+directly to disk using \code{write_stac()}.
 }
 \description{
 Creates a STAC (SpatioTemporal Asset Catalog) Catalog object following the
 STAC specification version 1.1.0. A Catalog is a top-level organizational
 structure that groups related Collections and Items, providing a hierarchical
-structure for organizing geospatial assets.
+structure for organizing geospatial assets, making them indexable and
+discoverable.
 }
 \details{
 \subsection{Required Fields}{
@@ -92,10 +95,10 @@ types include:
 \item \code{item}: URL to a STAC Item
 }
 
-Use the helper functions \code{add_self_link()}, \code{add_root_link()}, \code{add_parent_link()},
-\code{add_child()}, and \code{add_item()} to manage links after creating the catalog.
-A \code{self} link and a \code{root} link are strongly recommended.
-Non-root Catalogs should include a \code{parent} link.
+Use the helper functions \code{add_self_link()}, \code{add_root_link()},
+\code{add_parent_link()}, \code{add_child()}, and \code{add_item()} to manage links after
+creating the catalog. A \code{self} link and a \code{root} link are strongly
+recommended. Non-root Catalogs should include a \code{parent} link.
 }
 
 \subsection{Extensions}{
@@ -119,8 +122,8 @@ catalog <- stac_catalog(
   title = "North America Satellite Imagery",
   description = paste(
     "A comprehensive catalog of satellite imagery covering North America",
-    "from various sensors including Landsat, Sentinel, and commercial providers.",
-    "Data spans from 2013 to present."
+    "from various sensors including Landsat, Sentinel, and commercial",
+    "providers. Data spans from 2013 to present."
   ),
   stac_version = "1.1.0"
 )

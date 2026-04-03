@@ -296,9 +296,17 @@ validate_assets <- function(assets) {
     # Validate roles if present (accept character vector or list of strings)
     if (!is.null(asset$roles)) {
       roles_ok <- is.character(asset$roles) ||
-        (is.list(asset$roles) && all(vapply(asset$roles, is.character, logical(1))))
+        (is.list(asset$roles) &&
+          all(vapply(asset$roles, is.character, logical(1))))
       if (!roles_ok) {
-        errors <- c(errors, paste0("Asset '", key, "' 'roles' must be a character vector or list of strings"))
+        errors <- c(
+          errors,
+          paste0(
+            "Asset '",
+            key,
+            "' 'roles' must be a character vector or list of strings"
+          )
+        )
       }
     }
   }
@@ -311,7 +319,7 @@ validate_assets <- function(assets) {
 #'
 #' Validates the spatial and temporal extent fields of a STAC Collection.
 #' Checks for required bbox and interval fields and ensures proper structure.
-#' 
+#'
 #' @details
 #' The extent object must contain two required fields:
 #' \itemize{
@@ -340,7 +348,11 @@ validate_extent <- function(extent) {
   if (is.null(extent$spatial)) {
     errors <- c(errors, "Field 'extent$spatial' is required")
   } else {
-    spatial <- if (inherits(extent$spatial, "S7_object")) as.list(extent$spatial) else extent$spatial
+    spatial <- if (inherits(extent$spatial, "S7_object")) {
+      as.list(extent$spatial)
+    } else {
+      extent$spatial
+    }
     if (is.null(spatial$bbox)) {
       errors <- c(errors, "Field 'extent$spatial$bbox' is required")
     } else if (!is.list(spatial$bbox)) {
@@ -348,7 +360,10 @@ validate_extent <- function(extent) {
     } else {
       for (i in seq_along(spatial$bbox)) {
         bbox <- spatial$bbox[[i]]
-        bbox_errors <- validate_bbox(bbox, prefix = paste0("extent$spatial$bbox[", i, "]"))
+        bbox_errors <- validate_bbox(
+          bbox,
+          prefix = paste0("extent$spatial$bbox[", i, "]")
+        )
         errors <- c(errors, bbox_errors)
       }
     }
@@ -358,16 +373,29 @@ validate_extent <- function(extent) {
   if (is.null(extent$temporal)) {
     errors <- c(errors, "Field 'extent$temporal' is required")
   } else {
-    temporal <- if (inherits(extent$temporal, "S7_object")) as.list(extent$temporal) else extent$temporal
+    temporal <- if (inherits(extent$temporal, "S7_object")) {
+      as.list(extent$temporal)
+    } else {
+      extent$temporal
+    }
     if (is.null(temporal$interval)) {
       errors <- c(errors, "Field 'extent$temporal$interval' is required")
     } else if (!is.list(temporal$interval)) {
-      errors <- c(errors, "Field 'extent$temporal$interval' must be a list of intervals")
+      errors <- c(
+        errors,
+        "Field 'extent$temporal$interval' must be a list of intervals"
+      )
     } else {
       for (i in seq_along(temporal$interval)) {
         iv <- temporal$interval[[i]]
         if (length(iv) != 2) {
-          errors <- c(errors, sprintf("extent$temporal$interval[[%d]] must have exactly 2 elements", i))
+          errors <- c(
+            errors,
+            sprintf(
+              "extent$temporal$interval[[%d]] must have exactly 2 elements",
+              i
+            )
+          )
         }
       }
     }
@@ -404,7 +432,10 @@ validate_bbox <- function(bbox, prefix = "bbox") {
       errors <- c(errors, paste0(prefix, ": south must be <= north"))
     }
     if (bbox[3] > bbox[6]) {
-      errors <- c(errors, paste0(prefix, ": min elevation must be <= max elevation"))
+      errors <- c(
+        errors,
+        paste0(prefix, ": min elevation must be <= max elevation")
+      )
     }
   }
 
@@ -425,18 +456,33 @@ validate_geometry <- function(geometry) {
   if (is.null(geometry$type)) {
     errors <- c(errors, "Geometry must have a 'type' field")
   } else {
-    valid_types <- c("Point", "LineString", "Polygon", "MultiPoint",
-                     "MultiLineString", "MultiPolygon", "GeometryCollection")
+    valid_types <- c(
+      "Point",
+      "LineString",
+      "Polygon",
+      "MultiPoint",
+      "MultiLineString",
+      "MultiPolygon",
+      "GeometryCollection"
+    )
     if (!geometry$type %in% valid_types) {
-      errors <- c(errors, paste0(
-        "Geometry type '", geometry$type, "' is not valid. ",
-        "Must be one of: ", paste(valid_types, collapse = ", ")
-      ))
+      errors <- c(
+        errors,
+        paste0(
+          "Geometry type '",
+          geometry$type,
+          "' is not valid. ",
+          "Must be one of: ",
+          paste(valid_types, collapse = ", ")
+        )
+      )
     }
   }
 
-  if (is.null(geometry$coordinates) &&
-      (!is.null(geometry$type) && geometry$type != "GeometryCollection")) {
+  if (
+    is.null(geometry$coordinates) &&
+      (!is.null(geometry$type) && geometry$type != "GeometryCollection")
+  ) {
     errors <- c(errors, "Geometry must have 'coordinates' field")
   }
 
@@ -459,9 +505,12 @@ validate_item_properties <- function(properties) {
   has_end <- !is.null(properties$end_datetime)
 
   if (!has_datetime && !(has_start && has_end)) {
-    errors <- c(errors, paste(
-      "Properties must contain 'datetime' or both 'start_datetime' and 'end_datetime'"
-    ))
+    errors <- c(
+      errors,
+      paste(
+        "Properties must contain 'datetime' or both 'start_datetime' and 'end_datetime'"
+      )
+    )
   }
 
   errors
@@ -494,12 +543,21 @@ validate_providers <- function(providers) {
       if (is.character(provider$roles)) {
         invalid <- setdiff(provider$roles, valid_roles)
         if (length(invalid) > 0) {
-          errors <- c(errors, paste0(
-            "Provider[", i, "] has invalid roles: ", paste(invalid, collapse = ", ")
-          ))
+          errors <- c(
+            errors,
+            paste0(
+              "Provider[",
+              i,
+              "] has invalid roles: ",
+              paste(invalid, collapse = ", ")
+            )
+          )
         }
       } else {
-        errors <- c(errors, paste0("Provider[", i, "] 'roles' must be an vector of strings"))
+        errors <- c(
+          errors,
+          paste0("Provider[", i, "] 'roles' must be an vector of strings")
+        )
       }
     }
   }
