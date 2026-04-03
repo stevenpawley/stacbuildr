@@ -66,10 +66,14 @@ stac_asset <- function(href,
 
   asset <- list(href = href)
 
-  if (!is.null(title)) asset$title <- title
-  if (!is.null(description)) asset$description <- description
-  if (!is.null(type)) asset$type <- type
-  if (!is.null(roles)) asset$roles <- roles
+  if (!is.null(title))
+    asset$title <- title
+  if (!is.null(description))
+    asset$description <- description
+  if (!is.null(type))
+    asset$type <- type
+  if (!is.null(roles))
+    asset$roles <- roles
 
   # Add extension fields
   extra_fields <- list(...)
@@ -133,16 +137,16 @@ add_asset <- function(item,
     stop("'key' is required and must be a non-empty string")
   }
 
+  # If an asset object is provided, validate it
   if (!is.null(asset)) {
     if (!is.list(asset) || is.null(asset$href)) {
-      stop(
-        paste0(
-          "'asset' must be a list with at least an 'href' field",
-          " (use stac_asset())"
-        )
-      )
+      stop(paste0(
+        "'asset' must be a list with at least an 'href' field",
+        " (use stac_asset())"
+      ))
     }
   } else {
+    # Alternatively, create an asset from the provided fields
     asset <- stac_asset(
       href = href,
       title = title,
@@ -153,11 +157,13 @@ add_asset <- function(item,
     )
   }
 
+  # Initialize the assets list if it doesn't exist in the item
   if (is.null(item$assets)) {
     item$assets <- list()
   }
 
+  # Assign the asset to the specified key in the item's assets
   item$assets[[key]] <- asset
 
-  item
+  return(item)
 }
