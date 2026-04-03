@@ -14,6 +14,8 @@ A GeoJSON geometry object (list).
 }
 \description{
 Converts an sf object's geometry to a GeoJSON-compatible list structure.
+If the sf object contains multiple features, they are unioned into a single
+geometry, since a STAC item has one geometry.
 }
 \examples{
 \dontrun{

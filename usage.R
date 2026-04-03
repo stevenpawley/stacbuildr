@@ -879,7 +879,7 @@ boundary_item <- item_from_sf(
     title = "Study Area Boundary",
     description = "Polygon defining the study area extent"
   ),
-  asset_href = "study_area.shp"
+  href = "study_area.shp"
 )
 
 

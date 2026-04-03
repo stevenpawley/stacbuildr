@@ -10,11 +10,11 @@ test_that("validation catches invalid bbox", {
   item <- stac_item(
     id = "test-invalid-bbox",
     geometry = list(type = "Point", coordinates = c(-104.5, 40.5)),
-    bbox = c(10, 20, 5, 15),  # west > east, south > north
+    bbox = c(10, 20, 5, 15), # west > east, south > north
     datetime = "2023-06-15T17:30:00Z",
     properties = list()
   )
-  
+
   result <- validate_stac(item)
   expect_false(result$valid)
   expect_true(any(grepl("west.*east", result$errors, ignore.case = TRUE)))

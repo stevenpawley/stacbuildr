@@ -12,9 +12,9 @@
 #'   characters, hyphens, and underscores. This field is required by the STAC
 #'   specification.
 #' @param description (character, required) Detailed multi-line description to
-#'   fully explain the Catalog. This field should provide comprehensive information 
-#'   about the catalog's contents, purpose, and scope. This field is required by 
-#'   the STAC specification.
+#'   fully explain the Catalog. This field should provide comprehensive
+#'   information about the catalog's contents, purpose, and scope. This field is
+#'   required by the STAC specification.
 #' @param title (character, optional) A short descriptive one-line title for the
 #'   Catalog. Recommended for human-readable identification.
 #' @param stac_version (character, required) The STAC version the Catalog
@@ -56,10 +56,10 @@
 #' * `child`: URL to a child STAC Catalog or Collection
 #' * `item`: URL to a STAC Item
 #'
-#' Use the helper functions `add_self_link()`, `add_root_link()`, `add_parent_link()`,
-#' `add_child()`, and `add_item()` to manage links after creating the catalog.
-#' A `self` link and a `root` link are strongly recommended.
-#' Non-root Catalogs should include a `parent` link.
+#' Use the helper functions `add_self_link()`, `add_root_link()`,
+#' `add_parent_link()`, `add_child()`, and `add_item()` to manage links after
+#' creating the catalog. A `self` link and a `root` link are strongly
+#' recommended. Non-root Catalogs should include a `parent` link.
 #'
 #' ## Extensions
 #' STAC extensions provide additional fields and capabilities. When using
@@ -95,8 +95,8 @@
 #'   title = "North America Satellite Imagery",
 #'   description = paste(
 #'     "A comprehensive catalog of satellite imagery covering North America",
-#'     "from various sensors including Landsat, Sentinel, and commercial providers.",
-#'     "Data spans from 2013 to present."
+#'     "from various sensors including Landsat, Sentinel, and commercial",
+#'     "providers. Data spans from 2013 to present."
 #'   ),
 #'   stac_version = "1.1.0"
 #' )
@@ -139,36 +139,47 @@
 stac_catalog <- S7::new_class(
   "stac_catalog",
   properties = list(
-    type            = S7::new_property(S7::class_character, default = "Catalog"),
-    stac_version    = S7::new_property(S7::class_character, default = "1.1.0"),
-    id              = S7::class_character,
-    description     = S7::class_character,
-    title           = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
-    stac_extensions = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
-    conformsTo      = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
-    links           = S7::new_property(S7::class_list, default = list()),
-    extra_fields    = S7::new_property(S7::class_list, default = list())
+    type = S7::new_property(S7::class_character, default = "Catalog"),
+    stac_version = S7::new_property(S7::class_character, default = "1.1.0"),
+    id = S7::class_character,
+    description = S7::class_character,
+    title = S7::new_property(
+      S7::new_union(S7::class_character, NULL),
+      default = NULL
+    ),
+    stac_extensions = S7::new_property(
+      S7::new_union(S7::class_character, NULL),
+      default = NULL
+    ),
+    conformsTo = S7::new_property(
+      S7::new_union(S7::class_character, NULL),
+      default = NULL
+    ),
+    links = S7::new_property(S7::class_list, default = list()),
+    extra_fields = S7::new_property(S7::class_list, default = list())
   ),
-  constructor = function(id,
-                         description,
-                         title = NULL,
-                         stac_version = "1.1.0",
-                         type = "Catalog",
-                         stac_extensions = NULL,
-                         conformsTo = NULL,
-                         links = list(),
-                         ...) {
+  constructor = function(
+    id,
+    description,
+    title = NULL,
+    stac_version = "1.1.0",
+    type = "Catalog",
+    stac_extensions = NULL,
+    conformsTo = NULL,
+    links = list(),
+    ...
+  ) {
     obj <- S7::new_object(
       S7::S7_object(),
-      type            = type,
-      stac_version    = stac_version,
-      id              = id,
-      description     = description,
-      title           = title,
+      type = type,
+      stac_version = stac_version,
+      id = id,
+      description = description,
+      title = title,
       stac_extensions = stac_extensions,
-      conformsTo      = conformsTo,
-      links           = links,
-      extra_fields    = list(...)
+      conformsTo = conformsTo,
+      links = links,
+      extra_fields = list(...)
     )
     # When loaded as a package, S7 qualifies class names (e.g. "buildstac::stac_catalog").
     # Insert the unqualified name so that inherits() and $ S3 dispatch work correctly.
@@ -188,16 +199,16 @@ stac_catalog <- S7::new_class(
 
 S7::method(as.list, stac_catalog) <- function(x, ...) {
   out <- list(
-    type         = x@type,
+    type = x@type,
     stac_version = x@stac_version,
-    id           = x@id,
-    description  = x@description
+    id = x@id,
+    description = x@description
   )
   if (!is.null(x@title)) {
     out$title <- x@title
   }
   if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
-    out$stac_extensions <- x@stac_extensions
+    out$stac_extensions <- as.list(x@stac_extensions)
   }
   if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
     out$conformsTo <- x@conformsTo
@@ -211,7 +222,7 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
 
 # Allow $ access to S7 properties (and fallback to attributes for stac_children,
 # stac_items, etc. stored via attr()) so all existing helper functions work unchanged.
-
+#' @export
 `$.stac_catalog` <- function(x, name) {
   if (inherits(x, "S7_object") && name %in% S7::prop_names(x)) {
     S7::prop(x, name)
@@ -222,6 +233,7 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
   }
 }
 
+#' @export
 `$<-.stac_catalog` <- function(x, name, value) {
   if (inherits(x, "S7_object") && name %in% S7::prop_names(x)) {
     S7::prop(x, name) <- value
@@ -438,8 +450,16 @@ add_link <- function(catalog, rel, href, ...) {
 #'
 #' @export
 add_child <- function(catalog, child, href = NULL, title = NULL) {
+  if (!inherits(child, "stac_catalog")) {
+    stop("'child' must be a stac_catalog or stac_collection object")
+  }
+
   if (is.null(href)) {
-    href = paste0("./", child$id, "/catalog.json")
+    if (inherits(child, "stac_collection")) {
+      href <- paste0("./", child$id, "/collection.json")
+    } else {
+      href <- paste0("./", child$id, "/catalog.json")
+    }
   }
 
   catalog <- add_link(
@@ -449,6 +469,14 @@ add_child <- function(catalog, child, href = NULL, title = NULL) {
     type = "application/json",
     title = title %||% child$title
   )
+
+  # Store child object so write_stac() can recurse into it
+  stored_children <- attr(catalog, "stac_children")
+  if (is.null(stored_children)) {
+    stored_children <- list()
+  }
+  stored_children[[child$id]] <- child
+  attr(catalog, "stac_children") <- stored_children
 
   catalog
 }

@@ -1,22 +1,24 @@
 #' Create a STAC Asset
 #'
 #' @description
-#' Creates an asset object for use in STAC Items. Assets are the actual data 
-#' files or resources associated with an Item (e.g., imagery files, metadata 
+#' Creates an asset object for use in STAC Items. Assets are the actual data
+#' files or resources associated with an Item (e.g., imagery files, metadata
 #' documents, thumbnails).
 #'
-#' @param href (character, required) URI to the asset object. Can be relative 
-#'   or absolute. Examples: `"./data/image.tif"`, `"https://example.com/image.tif"`.
+#' @param href (character, required) URI to the asset object. Can be relative or
+#'   absolute. Examples: `"./data/image.tif"`,
+#'   `"https://example.com/image.tif"`.
 #' @param title (character, optional) Displayed title for the asset.
 #' @param description (character, optional) Description of the asset.
-#' @param type (character, optional) Media type of the asset. Examples: 
-#'   `"image/tiff; application=geotiff"`, `"image/png"`, `"application/json"`. 
+#' @param type (character, optional) Media type of the asset. Examples:
+#'   `"image/tiff; application=geotiff"`, `"image/png"`, `"application/json"`.
 #'   See \url{https://www.iana.org/assignments/media-types/media-types.xhtml}.
-#' @param roles (character vector, optional) Semantic roles of the asset. Common 
-#'   values include: `"thumbnail"`, `"overview"`, `"data"`, `"metadata"`, 
+#' @param roles (character vector, optional) Semantic roles of the asset. Common
+#'   values include: `"thumbnail"`, `"overview"`, `"data"`, `"metadata"`,
 #'   `"visual"`, `"composite"`.
-#' @param ... Additional fields for the asset. This allows for extension-specific 
-#'   properties like `"eo:bands"`, `"raster:bands"`, `"proj:shape"`, etc.
+#' @param ... Additional fields for the asset. This allows for
+#'   extension-specific properties like `"eo:bands"`, `"raster:bands"`,
+#'   `"proj:shape"`, etc.
 #'
 #' @return A list representing a STAC asset object.
 #'
@@ -53,29 +55,28 @@
 #'
 #' @export
 stac_asset <- function(href,
-                      title = NULL,
-                      description = NULL,
-                      type = NULL,
-                      roles = NULL,
-                      ...) {
-  
+                       title = NULL,
+                       description = NULL,
+                       type = NULL,
+                       roles = NULL,
+                       ...) {
   if (missing(href) || is.null(href) || nchar(href) == 0) {
     stop("'href' is required and must be a non-empty string")
   }
-  
+
   asset <- list(href = href)
-  
+
   if (!is.null(title)) asset$title <- title
   if (!is.null(description)) asset$description <- description
   if (!is.null(type)) asset$type <- type
   if (!is.null(roles)) asset$roles <- roles
-  
+
   # Add extension fields
   extra_fields <- list(...)
   if (length(extra_fields) > 0) {
     asset <- c(asset, extra_fields)
   }
-  
+
   asset
 }
 
@@ -86,7 +87,7 @@ stac_asset <- function(href,
 #' Adds an asset to a STAC Item's assets dictionary.
 #'
 #' @param item A STAC Item object.
-#' @param key (character, required) The asset identifier/key (e.g., "visual", 
+#' @param key (character, required) The asset identifier/key (e.g., "visual",
 #'   "thumbnail", "B4"). Must be unique within the Item's assets.
 #' @param href (character, required) URI to the asset object.
 #' @param title (character, optional) Displayed title for the asset.
@@ -116,37 +117,47 @@ stac_asset <- function(href,
 #'
 #' @export
 add_asset <- function(item,
-                     key,
-                     href,
-                     title = NULL,
-                     description = NULL,
-                     type = NULL,
-                     roles = NULL,
-                     ...) {
-  
+                      key,
+                      asset = NULL,
+                      href = NULL,
+                      title = NULL,
+                      description = NULL,
+                      type = NULL,
+                      roles = NULL,
+                      ...) {
   if (!inherits(item, "stac_item")) {
     stop("'item' must be a stac_item object")
   }
-  
+
   if (missing(key) || is.null(key) || nchar(key) == 0) {
     stop("'key' is required and must be a non-empty string")
   }
-  
-  asset <- stac_asset(
-    href = href,
-    title = title,
-    description = description,
-    type = type,
-    roles = roles,
-    ...
-  )
-  
+
+  if (!is.null(asset)) {
+    if (!is.list(asset) || is.null(asset$href)) {
+      stop(
+        paste0(
+          "'asset' must be a list with at least an 'href' field",
+          " (use stac_asset())"
+        )
+      )
+    }
+  } else {
+    asset <- stac_asset(
+      href = href,
+      title = title,
+      description = description,
+      type = type,
+      roles = roles,
+      ...
+    )
+  }
+
   if (is.null(item$assets)) {
     item$assets <- list()
   }
-  
+
   item$assets[[key]] <- asset
-  
+
   item
 }
-

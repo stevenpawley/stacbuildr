@@ -7,7 +7,8 @@
 add_asset(
   item,
   key,
-  href,
+  asset = NULL,
+  href = NULL,
   title = NULL,
   description = NULL,
   type = NULL,

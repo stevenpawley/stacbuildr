@@ -6,11 +6,11 @@ Bbox <- S7::new_class(
   ),
   validator = function(self) {
     coords <- self@coordinates
-    
+
     if (!length(coords) %in% c(4, 6)) {
       return("Bbox must have 4 or 6 coordinates")
     }
-    
+
     if (length(coords) == 4) {
       if (coords[1] > coords[3]) {
         return("West coordinate must be <= east coordinate")
@@ -42,7 +42,7 @@ SpatialExtent <- S7::new_class(
     if (length(self@bbox) == 0) {
       return("SpatialExtent must contain at least one bbox")
     }
-    
+
     # Validate each bbox
     for (i in seq_along(self@bbox)) {
       bbox <- self@bbox[[i]]
@@ -51,6 +51,24 @@ SpatialExtent <- S7::new_class(
       }
       if (!length(bbox) %in% c(4, 6)) {
         return(sprintf("Bbox[%d] must have 4 or 6 elements", i))
+      }
+      if (length(bbox) == 4) {
+        if (bbox[1] > bbox[3]) {
+          return(sprintf("Bbox[%d]: west (%g) must be <= east (%g)", i, bbox[1], bbox[3]))
+        }
+        if (bbox[2] > bbox[4]) {
+          return(sprintf("Bbox[%d]: south (%g) must be <= north (%g)", i, bbox[2], bbox[4]))
+        }
+      } else {
+        if (bbox[1] > bbox[4]) {
+          return(sprintf("Bbox[%d]: west (%g) must be <= east (%g)", i, bbox[1], bbox[4]))
+        }
+        if (bbox[2] > bbox[5]) {
+          return(sprintf("Bbox[%d]: south (%g) must be <= north (%g)", i, bbox[2], bbox[5]))
+        }
+        if (bbox[3] > bbox[6]) {
+          return(sprintf("Bbox[%d]: min elevation (%g) must be <= max elevation (%g)", i, bbox[3], bbox[6]))
+        }
       }
     }
   }
@@ -66,11 +84,14 @@ TemporalExtent <- S7::new_class(
     if (length(self@interval) == 0) {
       return("TemporalExtent must contain at least one interval")
     }
-    
+
     for (i in seq_along(self@interval)) {
       interval <- self@interval[[i]]
       if (length(interval) != 2) {
-        return(sprintf("Interval[%d] must have exactly 2 elements (start, end)", i))
+        return(sprintf(
+          "Interval[%d] must have exactly 2 elements (start, end)",
+          i
+        ))
       }
       # Could add more validation for datetime formats
     }
@@ -91,12 +112,19 @@ Geometry <- S7::new_class(
   "Geometry",
   properties = list(
     type = S7::class_character,
-    coordinates = S7::class_any  # varies by geometry type
+    coordinates = S7::class_any # varies by geometry type
   ),
   validator = function(self) {
-    valid_types <- c("Point", "LineString", "Polygon", "MultiPoint",
-                     "MultiLineString", "MultiPolygon", "GeometryCollection")
-    
+    valid_types <- c(
+      "Point",
+      "LineString",
+      "Polygon",
+      "MultiPoint",
+      "MultiLineString",
+      "MultiPolygon",
+      "GeometryCollection"
+    )
+
     if (!self@type %in% valid_types) {
       return(sprintf(
         "Geometry type '%s' is not valid. Must be one of: %s",
@@ -104,7 +132,7 @@ Geometry <- S7::new_class(
         paste(valid_types, collapse = ", ")
       ))
     }
-    
+
     if (is.null(self@coordinates) && self@type != "GeometryCollection") {
       return("Geometry must have coordinates unless type is GeometryCollection")
     }
@@ -117,7 +145,9 @@ S7::method(as.list, SpatialExtent) <- function(x, ...) {
 }
 
 S7::method(as.list, TemporalExtent) <- function(x, ...) {
-  list(interval = x@interval)
+  # Strip names so each interval serialises as a JSON array, not an object.
+  # list(start = "...", end = "...") would otherwise become {"start":...}.
+  list(interval = lapply(x@interval, unname))
 }
 
 S7::method(as.list, Extent) <- function(x, ...) {

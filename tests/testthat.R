@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(rstac.client)
+library(buildstac)
 
-test_check("rstac.client")
+test_check("buildstac")

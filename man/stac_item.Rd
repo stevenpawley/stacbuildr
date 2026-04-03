@@ -7,7 +7,7 @@
 stac_item(
   id,
   geometry,
-  bbox,
+  bbox = NULL,
   datetime = NULL,
   properties = list(),
   assets = list(),
@@ -88,9 +88,10 @@ a time range. Must be in UTC RFC 3339 format. Only used when \code{datetime} is 
 be merged with the \code{properties} parameter.}
 }
 \value{
-An object of class \code{c("stac_item", "list")} containing the Item
-metadata formatted as a GeoJSON Feature. The object can be converted to
-JSON using \code{jsonlite::toJSON()} with \code{auto_unbox = TRUE}.
+An S7 object of class \code{stac_item} containing the Item metadata
+formatted as a GeoJSON Feature. Convert to a plain list for JSON
+serialization with \code{as.list()}, or write directly to disk using
+\code{write_item()}.
 }
 \description{
 Creates a STAC (SpatioTemporal Asset Catalog) Item object following the

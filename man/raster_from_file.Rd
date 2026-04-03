@@ -2,7 +2,7 @@
 % Please edit documentation in R/extension-raster.R
 \name{raster_from_file}
 \alias{raster_from_file}
-\title{Extract Raster Metadata from File}
+\title{Extract Raster Band Metadata from a File}
 \usage{
 raster_from_file(file, calculate_statistics = FALSE, sample_size = NULL)
 }
@@ -13,17 +13,16 @@ raster_from_file(file, calculate_statistics = FALSE, sample_size = NULL)
 mean, and standard deviation for each band. Default is FALSE (can be slow
 for large files).}
 
-\item{sample_size}{(integer, optional) Maximum number of pixels to sample
-when calculating statistics. Helps speed up processing for large rasters.
-Default is NULL (use all pixels).}
+\item{sample_size}{(integer, optional) Number of pixels to sample per band
+when calculating statistics. If NULL, all pixels are used.}
 }
 \value{
 A list of raster band objects, one per band in the file.
 }
 \description{
-Extracts raster metadata from a raster file using the terra package.
-Creates band objects with data type, nodata values, and spatial resolution.
-Optionally calculates statistics if requested.
+Extracts raster metadata from a file using \code{stars} and \code{sf::gdal_utils}.
+Creates band objects with data type, spatial resolution, and optionally
+statistics.
 }
 \examples{
 \dontrun{

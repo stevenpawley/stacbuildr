@@ -1,9 +1,7 @@
 test_that("catalog structure matches pystac output", {
-  skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-  skip_if_not(reticulate::py_module_available("pystac"), "pystac not available")
-
   # Import pystac
+  skip_if_not_installed("reticulate")
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
 
   # Common catalog parameters
@@ -58,10 +56,9 @@ test_that("catalog structure matches pystac output", {
 })
 
 test_that("collection structure matches pystac output", {
+  # Import pystac
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-  skip_if_not(reticulate::py_module_available("pystac"), "pystac not available")
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
 
   # Common collection parameters
@@ -128,10 +125,9 @@ test_that("collection structure matches pystac output", {
 })
 
 test_that("item structure matches pystac output", {
+  # Import pystac
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-  skip_if_not(reticulate::py_module_available("pystac"), "pystac not available")
-
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -201,41 +197,41 @@ test_that("item structure matches pystac output", {
 })
 
 test_that("catalog with child catalogs matches pystac", {
+  # Import pystac
   skip_if_not_installed("reticulate")
-  skip_if_no_pystac()
-  
+  reticulate::py_require("pystac")
   pystac <- reticulate::import("pystac")
-  
+
   # Create R parent and child catalogs
   r_parent <- stac_catalog(
     id = "parent-catalog",
     description = "Parent catalog",
     title = "Parent"
   )
-  
+
   r_child <- stac_catalog(
     id = "child-catalog",
     description = "Child catalog",
     title = "Child"
   )
-  
+
   # Create Python parent and child catalogs
   py_parent <- pystac$Catalog(
     id = "parent-catalog",
     description = "Parent catalog",
     title = "Parent"
   )
-  
+
   py_child <- pystac$Catalog(
     id = "child-catalog",
     description = "Child catalog",
     title = "Child"
   )
-  
+
   # Validate both
   expect_true(validate_stac(r_parent)$valid)
   expect_true(validate_stac(r_child)$valid)
-  
+
   # Check structure
   expect_equal(r_parent$type, "Catalog")
   expect_equal(r_child$type, "Catalog")

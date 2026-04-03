@@ -1,0 +1,91 @@
+url: ~
+template:
+  bootstrap: 5
+
+reference:
+  - title: "Create STAC Objects"
+    desc: >
+      Functions for constructing the core STAC object types.
+    contents:
+      - stac_catalog
+      - stac_collection
+      - stac_item
+      - stac_asset
+      - stac_extent
+      - stac_provider
+      - stac_summaries
+
+  - title: "Build Catalog Hierarchy"
+    desc: >
+      Add and retrieve children and items within a catalog or collection.
+    contents:
+      - add_child
+      - add_item
+      - remove_item
+      - get_children
+      - get_items
+      - count_items
+
+  - title: "Manage Assets"
+    desc: >
+      Add assets to STAC Items.
+    contents:
+      - add_asset
+
+  - title: "Manage Links"
+    desc: >
+      Add and query links on any STAC object.
+    contents:
+      - add_link
+      - add_self_link
+      - add_root_link
+      - add_parent_link
+      - get_item_links
+
+  - title: "Read and Write"
+    desc: >
+      Write complete catalog trees to disk and read them back.
+    contents:
+      - write_stac
+      - read_stac
+      - write_catalog
+      - write_item
+
+  - title: "EO Extension"
+    desc: >
+      Support for the Electro-Optical (EO) STAC extension.
+    contents:
+      - add_eo_extension
+      - eo_band
+      - landsat_oli_bands
+      - sentinel2_msi_bands
+      - print.eo_band
+
+  - title: "Raster Extension"
+    desc: >
+      Support for the Raster STAC extension and band-level metadata.
+    contents:
+      - add_raster_extension
+      - raster_band
+      - raster_statistics
+      - raster_histogram
+      - raster_from_file
+      - bands_from_stars
+      - print.raster_band
+
+  - title: "Integration Helpers"
+    desc: >
+      Create STAC Items from spatial objects and files.
+    contents:
+      - item_from_raster
+      - item_from_sf
+      - items_from_directory
+      - geometry_from_sf
+      - bbox_from_sf
+      - extent_from_items
+
+  - title: "Validation"
+    desc: >
+      Validate STAC objects against the specification.
+    contents:
+      - validate_stac

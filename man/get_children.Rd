@@ -18,7 +18,7 @@ Retrieves the stored child catalogs/collections from a catalog object.
 \examples{
 \dontrun{
 children <- get_children(catalog)
-names(children)  # Get IDs of child catalogs
+names(children) # Get IDs of child catalogs
 }
 
 }
