@@ -33,7 +33,8 @@ item_from_sf(sf_obj, id, datetime, properties = list(), href = NULL, ...)
 
 - ...:
 
-  Additional arguments passed to [`stac_item()`](stac_item.md).
+  Additional arguments passed to
+  [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md).
 
 ## Value
 

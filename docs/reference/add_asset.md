@@ -29,6 +29,13 @@ add_asset(
   (character, required) The asset identifier/key (e.g., "visual",
   "thumbnail", "B4"). Must be unique within the Item's assets.
 
+- asset:
+
+  An optional asset object previously created using
+  [`stac_asset()`](https://stevenpawley.github.io/stacbuildr/reference/stac_asset.md).
+  Alternatively, the asset can be created from the `add_asset`
+  arguments.
+
 - href:
 
   (character, required) URI to the asset object.

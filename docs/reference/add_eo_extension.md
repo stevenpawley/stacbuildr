@@ -7,8 +7,8 @@ part of the electromagnetic spectrum.
 
 **Important Note on STAC 1.1.0 Changes:** This extension formerly had a
 field eo:bands, which has been removed in favor of a general field bands
-in STAC common metadata. The structure is the same—it's an array of Band
-Objects—but fields from the EO extension now have an `eo:` prefix, while
+in STAC common metadata. The structure is the same as an array of Band
+Objects but fields from the EO extension now have an `eo:` prefix, while
 more general fields like `description` have been moved to common
 metadata and don't need a prefix.
 
@@ -28,14 +28,16 @@ add_eo_extension(
 
 - item:
 
-  A STAC Item object created with [`stac_item()`](stac_item.md).
+  A STAC Item object created with
+  [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md).
 
 - bands:
 
   (list, optional) A list of band objects created with
-  [`eo_band()`](eo_band.md). Each band describes the characteristics of
-  a spectral band. If the asset has multiple bands, provide a list with
-  one entry per band in order.
+  [`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md).
+  Each band describes the characteristics of a spectral band. If the
+  asset has multiple bands, provide a list with one entry per band in
+  order.
 
 - cloud_cover:
 
@@ -75,7 +77,7 @@ prefix):
 - `eo:common_name`: Common name of the band (e.g., "red", "green",
   "blue", "nir")
 
-- `eo:center_wavelength`: Center wavelength in micrometers (μm)
+- `eo:center_wavelength`: Center wavelength in micrometers
 
 - `eo:full_width_half_max`: Full width at half maximum (FWHM) in
   micrometers
@@ -137,12 +139,14 @@ EO Extension Specification: <https://github.com/stac-extensions/eo>
 
 ## See also
 
-- [`eo_band()`](eo_band.md) for creating EO band objects
+- [`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md)
+  for creating EO band objects
 
-- [`add_raster_extension()`](add_raster_extension.md) for adding raster
-  metadata
+- [`add_raster_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_raster_extension.md)
+  for adding raster metadata
 
-- [`stac_item()`](stac_item.md) for creating STAC Items
+- [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md)
+  for creating STAC Items
 
 ## Examples
 
@@ -150,22 +154,26 @@ EO Extension Specification: <https://github.com/stac-extensions/eo>
 # Create an item
 item <- stac_item(
   id = "LC08_L2SP_001002_20230615",
-  geometry = my_geometry,
-  bbox = my_bbox,
+  geometry = list(
+    type = "Polygon",
+    coordinates = list(list(
+      c(-105.5, 39.5),
+      c(-104.5, 39.5),
+      c(-104.5, 40.5),
+      c(-105.5, 40.5),
+      c(-105.5, 39.5)
+    ))
+  ),
+  bbox = c(-105.5, 39.5, -104.5, 40.5),
   datetime = "2023-06-15T10:30:00Z",
   properties = list(
     platform = "landsat-8",
     instruments = c("oli", "tirs")
   )
 )
-#> Error: object 'my_geometry' not found
 
 # Add EO extension with cloud cover
-item <- add_eo_extension(
-  item,
-  cloud_cover = 12.5
-)
-#> Error: object 'item' not found
+item <- add_eo_extension(item, cloud_cover = 12.5)
 
 # Create multispectral bands
 red_band <- eo_band(
@@ -209,7 +217,6 @@ item <- item |>
     cloud_cover = 5.2,
     asset_key = "visual"
   )
-#> Error: object 'item' not found
 
 # Combine EO and Raster extensions
 combined_band <- eo_band(
@@ -217,7 +224,7 @@ combined_band <- eo_band(
   common_name = "red",
   center_wavelength = 0.665,
   full_width_half_max = 0.038,
-  description = "Red band (0.64-0.67 μm)"
+  description = "Red band (0.64-0.67)"
 )
 
 # Add raster properties to the same band
@@ -230,5 +237,4 @@ combined_band$`raster:offset` <- 0
 item <- item |>
   add_eo_extension(bands = list(combined_band)) |>
   add_raster_extension(bands = list(combined_band))
-#> Error: object 'item' not found
 ```

@@ -37,13 +37,17 @@ The modified parent catalog object with the child link added.
 
 ## See also
 
-- [`add_link()`](add_link.md) for adding arbitrary links
+- [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
+  for adding arbitrary links
 
-- [`add_item()`](add_item.md) for adding STAC Items
+- [`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
+  for adding STAC Items
 
-- [`stac_catalog()`](stac_catalog.md) for creating catalogs
+- [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md)
+  for creating catalogs
 
-- [`stac_collection()`](stac_collection.md) for creating collections
+- [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md)
+  for creating collections
 
 ## Examples
 

@@ -106,7 +106,7 @@
 #' )
 #'
 #' # Add multiple items
-#' items <- list(item1, item2, item3)
+#' items <- list(item, item, item)
 #' collection <- add_item(collection, items)
 #'
 #' # Add multiple items with custom hrefs
@@ -301,6 +301,11 @@ find_link <- function(stac_object, rel) {
 #' @return The modified catalog/collection object with Item link(s) removed.
 #'
 #' @examples
+#' catalog <- stac_catalog(
+#'   id = "my-catalog",
+#'   description = "Example catalog"
+#' )
+#'
 #' # Remove specific item by ID
 #' catalog <- remove_item(catalog, item_id = "my-item-001")
 #'
@@ -325,7 +330,7 @@ remove_item <- function(catalog, item_id = NULL, href = NULL, all = FALSE) {
 
   if (all) {
     # Remove all item links
-    catalog$links <- Filter(function(link) link$rel != "item", catalog@links)
+    catalog@links <- Filter(function(link) link$rel != "item", catalog@links)
     return(catalog)
   }
 
@@ -367,6 +372,10 @@ remove_item <- function(catalog, item_id = NULL, href = NULL, all = FALSE) {
 #' @return Integer count of item links.
 #'
 #' @examples
+#' catalog <- stac_catalog(
+#'   id = "my-catalog",
+#'   description = "Example catalog"
+#' )
 #' n <- count_items(catalog)
 #' cat("Catalog contains", n, "items\n")
 #'
@@ -403,6 +412,11 @@ count_items <- function(catalog) {
 #'   containing all item links.
 #'
 #' @examples
+#' catalog <- stac_catalog(
+#'   id = "my-catalog",
+#'   description = "Example catalog"
+#' )
+#'
 #' # Get as list
 #' item_links <- get_item_links(catalog)
 #'

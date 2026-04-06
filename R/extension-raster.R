@@ -49,7 +49,7 @@
 #' In remote sensing, raster data often stores raw Digital Numbers (DN) that
 #' must be transformed to physical values using:
 #'
-#' **value = scale × DN + offset**
+#' **value = scale * DN + offset**
 #'
 #' For example, storing reflectance (0-1) as integers (0-10000) with scale=0.0001.
 #'
@@ -183,7 +183,7 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
 #'   "float16", "float32", "float64", "cint16", "cint32", "cfloat32", "cfloat64",
 #'   or "other".
 #' @param unit (character, optional) Unit of measurement for the pixel values.
-#'   Examples: "m" (meters), "W⋅sr⁻¹⋅m⁻²" (radiance), "1" (unitless/reflectance).
+#'   Examples: "m" (meters), "W sr-1 m-2" (radiance), "1" (unitless/reflectance).
 #' @param statistics (list, optional) Statistics object created with
 #'   `raster_statistics()` describing the distribution of pixel values.
 #' @param sampling (character, optional) Pixel sampling method. Either "area"
@@ -195,9 +195,9 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
 #'   pixels in the band, in meters. Useful when resolution varies or differs
 #'   from ground sample distance (gsd).
 #' @param scale (numeric, optional) Multiplicative scaling factor to transform
-#'   pixel values: `physical_value = scale × DN + offset`. Default is 1.
+#'   pixel values: `physical_value = scale * DN + offset`. Default is 1.
 #' @param offset (numeric, optional) Additive offset to transform pixel values:
-#'   `physical_value = scale × DN + offset`. Default is 0.
+#'   `physical_value = scale * DN + offset`. Default is 0.
 #' @param histogram (list, optional) Histogram object created with
 #'   `raster_histogram()` describing the distribution of pixel values.
 #' @param ... Additional fields for the band object. Can include fields from
@@ -509,7 +509,7 @@ print.raster_band <- function(x, ...) {
   if (!is.null(x$`raster:scale`) || !is.null(x$`raster:offset`)) {
     scale <- x$`raster:scale` %||% 1
     offset <- x$`raster:offset` %||% 0
-    cat("  Transform: value =", scale, "× DN +", offset, "\n")
+    cat("  Transform: value =", scale, "* DN +", offset, "\n")
   }
 
   if (!is.null(x$unit)) {

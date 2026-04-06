@@ -27,13 +27,16 @@ containing all item links.
 ## Examples
 
 ``` r
+catalog <- stac_catalog(
+  id = "my-catalog",
+  description = "Example catalog"
+)
+
 # Get as list
 item_links <- get_item_links(catalog)
-#> Error: object 'catalog' not found
 
 # Get as data.frame
 item_df <- get_item_links(catalog, as_dataframe = TRUE)
-#> Error: object 'catalog' not found
 print(item_df)
-#> Error: object 'item_df' not found
+#> data frame with 0 columns and 0 rows
 ```

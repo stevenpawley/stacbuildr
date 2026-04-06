@@ -22,7 +22,7 @@ information and common names."></head><body>
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/buildstac/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/stacbuildr/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -32,7 +32,7 @@ information and common names."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Create an EO Band Object</h1>
-      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/buildstac/blob/HEAD/R/extension-eo.R" class="external-link"><code>R/extension-eo.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/stacbuildr/blob/HEAD/R/extension-eo.R" class="external-link"><code>R/extension-eo.R</code></a></small>
       <div class="d-none name"><code>eo_band.Rd</code></div>
     </div>
 
@@ -78,12 +78,12 @@ CommonMark 0.29 syntax may be used for rich text representation.</p></dd>
 
 <dt id="arg-center-wavelength">center_wavelength<a class="anchor" aria-label="anchor" href="#arg-center-wavelength"></a></dt>
 <dd><p>(numeric, optional) Center wavelength of the band in
-micrometers (μm). For example, the red band might be 0.665.</p></dd>
+micrometers. For example, the red band might be 0.665.</p></dd>
 
 
 <dt id="arg-full-width-half-max">full_width_half_max<a class="anchor" aria-label="anchor" href="#arg-full-width-half-max"></a></dt>
 <dd><p>(numeric, optional) Full width at half maximum
-(FWHM) of the band, in micrometers (μm). This is the width of the band as
+(FWHM) of the band, in micrometers. This is the width of the band as
 measured at half the maximum transmission.</p></dd>
 
 
@@ -119,10 +119,10 @@ descriptive <code>description</code>.</p>
 <h3 id="wavelength-specification">Wavelength Specification<a class="anchor" aria-label="anchor" href="#wavelength-specification"></a></h3>
 
 
-<p>Wavelengths should be specified in micrometers (μm). For example:</p><ul><li><p>Blue: ~0.49 μm (490 nm)</p></li>
-<li><p>Green: ~0.56 μm (560 nm)</p></li>
-<li><p>Red: ~0.66 μm (660 nm)</p></li>
-<li><p>NIR: ~0.86 μm (860 nm)</p></li>
+<p>Wavelengths should be specified in micrometers. For example:</p><ul><li><p>Blue: ~0.49 (490 nm)</p></li>
+<li><p>Green: ~0.56 (560 nm)</p></li>
+<li><p>Red: ~0.66 (660 nm)</p></li>
+<li><p>NIR: ~0.86 (860 nm)</p></li>
 </ul></div>
 
 <div class="section">
@@ -150,7 +150,7 @@ same band object. Common raster fields include <code>nodata</code>, <code>data_t
 <span class="r-in"><span>  common_name <span class="op">=</span> <span class="st">"nir"</span>,</span></span>
 <span class="r-in"><span>  center_wavelength <span class="op">=</span> <span class="fl">0.865</span>,</span></span>
 <span class="r-in"><span>  full_width_half_max <span class="op">=</span> <span class="fl">0.033</span>,</span></span>
-<span class="r-in"><span>  description <span class="op">=</span> <span class="st">"Near Infrared band (0.85-0.88 μm)"</span></span></span>
+<span class="r-in"><span>  description <span class="op">=</span> <span class="st">"Near Infrared band (0.85-0.88)"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Band with solar illumination</span></span></span>

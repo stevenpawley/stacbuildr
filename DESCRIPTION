@@ -3,7 +3,7 @@ Title: An R package to Create Spatio-Temporal Asset Catalogs (STAC)
 Version: 0.0.0.9000
 Authors@R: 
     person("Steven", "Pawley", , "dr.stevenpawley@gmail.com", role = c("aut", "cre"))
-Description: The buildstac package provides functions to generate STAC catalogs.
+Description: The stacbuildr package provides functions to generate STAC catalogs.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -14,12 +14,14 @@ Imports:
     jsonlite,
     sf,
     geojsonsf,
-    S7
+    S7,
+    stats
 Suggests:
     stars,
     testthat (>= 3.0.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    reticulate
 Config/testthat/edition: 3
 Collate:
     'extent-geometry-classes.R'
@@ -34,5 +36,5 @@ Collate:
     'validation.R'
     'write.R'
     'zzz.R'
-URL: https://github.com/stevenpawley/buildstac, https://stevenpawley.github.io/stacbuildr/
-BugReports: https://github.com/stevenpawley/buildstac/issues
+URL: https://github.com/stevenpawley/stacbuildr, https://stevenpawley.github.io/stacbuildr/
+BugReports: https://github.com/stevenpawley/stacbuildr/issues

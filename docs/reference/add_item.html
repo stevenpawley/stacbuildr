@@ -24,7 +24,7 @@ to include links back to the parent ("parent", "collection", and "root").'></hea
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/buildstac/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/stacbuildr/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -34,7 +34,7 @@ to include links back to the parent ("parent", "collection", and "root").'></hea
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Add an Item to a STAC Catalog or Collection</h1>
-      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/buildstac/blob/HEAD/R/item-helpers.R" class="external-link"><code>R/item-helpers.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/stacbuildr/blob/HEAD/R/item-helpers.R" class="external-link"><code>R/item-helpers.R</code></a></small>
       <div class="d-none name"><code>add_item.Rd</code></div>
     </div>
 
@@ -196,10 +196,8 @@ Item must have the following fields:</p><ul><li><p><code>type</code>: "Feature"<
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add multiple items</span></span></span>
-<span class="r-in"><span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">item1</span>, <span class="va">item2</span>, <span class="va">item3</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'item1' not found</span>
+<span class="r-in"><span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">item</span>, <span class="va">item</span>, <span class="va">item</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu">add_item</span><span class="op">(</span><span class="va">collection</span>, <span class="va">items</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'items' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add multiple items with custom hrefs</span></span></span>
 <span class="r-in"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu">add_item</span><span class="op">(</span></span></span>
@@ -207,7 +205,6 @@ Item must have the following fields:</p><ul><li><p><code>type</code>: "Feature"<
 <span class="r-in"><span>  <span class="va">items</span>,</span></span>
 <span class="r-in"><span>  href <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"./2020/item1.json"</span>, <span class="st">"./2020/item2.json"</span>, <span class="st">"./2020/item3.json"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'items' not found</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

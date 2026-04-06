@@ -74,8 +74,9 @@ stac_collection(
     [`c()`](https://rdrr.io/r/base/c.html) drops `NULL`, which would
     produce an invalid interval.
 
-  Use the helper function [`stac_extent()`](stac_extent.md) to create
-  this structure easily.
+  Use the helper function
+  [`stac_extent()`](https://stevenpawley.github.io/stacbuildr/reference/stac_extent.md)
+  to create this structure easily.
 
 - title:
 
@@ -109,8 +110,9 @@ stac_collection(
   (list, optional) A list of Provider objects. Each provider should be a
   list with fields: `name` (required), `description`, `roles` (e.g.,
   "producer", "licensor", "processor", "host"), and `url`. Use the
-  helper function [`stac_provider()`](stac_provider.md) to create
-  providers.
+  helper function
+  [`stac_provider()`](https://stevenpawley.github.io/stacbuildr/reference/stac_provider.md)
+  to create providers.
 
 - links:
 
@@ -128,7 +130,8 @@ stac_collection(
   unique values, a range (with `minimum` and `maximum`), or a JSON
   Schema. Common properties to summarize include `"datetime"`,
   `"platform"`, `"instruments"`, `"gsd"`, `"eo:bands"`, etc. Use
-  [`stac_summaries()`](stac_summaries.md) helper to create this.
+  [`stac_summaries()`](https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.md)
+  helper to create this.
 
 - assets:
 
@@ -153,7 +156,8 @@ stac_collection(
 An S7 object of class `stac_collection` (extending `stac_catalog`)
 containing the collection metadata. Convert to a plain list for JSON
 serialization with [`as.list()`](https://rdrr.io/r/base/list.html), or
-write directly to disk using [`write_stac()`](write_stac.md).
+write directly to disk using
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md).
 
 ## Details
 
@@ -235,17 +239,23 @@ STAC Collection Specification:
 
 ## See also
 
-- [`stac_catalog()`](stac_catalog.md) for creating STAC Catalogs
+- [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md)
+  for creating STAC Catalogs
 
-- [`stac_item()`](stac_item.md) for creating STAC Items
+- [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md)
+  for creating STAC Items
 
-- [`stac_extent()`](stac_extent.md) for creating extent objects
+- [`stac_extent()`](https://stevenpawley.github.io/stacbuildr/reference/stac_extent.md)
+  for creating extent objects
 
-- [`stac_provider()`](stac_provider.md) for creating provider objects
+- [`stac_provider()`](https://stevenpawley.github.io/stacbuildr/reference/stac_provider.md)
+  for creating provider objects
 
-- [`stac_summaries()`](stac_summaries.md) for creating summaries
+- [`stac_summaries()`](https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.md)
+  for creating summaries
 
-- [`add_link()`](add_link.md) for adding links to collections
+- [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
+  for adding links to collections
 
 ## Examples
 
@@ -394,6 +404,7 @@ cat(collection_json)
 #>         "center_wavelength": 0.56
 #>       }
 #>     ]
-#>   }
+#>   },
+#>   "links.1": []
 #> }
 ```

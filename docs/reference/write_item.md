@@ -12,7 +12,8 @@ write_item(item, file, overwrite = FALSE, pretty = TRUE)
 
 - item:
 
-  A STAC Item object created with [`stac_item()`](stac_item.md).
+  A STAC Item object created with
+  [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md).
 
 - file:
 

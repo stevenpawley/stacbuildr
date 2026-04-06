@@ -93,6 +93,8 @@ stac_asset <- function(href,
 #' @param item A STAC Item object.
 #' @param key (character, required) The asset identifier/key (e.g., "visual",
 #'   "thumbnail", "B4"). Must be unique within the Item's assets.
+#' @param asset An optional asset object previously created using `stac_asset()`.
+#'   Alternatively, the asset can be created from the `add_asset` arguments.
 #' @param href (character, required) URI to the asset object.
 #' @param title (character, optional) Displayed title for the asset.
 #' @param description (character, optional) Description of the asset.

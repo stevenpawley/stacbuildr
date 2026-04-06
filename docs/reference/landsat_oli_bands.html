@@ -20,7 +20,7 @@ Operational Land Imager (OLI) sensors."></head><body>
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/buildstac/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/stacbuildr/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -30,7 +30,7 @@ Operational Land Imager (OLI) sensors."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Create Standard Landsat 8/9 OLI Bands</h1>
-      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/buildstac/blob/HEAD/R/extension-eo.R" class="external-link"><code>R/extension-eo.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/stacbuildr/blob/HEAD/R/extension-eo.R" class="external-link"><code>R/extension-eo.R</code></a></small>
       <div class="d-none name"><code>landsat_oli_bands.Rd</code></div>
     </div>
 
@@ -62,9 +62,22 @@ bands (B10, B11). Default is FALSE (OLI bands only).</p></dd>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">bands</span> <span class="op">&lt;-</span> <span class="fu">landsat_oli_bands</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="stac_item.html">stac_item</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  id <span class="op">=</span> <span class="st">"LC09_L2SP_001002_20230615"</span>,</span></span>
+<span class="r-in"><span>  geometry <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    type <span class="op">=</span> <span class="st">"Polygon"</span>,</span></span>
+<span class="r-in"><span>    coordinates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">105.5</span>, <span class="fl">39.5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">104.5</span>, <span class="fl">39.5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">104.5</span>, <span class="fl">40.5</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">105.5</span>, <span class="fl">40.5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">105.5</span>, <span class="fl">39.5</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  bbox <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">105.5</span>, <span class="fl">39.5</span>, <span class="op">-</span><span class="fl">104.5</span>, <span class="fl">40.5</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  datetime <span class="op">=</span> <span class="st">"2023-06-15T10:30:00Z"</span>,</span></span>
+<span class="r-in"><span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="add_eo_extension.html">add_eo_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="va">bands</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'item' not found</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

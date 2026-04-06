@@ -22,6 +22,9 @@ add_asset(
 \item{key}{(character, required) The asset identifier/key (e.g., "visual",
 "thumbnail", "B4"). Must be unique within the Item's assets.}
 
+\item{asset}{An optional asset object previously created using \code{stac_asset()}.
+Alternatively, the asset can be created from the \code{add_asset} arguments.}
+
 \item{href}{(character, required) URI to the asset object.}
 
 \item{title}{(character, optional) Displayed title for the asset.}

@@ -20,6 +20,11 @@ containing all item links.
 Retrieves all Item links from a Catalog or Collection.
 }
 \examples{
+catalog <- stac_catalog(
+  id = "my-catalog",
+  description = "Example catalog"
+)
+
 # Get as list
 item_links <- get_item_links(catalog)
 

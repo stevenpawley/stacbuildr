@@ -75,38 +75,10 @@ STAC Link Object specification:
 
 ## See also
 
-- [`add_link()`](add_link.md) for adding links to STAC objects
+- [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
+  for adding links to STAC objects
 
-- [`add_self_link()`](add_self_link.md),
-  [`add_root_link()`](add_root_link.md),
-  [`add_parent_link()`](add_parent_link.md) for convenience functions
-
-## Examples
-
-``` r
-# Create a simple link
-link <- stac_link(
-  rel = "self",
-  href = "https://example.com/catalog.json"
-)
-#> Error in stac_link(rel = "self", href = "https://example.com/catalog.json"): could not find function "stac_link"
-
-# Create a link with additional properties
-link <- stac_link(
-  rel = "child",
-  href = "./child-catalog.json",
-  type = "application/json",
-  title = "Child Catalog"
-)
-#> Error in stac_link(rel = "child", href = "./child-catalog.json", type = "application/json",     title = "Child Catalog"): could not find function "stac_link"
-
-# Create a link with HTTP method and headers
-link <- stac_link(
-  rel = "search",
-  href = "https://api.example.com/search",
-  method = "POST",
-  headers = list("Content-Type" = "application/json"),
-  body = list(limit = 10)
-)
-#> Error in stac_link(rel = "search", href = "https://api.example.com/search",     method = "POST", headers = list(`Content-Type` = "application/json"),     body = list(limit = 10)): could not find function "stac_link"
-```
+- [`add_self_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_self_link.md),
+  [`add_root_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_root_link.md),
+  [`add_parent_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_parent_link.md)
+  for convenience functions

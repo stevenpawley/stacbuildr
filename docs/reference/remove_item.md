@@ -37,19 +37,20 @@ The modified catalog/collection object with Item link(s) removed.
 ## Examples
 
 ``` r
+catalog <- stac_catalog(
+  id = "my-catalog",
+  description = "Example catalog"
+)
+
 # Remove specific item by ID
 catalog <- remove_item(catalog, item_id = "my-item-001")
-#> Error: object 'catalog' not found
 
 # Remove multiple items
 catalog <- remove_item(catalog, item_id = c("item1", "item2"))
-#> Error: object 'catalog' not found
 
 # Remove by href
 catalog <- remove_item(catalog, href = "./items/my-item.json")
-#> Error: object 'catalog' not found
 
 # Remove all items
 catalog <- remove_item(catalog, all = TRUE)
-#> Error: object 'catalog' not found
 ```

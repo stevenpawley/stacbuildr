@@ -27,10 +27,10 @@ one of the standard names if applicable: "coastal", "blue", "green", "red",
 CommonMark 0.29 syntax may be used for rich text representation.}
 
 \item{center_wavelength}{(numeric, optional) Center wavelength of the band in
-micrometers (μm). For example, the red band might be 0.665.}
+micrometers. For example, the red band might be 0.665.}
 
 \item{full_width_half_max}{(numeric, optional) Full width at half maximum
-(FWHM) of the band, in micrometers (μm). This is the width of the band as
+(FWHM) of the band, in micrometers. This is the width of the band as
 measured at half the maximum transmission.}
 
 \item{solar_illumination}{(numeric, optional) Solar illumination value for the
@@ -59,12 +59,12 @@ descriptive \code{description}.
 
 \subsection{Wavelength Specification}{
 
-Wavelengths should be specified in micrometers (μm). For example:
+Wavelengths should be specified in micrometers. For example:
 \itemize{
-\item Blue: ~0.49 μm (490 nm)
-\item Green: ~0.56 μm (560 nm)
-\item Red: ~0.66 μm (660 nm)
-\item NIR: ~0.86 μm (860 nm)
+\item Blue: ~0.49 (490 nm)
+\item Green: ~0.56 (560 nm)
+\item Red: ~0.66 (660 nm)
+\item NIR: ~0.86 (860 nm)
 }
 }
 
@@ -88,7 +88,7 @@ band <- eo_band(
   common_name = "nir",
   center_wavelength = 0.865,
   full_width_half_max = 0.033,
-  description = "Near Infrared band (0.85-0.88 μm)"
+  description = "Near Infrared band (0.85-0.88)"
 )
 
 # Band with solar illumination

@@ -249,7 +249,7 @@ item <- stac_item(
 )
 
 # Convert to JSON
-item_json <- jsonlite::toJSON(item, auto_unbox = TRUE, pretty = TRUE)
+item_json <- jsonlite::toJSON(as.list(item), auto_unbox = TRUE, pretty = TRUE)
 cat(item_json)
 
 }

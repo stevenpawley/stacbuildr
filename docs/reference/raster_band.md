@@ -40,14 +40,14 @@ raster_band(
 - unit:
 
   (character, optional) Unit of measurement for the pixel values.
-  Examples: "m" (meters), "W⋅sr⁻¹⋅m⁻²" (radiance), "1"
+  Examples: "m" (meters), "W sr-1 m-2" (radiance), "1"
   (unitless/reflectance).
 
 - statistics:
 
   (list, optional) Statistics object created with
-  [`raster_statistics()`](raster_statistics.md) describing the
-  distribution of pixel values.
+  [`raster_statistics()`](https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.md)
+  describing the distribution of pixel values.
 
 - sampling:
 
@@ -70,18 +70,18 @@ raster_band(
 - scale:
 
   (numeric, optional) Multiplicative scaling factor to transform pixel
-  values: `physical_value = scale × DN + offset`. Default is 1.
+  values: `physical_value = scale * DN + offset`. Default is 1.
 
 - offset:
 
   (numeric, optional) Additive offset to transform pixel values:
-  `physical_value = scale × DN + offset`. Default is 0.
+  `physical_value = scale * DN + offset`. Default is 0.
 
 - histogram:
 
   (list, optional) Histogram object created with
-  [`raster_histogram()`](raster_histogram.md) describing the
-  distribution of pixel values.
+  [`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md)
+  describing the distribution of pixel values.
 
 - ...:
 

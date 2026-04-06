@@ -40,14 +40,14 @@ eo_band(
 
 - center_wavelength:
 
-  (numeric, optional) Center wavelength of the band in micrometers (μm).
-  For example, the red band might be 0.665.
+  (numeric, optional) Center wavelength of the band in micrometers. For
+  example, the red band might be 0.665.
 
 - full_width_half_max:
 
   (numeric, optional) Full width at half maximum (FWHM) of the band, in
-  micrometers (μm). This is the width of the band as measured at half
-  the maximum transmission.
+  micrometers. This is the width of the band as measured at half the
+  maximum transmission.
 
 - solar_illumination:
 
@@ -76,15 +76,15 @@ field with a descriptive `description`.
 
 ### Wavelength Specification
 
-Wavelengths should be specified in micrometers (μm). For example:
+Wavelengths should be specified in micrometers. For example:
 
-- Blue: ~0.49 μm (490 nm)
+- Blue: ~0.49 (490 nm)
 
-- Green: ~0.56 μm (560 nm)
+- Green: ~0.56 (560 nm)
 
-- Red: ~0.66 μm (660 nm)
+- Red: ~0.66 (660 nm)
 
-- NIR: ~0.86 μm (860 nm)
+- NIR: ~0.86 (860 nm)
 
 ### Combining with Raster Extension
 
@@ -108,7 +108,7 @@ band <- eo_band(
   common_name = "nir",
   center_wavelength = 0.865,
   full_width_half_max = 0.033,
-  description = "Near Infrared band (0.85-0.88 μm)"
+  description = "Near Infrared band (0.85-0.88)"
 )
 
 # Band with solar illumination

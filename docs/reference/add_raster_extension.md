@@ -25,11 +25,13 @@ add_raster_extension(item, bands, asset_key = NULL)
 
 - item:
 
-  A STAC Item object created with [`stac_item()`](stac_item.md).
+  A STAC Item object created with
+  [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md).
 
 - bands:
 
-  A list of band objects created with [`raster_band()`](raster_band.md).
+  A list of band objects created with
+  [`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md).
   Each band describes the characteristics of a single raster band (or
   layer). If the asset has multiple bands, provide a list with one entry
   per band in order.
@@ -85,7 +87,7 @@ fields:
 In remote sensing, raster data often stores raw Digital Numbers (DN)
 that must be transformed to physical values using:
 
-**value = scale × DN + offset**
+**value = scale \* DN + offset**
 
 For example, storing reflectance (0-1) as integers (0-10000) with
 scale=0.0001.
@@ -113,15 +115,17 @@ Raster Extension Specification:
 
 ## See also
 
-- [`raster_band()`](raster_band.md) for creating band objects
+- [`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md)
+  for creating band objects
 
-- [`raster_statistics()`](raster_statistics.md) for creating statistics
-  objects
+- [`raster_statistics()`](https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.md)
+  for creating statistics objects
 
-- [`raster_histogram()`](raster_histogram.md) for creating histogram
-  objects
+- [`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md)
+  for creating histogram objects
 
-- [`add_asset()`](add_asset.md) for adding assets to items
+- [`add_asset()`](https://stevenpawley.github.io/stacbuildr/reference/add_asset.md)
+  for adding assets to items
 
 ## Examples
 
