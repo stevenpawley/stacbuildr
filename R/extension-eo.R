@@ -192,21 +192,21 @@ add_eo_extension <- function(
   # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/eo/v1.1.0/schema.json"
 
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
+  if (is.null(item@stac_extensions)) {
+    item@stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
+  if (!ext_uri %in% item@stac_extensions) {
+    item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
   # Add coverage properties to item properties (not assets)
   if (!is.null(cloud_cover)) {
-    item$properties$`eo:cloud_cover` <- cloud_cover
+    item@properties$`eo:cloud_cover` <- cloud_cover
   }
 
   if (!is.null(snow_cover)) {
-    item$properties$`eo:snow_cover` <- snow_cover
+    item@properties$`eo:snow_cover` <- snow_cover
   }
 
   # Add bands if provided
@@ -217,14 +217,14 @@ add_eo_extension <- function(
 
     if (!is.null(asset_key)) {
       # Add to specific asset
-      if (is.null(item$assets[[asset_key]])) {
+      if (is.null(item@assets[[asset_key]])) {
         stop(sprintf("Asset '%s' does not exist in item", asset_key))
       }
 
-      item$assets[[asset_key]]$bands <- bands
+      item@assets[[asset_key]]$bands <- bands
     } else {
       # Add to item properties
-      item$properties$bands <- bands
+      item@properties$bands <- bands
     }
   }
 
