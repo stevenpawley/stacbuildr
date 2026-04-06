@@ -24,13 +24,15 @@ add_item(
 - catalog:
 
   A STAC Catalog or Collection object (created with
-  [`stac_catalog()`](stac_catalog.md) or
-  [`stac_collection()`](stac_collection.md)).
+  [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md)
+  or
+  [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md)).
 
 - item:
 
-  A STAC Item object (created with [`stac_item()`](stac_item.md)). Can
-  also be a list of Items to add multiple items at once.
+  A STAC Item object (created with
+  [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md)).
+  Can also be a list of Items to add multiple items at once.
 
 - href:
 
@@ -117,16 +119,20 @@ fields:
 
 ## See also
 
-- [`stac_item()`](stac_item.md) for creating STAC Items
+- [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md)
+  for creating STAC Items
 
-- [`stac_catalog()`](stac_catalog.md) for creating STAC Catalogs
+- [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md)
+  for creating STAC Catalogs
 
-- [`stac_collection()`](stac_collection.md) for creating STAC
-  Collections
+- [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md)
+  for creating STAC Collections
 
-- [`add_link()`](add_link.md) for adding links to STAC objects
+- [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
+  for adding links to STAC objects
 
-- [`add_child()`](add_child.md) for adding child catalogs/collections
+- [`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md)
+  for adding child catalogs/collections
 
 ## Examples
 
@@ -169,10 +175,8 @@ collection <- add_item(
 )
 
 # Add multiple items
-items <- list(item1, item2, item3)
-#> Error: object 'item1' not found
+items <- list(item, item, item)
 collection <- add_item(collection, items)
-#> Error: object 'items' not found
 
 # Add multiple items with custom hrefs
 collection <- add_item(
@@ -180,5 +184,4 @@ collection <- add_item(
   items,
   href = c("./2020/item1.json", "./2020/item2.json", "./2020/item3.json")
 )
-#> Error: object 'items' not found
 ```

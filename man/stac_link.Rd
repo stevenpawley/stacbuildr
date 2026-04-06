@@ -51,31 +51,6 @@ Creates a link object following the STAC specification. Links are used to
 connect STAC resources (catalogs, collections, and items) and establish
 relationships between them.
 }
-\examples{
-# Create a simple link
-link <- stac_link(
-  rel = "self",
-  href = "https://example.com/catalog.json"
-)
-
-# Create a link with additional properties
-link <- stac_link(
-  rel = "child",
-  href = "./child-catalog.json",
-  type = "application/json",
-  title = "Child Catalog"
-)
-
-# Create a link with HTTP method and headers
-link <- stac_link(
-  rel = "search",
-  href = "https://api.example.com/search",
-  method = "POST",
-  headers = list("Content-Type" = "application/json"),
-  body = list(limit = 10)
-)
-
-}
 \references{
 STAC Link Object specification:
 \url{https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md#link-object}

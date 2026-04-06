@@ -70,7 +70,7 @@ Each band can contain both common metadata fields and raster-specific fields:
 In remote sensing, raster data often stores raw Digital Numbers (DN) that
 must be transformed to physical values using:
 
-\strong{value = scale × DN + offset}
+\strong{value = scale * DN + offset}
 
 For example, storing reflectance (0-1) as integers (0-10000) with scale=0.0001.
 }

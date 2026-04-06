@@ -18,7 +18,7 @@ extent_from_items(items)
 ## Value
 
 A list with spatial and temporal extent suitable for
-[`stac_collection()`](stac_collection.md).
+[`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md).
 
 ## Examples
 

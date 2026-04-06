@@ -26,6 +26,11 @@ Removes Item link(s) from a Catalog or Collection. Can remove by Item ID,
 href, or remove all items.
 }
 \examples{
+catalog <- stac_catalog(
+  id = "my-catalog",
+  description = "Example catalog"
+)
+
 # Remove specific item by ID
 catalog <- remove_item(catalog, item_id = "my-item-001")
 

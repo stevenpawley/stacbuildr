@@ -29,7 +29,8 @@ add_link(catalog, rel, href, ...)
 
 - ...:
 
-  Additional link properties passed to [`stac_link()`](stac_link.md),
+  Additional link properties passed to
+  [`stac_link()`](https://stevenpawley.github.io/stacbuildr/reference/stac_link.md),
   such as `type`, `title`, `method`, `headers`, `body`, or `merge`.
 
 ## Value
@@ -38,13 +39,17 @@ The modified catalog object with the new link added.
 
 ## See also
 
-- [`add_self_link()`](add_self_link.md) for adding a self link
+- [`add_self_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_self_link.md)
+  for adding a self link
 
-- [`add_root_link()`](add_root_link.md) for adding a root link
+- [`add_root_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_root_link.md)
+  for adding a root link
 
-- [`add_parent_link()`](add_parent_link.md) for adding a parent link
+- [`add_parent_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_parent_link.md)
+  for adding a parent link
 
-- [`add_child()`](add_child.md) for adding a child catalog or collection
+- [`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md)
+  for adding a child catalog or collection
 
 ## Examples
 

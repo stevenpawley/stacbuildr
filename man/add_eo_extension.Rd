@@ -44,7 +44,7 @@ electromagnetic spectrum.
 \strong{Important Note on STAC 1.1.0 Changes:}
 This extension formerly had a field eo:bands, which has been removed in
 favor of a general field bands in STAC common metadata. The structure is the
-same—it's an array of Band Objects—but fields from the EO extension now have
+same as an array of Band Objects but fields from the EO extension now have
 an \verb{eo:} prefix, while more general fields like \code{description} have been moved
 to common metadata and don't need a prefix.
 }
@@ -60,7 +60,7 @@ The EO Extension v1.1.0 schema URI is:
 Each band can contain the following EO-specific fields (all with \verb{eo:} prefix):
 \itemize{
 \item \code{eo:common_name}: Common name of the band (e.g., "red", "green", "blue", "nir")
-\item \code{eo:center_wavelength}: Center wavelength in micrometers (μm)
+\item \code{eo:center_wavelength}: Center wavelength in micrometers
 \item \code{eo:full_width_half_max}: Full width at half maximum (FWHM) in micrometers
 \item \code{eo:solar_illumination}: Solar illumination at the band's wavelength
 }
@@ -115,8 +115,17 @@ The EO extension is often used with:
 # Create an item
 item <- stac_item(
   id = "LC08_L2SP_001002_20230615",
-  geometry = my_geometry,
-  bbox = my_bbox,
+  geometry = list(
+    type = "Polygon",
+    coordinates = list(list(
+      c(-105.5, 39.5),
+      c(-104.5, 39.5),
+      c(-104.5, 40.5),
+      c(-105.5, 40.5),
+      c(-105.5, 39.5)
+    ))
+  ),
+  bbox = c(-105.5, 39.5, -104.5, 40.5),
   datetime = "2023-06-15T10:30:00Z",
   properties = list(
     platform = "landsat-8",
@@ -125,10 +134,7 @@ item <- stac_item(
 )
 
 # Add EO extension with cloud cover
-item <- add_eo_extension(
-  item,
-  cloud_cover = 12.5
-)
+item <- add_eo_extension(item, cloud_cover = 12.5)
 
 # Create multispectral bands
 red_band <- eo_band(
@@ -179,7 +185,7 @@ combined_band <- eo_band(
   common_name = "red",
   center_wavelength = 0.665,
   full_width_half_max = 0.038,
-  description = "Red band (0.64-0.67 μm)"
+  description = "Red band (0.64-0.67)"
 )
 
 # Add raster properties to the same band

@@ -88,7 +88,8 @@ item_from_raster(
 
 - ...:
 
-  Additional arguments passed to [`stac_item()`](stac_item.md).
+  Additional arguments passed to
+  [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md).
 
 ## Value
 

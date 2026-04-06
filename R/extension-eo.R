@@ -9,7 +9,7 @@
 #' **Important Note on STAC 1.1.0 Changes:**
 #' This extension formerly had a field eo:bands, which has been removed in
 #' favor of a general field bands in STAC common metadata. The structure is the
-#' same—it's an array of Band Objects—but fields from the EO extension now have
+#' same as an array of Band Objects but fields from the EO extension now have
 #' an `eo:` prefix, while more general fields like `description` have been moved
 #' to common metadata and don't need a prefix.
 #'
@@ -36,7 +36,7 @@
 #' ## Band Object Fields
 #' Each band can contain the following EO-specific fields (all with `eo:` prefix):
 #' * `eo:common_name`: Common name of the band (e.g., "red", "green", "blue", "nir")
-#' * `eo:center_wavelength`: Center wavelength in micrometers (μm)
+#' * `eo:center_wavelength`: Center wavelength in micrometers
 #' * `eo:full_width_half_max`: Full width at half maximum (FWHM) in micrometers
 #' * `eo:solar_illumination`: Solar illumination at the band's wavelength
 #'
@@ -86,8 +86,17 @@
 #' # Create an item
 #' item <- stac_item(
 #'   id = "LC08_L2SP_001002_20230615",
-#'   geometry = my_geometry,
-#'   bbox = my_bbox,
+#'   geometry = list(
+#'     type = "Polygon",
+#'     coordinates = list(list(
+#'       c(-105.5, 39.5),
+#'       c(-104.5, 39.5),
+#'       c(-104.5, 40.5),
+#'       c(-105.5, 40.5),
+#'       c(-105.5, 39.5)
+#'     ))
+#'   ),
+#'   bbox = c(-105.5, 39.5, -104.5, 40.5),
 #'   datetime = "2023-06-15T10:30:00Z",
 #'   properties = list(
 #'     platform = "landsat-8",
@@ -96,10 +105,7 @@
 #' )
 #'
 #' # Add EO extension with cloud cover
-#' item <- add_eo_extension(
-#'   item,
-#'   cloud_cover = 12.5
-#' )
+#' item <- add_eo_extension(item, cloud_cover = 12.5)
 #'
 #' # Create multispectral bands
 #' red_band <- eo_band(
@@ -150,7 +156,7 @@
 #'   common_name = "red",
 #'   center_wavelength = 0.665,
 #'   full_width_half_max = 0.038,
-#'   description = "Red band (0.64-0.67 μm)"
+#'   description = "Red band (0.64-0.67)"
 #' )
 #'
 #' # Add raster properties to the same band
@@ -248,9 +254,9 @@ add_eo_extension <- function(
 #' @param description (character, optional) Description to fully explain the band.
 #'   CommonMark 0.29 syntax may be used for rich text representation.
 #' @param center_wavelength (numeric, optional) Center wavelength of the band in
-#'   micrometers (μm). For example, the red band might be 0.665.
+#'   micrometers. For example, the red band might be 0.665.
 #' @param full_width_half_max (numeric, optional) Full width at half maximum
-#'   (FWHM) of the band, in micrometers (μm). This is the width of the band as
+#'   (FWHM) of the band, in micrometers. This is the width of the band as
 #'   measured at half the maximum transmission.
 #' @param solar_illumination (numeric, optional) Solar illumination value for the
 #'   band, as measured at the top of atmosphere. Used in atmospheric correction
@@ -268,11 +274,11 @@ add_eo_extension <- function(
 #' descriptive `description`.
 #'
 #' ## Wavelength Specification
-#' Wavelengths should be specified in micrometers (μm). For example:
-#' * Blue: ~0.49 μm (490 nm)
-#' * Green: ~0.56 μm (560 nm)
-#' * Red: ~0.66 μm (660 nm)
-#' * NIR: ~0.86 μm (860 nm)
+#' Wavelengths should be specified in micrometers. For example:
+#' * Blue: ~0.49 (490 nm)
+#' * Green: ~0.56 (560 nm)
+#' * Red: ~0.66 (660 nm)
+#' * NIR: ~0.86 (860 nm)
 #'
 #' ## Combining with Raster Extension
 #' EO bands can be combined with raster metadata by adding raster fields to the
@@ -292,7 +298,7 @@ add_eo_extension <- function(
 #'   common_name = "nir",
 #'   center_wavelength = 0.865,
 #'   full_width_half_max = 0.033,
-#'   description = "Near Infrared band (0.85-0.88 μm)"
+#'   description = "Near Infrared band (0.85-0.88)"
 #' )
 #'
 #' # Band with solar illumination
@@ -410,6 +416,20 @@ eo_band <- function(
 #' @examples
 #' bands <- landsat_oli_bands()
 #'
+#' item <- stac_item(
+#'   id = "LC09_L2SP_001002_20230615",
+#'   geometry = list(
+#'     type = "Polygon",
+#'     coordinates = list(list(
+#'       c(-105.5, 39.5), c(-104.5, 39.5), c(-104.5, 40.5),
+#'       c(-105.5, 40.5), c(-105.5, 39.5)
+#'     ))
+#'   ),
+#'   bbox = c(-105.5, 39.5, -104.5, 40.5),
+#'   datetime = "2023-06-15T10:30:00Z",
+#'   properties = list()
+#' )
+#'
 #' item <- item |>
 #'   add_eo_extension(bands = bands)
 #'
@@ -506,6 +526,20 @@ landsat_oli_bands <- function(include_thermal = FALSE) {
 #'
 #' @examples
 #' bands <- sentinel2_msi_bands()
+#'
+#' item <- stac_item(
+#'   id = "S2A_MSIL2A_20230615T101021",
+#'   geometry = list(
+#'     type = "Polygon",
+#'     coordinates = list(list(
+#'       c(-105.5, 39.5), c(-104.5, 39.5), c(-104.5, 40.5),
+#'       c(-105.5, 40.5), c(-105.5, 39.5)
+#'     ))
+#'   ),
+#'   bbox = c(-105.5, 39.5, -104.5, 40.5),
+#'   datetime = "2023-06-15T10:30:00Z",
+#'   properties = list()
+#' )
 #'
 #' item <- item |>
 #'   add_eo_extension(bands = bands)
@@ -617,11 +651,11 @@ print.eo_band <- function(x, ...) {
   }
 
   if (!is.null(x$`eo:center_wavelength`)) {
-    cat("  Center Wavelength:", x$`eo:center_wavelength`, "μm\n")
+    cat("  Center Wavelength:", x$`eo:center_wavelength`, "micrometres\n")
   }
 
   if (!is.null(x$`eo:full_width_half_max`)) {
-    cat("  FWHM:", x$`eo:full_width_half_max`, "μm\n")
+    cat("  FWHM:", x$`eo:full_width_half_max`, "micrometres\n")
   }
 
   if (!is.null(x$`eo:solar_illumination`)) {

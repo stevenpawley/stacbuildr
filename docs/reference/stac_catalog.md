@@ -17,7 +17,6 @@ stac_catalog(
   type = "Catalog",
   stac_extensions = NULL,
   conformsTo = NULL,
-  links = list(),
   ...
 )
 ```
@@ -81,7 +80,8 @@ stac_catalog(
 An S7 object of class `stac_catalog` containing the catalog metadata.
 Convert to a plain list for JSON serialization with
 [`as.list()`](https://rdrr.io/r/base/list.html), or write directly to
-disk using [`write_stac()`](write_stac.md).
+disk using
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md).
 
 ## Details
 
@@ -116,12 +116,16 @@ relation types include:
 
 - `item`: URL to a STAC Item
 
-Use the helper functions [`add_self_link()`](add_self_link.md),
-[`add_root_link()`](add_root_link.md),
-[`add_parent_link()`](add_parent_link.md),
-[`add_child()`](add_child.md), and [`add_item()`](add_item.md) to manage
-links after creating the catalog. A `self` link and a `root` link are
-strongly recommended. Non-root Catalogs should include a `parent` link.
+Use the helper functions
+[`add_self_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_self_link.md),
+[`add_root_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_root_link.md),
+[`add_parent_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_parent_link.md),
+[`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md),
+and
+[`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
+to manage links after creating the catalog. A `self` link and a `root`
+link are strongly recommended. Non-root Catalogs should include a
+`parent` link.
 
 ### Extensions
 
@@ -137,16 +141,20 @@ STAC Catalog Specification:
 
 ## See also
 
-- [`stac_collection()`](stac_collection.md) for creating STAC
-  Collections
+- [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md)
+  for creating STAC Collections
 
-- [`stac_item()`](stac_item.md) for creating STAC Items
+- [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md)
+  for creating STAC Items
 
-- [`add_link()`](add_link.md) for adding links to catalogs
+- [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
+  for adding links to catalogs
 
-- [`add_child()`](add_child.md) for adding child catalogs or collections
+- [`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md)
+  for adding child catalogs or collections
 
-- [`write_stac()`](write_stac.md) for writing catalogs to the filesystem
+- [`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+  for writing catalogs to the filesystem
 
 ## Examples
 
@@ -200,8 +208,31 @@ catalog_with_version <- stac_catalog(
 )
 
 # Convert to JSON
-catalog_json <- jsonlite::toJSON(catalog, auto_unbox = TRUE, pretty = TRUE)
-#> Error: No method asJSON S3 class: S7_object
+catalog_json <- jsonlite::toJSON(as.list(catalog), auto_unbox = TRUE, pretty = TRUE)
 cat(catalog_json)
-#> Error: object 'catalog_json' not found
+#> {
+#>   "type": "Catalog",
+#>   "stac_version": "1.1.0",
+#>   "id": "north-america-imagery",
+#>   "description": "A comprehensive catalog of satellite imagery covering North America from various sensors including Landsat, Sentinel, and commercial providers. Data spans from 2013 to present.",
+#>   "title": "North America Satellite Imagery",
+#>   "links": [
+#>     {
+#>       "rel": "self",
+#>       "href": "https://example.com/catalog.json",
+#>       "type": "application/json"
+#>     },
+#>     {
+#>       "rel": "root",
+#>       "href": "https://example.com/catalog.json",
+#>       "type": "application/json"
+#>     },
+#>     {
+#>       "rel": "child",
+#>       "href": "./landsat/catalog.json",
+#>       "type": "application/json",
+#>       "title": "Landsat Imagery"
+#>     }
+#>   ]
+#> }
 ```

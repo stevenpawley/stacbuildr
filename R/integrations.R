@@ -650,7 +650,7 @@ bands_from_stars <- function(stars_obj, calculate_statistics = FALSE, sample_siz
           minimum = min(vals),
           maximum = max(vals),
           mean = mean(vals),
-          stddev = sd(vals),
+          stddev = stats::sd(vals),
           valid_percent = 100 * length(all_vals[!is.na(all_vals)]) / n_total
         )
       }

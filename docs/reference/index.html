@@ -18,7 +18,7 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/buildstac/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/stacbuildr/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -31,118 +31,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="create-stac-objects">Create STAC Objects<a class="anchor" aria-label="anchor" href="#create-stac-objects"></a></h2>
-
-      <div class="section-desc"><p>Functions for constructing the core STAC object types.</p></div>
-
-      <dl></dl></div><div class="section level2">
+      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
 
 
-
-
-      <dl><dt>
-
-          <code><a href="stac_catalog.html">stac_catalog()</a></code>
-
-        </dt>
-        <dd>Create a STAC Catalog</dd>
-
-        <dt>
-
-          <code><a href="stac_collection.html">stac_collection()</a></code>
-
-        </dt>
-        <dd>Create a STAC Collection</dd>
-
-        <dt>
-
-          <code><a href="stac_item.html">stac_item()</a></code>
-
-        </dt>
-        <dd>Create a STAC Item</dd>
-
-        <dt>
-
-          <code><a href="stac_asset.html">stac_asset()</a></code>
-
-        </dt>
-        <dd>Create a STAC Asset</dd>
-
-        <dt>
-
-          <code><a href="stac_extent.html">stac_extent()</a></code>
-
-        </dt>
-        <dd>Create a STAC Extent Object</dd>
-
-        <dt>
-
-          <code><a href="stac_provider.html">stac_provider()</a></code>
-
-        </dt>
-        <dd>Create a STAC Provider Object</dd>
-
-        <dt>
-
-          <code><a href="stac_summaries.html">stac_summaries()</a></code>
-
-        </dt>
-        <dd>Create STAC Summaries</dd>
-      </dl></div><div class="section level2">
-      <h2 id="build-catalog-hierarchy">Build Catalog Hierarchy<a class="anchor" aria-label="anchor" href="#build-catalog-hierarchy"></a></h2>
-
-      <div class="section-desc"><p>Add and retrieve children and items within a catalog or collection.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="add_child.html">add_child()</a></code>
-
-        </dt>
-        <dd>Add a child catalog or collection</dd>
-
-        <dt>
-
-          <code><a href="add_item.html">add_item()</a></code>
-
-        </dt>
-        <dd>Add an Item to a STAC Catalog or Collection</dd>
-
-        <dt>
-
-          <code><a href="remove_item.html">remove_item()</a></code>
-
-        </dt>
-        <dd>Remove Items from a STAC Catalog or Collection</dd>
-
-        <dt>
-
-          <code><a href="get_children.html">get_children()</a></code>
-
-        </dt>
-        <dd>Get Stored Children from Catalog</dd>
-
-        <dt>
-
-          <code><a href="get_items.html">get_items()</a></code>
-
-        </dt>
-        <dd>Get Stored Items from Catalog or Collection</dd>
-
-        <dt>
-
-          <code><a href="count_items.html">count_items()</a></code>
-
-        </dt>
-        <dd>Count Items in a STAC Catalog or Collection</dd>
-      </dl></div><div class="section level2">
-      <h2 id="manage-assets">Manage Assets<a class="anchor" aria-label="anchor" href="#manage-assets"></a></h2>
-
-      <div class="section-desc"><p>Add assets to STAC Items.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -155,36 +46,34 @@
 
         </dt>
         <dd>Add an Asset to a STAC Item</dd>
-      </dl></div><div class="section level2">
-      <h2 id="manage-links">Manage Links<a class="anchor" aria-label="anchor" href="#manage-links"></a></h2>
 
-      <div class="section-desc"><p>Add and query links on any STAC object.</p></div>
+        <dt>
 
-      <dl></dl></div><div class="section level2">
+          <code><a href="add_child.html">add_child()</a></code>
 
+        </dt>
+        <dd>Add a child catalog or collection</dd>
 
+        <dt>
 
+          <code><a href="add_eo_extension.html">add_eo_extension()</a></code>
 
-      <dl><dt>
+        </dt>
+        <dd>Add EO Extension to a STAC Item</dd>
+
+        <dt>
+
+          <code><a href="add_item.html">add_item()</a></code>
+
+        </dt>
+        <dd>Add an Item to a STAC Catalog or Collection</dd>
+
+        <dt>
 
           <code><a href="add_link.html">add_link()</a></code>
 
         </dt>
         <dd>Add a link to a STAC catalog</dd>
-
-        <dt>
-
-          <code><a href="add_self_link.html">add_self_link()</a></code>
-
-        </dt>
-        <dd>Add a self link to a STAC catalog</dd>
-
-        <dt>
-
-          <code><a href="add_root_link.html">add_root_link()</a></code>
-
-        </dt>
-        <dd>Add a root link to a STAC catalog</dd>
 
         <dt>
 
@@ -195,103 +84,6 @@
 
         <dt>
 
-          <code><a href="get_item_links.html">get_item_links()</a></code>
-
-        </dt>
-        <dd>Get All Item Links from a STAC Catalog or Collection</dd>
-      </dl></div><div class="section level2">
-      <h2 id="read-and-write">Read and Write<a class="anchor" aria-label="anchor" href="#read-and-write"></a></h2>
-
-      <div class="section-desc"><p>Write complete catalog trees to disk and read them back.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="write_stac.html">write_stac()</a></code>
-
-        </dt>
-        <dd>Write a STAC Catalog Structure to Disk</dd>
-
-        <dt>
-
-          <code><a href="read_stac.html">read_stac()</a></code>
-
-        </dt>
-        <dd>Read a STAC Catalog from Disk</dd>
-
-        <dt>
-
-          <code><a href="write_catalog.html">write_catalog()</a></code>
-
-        </dt>
-        <dd>Write a Single STAC Catalog or Collection File</dd>
-
-        <dt>
-
-          <code><a href="write_item.html">write_item()</a></code>
-
-        </dt>
-        <dd>Write a Single STAC Item File</dd>
-      </dl></div><div class="section level2">
-      <h2 id="eo-extension">EO Extension<a class="anchor" aria-label="anchor" href="#eo-extension"></a></h2>
-
-      <div class="section-desc"><p>Support for the Electro-Optical (EO) STAC extension.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="add_eo_extension.html">add_eo_extension()</a></code>
-
-        </dt>
-        <dd>Add EO Extension to a STAC Item</dd>
-
-        <dt>
-
-          <code><a href="eo_band.html">eo_band()</a></code>
-
-        </dt>
-        <dd>Create an EO Band Object</dd>
-
-        <dt>
-
-          <code><a href="landsat_oli_bands.html">landsat_oli_bands()</a></code>
-
-        </dt>
-        <dd>Create Standard Landsat 8/9 OLI Bands</dd>
-
-        <dt>
-
-          <code><a href="sentinel2_msi_bands.html">sentinel2_msi_bands()</a></code>
-
-        </dt>
-        <dd>Create Standard Sentinel-2 MSI Bands</dd>
-
-        <dt>
-
-          <code><a href="print.eo_band.html">print(<i>&lt;eo_band&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print method for EO band objects</dd>
-      </dl></div><div class="section level2">
-      <h2 id="raster-extension">Raster Extension<a class="anchor" aria-label="anchor" href="#raster-extension"></a></h2>
-
-      <div class="section-desc"><p>Support for the Raster STAC extension and band-level metadata.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
           <code><a href="add_raster_extension.html">add_raster_extension()</a></code>
 
         </dt>
@@ -299,31 +91,17 @@
 
         <dt>
 
-          <code><a href="raster_band.html">raster_band()</a></code>
+          <code><a href="add_root_link.html">add_root_link()</a></code>
 
         </dt>
-        <dd>Create a Raster Band Object</dd>
+        <dd>Add a root link to a STAC catalog</dd>
 
         <dt>
 
-          <code><a href="raster_statistics.html">raster_statistics()</a></code>
+          <code><a href="add_self_link.html">add_self_link()</a></code>
 
         </dt>
-        <dd>Create Raster Statistics Object</dd>
-
-        <dt>
-
-          <code><a href="raster_histogram.html">raster_histogram()</a></code>
-
-        </dt>
-        <dd>Create Raster Histogram Object</dd>
-
-        <dt>
-
-          <code><a href="raster_from_file.html">raster_from_file()</a></code>
-
-        </dt>
-        <dd>Extract Raster Band Metadata from a File</dd>
+        <dd>Add a self link to a STAC catalog</dd>
 
         <dt>
 
@@ -334,21 +112,61 @@
 
         <dt>
 
-          <code><a href="print.raster_band.html">print(<i>&lt;raster_band&gt;</i>)</a></code>
+          <code><a href="bbox_from_sf.html">bbox_from_sf()</a></code>
 
         </dt>
-        <dd>Print method for raster band objects</dd>
-      </dl></div><div class="section level2">
-      <h2 id="integration-helpers">Integration Helpers<a class="anchor" aria-label="anchor" href="#integration-helpers"></a></h2>
+        <dd>Calculate Bounding Box from sf Object</dd>
 
-      <div class="section-desc"><p>Create STAC Items from spatial objects and files.</p></div>
+        <dt>
 
-      <dl></dl></div><div class="section level2">
+          <code><a href="count_items.html">count_items()</a></code>
 
+        </dt>
+        <dd>Count Items in a STAC Catalog or Collection</dd>
 
+        <dt>
 
+          <code><a href="eo_band.html">eo_band()</a></code>
 
-      <dl><dt>
+        </dt>
+        <dd>Create an EO Band Object</dd>
+
+        <dt>
+
+          <code><a href="extent_from_items.html">extent_from_items()</a></code>
+
+        </dt>
+        <dd>Create Collection Extent from Multiple Items</dd>
+
+        <dt>
+
+          <code><a href="geometry_from_sf.html">geometry_from_sf()</a></code>
+
+        </dt>
+        <dd>Convert sf Geometry to GeoJSON</dd>
+
+        <dt>
+
+          <code><a href="get_children.html">get_children()</a></code>
+
+        </dt>
+        <dd>Get Stored Children from Catalog</dd>
+
+        <dt>
+
+          <code><a href="get_item_links.html">get_item_links()</a></code>
+
+        </dt>
+        <dd>Get All Item Links from a STAC Catalog or Collection</dd>
+
+        <dt>
+
+          <code><a href="get_items.html">get_items()</a></code>
+
+        </dt>
+        <dd>Get Stored Items from Catalog or Collection</dd>
+
+        <dt>
 
           <code><a href="item_from_raster.html">item_from_raster()</a></code>
 
@@ -371,43 +189,152 @@
 
         <dt>
 
-          <code><a href="geometry_from_sf.html">geometry_from_sf()</a></code>
+          <code><a href="landsat_oli_bands.html">landsat_oli_bands()</a></code>
 
         </dt>
-        <dd>Convert sf Geometry to GeoJSON</dd>
+        <dd>Create Standard Landsat 8/9 OLI Bands</dd>
 
         <dt>
 
-          <code><a href="bbox_from_sf.html">bbox_from_sf()</a></code>
+          <code><a href="print.eo_band.html">print(<i>&lt;eo_band&gt;</i>)</a></code>
 
         </dt>
-        <dd>Calculate Bounding Box from sf Object</dd>
+        <dd>Print method for EO band objects</dd>
 
         <dt>
 
-          <code><a href="extent_from_items.html">extent_from_items()</a></code>
+          <code><a href="print.raster_band.html">print(<i>&lt;raster_band&gt;</i>)</a></code>
 
         </dt>
-        <dd>Create Collection Extent from Multiple Items</dd>
-      </dl></div><div class="section level2">
-      <h2 id="validation">Validation<a class="anchor" aria-label="anchor" href="#validation"></a></h2>
+        <dd>Print method for raster band objects</dd>
 
-      <div class="section-desc"><p>Validate STAC objects against the specification.</p></div>
+        <dt>
 
-      <dl></dl></div><div class="section level2">
+          <code><a href="raster_band.html">raster_band()</a></code>
 
+        </dt>
+        <dd>Create a Raster Band Object</dd>
 
+        <dt>
 
+          <code><a href="raster_from_file.html">raster_from_file()</a></code>
 
-      <dl><dt>
+        </dt>
+        <dd>Extract Raster Band Metadata from a File</dd>
+
+        <dt>
+
+          <code><a href="raster_histogram.html">raster_histogram()</a></code>
+
+        </dt>
+        <dd>Create Raster Histogram Object</dd>
+
+        <dt>
+
+          <code><a href="raster_statistics.html">raster_statistics()</a></code>
+
+        </dt>
+        <dd>Create Raster Statistics Object</dd>
+
+        <dt>
+
+          <code><a href="read_stac.html">read_stac()</a></code>
+
+        </dt>
+        <dd>Read a STAC Catalog from Disk</dd>
+
+        <dt>
+
+          <code><a href="remove_item.html">remove_item()</a></code>
+
+        </dt>
+        <dd>Remove Items from a STAC Catalog or Collection</dd>
+
+        <dt>
+
+          <code><a href="sentinel2_msi_bands.html">sentinel2_msi_bands()</a></code>
+
+        </dt>
+        <dd>Create Standard Sentinel-2 MSI Bands</dd>
+
+        <dt>
+
+          <code><a href="stac_asset.html">stac_asset()</a></code>
+
+        </dt>
+        <dd>Create a STAC Asset</dd>
+
+        <dt>
+
+          <code><a href="stac_catalog.html">stac_catalog()</a></code>
+
+        </dt>
+        <dd>Create a STAC Catalog</dd>
+
+        <dt>
+
+          <code><a href="stac_collection.html">stac_collection()</a></code>
+
+        </dt>
+        <dd>Create a STAC Collection</dd>
+
+        <dt>
+
+          <code><a href="stac_extent.html">stac_extent()</a></code>
+
+        </dt>
+        <dd>Create a STAC Extent Object</dd>
+
+        <dt>
+
+          <code><a href="stac_item.html">stac_item()</a></code>
+
+        </dt>
+        <dd>Create a STAC Item</dd>
+
+        <dt>
+
+          <code><a href="stac_provider.html">stac_provider()</a></code>
+
+        </dt>
+        <dd>Create a STAC Provider Object</dd>
+
+        <dt>
+
+          <code><a href="stac_summaries.html">stac_summaries()</a></code>
+
+        </dt>
+        <dd>Create STAC Summaries</dd>
+
+        <dt>
 
           <code><a href="validate_stac.html">validate_stac()</a></code>
 
         </dt>
         <dd>Validate a STAC Object</dd>
+
+        <dt>
+
+          <code><a href="write_catalog.html">write_catalog()</a></code>
+
+        </dt>
+        <dd>Write a Single STAC Catalog or Collection File</dd>
+
+        <dt>
+
+          <code><a href="write_item.html">write_item()</a></code>
+
+        </dt>
+        <dd>Write a Single STAC Item File</dd>
+
+        <dt>
+
+          <code><a href="write_stac.html">write_stac()</a></code>
+
+        </dt>
+        <dd>Write a STAC Catalog Structure to Disk</dd>
       </dl></div>
-  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
-    </nav></aside></div>
+  </main></div>
 
 
     <footer><div class="pkgdown-footer-left">

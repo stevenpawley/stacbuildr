@@ -16,6 +16,10 @@ Integer count of item links.
 Counts the number of Item links in a Catalog or Collection.
 }
 \examples{
+catalog <- stac_catalog(
+  id = "my-catalog",
+  description = "Example catalog"
+)
 n <- count_items(catalog)
 cat("Catalog contains", n, "items\n")
 

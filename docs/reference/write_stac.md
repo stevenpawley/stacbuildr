@@ -24,8 +24,9 @@ write_stac(
 - catalog:
 
   A STAC Catalog or Collection object created with
-  [`stac_catalog()`](stac_catalog.md) or
-  [`stac_collection()`](stac_collection.md).
+  [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md)
+  or
+  [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md).
 
 - path:
 
@@ -103,25 +104,30 @@ hierarchy:
 
 ### Automatic Object Retrieval
 
-When you use [`add_child()`](add_child.md) or
-[`add_item()`](add_item.md), the child catalogs and items are
-automatically stored as attributes on the parent catalog. The
-`write_stac()` function retrieves these stored objects and writes them
-recursively.
+When you use
+[`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md)
+or
+[`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md),
+the child catalogs and items are automatically stored as attributes on
+the parent catalog. The `write_stac()` function retrieves these stored
+objects and writes them recursively.
 
 ## See also
 
-- [`write_catalog()`](write_catalog.md) for writing a single
-  catalog/collection file
+- [`write_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/write_catalog.md)
+  for writing a single catalog/collection file
 
-- [`write_item()`](write_item.md) for writing a single item file
+- [`write_item()`](https://stevenpawley.github.io/stacbuildr/reference/write_item.md)
+  for writing a single item file
 
-- [`read_stac()`](read_stac.md) for reading STAC catalogs from disk
+- [`read_stac()`](https://stevenpawley.github.io/stacbuildr/reference/read_stac.md)
+  for reading STAC catalogs from disk
 
-- [`add_child()`](add_child.md) for adding child catalogs with automatic
-  storage
+- [`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md)
+  for adding child catalogs with automatic storage
 
-- [`add_item()`](add_item.md) for adding items with automatic storage
+- [`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
+  for adding items with automatic storage
 
 ## Examples
 

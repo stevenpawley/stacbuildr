@@ -73,15 +73,18 @@ stac_item(
 
   (named list, optional) Dictionary of asset objects that can be
   downloaded or accessed. Each asset should be created with
-  [`stac_asset()`](stac_asset.md). Keys are asset identifiers (e.g.,
-  "visual", "thumbnail"). Default is an empty list.
+  [`stac_asset()`](https://stevenpawley.github.io/stacbuildr/reference/stac_asset.md).
+  Keys are asset identifiers (e.g., "visual", "thumbnail"). Default is
+  an empty list.
 
 - links:
 
   (list, optional) List of link objects to resources and related URLs.
   Items are strongly recommended to provide a link to a STAC Collection.
-  Use [`add_link()`](add_link.md) or related helper functions to add
-  links after creation. Default is an empty list.
+  Use
+  [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
+  or related helper functions to add links after creation. Default is an
+  empty list.
 
 - stac_version:
 
@@ -105,8 +108,9 @@ stac_item(
   (character, optional) The ID of the STAC Collection this Item
   references to with the collection relation type in the links array.
   This field is required when a `collection` link is present. Usually
-  set automatically by [`add_item()`](add_item.md) when adding to a
-  Collection. Default is `NULL`.
+  set automatically by
+  [`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
+  when adding to a Collection. Default is `NULL`.
 
 - start_datetime:
 
@@ -130,7 +134,8 @@ stac_item(
 An S7 object of class `stac_item` containing the Item metadata formatted
 as a GeoJSON Feature. Convert to a plain list for JSON serialization
 with [`as.list()`](https://rdrr.io/r/base/list.html), or write directly
-to disk using [`write_item()`](write_item.md).
+to disk using
+[`write_item()`](https://stevenpawley.github.io/stacbuildr/reference/write_item.md).
 
 ## Details
 
@@ -198,8 +203,8 @@ representing a time range rather than a single point in time.
 Items are strongly recommended to provide a link to a STAC Collection.
 If Items are part of a STAC Collection, the STAC Collection spec
 requires Items to link back to the Collection. Use
-[`add_item()`](add_item.md) with `add_parent_links = TRUE` to properly
-establish this relationship.
+[`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
+with `add_parent_links = TRUE` to properly establish this relationship.
 
 ## References
 
@@ -208,15 +213,17 @@ STAC Item Specification:
 
 ## See also
 
-- [`stac_asset()`](stac_asset.md) for creating asset objects
+- [`stac_asset()`](https://stevenpawley.github.io/stacbuildr/reference/stac_asset.md)
+  for creating asset objects
 
-- [`add_item()`](add_item.md) for adding Items to Collections or
-  Catalogs
+- [`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
+  for adding Items to Collections or Catalogs
 
-- [`stac_collection()`](stac_collection.md) for creating STAC
-  Collections
+- [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md)
+  for creating STAC Collections
 
-- [`add_link()`](add_link.md) for adding links to Items
+- [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
+  for adding links to Items
 
 ## Examples
 
@@ -314,8 +321,18 @@ item <- stac_item(
 )
 
 # Convert to JSON
-item_json <- jsonlite::toJSON(item, auto_unbox = TRUE, pretty = TRUE)
-#> Error: No method asJSON S3 class: S7_object
+item_json <- jsonlite::toJSON(as.list(item), auto_unbox = TRUE, pretty = TRUE)
 cat(item_json)
-#> Error: object 'item_json' not found
+#> {
+#>   "type": "Feature",
+#>   "stac_version": "1.1.0",
+#>   "id": "global-report-2023",
+#>   "geometry": {},
+#>   "properties": {
+#>     "title": "Annual Global Climate Report",
+#>     "datetime": "2023-12-31T23:59:59Z"
+#>   },
+#>   "links": [],
+#>   "assets": []
+#> }
 ```

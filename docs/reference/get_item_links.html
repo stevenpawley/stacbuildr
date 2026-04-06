@@ -18,7 +18,7 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/buildstac/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/stacbuildr/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -28,7 +28,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Get All Item Links from a STAC Catalog or Collection</h1>
-      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/buildstac/blob/HEAD/R/item-helpers.R" class="external-link"><code>R/item-helpers.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/stacbuildr/blob/HEAD/R/item-helpers.R" class="external-link"><code>R/item-helpers.R</code></a></small>
       <div class="d-none name"><code>get_item_links.Rd</code></div>
     </div>
 
@@ -62,15 +62,18 @@ containing all item links.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Get as list</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">catalog</span> <span class="op">&lt;-</span> <span class="fu"><a href="stac_catalog.html">stac_catalog</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  id <span class="op">=</span> <span class="st">"my-catalog"</span>,</span></span>
+<span class="r-in"><span>  description <span class="op">=</span> <span class="st">"Example catalog"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Get as list</span></span></span>
 <span class="r-in"><span><span class="va">item_links</span> <span class="op">&lt;-</span> <span class="fu">get_item_links</span><span class="op">(</span><span class="va">catalog</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'catalog' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Get as data.frame</span></span></span>
 <span class="r-in"><span><span class="va">item_df</span> <span class="op">&lt;-</span> <span class="fu">get_item_links</span><span class="op">(</span><span class="va">catalog</span>, as_dataframe <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'catalog' not found</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">item_df</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'item_df' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> data frame with 0 columns and 0 rows</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

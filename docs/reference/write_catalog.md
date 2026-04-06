@@ -1,9 +1,9 @@
 # Write a Single STAC Catalog or Collection File
 
 Writes a single STAC Catalog or Collection to a JSON file. Unlike
-[`write_stac()`](write_stac.md), this does not recursively write
-children or items, and does not include the stored child/item objects in
-the output (only the links).
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md),
+this does not recursively write children or items, and does not include
+the stored child/item objects in the output (only the links).
 
 ## Usage
 

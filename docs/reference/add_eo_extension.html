@@ -6,7 +6,7 @@ electromagnetic spectrum.
 Important Note on STAC 1.1.0 Changes:
 This extension formerly had a field eo:bands, which has been removed in
 favor of a general field bands in STAC common metadata. The structure is the
-same—it's an array of Band Objects—but fields from the EO extension now have
+same as an array of Band Objects but fields from the EO extension now have
 an eo: prefix, while more general fields like description have been moved
 to common metadata and don't need a prefix."><meta property="og:description" content="Adds the Electro-Optical (EO) Extension to a STAC Item. EO data is
 considered to be data that represents a snapshot of the Earth for a single date
@@ -15,7 +15,7 @@ electromagnetic spectrum.
 Important Note on STAC 1.1.0 Changes:
 This extension formerly had a field eo:bands, which has been removed in
 favor of a general field bands in STAC common metadata. The structure is the
-same—it's an array of Band Objects—but fields from the EO extension now have
+same as an array of Band Objects but fields from the EO extension now have
 an eo: prefix, while more general fields like description have been moved
 to common metadata and don't need a prefix."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -36,7 +36,7 @@ to common metadata and don't need a prefix."></head><body>
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/buildstac/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/stacbuildr/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -46,7 +46,7 @@ to common metadata and don't need a prefix."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Add EO Extension to a STAC Item</h1>
-      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/buildstac/blob/HEAD/R/extension-eo.R" class="external-link"><code>R/extension-eo.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/stacbuildr/blob/HEAD/R/extension-eo.R" class="external-link"><code>R/extension-eo.R</code></a></small>
       <div class="d-none name"><code>add_eo_extension.Rd</code></div>
     </div>
 
@@ -58,7 +58,7 @@ electromagnetic spectrum.</p>
 <p><strong>Important Note on STAC 1.1.0 Changes:</strong>
 This extension formerly had a field eo:bands, which has been removed in
 favor of a general field bands in STAC common metadata. The structure is the
-same—it's an array of Band Objects—but fields from the EO extension now have
+same as an array of Band Objects but fields from the EO extension now have
 an <code>eo:</code> prefix, while more general fields like <code>description</code> have been moved
 to common metadata and don't need a prefix.</p>
     </div>
@@ -127,7 +127,7 @@ typically apply to the entire scene.</p></dd>
 
 
 <p>Each band can contain the following EO-specific fields (all with <code>eo:</code> prefix):</p><ul><li><p><code>eo:common_name</code>: Common name of the band (e.g., "red", "green", "blue", "nir")</p></li>
-<li><p><code>eo:center_wavelength</code>: Center wavelength in micrometers (μm)</p></li>
+<li><p><code>eo:center_wavelength</code>: Center wavelength in micrometers</p></li>
 <li><p><code>eo:full_width_half_max</code>: Full width at half maximum (FWHM) in micrometers</p></li>
 <li><p><code>eo:solar_illumination</code>: Solar illumination at the band's wavelength</p></li>
 </ul><p>Plus common metadata fields without prefix:</p><ul><li><p><code>name</code>: Name of the band (e.g., "B01", "B02", "B1", "B5")</p></li>
@@ -195,22 +195,26 @@ eo:center_wavelength would be 0.45um and the eo:full_width_half_max would be
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create an item</span></span></span>
 <span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="stac_item.html">stac_item</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  id <span class="op">=</span> <span class="st">"LC08_L2SP_001002_20230615"</span>,</span></span>
-<span class="r-in"><span>  geometry <span class="op">=</span> <span class="va">my_geometry</span>,</span></span>
-<span class="r-in"><span>  bbox <span class="op">=</span> <span class="va">my_bbox</span>,</span></span>
+<span class="r-in"><span>  geometry <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    type <span class="op">=</span> <span class="st">"Polygon"</span>,</span></span>
+<span class="r-in"><span>    coordinates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">105.5</span>, <span class="fl">39.5</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">104.5</span>, <span class="fl">39.5</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">104.5</span>, <span class="fl">40.5</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">105.5</span>, <span class="fl">40.5</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">105.5</span>, <span class="fl">39.5</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  bbox <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">105.5</span>, <span class="fl">39.5</span>, <span class="op">-</span><span class="fl">104.5</span>, <span class="fl">40.5</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  datetime <span class="op">=</span> <span class="st">"2023-06-15T10:30:00Z"</span>,</span></span>
 <span class="r-in"><span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    platform <span class="op">=</span> <span class="st">"landsat-8"</span>,</span></span>
 <span class="r-in"><span>    instruments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"oli"</span>, <span class="st">"tirs"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'my_geometry' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add EO extension with cloud cover</span></span></span>
-<span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu">add_eo_extension</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">item</span>,</span></span>
-<span class="r-in"><span>  cloud_cover <span class="op">=</span> <span class="fl">12.5</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'item' not found</span>
+<span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu">add_eo_extension</span><span class="op">(</span><span class="va">item</span>, cloud_cover <span class="op">=</span> <span class="fl">12.5</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Create multispectral bands</span></span></span>
 <span class="r-in"><span><span class="va">red_band</span> <span class="op">&lt;-</span> <span class="fu"><a href="eo_band.html">eo_band</a></span><span class="op">(</span></span></span>
@@ -254,7 +258,6 @@ eo:center_wavelength would be 0.45um and the eo:full_width_half_max would be
 <span class="r-in"><span>    cloud_cover <span class="op">=</span> <span class="fl">5.2</span>,</span></span>
 <span class="r-in"><span>    asset_key <span class="op">=</span> <span class="st">"visual"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'item' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Combine EO and Raster extensions</span></span></span>
 <span class="r-in"><span><span class="va">combined_band</span> <span class="op">&lt;-</span> <span class="fu"><a href="eo_band.html">eo_band</a></span><span class="op">(</span></span></span>
@@ -262,7 +265,7 @@ eo:center_wavelength would be 0.45um and the eo:full_width_half_max would be
 <span class="r-in"><span>  common_name <span class="op">=</span> <span class="st">"red"</span>,</span></span>
 <span class="r-in"><span>  center_wavelength <span class="op">=</span> <span class="fl">0.665</span>,</span></span>
 <span class="r-in"><span>  full_width_half_max <span class="op">=</span> <span class="fl">0.038</span>,</span></span>
-<span class="r-in"><span>  description <span class="op">=</span> <span class="st">"Red band (0.64-0.67 μm)"</span></span></span>
+<span class="r-in"><span>  description <span class="op">=</span> <span class="st">"Red band (0.64-0.67)"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add raster properties to the same band</span></span></span>
@@ -275,7 +278,6 @@ eo:center_wavelength would be 0.45um and the eo:full_width_half_max would be
 <span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">add_eo_extension</span><span class="op">(</span>bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">combined_band</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="add_raster_extension.html">add_raster_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">combined_band</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'item' not found</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

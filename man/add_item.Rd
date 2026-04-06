@@ -131,7 +131,7 @@ collection <- add_item(
 )
 
 # Add multiple items
-items <- list(item1, item2, item3)
+items <- list(item, item, item)
 collection <- add_item(collection, items)
 
 # Add multiple items with custom hrefs

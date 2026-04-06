@@ -12,7 +12,6 @@ stac_catalog(
   type = "Catalog",
   stac_extensions = NULL,
   conformsTo = NULL,
-  links = list(),
   ...
 )
 }
@@ -159,7 +158,7 @@ catalog_with_version <- stac_catalog(
 )
 
 # Convert to JSON
-catalog_json <- jsonlite::toJSON(catalog, auto_unbox = TRUE, pretty = TRUE)
+catalog_json <- jsonlite::toJSON(as.list(catalog), auto_unbox = TRUE, pretty = TRUE)
 cat(catalog_json)
 
 }

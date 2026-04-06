@@ -26,7 +26,7 @@ discoverable."></head><body>
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/buildstac/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/stacbuildr/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -36,7 +36,7 @@ discoverable."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Create a STAC Catalog</h1>
-      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/buildstac/blob/HEAD/R/catalog.R" class="external-link"><code>R/catalog.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/stevenpawley/stacbuildr/blob/HEAD/R/catalog.R" class="external-link"><code>R/catalog.R</code></a></small>
       <div class="d-none name"><code>stac_catalog.Rd</code></div>
     </div>
 
@@ -58,7 +58,6 @@ discoverable.</p>
 <span>  type <span class="op">=</span> <span class="st">"Catalog"</span>,</span>
 <span>  stac_extensions <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  conformsTo <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  links <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -238,10 +237,33 @@ Items or Collections rather than Catalogs.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Convert to JSON</span></span></span>
-<span class="r-in"><span><span class="va">catalog_json</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html" class="external-link">toJSON</a></span><span class="op">(</span><span class="va">catalog</span>, auto_unbox <span class="op">=</span> <span class="cn">TRUE</span>, pretty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> No method asJSON S3 class: S7_object</span>
+<span class="r-in"><span><span class="va">catalog_json</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html" class="external-link">toJSON</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">catalog</span><span class="op">)</span>, auto_unbox <span class="op">=</span> <span class="cn">TRUE</span>, pretty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">catalog_json</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'catalog_json' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   "type": "Catalog",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   "stac_version": "1.1.0",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   "id": "north-america-imagery",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   "description": "A comprehensive catalog of satellite imagery covering North America from various sensors including Landsat, Sentinel, and commercial providers. Data spans from 2013 to present.",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   "title": "North America Satellite Imagery",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   "links": [</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       "rel": "self",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       "href": "https://example.com/catalog.json",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       "type": "application/json"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     },</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       "rel": "root",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       "href": "https://example.com/catalog.json",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       "type": "application/json"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     },</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       "rel": "child",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       "href": "./landsat/catalog.json",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       "type": "application/json",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       "title": "Landsat Imagery"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

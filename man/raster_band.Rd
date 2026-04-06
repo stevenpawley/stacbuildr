@@ -29,7 +29,7 @@ Common values: 0, -9999, NaN.}
 or "other".}
 
 \item{unit}{(character, optional) Unit of measurement for the pixel values.
-Examples: "m" (meters), "W⋅sr⁻¹⋅m⁻²" (radiance), "1" (unitless/reflectance).}
+Examples: "m" (meters), "W sr-1 m-2" (radiance), "1" (unitless/reflectance).}
 
 \item{statistics}{(list, optional) Statistics object created with
 \code{raster_statistics()} describing the distribution of pixel values.}
@@ -46,10 +46,10 @@ pixels in the band, in meters. Useful when resolution varies or differs
 from ground sample distance (gsd).}
 
 \item{scale}{(numeric, optional) Multiplicative scaling factor to transform
-pixel values: \verb{physical_value = scale × DN + offset}. Default is 1.}
+pixel values: \code{physical_value = scale * DN + offset}. Default is 1.}
 
 \item{offset}{(numeric, optional) Additive offset to transform pixel values:
-\verb{physical_value = scale × DN + offset}. Default is 0.}
+\code{physical_value = scale * DN + offset}. Default is 0.}
 
 \item{histogram}{(list, optional) Histogram object created with
 \code{raster_histogram()} describing the distribution of pixel values.}

@@ -21,8 +21,11 @@ Integer count of item links.
 ## Examples
 
 ``` r
+catalog <- stac_catalog(
+  id = "my-catalog",
+  description = "Example catalog"
+)
 n <- count_items(catalog)
-#> Error: object 'catalog' not found
 cat("Catalog contains", n, "items\n")
-#> Error: object 'n' not found
+#> Catalog contains 0 items
 ```

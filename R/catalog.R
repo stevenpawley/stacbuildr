@@ -151,7 +151,7 @@ property_description <- S7::new_property(
 #' )
 #'
 #' # Convert to JSON
-#' catalog_json <- jsonlite::toJSON(catalog, auto_unbox = TRUE, pretty = TRUE)
+#' catalog_json <- jsonlite::toJSON(as.list(catalog), auto_unbox = TRUE, pretty = TRUE)
 #' cat(catalog_json)
 #'
 #' @export
@@ -175,7 +175,6 @@ stac_catalog <- S7::new_class(
                          type = "Catalog",
                          stac_extensions = NULL,
                          conformsTo = NULL,
-                         links = list(),
                          ...) {
     obj <- S7::new_object(
       S7::S7_object(),
@@ -186,7 +185,7 @@ stac_catalog <- S7::new_class(
       title = title,
       stac_extensions = stac_extensions,
       conformsTo = conformsTo,
-      links = links,
+      links = list(),
       extra_fields = list(...)
     )
     # When loaded as a package, S7 qualifies class names (e.g. "buildstac::stac_catalog").
@@ -256,30 +255,6 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
 #' @references
 #' STAC Link Object specification:
 #' \url{https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md#link-object}
-#'
-#' @examples
-#' # Create a simple link
-#' link <- stac_link(
-#'   rel = "self",
-#'   href = "https://example.com/catalog.json"
-#' )
-#'
-#' # Create a link with additional properties
-#' link <- stac_link(
-#'   rel = "child",
-#'   href = "./child-catalog.json",
-#'   type = "application/json",
-#'   title = "Child Catalog"
-#' )
-#'
-#' # Create a link with HTTP method and headers
-#' link <- stac_link(
-#'   rel = "search",
-#'   href = "https://api.example.com/search",
-#'   method = "POST",
-#'   headers = list("Content-Type" = "application/json"),
-#'   body = list(limit = 10)
-#' )
 #'
 #' @keywords internal
 stac_link <- function(rel,
