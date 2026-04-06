@@ -10,7 +10,6 @@
 <url><loc>/reference/add_item.html</loc></url>
 <url><loc>/reference/add_link.html</loc></url>
 <url><loc>/reference/add_parent_link.html</loc></url>
-<url><loc>/reference/add_projection_metadata.html</loc></url>
 <url><loc>/reference/add_projection_metadata_stars.html</loc></url>
 <url><loc>/reference/add_raster_extension.html</loc></url>
 <url><loc>/reference/add_root_link.html</loc></url>
@@ -20,7 +19,6 @@
 <url><loc>/reference/count_items.html</loc></url>
 <url><loc>/reference/eo_band.html</loc></url>
 <url><loc>/reference/extent_from_items.html</loc></url>
-<url><loc>/reference/extract_raster_spatial_metadata.html</loc></url>
 <url><loc>/reference/extract_stars_spatial_metadata.html</loc></url>
 <url><loc>/reference/find_link.html</loc></url>
 <url><loc>/reference/gdal_dtype.html</loc></url>
@@ -31,7 +29,6 @@
 <url><loc>/reference/get_media_type.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/is_cog.html</loc></url>
-<url><loc>/reference/is_wgs84.html</loc></url>
 <url><loc>/reference/item_from_raster.html</loc></url>
 <url><loc>/reference/item_from_sf.html</loc></url>
 <url><loc>/reference/items_from_directory.html</loc></url>
