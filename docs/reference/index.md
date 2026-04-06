@@ -83,8 +83,8 @@ Support for the Raster STAC extension and band-level metadata.
   Statistics Object
 - [`raster_histogram()`](raster_histogram.md) : Create Raster Histogram
   Object
-- [`raster_from_file()`](raster_from_file.md) : Extract Raster Metadata
-  from File
+- [`raster_from_file()`](raster_from_file.md) : Extract Raster Band
+  Metadata from a File
 - [`bands_from_stars()`](bands_from_stars.md) : Extract Raster Band
   Metadata from a Stars Object
 - [`print(`*`<raster_band>`*`)`](print.raster_band.md) : Print method

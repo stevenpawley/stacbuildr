@@ -50,9 +50,9 @@ extent <- stac_extent(
 # Multiple spatial extents (e.g., disjoint regions)
 extent <- stac_extent(
   spatial_bbox = list(
-    c(-180, -90, 180, 90),  # Overall extent
-    c(-120, 30, -110, 40),  # Western US
-    c(-10, 35, 5, 45)       # Western Europe
+    c(-180, -90, 180, 90), # Overall extent
+    c(-120, 30, -110, 40), # Western US
+    c(-10, 35, 5, 45) # Western Europe
   ),
   temporal_interval = list(list("2020-01-01T00:00:00Z", "2023-12-31T23:59:59Z"))
 )

@@ -6,7 +6,7 @@ data type and spatial resolution, optionally calculating statistics.
 ## Usage
 
 ``` r
-bands_from_stars(stars_obj, calculate_statistics = FALSE)
+bands_from_stars(stars_obj, calculate_statistics = FALSE, sample_size = NULL)
 ```
 
 ## Arguments
@@ -19,6 +19,11 @@ bands_from_stars(stars_obj, calculate_statistics = FALSE)
 
   (logical, optional) If TRUE, calculates min, max, mean, and standard
   deviation for each band. Default is FALSE.
+
+- sample_size:
+
+  (integer, optional) Number of pixels to sample per band when
+  calculating statistics. If NULL, all pixels are used.
 
 ## Value
 

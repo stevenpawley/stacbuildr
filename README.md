@@ -1,13 +1,13 @@
-# buildstac
+# stacbuildr
 
-**buildstac** is an R package for creating [STAC (SpatioTemporal Asset Catalog)](https://stacspec.org/) metadata. STAC is an open standard for describing geospatial data in a way that makes it indexable, searchable, and interoperable. The package implements STAC specification version 1.1.0 using [S7](https://rconsortium.github.io/S7/) classes and outputs valid STAC JSON.
+**stacbuildr** is an R package for creating [STAC (SpatioTemporal Asset Catalog)](https://stacspec.org/) metadata. STAC is an open standard for describing geospatial data in a way that makes it indexable, searchable, and interoperable. The package implements STAC specification version 1.1.0 using [S7](https://rconsortium.github.io/S7/) classes and outputs valid STAC JSON.
 
 ## Installation
 
 ```r
 # Install from GitHub
 # install.packages("remotes")
-remotes::install_github("stevenpawley/buildstac")
+remotes::install_github("stevenpawley/stacbuildr")
 ```
 
 ## Overview
@@ -27,7 +27,7 @@ Each object contains **links** (JSON pointers connecting the hierarchy) and Item
 ### Creating objects
 
 ```r
-library(buildstac)
+library(stacbuildr)
 
 # Root catalog
 catalog <- stac_catalog(
@@ -230,13 +230,9 @@ get_children(catalog)                            # named list of child catalogs
 | `S7` | Object-oriented class system |
 | `jsonlite` | JSON serialisation |
 | `sf` | Vector geometry handling |
-| `terra` | Raster file reading |
 | `geojsonsf` | sf ↔ GeoJSON conversion |
-| `jsonvalidate` | JSON Schema validation |
-| `httr` | HTTP utilities |
-| `uuid` | Unique identifier generation |
 
-Optional: `stars`, `rstac`
+Optional: `stars`
 
 ## References
 

@@ -23,6 +23,6 @@ A named list of child catalogs/collections, or NULL if none exist.
 ``` r
 if (FALSE) { # \dontrun{
 children <- get_children(catalog)
-names(children)  # Get IDs of child catalogs
+names(children) # Get IDs of child catalogs
 } # }
 ```

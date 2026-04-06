@@ -316,9 +316,11 @@ multi_license_collection <- stac_collection(
   )
 ) |>
   add_link("license", "https://creativecommons.org/licenses/by/4.0/",
-           title = "CC-BY-4.0 for Landsat data") |>
+    title = "CC-BY-4.0 for Landsat data"
+  ) |>
   add_link("license", "https://example.com/custom-license.txt",
-           title = "Custom license for commercial data")
+    title = "Custom license for commercial data"
+  )
 
 # Convert to JSON
 collection_json <- jsonlite::toJSON(as.list(collection), auto_unbox = TRUE, pretty = TRUE)

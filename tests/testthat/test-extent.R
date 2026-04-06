@@ -6,7 +6,7 @@ test_that("stac_extent creates a valid extent with closed temporal interval", {
     )
   )
 
-  expect_s3_class(extent, "buildstac::Extent")
+  expect_s3_class(extent, "stacbuildr::Extent")
   expect_equal(extent@spatial@bbox[[1]], c(-180, -90, 180, 90))
   expect_equal(extent@temporal@interval[[1]][[1]], "2020-01-01T00:00:00Z")
   expect_equal(extent@temporal@interval[[1]][[2]], "2020-12-31T23:59:59Z")

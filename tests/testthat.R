@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(buildstac)
+library(stacbuildr)
 
-test_check("buildstac")
+test_check("stacbuildr")
