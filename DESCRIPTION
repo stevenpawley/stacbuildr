@@ -1,4 +1,4 @@
-Package: buildstac
+Package: stacbuildr
 Title: An R package to Create Spatio-Temporal Asset Catalogs (STAC)
 Version: 0.0.0.9000
 Authors@R: 

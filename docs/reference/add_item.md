@@ -36,7 +36,7 @@ add_item(
 
   (character, optional) The relative or absolute path where the Item
   JSON file will be located. If `NULL` (default), generates a path based
-  on the item's ID: `"./items/{item$id}.json"`. Can be a vector of paths
+  on the item's ID: `"./items/{item@id}.json"`. Can be a vector of paths
   when `item` is a list.
 
 - add_parent_links:

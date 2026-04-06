@@ -22,7 +22,7 @@ list of Items to add multiple items at once.}
 
 \item{href}{(character, optional) The relative or absolute path where the
 Item JSON file will be located. If \code{NULL} (default), generates a path
-based on the item's ID: \code{"./items/{item$id}.json"}. Can be a vector of
+based on the item's ID: \code{"./items/{item@id}.json"}. Can be a vector of
 paths when \code{item} is a list.}
 
 \item{add_parent_links}{(logical, optional) If \code{TRUE}, modifies the Item(s)

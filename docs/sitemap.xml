@@ -1,5 +1,7 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/LICENSE.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
 <url><loc>/reference/add_asset.html</loc></url>
@@ -21,17 +23,20 @@
 <url><loc>/reference/extract_raster_spatial_metadata.html</loc></url>
 <url><loc>/reference/extract_stars_spatial_metadata.html</loc></url>
 <url><loc>/reference/find_link.html</loc></url>
+<url><loc>/reference/gdal_dtype.html</loc></url>
 <url><loc>/reference/geometry_from_sf.html</loc></url>
 <url><loc>/reference/get_children.html</loc></url>
 <url><loc>/reference/get_item_links.html</loc></url>
 <url><loc>/reference/get_items.html</loc></url>
 <url><loc>/reference/get_media_type.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/is_cog.html</loc></url>
 <url><loc>/reference/is_wgs84.html</loc></url>
 <url><loc>/reference/item_from_raster.html</loc></url>
 <url><loc>/reference/item_from_sf.html</loc></url>
 <url><loc>/reference/items_from_directory.html</loc></url>
 <url><loc>/reference/landsat_oli_bands.html</loc></url>
+<url><loc>/reference/normalize_href.html</loc></url>
 <url><loc>/reference/print.eo_band.html</loc></url>
 <url><loc>/reference/print.raster_band.html</loc></url>
 <url><loc>/reference/raster_band.html</loc></url>

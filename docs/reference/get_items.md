@@ -23,6 +23,6 @@ A list of items, or NULL if none exist.
 ``` r
 if (FALSE) { # \dontrun{
 items <- get_items(collection)
-length(items)  # Number of items
+length(items) # Number of items
 } # }
 ```

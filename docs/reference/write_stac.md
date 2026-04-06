@@ -92,8 +92,9 @@ hierarchy:
       catalog.json                    # Root catalog
       collection1/
         collection.json               # Collection
-        items/
-          item1.json                  # Items
+        item1/
+          item1.json                  # Items (each in own subdirectory)
+        item2/
           item2.json
       collection2/
         collection.json
