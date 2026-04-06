@@ -34,5 +34,5 @@ Collate:
     'validation.R'
     'write.R'
     'zzz.R'
-URL: https://github.com/stevenpawley/buildstac
+URL: https://github.com/stevenpawley/buildstac, https://stevenpawley.github.io/stacbuildr/
 BugReports: https://github.com/stevenpawley/buildstac/issues
