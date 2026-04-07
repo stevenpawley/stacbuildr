@@ -392,6 +392,294 @@ add_projection_metadata_stars <- function(item, stars_obj) {
 }
 
 
+#' Create a STAC Item from a SpatRaster Object
+#'
+#' @description
+#' Creates a STAC Item from a `terra` `SpatRaster` object. Automatically
+#' extracts spatial metadata including geometry, bbox, CRS, and optionally
+#' band information and statistics.
+#'
+#' @param spat_rast A `SpatRaster` object (from the `terra` package).
+#' @param href (character, optional) URI for the main raster asset. If
+#'   provided, the raster is added as an asset and `id` is derived from the
+#'   basename when not explicitly set. If NULL, no asset is added and `id`
+#'   must be supplied.
+#' @param id (character, optional) Item ID. If NULL, derived from `href`
+#'   basename.
+#' @param datetime (character, optional) ISO 8601 datetime string. If NULL,
+#'   uses current time.
+#' @param properties (list, optional) Additional properties for the item.
+#' @param assets (list, optional) Additional assets beyond the main raster.
+#' @param asset_key (character, optional) Key name for the main raster asset.
+#'   Default is `"data"`.
+#' @param asset_roles (character vector, optional) Roles for the main raster
+#'   asset. Default is `c("data")`.
+#' @param add_raster_bands (logical, optional) If TRUE, adds raster extension
+#'   with band metadata. Default is TRUE.
+#' @param calculate_statistics (logical, optional) If TRUE, calculates band
+#'   statistics (min, max, mean, stddev). Can be slow for large rasters.
+#'   Default is FALSE.
+#' @param reproject_to_wgs84 (logical, optional) If TRUE and raster is not in
+#'   WGS84, reprojects the bbox geometry to WGS84 (EPSG:4326). STAC requires
+#'   WGS84. Default is TRUE.
+#' @param ... Additional arguments passed to `stac_item()`.
+#'
+#' @return A STAC Item object with the raster metadata.
+#'
+#' @examples
+#' \dontrun{
+#' library(terra)
+#'
+#' r <- rast("path/to/image.tif")
+#'
+#' item <- item_from_spatraster(
+#'   r,
+#'   href = "path/to/image.tif",
+#'   datetime = "2023-06-15T10:30:00Z"
+#' )
+#' }
+#'
+#' @export
+item_from_spatraster <- function(
+  spat_rast,
+  href = NULL,
+  id = NULL,
+  datetime = NULL,
+  properties = list(),
+  assets = list(),
+  asset_key = "data",
+  asset_roles = c("data"),
+  add_raster_bands = TRUE,
+  calculate_statistics = FALSE,
+  reproject_to_wgs84 = TRUE,
+  ...
+) {
+  if (!requireNamespace("terra", quietly = TRUE)) {
+    stop("Package 'terra' is required. Install with: install.packages('terra')")
+  }
+  if (!requireNamespace("sf", quietly = TRUE)) {
+    stop("Package 'sf' is required. Install with: install.packages('sf')")
+  }
+
+  if (!inherits(spat_rast, "SpatRaster")) {
+    stop("'spat_rast' must be a SpatRaster object")
+  }
+
+  # Generate ID from href if not provided
+  if (is.null(id)) {
+    if (!is.null(href)) {
+      id <- tools::file_path_sans_ext(basename(href))
+    } else {
+      stop("'id' is required when 'href' is not provided")
+    }
+  }
+
+  # Use current time if datetime not provided
+  if (is.null(datetime)) {
+    datetime <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ")
+    warning("No datetime provided, using current time")
+  }
+
+  # Extract spatial metadata
+  spatial_meta <- extract_terra_spatial_metadata(spat_rast, reproject_to_wgs84)
+
+  # Create the item
+  item <- stac_item(
+    id = id,
+    geometry = spatial_meta$geometry,
+    bbox = spatial_meta$bbox,
+    datetime = datetime,
+    properties = properties,
+    ...
+  )
+
+  # Add the main raster as an asset if href provided
+  if (!is.null(href)) {
+    item <- add_asset(
+      item,
+      key = asset_key,
+      href = normalize_href(href),
+      type = get_media_type(href),
+      roles = asset_roles
+    )
+  }
+
+  # Add any additional assets
+  if (length(assets) > 0) {
+    for (asset_name in names(assets)) {
+      asset <- assets[[asset_name]]
+      item <- add_asset(
+        item,
+        key = asset_name,
+        href = asset@href,
+        title = asset@title,
+        type = asset@type,
+        roles = asset@roles
+      )
+    }
+  }
+
+  # Add raster extension band metadata
+  if (add_raster_bands) {
+    bands <- bands_from_spatraster(
+      spat_rast,
+      calculate_statistics = calculate_statistics
+    )
+    item <- add_raster_extension(
+      item,
+      bands = bands,
+      asset_key = if (!is.null(href)) asset_key else NULL
+    )
+  }
+
+  # Add projection extension if CRS is set and not WGS84
+  crs_wkt <- terra::crs(spat_rast)
+  epsg    <- suppressWarnings(
+    as.integer(terra::crs(spat_rast, describe = TRUE)$code)
+  )
+  if (nchar(crs_wkt) > 0 && !isTRUE(epsg == 4326L)) {
+    item <- add_projection_metadata_terra(item, spat_rast)
+  }
+
+  item
+}
+
+
+#' Extract Spatial Metadata from a SpatRaster Object
+#'
+#' @keywords internal
+extract_terra_spatial_metadata <- function(spat_rast, reproject_to_wgs84 = TRUE) {
+  crs_wkt <- terra::crs(spat_rast)
+
+  # Convert extent polygon to sf
+  bbox_sf <- sf::st_as_sf(
+    terra::as.polygons(terra::ext(spat_rast), crs = crs_wkt)
+  )
+
+  epsg <- suppressWarnings(
+    as.integer(terra::crs(spat_rast, describe = TRUE)$code)
+  )
+
+  if (reproject_to_wgs84 && nchar(crs_wkt) > 0 && !isTRUE(epsg == 4326L)) {
+    bbox_sf <- sf::st_transform(bbox_sf, 4326)
+  }
+
+  list(
+    geometry = geometry_from_sf(bbox_sf),
+    bbox     = bbox_from_sf(bbox_sf)
+  )
+}
+
+
+#' Add Projection Extension Metadata from a SpatRaster Object
+#'
+#' @keywords internal
+add_projection_metadata_terra <- function(item, spat_rast) {
+  ext_uri <- "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
+
+  if (is.null(item@stac_extensions)) {
+    item@stac_extensions <- character(0)
+  }
+  if (!ext_uri %in% item@stac_extensions) {
+    item@stac_extensions <- c(item@stac_extensions, ext_uri)
+  }
+
+  epsg <- suppressWarnings(
+    as.integer(terra::crs(spat_rast, describe = TRUE)$code)
+  )
+  if (!is.na(epsg)) {
+    item@properties$`proj:epsg` <- epsg
+  }
+
+  item@properties$`proj:wkt2`      <- terra::crs(spat_rast)
+  item@properties$`proj:shape`     <- c(terra::nrow(spat_rast),
+                                         terra::ncol(spat_rast))
+
+  r <- terra::res(spat_rast)
+  item@properties$`proj:transform` <- c(
+    r[1], 0, terra::xmin(spat_rast),
+    0, -r[2], terra::ymax(spat_rast)
+  )
+
+  item
+}
+
+
+#' Extract Raster Band Metadata from a SpatRaster Object
+#'
+#' @description
+#' Extracts per-band metadata from a `SpatRaster` object. Creates band objects
+#' with data type and spatial resolution, optionally calculating statistics.
+#'
+#' @param spat_rast A `SpatRaster` object.
+#' @param calculate_statistics (logical, optional) If TRUE, calculates min,
+#'   max, mean, and standard deviation for each layer using `terra::global()`.
+#'   Default is FALSE.
+#'
+#' @return A list of raster band objects, one per layer.
+#'
+#' @export
+bands_from_spatraster <- function(spat_rast, calculate_statistics = FALSE) {
+  if (!requireNamespace("terra", quietly = TRUE)) {
+    stop("Package 'terra' is required. Install with: install.packages('terra')")
+  }
+  if (!inherits(spat_rast, "SpatRaster")) {
+    stop("'spat_rast' must be a SpatRaster object")
+  }
+
+  n_layers <- terra::nlyr(spat_rast)
+  dtypes   <- terra::datatype(spat_rast)           # one per layer
+  r        <- terra::res(spat_rast)
+  spatial_resolution <- mean(r)
+
+  bands <- vector("list", n_layers)
+
+  for (i in seq_len(n_layers)) {
+    band <- raster_band(
+      data_type          = terra_dtype(dtypes[i]),
+      spatial_resolution = spatial_resolution
+    )
+
+    if (calculate_statistics) {
+      lyr    <- spat_rast[[i]]
+      n_cell <- terra::ncell(lyr)
+      n_valid <- terra::global(lyr, "notNA", na.rm = TRUE)[[1]]
+      st     <- terra::global(lyr, c("min", "max", "mean", "sd"),
+                              na.rm = TRUE)
+
+      band$statistics <- raster_statistics(
+        minimum      = st$min,
+        maximum      = st$max,
+        mean         = st$mean,
+        stddev       = st$sd,
+        valid_percent = 100 * n_valid / n_cell
+      )
+    }
+
+    bands[[i]] <- band
+  }
+
+  bands
+}
+
+
+#' Map terra Data Type Strings to STAC Raster Data Types
+#'
+#' @keywords internal
+terra_dtype <- function(dtype_str) {
+  switch(dtype_str,
+    "INT1U"  = "uint8",
+    "INT2U"  = "uint16",
+    "INT2S"  = "int16",
+    "INT4U"  = "uint32",
+    "INT4S"  = "int32",
+    "FLT4S"  = "float32",
+    "FLT8S"  = "float64",
+    "other"
+  )
+}
+
+
 #' Normalize an href for use in a STAC asset
 #'
 #' @description
