@@ -65,13 +65,13 @@ Helper constructors for Collection fields.
 Create STAC Items and thumbnails directly from `stars` raster objects,
 and extract band metadata.
 
-- [`item_from_raster()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_raster.md)
+- [`item_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_stars.md)
   : Create a STAC Item from a Stars Object
 - [`bands_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/bands_from_stars.md)
   : Extract Raster Band Metadata from a Stars Object
 - [`items_from_directory()`](https://stevenpawley.github.io/stacbuildr/reference/items_from_directory.md)
   : Batch Create Items from Raster Files
-- [`thumbnail_from_raster()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_raster.md)
+- [`thumbnail_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_stars.md)
   : Generate a Thumbnail PNG from a Stars Raster Object
 
 ## terra Integration
