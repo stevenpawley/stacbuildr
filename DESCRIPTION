@@ -33,6 +33,7 @@ Collate:
     'extension-eo.R'
     'extension-raster.R'
     'integrations.R'
+    'thumbnail.R'
     'validation.R'
     'write.R'
     'zzz.R'
