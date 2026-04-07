@@ -10,15 +10,19 @@ read_stac(file)
 \item{file}{(character, required) Path to the STAC JSON file.}
 }
 \value{
-A STAC object (catalog, collection, or item) with the appropriate class.
+An S7 object of class \code{stac_catalog}, \code{stac_collection}, or
+\code{stac_item}, depending on the \code{type} field in the JSON.
 }
 \description{
-Reads a STAC Catalog, Collection, or Item from a JSON file.
+Reads a STAC Catalog, Collection, or Item from a JSON file and returns the
+corresponding S7 object (\code{stac_catalog}, \code{stac_collection}, or \code{stac_item}).
+The returned object is fully usable with all package functions, completing
+the write/read round-trip.
 }
 \examples{
 \dontrun{
 catalog <- read_stac("path/to/catalog.json")
-item <- read_stac("path/to/item.json")
+item    <- read_stac("path/to/item.json")
 }
 
 }
