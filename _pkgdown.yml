@@ -2,3 +2,102 @@ url: https://stevenpawley.github.io/stacbuildr/
 template:
   bootstrap: 5
 
+reference:
+  - title: "Core STAC Objects"
+    desc: "Create and manipulate the three fundamental STAC object types."
+    contents:
+      - stac_catalog
+      - stac_collection
+      - stac_item
+
+  - title: "Assets"
+    desc: "Create and attach data assets to STAC Items and Collections."
+    contents:
+      - stac_asset
+      - add_asset
+
+  - title: "Links"
+    desc: "Build and manage the link graph between STAC objects."
+    contents:
+      - add_link
+      - add_self_link
+      - add_root_link
+      - add_parent_link
+      - add_child
+      - add_item
+      - get_children
+      - get_items
+      - get_item_links
+      - count_items
+      - remove_item
+
+  - title: "Collection Metadata Helpers"
+    desc: "Helper constructors for Collection fields."
+    contents:
+      - stac_extent
+      - stac_provider
+      - stac_summaries
+      - extent_from_items
+
+  - title: "stars Integration"
+    desc: >
+      Create STAC Items and thumbnails directly from `stars` raster objects,
+      and extract band metadata.
+    contents:
+      - item_from_stars
+      - bands_from_stars
+      - items_from_directory
+      - thumbnail_from_stars
+
+  - title: "terra Integration"
+    desc: >
+      Create STAC Items and thumbnails directly from `terra` `SpatRaster`
+      objects, and extract band metadata.
+    contents:
+      - item_from_spatraster
+      - bands_from_spatraster
+      - thumbnail_from_spatraster
+
+  - title: "sf Integration"
+    desc: "Create STAC Items and thumbnails from `sf` vector objects."
+    contents:
+      - item_from_sf
+      - geometry_from_sf
+      - bbox_from_sf
+      - thumbnail_from_sf
+
+  - title: "Raster Extension"
+    desc: >
+      Add the STAC Raster Extension to Items and build per-band metadata
+      objects.
+    contents:
+      - add_raster_extension
+      - raster_band
+      - print.raster_band
+      - raster_statistics
+      - raster_histogram
+      - raster_from_file
+
+  - title: "EO Extension"
+    desc: >
+      Add the STAC Electro-Optical Extension to Items, with pre-built band
+      definitions for common sensors.
+    contents:
+      - add_eo_extension
+      - eo_band
+      - print.eo_band
+      - landsat_oli_bands
+      - sentinel2_msi_bands
+
+  - title: "Read / Write"
+    desc: "Serialise STAC objects to JSON on disk and read them back."
+    contents:
+      - write_stac
+      - write_catalog
+      - write_item
+      - read_stac
+
+  - title: "Validation"
+    desc: "Validate STAC objects against the specification."
+    contents:
+      - validate_stac

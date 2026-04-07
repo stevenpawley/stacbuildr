@@ -79,8 +79,8 @@ stac_catalog(
 
 An S7 object of class `stac_catalog` containing the catalog metadata.
 Convert to a plain list for JSON serialization with
-[`as.list()`](https://rdrr.io/r/base/list.html), or write directly to
-disk using
+[`as.list()`](https://rspatial.github.io/terra/reference/as.list.html),
+or write directly to disk using
 [`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md).
 
 ## Details

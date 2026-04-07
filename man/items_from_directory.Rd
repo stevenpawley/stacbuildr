@@ -19,7 +19,7 @@ items_from_directory(
 \item{datetime_from_filename}{Function to extract datetime from filename.
 Should return ISO 8601 string. If NULL, uses current time.}
 
-\item{...}{Additional arguments passed to \code{item_from_raster()}.}
+\item{...}{Additional arguments passed to \code{item_from_stars()}.}
 }
 \value{
 A list of STAC Item objects.
