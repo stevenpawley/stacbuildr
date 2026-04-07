@@ -179,7 +179,7 @@ extensions or additional metadata beyond the core specification.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An S7 object of class <code>stac_collection</code> (extending <code>stac_catalog</code>)
 containing the collection metadata. Convert to a plain list for JSON
-serialization with <code><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list()</a></code>, or write directly to disk using <code><a href="write_stac.html">write_stac()</a></code>.</p>
+serialization with <code><a href="https://rspatial.github.io/terra/reference/as.list.html" class="external-link">as.list()</a></code>, or write directly to disk using <code><a href="write_stac.html">write_stac()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -338,7 +338,7 @@ inspecting all Items. Three formats are supported:</p><ul><li><p>Array of unique
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Convert to JSON</span></span></span>
-<span class="r-in"><span><span class="va">collection_json</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html" class="external-link">toJSON</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">collection</span><span class="op">)</span>, auto_unbox <span class="op">=</span> <span class="cn">TRUE</span>, pretty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">collection_json</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html" class="external-link">toJSON</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/as.list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">collection</span><span class="op">)</span>, auto_unbox <span class="op">=</span> <span class="cn">TRUE</span>, pretty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">collection_json</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   "type": "Collection",</span>

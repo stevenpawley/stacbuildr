@@ -4,12 +4,12 @@ skip_if_not_installed("sf")
 tif <- system.file("tif/L7_ETMs.tif", package = "stars")
 sf_file <- system.file("shape/nc.shp", package = "sf")
 
-test_that("thumbnail_from_raster returns a valid thumbnail asset", {
+test_that("thumbnail_from_stars returns a valid thumbnail asset", {
   r <- stars::read_stars(tif, quiet = TRUE)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  asset <- thumbnail_from_raster(r, path = path)
+  asset <- thumbnail_from_stars(r, path = path)
 
   expect_true(file.exists(path))
   expect_equal(asset$type, "image/png")
@@ -17,35 +17,35 @@ test_that("thumbnail_from_raster returns a valid thumbnail asset", {
   expect_equal(asset$href, gsub("\\\\", "/", normalizePath(path)))
 })
 
-test_that("thumbnail_from_raster accepts a title", {
+test_that("thumbnail_from_stars accepts a title", {
   r <- stars::read_stars(tif, quiet = TRUE)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  asset <- thumbnail_from_raster(r, path = path, title = "Preview")
+  asset <- thumbnail_from_stars(r, path = path, title = "Preview")
 
   expect_equal(asset$title, "Preview")
 })
 
-test_that("thumbnail_from_raster accepts custom dimensions", {
+test_that("thumbnail_from_stars accepts custom dimensions", {
   r <- stars::read_stars(tif, quiet = TRUE)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  thumbnail_from_raster(r, path = path, width = 128, height = 128)
+  thumbnail_from_stars(r, path = path, width = 128, height = 128)
 
   expect_true(file.exists(path))
   expect_gt(file.size(path), 0)
 })
 
-test_that("thumbnail_from_raster errors on non-stars input", {
+test_that("thumbnail_from_stars errors on non-stars input", {
   path <- tempfile(fileext = ".png")
-  expect_error(thumbnail_from_raster(list(), path = path), "must be a stars object")
+  expect_error(thumbnail_from_stars(list(), path = path), "must be a stars object")
 })
 
-test_that("thumbnail_from_raster errors when path is missing", {
+test_that("thumbnail_from_stars errors when path is missing", {
   r <- stars::read_stars(tif, quiet = TRUE)
-  expect_error(thumbnail_from_raster(r, path = ""), "'path' is required")
+  expect_error(thumbnail_from_stars(r, path = ""), "'path' is required")
 })
 
 test_that("thumbnail_from_sf returns a valid thumbnail asset", {
@@ -86,13 +86,13 @@ test_that("thumbnail asset can be added to a stac item", {
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  item <- item_from_raster(
+  item <- item_from_stars(
     r,
     href = tif,
     id = "L7_ETMs",
     datetime = "2023-06-15T10:30:00Z"
   )
-  asset <- thumbnail_from_raster(r, path = path)
+  asset <- thumbnail_from_stars(r, path = path)
   item <- add_asset(item, key = "thumbnail", asset = asset)
 
   expect_true("thumbnail" %in% names(item@assets))

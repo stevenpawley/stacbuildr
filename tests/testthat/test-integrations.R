@@ -4,10 +4,10 @@ skip_if_not_installed("sf")
 
 tif <- system.file("tif/L7_ETMs.tif", package = "stars")
 
-test_that("item_from_raster creates a valid item from a stars object", {
+test_that("item_from_stars creates a valid item from a stars object", {
   r <- stars::read_stars(tif, quiet = TRUE)
 
-  item <- item_from_raster(
+  item <- item_from_stars(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -31,10 +31,10 @@ test_that("item_from_raster creates a valid item from a stars object", {
   expect_true(bbox[4] > -9 && bbox[4] < -7) # ymax
 })
 
-test_that("item_from_raster derives id from href when id is NULL", {
+test_that("item_from_stars derives id from href when id is NULL", {
   r <- stars::read_stars(tif, quiet = TRUE)
 
-  item <- item_from_raster(
+  item <- item_from_stars(
     r,
     href = tif,
     datetime = "2023-06-15T10:30:00Z"
@@ -43,10 +43,10 @@ test_that("item_from_raster derives id from href when id is NULL", {
   expect_equal(item@id, "L7_ETMs")
 })
 
-test_that("item_from_raster adds the main asset with correct fields", {
+test_that("item_from_stars adds the main asset with correct fields", {
   r <- stars::read_stars(tif, quiet = TRUE)
 
-  item <- item_from_raster(
+  item <- item_from_stars(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -61,10 +61,10 @@ test_that("item_from_raster adds the main asset with correct fields", {
   expect_equal(item@assets$data$roles, c("data"))
 })
 
-test_that("item_from_raster adds raster extension with 6 band objects", {
+test_that("item_from_stars adds raster extension with 6 band objects", {
   r <- stars::read_stars(tif, quiet = TRUE)
 
-  item <- item_from_raster(
+  item <- item_from_stars(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -81,10 +81,10 @@ test_that("item_from_raster adds raster extension with 6 band objects", {
   expect_equal(bands[[1]]$`raster:spatial_resolution`, 28.5)
 })
 
-test_that("item_from_raster skips raster extension when add_raster_bands is FALSE", {
+test_that("item_from_stars skips raster extension when add_raster_bands is FALSE", {
   r <- stars::read_stars(tif, quiet = TRUE)
 
-  item <- item_from_raster(
+  item <- item_from_stars(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -97,10 +97,10 @@ test_that("item_from_raster skips raster extension when add_raster_bands is FALS
   expect_null(item@assets$data$`raster:bands`)
 })
 
-test_that("item_from_raster adds projection extension for non-WGS84 CRS", {
+test_that("item_from_stars adds projection extension for non-WGS84 CRS", {
   r <- stars::read_stars(tif, quiet = TRUE)
 
-  item <- item_from_raster(
+  item <- item_from_stars(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -118,10 +118,10 @@ test_that("item_from_raster adds projection extension for non-WGS84 CRS", {
   expect_equal(item@properties$`proj:transform`[[5]], -28.5) # y pixel size (negative)
 })
 
-test_that("item_from_raster validates correctly", {
+test_that("item_from_stars validates correctly", {
   r <- stars::read_stars(tif, quiet = TRUE)
 
-  item <- item_from_raster(
+  item <- item_from_stars(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -156,9 +156,9 @@ test_that("bands_from_stars calculates statistics when requested", {
   }
 })
 
-test_that("item_from_raster errors on non-stars input", {
+test_that("item_from_stars errors on non-stars input", {
   expect_error(
-    item_from_raster(
+    item_from_stars(
       "not_a_stars_object",
       href = tif,
       datetime = "2023-06-15T10:30:00Z"
@@ -167,10 +167,10 @@ test_that("item_from_raster errors on non-stars input", {
   )
 })
 
-test_that("item_from_raster works without href when id is supplied", {
+test_that("item_from_stars works without href when id is supplied", {
   r <- stars::read_stars(tif, quiet = TRUE)
 
-  item <- item_from_raster(
+  item <- item_from_stars(
     r,
     id = "L7_ETMs",
     datetime = "2023-06-15T10:30:00Z"
@@ -180,11 +180,11 @@ test_that("item_from_raster works without href when id is supplied", {
   expect_length(item@assets, 0)
 })
 
-test_that("item_from_raster errors when both href and id are NULL", {
+test_that("item_from_stars errors when both href and id are NULL", {
   r <- stars::read_stars(tif, quiet = TRUE)
 
   expect_error(
-    item_from_raster(r, datetime = "2023-06-15T10:30:00Z"),
+    item_from_stars(r, datetime = "2023-06-15T10:30:00Z"),
     "'id' is required when 'href' is not provided"
   )
 })

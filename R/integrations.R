@@ -45,13 +45,13 @@
 #'
 #' r <- read_stars("path/to/image.tif")
 #'
-#' item <- item_from_raster(
+#' item <- item_from_stars(
 #'   r,
 #'   href = "path/to/image.tif",
 #'   datetime = "2023-06-15T10:30:00Z"
 #' )
 #'
-#' item <- item_from_raster(
+#' item <- item_from_stars(
 #'   r,
 #'   href = "https://example.com/image.tif",
 #'   id = "LC08_001",
@@ -62,7 +62,7 @@
 #' }
 #'
 #' @export
-item_from_raster <- function(
+item_from_stars <- function(
   stars_obj,
   href = NULL,
   id = NULL,
@@ -1016,7 +1016,7 @@ gdal_dtype <- function(file) {
 #' @param pattern File pattern to match (regex). Default matches common raster formats.
 #' @param datetime_from_filename Function to extract datetime from filename.
 #'   Should return ISO 8601 string. If NULL, uses current time.
-#' @param ... Additional arguments passed to `item_from_raster()`.
+#' @param ... Additional arguments passed to `item_from_stars()`.
 #'
 #' @return A list of STAC Item objects.
 #'
@@ -1092,7 +1092,7 @@ items_from_directory <- function(
     tryCatch(
       {
         r <- stars::read_stars(file, quiet = TRUE)
-        item <- item_from_raster(
+        item <- item_from_stars(
           stars_obj = r,
           href = normalizePath(file),
           datetime = datetime,
