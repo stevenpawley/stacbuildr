@@ -595,16 +595,20 @@ strip_stored_objects <- function(stac_obj) {
 #' Read a STAC Catalog from Disk
 #'
 #' @description
-#' Reads a STAC Catalog, Collection, or Item from a JSON file.
+#' Reads a STAC Catalog, Collection, or Item from a JSON file and returns the
+#' corresponding S7 object (`stac_catalog`, `stac_collection`, or `stac_item`).
+#' The returned object is fully usable with all package functions, completing
+#' the write/read round-trip.
 #'
 #' @param file (character, required) Path to the STAC JSON file.
 #'
-#' @return A STAC object (catalog, collection, or item) with the appropriate class.
+#' @return An S7 object of class `stac_catalog`, `stac_collection`, or
+#'   `stac_item`, depending on the `type` field in the JSON.
 #'
 #' @examples
 #' \dontrun{
 #' catalog <- read_stac("path/to/catalog.json")
-#' item <- read_stac("path/to/item.json")
+#' item    <- read_stac("path/to/item.json")
 #' }
 #'
 #' @export
@@ -613,22 +617,125 @@ read_stac <- function(file) {
     stop(sprintf("File not found: %s", file))
   }
 
-  # Read JSON
-  stac_obj <- jsonlite::fromJSON(file, simplifyVector = FALSE)
+  parsed <- jsonlite::fromJSON(file, simplifyVector = FALSE)
 
-  # Determine type and assign appropriate class
-  if (stac_obj$type == "Catalog") {
-    class(stac_obj) <- c("stac_catalog", "list")
-  } else if (stac_obj$type == "Collection") {
-    class(stac_obj) <- c("stac_collection", "stac_catalog", "list")
-  } else if (stac_obj$type == "Feature") {
-    class(stac_obj) <- c("stac_item", "list")
-  } else {
-    warning(sprintf("Unknown STAC type: %s", stac_obj$type))
-    class(stac_obj) <- "list"
+  if (is.null(parsed$type)) {
+    stop("Invalid STAC file: missing 'type' field")
   }
 
-  stac_obj
+  switch(parsed$type,
+    "Feature"    = parse_stac_item(parsed),
+    "Catalog"    = parse_stac_catalog(parsed),
+    "Collection" = parse_stac_collection(parsed),
+    {
+      warning(sprintf("Unknown STAC type: %s", parsed$type))
+      parsed
+    }
+  )
+}
+
+
+#' Reconstruct a stac_item S7 Object from a Parsed JSON List
+#'
+#' @keywords internal
+parse_stac_item <- function(parsed) {
+  props <- parsed$properties %||% list()
+
+  # Extract datetime fields; constructor re-adds them to properties
+  dt       <- props$datetime
+  start_dt <- props$start_datetime
+  end_dt   <- props$end_datetime
+  props$datetime        <- NULL
+  props$start_datetime  <- NULL
+  props$end_datetime    <- NULL
+
+  stac_item(
+    id              = parsed$id,
+    geometry        = parsed$geometry,
+    bbox            = if (!is.null(parsed$bbox)) unlist(parsed$bbox) else NULL,
+    datetime        = dt,
+    start_datetime  = start_dt,
+    end_datetime    = end_dt,
+    properties      = props,
+    assets          = parsed$assets %||% list(),
+    links           = parsed$links  %||% list(),
+    stac_version    = parsed$stac_version %||% "1.1.0",
+    stac_extensions = if (!is.null(parsed$stac_extensions))
+                        unlist(parsed$stac_extensions) else NULL,
+    collection      = parsed$collection
+  )
+}
+
+
+#' Reconstruct a stac_catalog S7 Object from a Parsed JSON List
+#'
+#' @keywords internal
+parse_stac_catalog <- function(parsed) {
+  known <- c("type", "stac_version", "id", "description", "title",
+             "stac_extensions", "conformsTo", "links")
+  extra <- parsed[setdiff(names(parsed), known)]
+
+  catalog <- do.call(stac_catalog, c(
+    list(
+      id              = parsed$id,
+      description     = parsed$description,
+      title           = parsed$title,
+      stac_version    = parsed$stac_version %||% "1.1.0",
+      stac_extensions = if (!is.null(parsed$stac_extensions))
+                          unlist(parsed$stac_extensions) else NULL,
+      conformsTo      = if (!is.null(parsed$conformsTo))
+                          unlist(parsed$conformsTo) else NULL
+    ),
+    extra
+  ))
+
+  catalog@links <- parsed$links %||% list()
+  catalog
+}
+
+
+#' Reconstruct a stac_collection S7 Object from a Parsed JSON List
+#'
+#' @keywords internal
+parse_stac_collection <- function(parsed) {
+  known <- c("type", "stac_version", "id", "description", "title",
+             "stac_extensions", "conformsTo", "links",
+             "license", "extent", "keywords", "providers", "summaries", "assets")
+  extra <- parsed[setdiff(names(parsed), known)]
+
+  # Reconstruct extent: bbox arrays come back as lists and need unlist()
+  extent_list <- list(
+    spatial  = list(
+      bbox = lapply(parsed$extent$spatial$bbox, unlist)
+    ),
+    temporal = list(
+      interval = parsed$extent$temporal$interval
+    )
+  )
+
+  collection <- do.call(stac_collection, c(
+    list(
+      id              = parsed$id,
+      description     = parsed$description,
+      license         = parsed$license,
+      extent          = extent_list,
+      title           = parsed$title,
+      stac_version    = parsed$stac_version %||% "1.1.0",
+      stac_extensions = if (!is.null(parsed$stac_extensions))
+                          unlist(parsed$stac_extensions) else NULL,
+      keywords        = if (!is.null(parsed$keywords))
+                          unlist(parsed$keywords) else NULL,
+      providers       = parsed$providers,
+      summaries       = parsed$summaries,
+      assets          = parsed$assets,
+      conformsTo      = if (!is.null(parsed$conformsTo))
+                          unlist(parsed$conformsTo) else NULL
+    ),
+    extra
+  ))
+
+  collection@links <- parsed$links %||% list()
+  collection
 }
 
 
