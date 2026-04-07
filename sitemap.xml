@@ -32,9 +32,9 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/get_media_type.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/index.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/is_cog.html</loc></url>
-<url><loc>https://stevenpawley.github.io/stacbuildr/reference/item_from_raster.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/item_from_sf.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/item_from_spatraster.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/item_from_stars.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/items_from_directory.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/landsat_oli_bands.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/normalize_href.html</loc></url>
@@ -61,9 +61,9 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stars_dtype.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/strip_stored_objects.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/terra_dtype.html</loc></url>
-<url><loc>https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_raster.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_sf.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_spatraster.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_stars.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/update_catalog_links.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/update_item_links.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/validate_assets.html</loc></url>

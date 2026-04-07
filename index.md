@@ -154,7 +154,7 @@ item <- item |>
 
 ``` r
 # Create a STAC Item directly from a GeoTIFF (via terra)
-item <- item_from_raster(
+item <- item_from_stars(
   file                 = "path/to/image.tif",
   datetime             = "2023-06-15T10:30:00Z",
   add_raster_bands     = TRUE,
