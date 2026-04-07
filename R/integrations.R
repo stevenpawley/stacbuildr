@@ -406,6 +406,7 @@ add_projection_metadata_stars <- function(item, stars_obj) {
 normalize_href <- function(href) {
   if (!grepl("://", href, fixed = TRUE)) {
     href <- normalizePath(href, mustWork = FALSE)
+    href <- gsub("\\\\", "/", href)
   }
   href
 }

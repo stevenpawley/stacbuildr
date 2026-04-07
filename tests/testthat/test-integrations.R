@@ -56,7 +56,7 @@ test_that("item_from_raster adds the main asset with correct fields", {
   )
 
   expect_true("data" %in% names(item@assets))
-  expect_equal(item@assets$data$href, tif)
+  expect_equal(item@assets$data$href, gsub("\\\\", "/", tif))
   expect_equal(item@assets$data$type, "image/tiff; application=geotiff")
   expect_equal(item@assets$data$roles, c("data"))
 })
