@@ -125,6 +125,18 @@ item_from_stars <- function(
       type = get_media_type(href),
       roles = asset_roles
     )
+
+    # Add nodata as a standalone asset-level field if available (proxy only;
+    # in-memory stars objects use R NA natively with no explicit nodata flag)
+    if (inherits(stars_obj, "stars_proxy")) {
+      src <- stars_obj[[1]][[1]]
+      if (is.character(src) && file.exists(src)) {
+        nodata_val <- gdal_nodata(src)
+        if (!is.null(nodata_val)) {
+          item@assets[[asset_key]]$nodata <- nodata_val
+        }
+      }
+    }
   }
 
   # Add any additional assets
@@ -502,6 +514,12 @@ item_from_spatraster <- function(
       type = get_media_type(href),
       roles = asset_roles
     )
+
+    # Add nodata as a standalone asset-level field if available
+    nodata_val <- terra_nodata(spat_rast)
+    if (!is.null(nodata_val)) {
+      item@assets[[asset_key]]$nodata <- nodata_val
+    }
   }
 
   # Add any additional assets
@@ -660,6 +678,18 @@ bands_from_spatraster <- function(spat_rast, calculate_statistics = FALSE) {
   }
 
   bands
+}
+
+
+#' Extract the NoData Value from a SpatRaster
+#'
+#' @keywords internal
+terra_nodata <- function(spat_rast) {
+  naf <- terra::NAflag(spat_rast)
+  naf <- naf[!is.na(naf)]
+  if (length(naf) == 0) return(NULL)
+  unique_vals <- unique(as.numeric(naf))
+  if (length(unique_vals) == 1) unique_vals[[1]] else unique_vals
 }
 
 
@@ -1003,6 +1033,24 @@ gdal_dtype <- function(file) {
       )
     },
     error = function(e) "other"
+  )
+}
+
+
+#' Extract the NoData Value from a File Using GDAL
+#'
+#' @keywords internal
+gdal_nodata <- function(file) {
+  if (!file.exists(file)) return(NULL)
+  tryCatch(
+    {
+      info <- sf::gdal_utils("info", source = file, quiet = TRUE)
+      m <- regmatches(info, regexpr("NoData Value=([^\\n\\r]+)", info))
+      if (length(m) == 0) return(NULL)
+      val <- trimws(sub("NoData Value=", "", m[[1]]))
+      as.numeric(val)
+    },
+    error = function(e) NULL
   )
 }
 
