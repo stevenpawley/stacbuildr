@@ -7,7 +7,6 @@ Description: The stacbuildr package provides functions to generate STAC catalogs
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Depends:
     R (>= 4.1.0)
 Imports: 
@@ -32,6 +31,7 @@ Collate:
     'item-helpers.R'
     'extension-eo.R'
     'extension-raster.R'
+    'extension-classification.R'
     'integrations.R'
     'thumbnail.R'
     'validation.R'
@@ -39,3 +39,4 @@ Collate:
     'zzz.R'
 URL: https://github.com/stevenpawley/stacbuildr, https://stevenpawley.github.io/stacbuildr/
 BugReports: https://github.com/stevenpawley/stacbuildr/issues
+Config/roxygen2/version: 8.0.0
