@@ -74,18 +74,6 @@ and extract band metadata.
 - [`thumbnail_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_stars.md)
   : Generate a Thumbnail PNG from a Stars Raster Object
 
-## terra Integration
-
-Create STAC Items and thumbnails directly from `terra` `SpatRaster`
-objects, and extract band metadata.
-
-- [`item_from_spatraster()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_spatraster.md)
-  : Create a STAC Item from a SpatRaster Object
-- [`bands_from_spatraster()`](https://stevenpawley.github.io/stacbuildr/reference/bands_from_spatraster.md)
-  : Extract Raster Band Metadata from a SpatRaster Object
-- [`thumbnail_from_spatraster()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_spatraster.md)
-  : Generate a Thumbnail PNG from a SpatRaster Object
-
 ## sf Integration
 
 Create STAC Items and thumbnails from `sf` vector objects.
@@ -132,6 +120,21 @@ definitions for common sensors.
   : Create Standard Landsat 8/9 OLI Bands
 - [`sentinel2_msi_bands()`](https://stevenpawley.github.io/stacbuildr/reference/sentinel2_msi_bands.md)
   : Create Standard Sentinel-2 MSI Bands
+
+## Classification Extension
+
+Add the STAC Classification Extension to Items
+
+- [`add_classification_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_classification_extension.md)
+  : Add Classification Extension to a STAC Item
+- [`classification_class()`](https://stevenpawley.github.io/stacbuildr/reference/classification_class.md)
+  : Create a Classification Class Object
+- [`classification_bitfield()`](https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.md)
+  : Create a Classification Bitfield Object
+- [`print(`*`<classification_class>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.classification_class.md)
+  : Print method for classification_class objects
+- [`print(`*`<classification_bitfield>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.classification_bitfield.md)
+  : Print method for classification_bitfield objects
 
 ## Read / Write
 

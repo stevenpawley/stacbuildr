@@ -10,6 +10,7 @@ valid STAC JSON.
 ## Installation
 
 ``` r
+
 # Install from GitHub
 # install.packages("remotes")
 remotes::install_github("stevenpawley/stacbuildr")
@@ -19,11 +20,11 @@ remotes::install_github("stevenpawley/stacbuildr")
 
 A STAC catalog is a hierarchy of three object types:
 
-| Object         | Description                                                                        |
-|----------------|------------------------------------------------------------------------------------|
-| **Catalog**    | Top-level container that groups related Collections and Items                      |
-| **Collection** | A Catalog extended with spatial/temporal extents, license, and summaries           |
-| **Item**       | A GeoJSON Feature representing an individual asset (e.g. a single satellite scene) |
+| Object | Description |
+|----|----|
+| **Catalog** | Top-level container that groups related Collections and Items |
+| **Collection** | A Catalog extended with spatial/temporal extents, license, and summaries |
+| **Item** | A GeoJSON Feature representing an individual asset (e.g. a single satellite scene) |
 
 Each object contains **links** (JSON pointers connecting the hierarchy)
 and Items contain **assets** (references to the actual data files).
@@ -33,6 +34,7 @@ and Items contain **assets** (references to the actual data files).
 ### Creating objects
 
 ``` r
+
 library(stacbuildr)
 
 # Root catalog
@@ -75,6 +77,7 @@ item <- stac_item(
 ### Managing links
 
 ``` r
+
 # Add standard navigation links
 catalog <- catalog |>
   add_self_link("https://example.com/catalog.json") |>
@@ -100,6 +103,7 @@ collection <- add_link(collection, rel = "license",
 ### Adding assets to items
 
 ``` r
+
 item <- item |>
   add_asset(
     key   = "visual",
@@ -121,6 +125,7 @@ item <- item |>
 #### Electro-Optical (EO) extension
 
 ``` r
+
 item <- item |>
   add_eo_extension(
     bands = list(
@@ -140,6 +145,7 @@ item <- add_eo_extension(item, bands = landsat_oli_bands(include_thermal = TRUE)
 #### Raster extension
 
 ``` r
+
 item <- item |>
   add_raster_extension(
     bands = list(
@@ -153,6 +159,7 @@ item <- item |>
 ### Integrations with spatial R packages
 
 ``` r
+
 # Create a STAC Item directly from a GeoTIFF (via terra)
 item <- item_from_stars(
   file                 = "path/to/image.tif",
@@ -180,6 +187,7 @@ extent <- extent_from_items(items)
 ### Writing and reading
 
 ``` r
+
 # Write the entire catalog hierarchy to disk as JSON files
 write_stac(catalog, path = "output/stac")
 
@@ -209,6 +217,7 @@ The written directory structure follows STAC conventions:
 ### Validation
 
 ``` r
+
 result <- validate_stac(collection)
 result$valid    # TRUE / FALSE
 result$errors   # character vector of errors
@@ -221,6 +230,7 @@ validate_stac(item, strict = TRUE)
 ### Inspecting catalog contents
 
 ``` r
+
 count_items(collection)                          # integer count of item links
 get_item_links(collection, as_dataframe = TRUE)  # data.frame of item hrefs
 get_items(collection)                            # list of stored item objects

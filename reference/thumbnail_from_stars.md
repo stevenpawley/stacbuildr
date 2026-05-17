@@ -43,7 +43,7 @@ thumbnail_from_stars(
 - ...:
 
   Additional arguments passed to
-  [`plot()`](https://rspatial.github.io/terra/reference/plot.html).
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
 
 ## Value
 
