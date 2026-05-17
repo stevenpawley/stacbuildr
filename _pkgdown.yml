@@ -49,15 +49,6 @@ reference:
       - items_from_directory
       - thumbnail_from_stars
 
-  - title: "terra Integration"
-    desc: >
-      Create STAC Items and thumbnails directly from `terra` `SpatRaster`
-      objects, and extract band metadata.
-    contents:
-      - item_from_spatraster
-      - bands_from_spatraster
-      - thumbnail_from_spatraster
-
   - title: "sf Integration"
     desc: "Create STAC Items and thumbnails from `sf` vector objects."
     contents:
@@ -88,6 +79,16 @@ reference:
       - print.eo_band
       - landsat_oli_bands
       - sentinel2_msi_bands
+
+  - title: "Classification Extension"
+    desc: >
+      Add the STAC Classification Extension to Items
+    contents:
+      - add_classification_extension
+      - classification_class
+      - classification_bitfield
+      - print.classification_class
+      - print.classification_bitfield
 
   - title: "Read / Write"
     desc: "Serialise STAC objects to JSON on disk and read them back."
