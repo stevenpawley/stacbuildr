@@ -521,7 +521,7 @@ extent_from_items <- function(items) {
   }
 
   # Extract all bboxes
-  bboxes <- lapply(items, function(item) item$bbox)
+  bboxes <- lapply(items, function(item) item@bbox)
 
   # Calculate overall spatial extent
   xmins <- sapply(bboxes, function(b) b[1])
