@@ -566,7 +566,7 @@ extent_from_items <- function(items) {
 
   stac_extent(
     spatial_bbox = list(overall_bbox),
-    temporal_interval = list(c(temporal_start, temporal_end))
+    temporal_interval = list(list(temporal_start, temporal_end))
   )
 }
 
