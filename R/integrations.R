@@ -540,7 +540,7 @@ extent_from_items <- function(items) {
   datetimes <- character()
 
   for (item in items) {
-    if (!is.null(item@properties$datetime) && item$properties$datetime != "null") {
+    if (!is.null(item@properties$datetime) && item@properties$datetime != "null") {
       datetimes <- c(datetimes, item@properties$datetime)
     } else if (!is.null(item@properties$start_datetime)) {
       datetimes <- c(datetimes, item@properties$start_datetime)
