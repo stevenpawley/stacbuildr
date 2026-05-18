@@ -345,3 +345,58 @@ S7::method(as.list, stac_item) <- function(x, ...) {
   }
   out
 }
+
+S7::method(print, stac_item) <- function(x, ...) {
+  cat("<STAC Item>\n")
+  cat(sprintf("  id          : %s\n", x@id))
+
+  if (!is.null(x@collection)) {
+    cat(sprintf("  collection  : %s\n", x@collection))
+  }
+
+  cat(sprintf("  stac_version: %s\n", x@stac_version))
+
+  # Datetime / time range
+  if (!is.null(x@properties$datetime)) {
+    cat(sprintf("  datetime    : %s\n", x@properties$datetime))
+  } else if (!is.null(x@properties$start_datetime)) {
+    cat(sprintf(
+      "  datetime    : %s / %s\n",
+      x@properties$start_datetime,
+      x@properties$end_datetime %||% ".."
+    ))
+  }
+
+  # Geometry type and bbox
+  if (!is.null(x@geometry)) {
+    cat(sprintf("  geometry    : %s\n", x@geometry$type))
+  } else {
+    cat("  geometry    : NULL (non-spatial)\n")
+  }
+
+  if (!is.null(x@bbox)) {
+    cat(sprintf(
+      "  bbox        : [%.4f, %.4f, %.4f, %.4f]\n",
+      x@bbox[1], x@bbox[2], x@bbox[3], x@bbox[4]
+    ))
+  }
+
+  if (length(x@assets) > 0) {
+    cat(sprintf("  assets      : %d [%s]\n", length(x@assets), paste(names(x@assets), collapse = ", ")))
+  } else {
+    cat("  assets      : 0\n")
+  }
+
+  if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
+    cat(sprintf("  extensions  : %d\n", length(x@stac_extensions)))
+  }
+
+  if (length(x@links) > 0) {
+    rels <- vapply(x@links, `[[`, character(1), "rel")
+    cat(sprintf("  links       : %d [%s]\n", length(rels), paste(rels, collapse = ", ")))
+  } else {
+    cat("  links       : 0\n")
+  }
+
+  invisible(x)
+}
