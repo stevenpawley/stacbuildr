@@ -342,6 +342,59 @@ S7::method(as.list, stac_collection) <- function(x, ...) {
   out
 }
 
+S7::method(print, stac_collection) <- function(x, ...) {
+  cat(sprintf("<STAC %s>\n", x@type))
+  cat(sprintf("  id          : %s\n", x@id))
+
+  if (!is.null(x@title)) {
+    cat(sprintf("  title       : %s\n", x@title))
+  }
+
+  cat(sprintf("  stac_version: %s\n", x@stac_version))
+
+  desc <- x@description
+  if (nchar(desc) > 60) {
+    desc <- paste0(substr(desc, 1, 57), "...")
+  }
+  cat(sprintf("  description : %s\n", desc))
+  cat(sprintf("  license     : %s\n", x@license))
+
+  # Spatial extent — show first bbox
+  bbox <- x@extent@spatial@bbox[[1]]
+  cat(sprintf(
+    "  bbox        : [%.4f, %.4f, %.4f, %.4f]\n",
+    bbox[1], bbox[2], bbox[3], bbox[4]
+  ))
+
+  # Temporal extent — show first interval
+  interval <- x@extent@temporal@interval[[1]]
+  t_start <- if (is.null(interval[[1]])) ".." else interval[[1]]
+  t_end   <- if (is.null(interval[[2]])) ".." else interval[[2]]
+  cat(sprintf("  datetime    : %s / %s\n", t_start, t_end))
+
+  if (!is.null(x@keywords) && length(x@keywords) > 0) {
+    cat(sprintf("  keywords    : %s\n", paste(x@keywords, collapse = ", ")))
+  }
+
+  if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
+    cat(sprintf("  extensions  : %d\n", length(x@stac_extensions)))
+  }
+
+  if (length(x@links) > 0) {
+    rels <- vapply(x@links, `[[`, character(1), "rel")
+    cat(sprintf("  links       : %d [%s]\n", length(rels), paste(rels, collapse = ", ")))
+  } else {
+    cat("  links       : 0\n")
+  }
+
+  children <- attr(x, "stac_children")
+  if (!is.null(children) && length(children) > 0) {
+    cat(sprintf("  children    : %d [%s]\n", length(children), paste(names(children), collapse = ", ")))
+  }
+
+  invisible(x)
+}
+
 
 #' Create a STAC Extent Object
 #'

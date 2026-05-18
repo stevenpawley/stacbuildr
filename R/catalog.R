@@ -219,6 +219,42 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
   out
 }
 
+S7::method(print, stac_catalog) <- function(x, ...) {
+  cat(sprintf("<STAC %s>\n", x@type))
+  cat(sprintf("  id          : %s\n", x@id))
+
+  if (!is.null(x@title)) {
+    cat(sprintf("  title       : %s\n", x@title))
+  }
+
+  cat(sprintf("  stac_version: %s\n", x@stac_version))
+
+  # Wrap description at 60 chars for readability
+  desc <- x@description
+  if (nchar(desc) > 60) {
+    desc <- paste0(substr(desc, 1, 57), "...")
+  }
+  cat(sprintf("  description : %s\n", desc))
+
+  if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
+    cat(sprintf("  extensions  : %d\n", length(x@stac_extensions)))
+  }
+
+  if (length(x@links) > 0) {
+    rels <- vapply(x@links, `[[`, character(1), "rel")
+    cat(sprintf("  links       : %d [%s]\n", length(rels), paste(rels, collapse = ", ")))
+  } else {
+    cat("  links       : 0\n")
+  }
+
+  children <- attr(x, "stac_children")
+  if (!is.null(children) && length(children) > 0) {
+    cat(sprintf("  children    : %d [%s]\n", length(children), paste(names(children), collapse = ", ")))
+  }
+
+  invisible(x)
+}
+
 #' Create a STAC link object
 #'
 #' @description
