@@ -398,6 +398,18 @@ Add the STAC Classification Extension to Items
 - [`print(`*`<classification_bitfield>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.classification_bitfield.md)
   : Print method for classification_bitfield objects
 
+## Scientific Citation Extension
+
+Add the STAC Scientific Citation Extension to Items, recording the DOI,
+human-readable citation, and related publications for a dataset.
+
+- [`add_scientific_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_scientific_extension.md)
+  : Add Scientific Citation Extension to a STAC Item
+- [`scientific_publication()`](https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.md)
+  : Create a Scientific Publication Object
+- [`print(`*`<scientific_publication>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.scientific_publication.md)
+  : Print method for scientific_publication objects
+
 ## Read / Write
 
 Serialise STAC objects to JSON on disk and read them back.

@@ -14,6 +14,7 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_projection_metadata_stars.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_raster_extension.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_root_link.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_scientific_extension.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_self_link.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/bands_from_stars.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/bbox_from_sf.html</loc></url>
@@ -45,12 +46,14 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.classification_class.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.eo_band.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.raster_band.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.scientific_publication.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/raster_band.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/raster_from_file.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/read_stac.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/remove_item.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/sentinel2_msi_bands.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_asset.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.html</loc></url>
