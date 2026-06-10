@@ -212,12 +212,14 @@ write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
     catalog_clean <- as.list(catalog_clean)
   }
 
-  # Write JSON
+  # Write JSON — digits = 15 preserves full double precision for numeric
+  # fields such as raster scale/offset values (e.g. 2.75e-5)
   json <- jsonlite::toJSON(
     catalog_clean,
     auto_unbox = TRUE,
-    pretty = pretty,
-    null = "null"
+    pretty     = pretty,
+    null       = "null",
+    digits     = 15
   )
 
   writeLines(json, file)
@@ -278,12 +280,13 @@ write_item <- function(item, file, overwrite = FALSE, pretty = TRUE) {
     item_clean <- as.list(item_clean)
   }
 
-  # Write JSON
+  # Write JSON — digits = 15 preserves full double precision
   json <- jsonlite::toJSON(
     item_clean,
     auto_unbox = TRUE,
-    pretty = pretty,
-    null = "null"
+    pretty     = pretty,
+    null       = "null",
+    digits     = 15
   )
 
   writeLines(json, file)

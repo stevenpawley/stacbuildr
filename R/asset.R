@@ -72,8 +72,11 @@ stac_asset <- function(href,
     asset$description <- description
   if (!is.null(type))
     asset$type <- type
+  # Store roles as a list so jsonlite always serialises to a JSON array,
+  # even when there is only a single role (auto_unbox would collapse a
+  # length-1 character vector to a scalar string).
   if (!is.null(roles))
-    asset$roles <- roles
+    asset$roles <- as.list(roles)
 
   # Add extension fields
   extra_fields <- list(...)
