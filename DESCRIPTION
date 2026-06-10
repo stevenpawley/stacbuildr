@@ -32,6 +32,7 @@ Collate:
     'extension-eo.R'
     'extension-raster.R'
     'extension-classification.R'
+    'extension-scientific.R'
     'integrations.R'
     'thumbnail.R'
     'validation.R'
