@@ -90,6 +90,15 @@ reference:
       - print.classification_class
       - print.classification_bitfield
 
+  - title: "Scientific Citation Extension"
+    desc: >
+      Add the STAC Scientific Citation Extension to Items, recording the DOI,
+      human-readable citation, and related publications for a dataset.
+    contents:
+      - add_scientific_extension
+      - scientific_publication
+      - print.scientific_publication
+
   - title: "Read / Write"
     desc: "Serialise STAC objects to JSON on disk and read them back."
     contents:
