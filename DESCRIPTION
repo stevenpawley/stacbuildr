@@ -20,7 +20,8 @@ Suggests:
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    reticulate
+    reticulate,
+    jsonvalidate
 Config/testthat/edition: 3
 Collate:
     'extent-geometry-classes.R'

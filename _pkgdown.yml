@@ -108,6 +108,11 @@ reference:
       - read_stac
 
   - title: "Validation"
-    desc: "Validate STAC objects against the specification."
+    desc: >
+      Validate STAC objects against the specification. `validate_stac()` applies
+      fast, offline structural checks. `validate_stac_schema()` validates against
+      the official JSON Schemas hosted at `schemas.stacspec.org` (requires
+      network access and the `jsonvalidate` package).
     contents:
       - validate_stac
+      - validate_stac_schema
