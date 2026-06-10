@@ -629,7 +629,7 @@ stac_object_to_json_string <- function(stac_object) {
   if (inherits(obj, "S7_object")) {
     obj <- as.list(obj)
   }
-  jsonlite::toJSON(obj, auto_unbox = TRUE, null = "null")
+  jsonlite::toJSON(obj, auto_unbox = TRUE, null = "null", digits = 15)
 }
 
 
@@ -735,15 +735,49 @@ bundle_schema_url <- function(schema_url) {
 
     if (!is.null(parsed)) {
       for (ref in find_schema_refs(parsed)) {
-        if (grepl("^#", ref)) next   # fragment-only ref stays as-is
+        # Fragment-only refs (#/definitions/...) are local — leave them alone
+        if (grepl("^#", ref)) next
 
-        abs_url   <- if (grepl("^https?://", ref)) ref else paste0(this_base, ref)
+        # JSON Schema meta-schema URLs (json-schema.org) are self-describing
+        # schemas whose own "$ref" property is an object, not a string. They
+        # cannot be bundled safely. Replace the ref with {} (accept-anything),
+        # which is the semantic equivalent for how STAC uses these refs
+        # (e.g. validating that collection summaries are valid JSON schemas).
+        if (grepl("^https?://json-schema\\.org/", ref)) {
+          txt <- gsub(
+            paste0('"\\$ref":\\s*"', gsub("\\.", "\\\\.", ref), '"'),
+            '"description": "any-json-schema"',
+            txt
+          )
+          next
+        }
+
+        # Separate the path component from any trailing fragment (#...)
+        hash_pos <- regexpr("#", ref, fixed = TRUE)
+        if (hash_pos > 0) {
+          ref_path <- substr(ref, 1, hash_pos - 1L)
+          fragment <- substr(ref, hash_pos, nchar(ref))
+        } else {
+          ref_path <- ref
+          fragment <- ""
+        }
+
+        if (!nzchar(ref_path)) next  # bare fragment — already guarded above
+
+        # Resolve to an absolute URL, collapsing any ../ segments
+        if (grepl("^https?://", ref_path)) {
+          abs_url <- ref_path
+        } else {
+          abs_url <- normalize_schema_url(paste0(this_base, ref_path))
+        }
+
         ref_local <- bundle_one(abs_url)
 
-        # Rewrite this $ref in the text to the cached flat filename
+        # Rewrite: cached flat filename + original fragment
+        new_ref <- paste0(basename(ref_local), fragment)
         txt <- gsub(
           paste0('"', ref, '"'),
-          paste0('"', basename(ref_local), '"'),
+          paste0('"', new_ref, '"'),
           txt, fixed = TRUE
         )
       }
@@ -767,13 +801,40 @@ url_to_cached_schema_path <- function(url, cache_dir) {
 }
 
 
+# Collapse any ../ or ./ segments in a URL path component so that relative
+# $ref values like "../../item-spec/json-schema/item.json" resolve correctly
+# when concatenated onto a base URL.
+#
+# @keywords internal
+normalize_schema_url <- function(url) {
+  # Split on "/" but preserve the protocol prefix
+  proto  <- regmatches(url, regexpr("^https?://", url))
+  rest   <- sub("^https?://", "", url)
+  parts  <- strsplit(rest, "/", fixed = TRUE)[[1]]
+
+  stack <- character()
+  for (p in parts) {
+    if (p == "..") {
+      if (length(stack) > 0) stack <- stack[-length(stack)]
+    } else if (p != ".") {
+      stack <- c(stack, p)
+    }
+  }
+  paste0(proto, paste(stack, collapse = "/"))
+}
+
+
 # Recursively collect all "$ref" values from a parsed JSON schema list.
+# Guards that x[["$ref"]] is a single character string — the draft-07 meta-
+# schema uses "$ref" as a property name whose value is an object, and without
+# this check those non-URL values would be mistaken for schema references.
 #
 # @keywords internal
 find_schema_refs <- function(x) {
   if (!is.list(x)) return(character())
   refs <- character()
-  if (!is.null(x[["$ref"]])) refs <- x[["$ref"]]
+  ref_val <- x[["$ref"]]
+  if (is.character(ref_val) && length(ref_val) == 1L) refs <- ref_val
   for (child in x) refs <- c(refs, find_schema_refs(child))
   unique(refs)
 }
