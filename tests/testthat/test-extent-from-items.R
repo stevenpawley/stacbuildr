@@ -25,14 +25,15 @@ test_that("extent_from_items errors on empty list", {
   expect_error(extent_from_items(list()), "No items provided")
 })
 
-test_that("extent_from_items errors when no datetime information is present", {
-  # datetime = "null" (the string) is treated as absent by extent_from_items,
-  # and with no start_datetime/end_datetime no datetimes are collected.
-  item <- make_item("a", c(-10, -10, 10, 10), datetime = "null")
-
+test_that("stac_item rejects an invalid datetime string", {
+  # The stac_item validator now enforces RFC 3339 format, making it impossible
+  # to construct an item with a non-datetime string.  This replaced an earlier
+  # test that relied on datetime = "null" (a string) to reach an
+  # extent_from_items error path — that code path is now unreachable because
+  # invalid datetimes are caught at construction time.
   expect_error(
-    extent_from_items(list(item)),
-    "No datetime information found in items"
+    make_item("a", c(-10, -10, 10, 10), datetime = "not-a-date"),
+    "RFC 3339"
   )
 })
 

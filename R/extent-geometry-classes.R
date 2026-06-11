@@ -1,3 +1,17 @@
+# RFC 3339 datetime validation helper.
+# Returns TRUE if x is a single non-NA character string in the format
+# required by the STAC spec (UTC "Z" suffix or explicit ±HH:MM offset).
+# Used by TemporalExtent and stac_item validators.
+is_rfc3339 <- function(x) {
+  if (!is.character(x) || length(x) != 1L || is.na(x)) return(FALSE)
+  grepl(
+    "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+    x,
+    perl = TRUE
+  )
+}
+
+
 # Bbox class with validation
 Bbox <- S7::new_class(
   "Bbox",
@@ -93,7 +107,32 @@ TemporalExtent <- S7::new_class(
           i
         ))
       }
-      # Could add more validation for datetime formats
+
+      start_val <- interval[[1]]
+      end_val   <- interval[[2]]
+
+      # Each non-NULL endpoint must be a valid RFC 3339 datetime string
+      if (!is.null(start_val) && !is_rfc3339(start_val)) {
+        return(sprintf(
+          "Interval[%d] start is not a valid RFC 3339 datetime: '%s'",
+          i, start_val
+        ))
+      }
+      if (!is.null(end_val) && !is_rfc3339(end_val)) {
+        return(sprintf(
+          "Interval[%d] end is not a valid RFC 3339 datetime: '%s'",
+          i, end_val
+        ))
+      }
+
+      # For closed intervals (both endpoints present), end must be >= start.
+      # ISO 8601 / RFC 3339 strings sort lexicographically when in UTC.
+      if (!is.null(start_val) && !is.null(end_val) && end_val < start_val) {
+        return(sprintf(
+          "Interval[%d]: end ('%s') must be >= start ('%s')",
+          i, end_val, start_val
+        ))
+      }
     }
   }
 )

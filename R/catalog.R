@@ -192,6 +192,20 @@ stac_catalog <- S7::new_class(
     # Insert the unqualified name so that inherits() and $ S3 dispatch work correctly.
     # Use structure() rather than class<- to avoid triggering S7's mutation mechanism.
     structure(obj, class = append(class(obj), "stac_catalog", after = 1L))
+  },
+  validator = function(self) {
+    if (nchar(self@stac_version) == 0) {
+      return("'stac_version' must be a non-empty string")
+    }
+    # type is enforced by each concrete subclass ("Catalog" / "Collection");
+    # here we just guard against values that are clearly wrong
+    if (!self@type %in% c("Catalog", "Collection")) {
+      return(sprintf(
+        "'type' must be 'Catalog' or 'Collection', got '%s'",
+        self@type
+      ))
+    }
+    NULL
   }
 )
 
