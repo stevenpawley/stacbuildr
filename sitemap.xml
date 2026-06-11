@@ -80,6 +80,7 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/validate_links.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/validate_providers.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/validate_stac.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/validate_stac_schema.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/write_catalog.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/write_catalog_recursive.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/write_item.html</loc></url>

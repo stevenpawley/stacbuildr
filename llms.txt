@@ -426,7 +426,15 @@ Serialise STAC objects to JSON on disk and read them back.
 ## Validation
 
 Validate STAC objects against the specification.
+[`validate_stac()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac.md)
+applies fast, offline structural checks.
+[`validate_stac_schema()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac_schema.md)
+validates against the official JSON Schemas hosted at
+`schemas.stacspec.org` (requires network access and the `jsonvalidate`
+package).
 
 - [`validate_stac()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac.md)
   : Validate a STAC Object
+- [`validate_stac_schema()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac_schema.md)
+  : Validate a STAC Object Against the Official JSON Schema
 
