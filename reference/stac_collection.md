@@ -303,6 +303,7 @@ collection <- stac_collection(
     )
   )
 )
+#> 'proprietary' is deprecated as a license identifier in STAC 1.1.0. Use 'other' instead, and add a link with rel='license' pointing to the license document.
 
 # Add links
 collection <- collection |>
