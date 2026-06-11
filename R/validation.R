@@ -440,49 +440,216 @@ validate_bbox <- function(bbox, prefix = "bbox") {
 
 #' Validate Geometry
 #'
+#' Validates a GeoJSON geometry object against RFC 7946, checking type,
+#' coordinate structure, ring closure, and WGS 84 coordinate ranges.
+#'
 #' @keywords internal
 validate_geometry <- function(geometry) {
-  errors <- character()
-
   if (!is.list(geometry)) {
     return("Field 'geometry' must be a GeoJSON geometry object")
   }
 
   if (is.null(geometry$type)) {
-    errors <- c(errors, "Geometry must have a 'type' field")
-  } else {
-    valid_types <- c(
-      "Point",
-      "LineString",
-      "Polygon",
-      "MultiPoint",
-      "MultiLineString",
-      "MultiPolygon",
-      "GeometryCollection"
-    )
-    if (!geometry$type %in% valid_types) {
-      errors <- c(
-        errors,
-        paste0(
-          "Geometry type '",
-          geometry$type,
-          "' is not valid. ",
-          "Must be one of: ",
-          paste(valid_types, collapse = ", ")
-        )
-      )
-    }
+    return("Geometry must have a 'type' field")
   }
 
-  if (
-    is.null(geometry$coordinates) &&
-      (!is.null(geometry$type) && geometry$type != "GeometryCollection")
-  ) {
-    errors <- c(errors, "Geometry must have 'coordinates' field")
+  valid_types <- c(
+    "Point", "LineString", "Polygon",
+    "MultiPoint", "MultiLineString", "MultiPolygon",
+    "GeometryCollection"
+  )
+
+  if (!geometry$type %in% valid_types) {
+    return(sprintf(
+      "Geometry type '%s' is not valid. Must be one of: %s",
+      geometry$type, paste(valid_types, collapse = ", ")
+    ))
   }
 
+  if (geometry$type == "GeometryCollection") {
+    return(validate_geometry_collection(geometry))
+  }
+
+  if (is.null(geometry$coordinates)) {
+    return(sprintf("Geometry type '%s' must have a 'coordinates' field", geometry$type))
+  }
+
+  switch(geometry$type,
+    Point           = validate_point_coords(geometry$coordinates),
+    LineString      = validate_linestring_coords(geometry$coordinates),
+    Polygon         = validate_polygon_coords(geometry$coordinates),
+    MultiPoint      = validate_multipoint_coords(geometry$coordinates),
+    MultiLineString = validate_multilinestring_coords(geometry$coordinates),
+    MultiPolygon    = validate_multipolygon_coords(geometry$coordinates),
+    character()
+  )
+}
+
+
+# --- GeoJSON coordinate helpers (RFC 7946) --------------------------------
+
+# A GeoJSON position is either a numeric vector (2–3 elements) or a list of
+# numeric scalars of the same length.  Both forms occur in practice: the
+# vector form is the natural R idiom; the list form appears after
+# jsonlite::fromJSON(..., simplifyVector = FALSE).
+is_geojson_position <- function(x) {
+  if (is.numeric(x)) return(length(x) %in% 2:3)
+  if (is.list(x)) {
+    return(length(x) %in% 2:3 && all(vapply(x, function(v) is.numeric(v) && length(v) == 1L, logical(1))))
+  }
+  FALSE
+}
+
+# Extract [lon, lat] from a position, normalised to a numeric pair.
+position_lon_lat <- function(x) {
+  if (is.numeric(x)) return(x[1:2])
+  c(as.numeric(x[[1]]), as.numeric(x[[2]]))
+}
+
+# Positions must be equal within floating-point tolerance (ring-closure check).
+positions_equal <- function(a, b) {
+  pa <- position_lon_lat(a); pb <- position_lon_lat(b)
+  isTRUE(all.equal(pa, pb, tolerance = 1e-10, check.names = FALSE))
+}
+
+# Validate a single position, including WGS 84 coordinate-range checks.
+# Returns a character vector of error strings (empty when valid).
+validate_geojson_position <- function(pos, label) {
+  if (!is_geojson_position(pos)) {
+    return(sprintf(
+      "%s must be a position (numeric vector of 2 or 3 numbers [lon, lat[, elev]])",
+      label
+    ))
+  }
+  ll <- position_lon_lat(pos)
+  errors <- character()
+  if (!is.na(ll[1]) && (ll[1] < -180 || ll[1] > 180)) {
+    errors <- c(errors, sprintf("%s longitude %g is outside [-180, 180]", label, ll[1]))
+  }
+  if (!is.na(ll[2]) && (ll[2] < -90 || ll[2] > 90)) {
+    errors <- c(errors, sprintf("%s latitude %g is outside [-90, 90]",  label, ll[2]))
+  }
   errors
 }
+
+# A linear ring (Polygon boundary) must:
+#   * be a list of at least 4 positions
+#   * be closed: first position == last position
+validate_linear_ring <- function(ring, label) {
+  errors <- character()
+  if (!is.list(ring)) {
+    return(sprintf("%s must be a list of positions, got %s", label, class(ring)[1]))
+  }
+  n <- length(ring)
+  if (n < 4L) {
+    errors <- c(errors, sprintf(
+      "%s must have at least 4 positions (got %d); the first and last must be identical",
+      label, n
+    ))
+    # Can't do closure or per-position checks without enough points; return early
+    return(errors)
+  }
+  for (i in seq_len(n)) {
+    errors <- c(errors, validate_geojson_position(ring[[i]], sprintf("%s position[%d]", label, i)))
+  }
+  if (!positions_equal(ring[[1]], ring[[n]])) {
+    first <- paste(round(position_lon_lat(ring[[1]]),  6), collapse = ", ")
+    last  <- paste(round(position_lon_lat(ring[[n]]), 6), collapse = ", ")
+    errors <- c(errors, sprintf(
+      "%s is not closed: first position [%s] != last position [%s]",
+      label, first, last
+    ))
+  }
+  errors
+}
+
+# Per-type coordinate validators -----------------------------------------
+
+validate_point_coords <- function(coords) {
+  validate_geojson_position(coords, "Point coordinates")
+}
+
+validate_linestring_coords <- function(coords) {
+  errors <- character()
+  if (!is.list(coords)) {
+    return("LineString coordinates must be a list of positions")
+  }
+  if (length(coords) < 2L) {
+    errors <- c(errors, sprintf(
+      "LineString must have at least 2 positions, got %d", length(coords)
+    ))
+  }
+  for (i in seq_along(coords)) {
+    errors <- c(errors, validate_geojson_position(coords[[i]], sprintf("LineString position[%d]", i)))
+  }
+  errors
+}
+
+validate_polygon_coords <- function(coords) {
+  errors <- character()
+  if (!is.list(coords)) {
+    return("Polygon coordinates must be a list of linear rings")
+  }
+  if (length(coords) == 0L) {
+    return("Polygon must have at least one ring")
+  }
+  for (i in seq_along(coords)) {
+    label <- if (i == 1L) "Polygon outer ring" else sprintf("Polygon hole[%d]", i - 1L)
+    errors <- c(errors, validate_linear_ring(coords[[i]], label))
+  }
+  errors
+}
+
+validate_multipoint_coords <- function(coords) {
+  errors <- character()
+  if (!is.list(coords)) {
+    return("MultiPoint coordinates must be a list of positions")
+  }
+  for (i in seq_along(coords)) {
+    errors <- c(errors, validate_geojson_position(coords[[i]], sprintf("MultiPoint position[%d]", i)))
+  }
+  errors
+}
+
+validate_multilinestring_coords <- function(coords) {
+  errors <- character()
+  if (!is.list(coords)) {
+    return("MultiLineString coordinates must be a list of line coordinate arrays")
+  }
+  for (i in seq_along(coords)) {
+    errs <- validate_linestring_coords(coords[[i]])
+    if (length(errs)) errors <- c(errors, sprintf("MultiLineString[%d]: %s", i, errs))
+  }
+  errors
+}
+
+validate_multipolygon_coords <- function(coords) {
+  errors <- character()
+  if (!is.list(coords)) {
+    return("MultiPolygon coordinates must be a list of polygon coordinate arrays")
+  }
+  for (i in seq_along(coords)) {
+    errs <- validate_polygon_coords(coords[[i]])
+    if (length(errs)) errors <- c(errors, sprintf("MultiPolygon[%d]: %s", i, errs))
+  }
+  errors
+}
+
+validate_geometry_collection <- function(geometry) {
+  errors <- character()
+  if (is.null(geometry$geometries)) {
+    return("GeometryCollection must have a 'geometries' field")
+  }
+  if (!is.list(geometry$geometries)) {
+    return("GeometryCollection 'geometries' must be a list")
+  }
+  for (i in seq_along(geometry$geometries)) {
+    errs <- validate_geometry(geometry$geometries[[i]])
+    if (length(errs)) errors <- c(errors, sprintf("geometries[%d]: %s", i, errs))
+  }
+  errors
+}
+
 
 #' Validate Item Properties
 #'

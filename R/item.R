@@ -303,6 +303,8 @@ stac_item <- S7::new_class(
     if (self@type != "Feature") {
       return("'type' must be 'Feature'")
     }
+
+    # geometry / bbox consistency
     if (!is.null(self@geometry) && is.null(self@bbox)) {
       return("'bbox' is required when 'geometry' is not NULL")
     }
@@ -312,14 +314,64 @@ stac_item <- S7::new_class(
     if (!is.null(self@bbox) && !length(self@bbox) %in% c(4, 6)) {
       return("'bbox' must have length 4 (2D) or 6 (3D)")
     }
-    has_datetime <- !is.null(self@properties$datetime)
-    has_start <- !is.null(self@properties$start_datetime)
-    has_end <- !is.null(self@properties$end_datetime)
-    if (!has_datetime && !(has_start && has_end)) {
+
+    # 2D bbox coordinate ranges (WGS84)
+    if (!is.null(self@bbox) && length(self@bbox) == 4L) {
+      west  <- self@bbox[1]; east  <- self@bbox[3]
+      south <- self@bbox[2]; north <- self@bbox[4]
+      if (west < -180 || east > 180) {
+        return(sprintf(
+          "'bbox' longitudes must be in [-180, 180] (got west = %g, east = %g)",
+          west, east
+        ))
+      }
+      if (south < -90 || north > 90) {
+        return(sprintf(
+          "'bbox' latitudes must be in [-90, 90] (got south = %g, north = %g)",
+          south, north
+        ))
+      }
+    }
+
+    # datetime presence
+    dt       <- self@properties$datetime
+    start_dt <- self@properties$start_datetime
+    end_dt   <- self@properties$end_datetime
+
+    if (is.null(dt) && !((!is.null(start_dt)) && (!is.null(end_dt)))) {
       return(
         "'properties' must contain 'datetime' or both 'start_datetime' and 'end_datetime'"
       )
     }
+
+    # RFC 3339 format checks
+    if (!is.null(dt) && !is_rfc3339(dt)) {
+      return(sprintf(
+        "'datetime' must be an RFC 3339 string (e.g. '2023-01-01T00:00:00Z'), got: '%s'",
+        dt
+      ))
+    }
+    if (!is.null(start_dt) && !is_rfc3339(start_dt)) {
+      return(sprintf(
+        "'start_datetime' must be an RFC 3339 string, got: '%s'",
+        start_dt
+      ))
+    }
+    if (!is.null(end_dt) && !is_rfc3339(end_dt)) {
+      return(sprintf(
+        "'end_datetime' must be an RFC 3339 string, got: '%s'",
+        end_dt
+      ))
+    }
+
+    # end_datetime must be >= start_datetime
+    if (!is.null(start_dt) && !is.null(end_dt) && end_dt < start_dt) {
+      return(sprintf(
+        "'end_datetime' ('%s') must be >= 'start_datetime' ('%s')",
+        end_dt, start_dt
+      ))
+    }
+
     NULL
   }
 )

@@ -252,6 +252,15 @@ stac_collection <- S7::new_class(
     conformsTo = NULL,
     ...
   ) {
+    # "proprietary" was deprecated in STAC 1.1.0; guide users to "other"
+    if (identical(license, "proprietary")) {
+      message(
+        "'proprietary' is deprecated as a license identifier in STAC 1.1.0. ",
+        "Use 'other' instead, and add a link with rel='license' pointing to ",
+        "the license document."
+      )
+    }
+
     # Accept a plain list for backwards compatibility, converting to Extent
     if (!S7::S7_inherits(extent, Extent)) {
       if (
