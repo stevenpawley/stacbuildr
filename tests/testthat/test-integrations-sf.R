@@ -52,7 +52,7 @@ test_that("item_from_sf adds a source asset when href is provided", {
 
   expect_true("source" %in% names(item@assets))
   expect_equal(item@assets$source$href, gsub("\\\\", "/", normalizePath(sf_file)))
-  expect_equal(item@assets$source$roles, c("data"))
+  expect_equal(item@assets$source$roles, list("data"))
 })
 
 test_that("item_from_sf creates no assets when href is not provided", {

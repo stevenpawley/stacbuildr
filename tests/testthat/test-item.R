@@ -563,7 +563,10 @@ test_that("add_asset works with inline parameters and pre-built asset", {
   expect_true("data" %in% names(item@assets))
   expect_equal(item@assets$data$href, "https://example.com/data.tif")
   expect_equal(item@assets$data$type, "image/tiff; application=geotiff")
-  expect_equal(item@assets$data$roles, c("data"))
+  # roles are stored as a list so jsonlite serialises them as a JSON array
+  # regardless of how many roles are present (regression: single-element
+  # character vectors were previously auto-unboxed to a string scalar)
+  expect_equal(item@assets$data$roles, list("data"))
 
   # Both assets present
   expect_length(item@assets, 2)
@@ -574,6 +577,116 @@ test_that("add_asset works with inline parameters and pre-built asset", {
     "'asset' must be a list with at least an 'href' field"
   )
 })
+
+
+# --- Asset roles serialisation regression ---
+#
+# Single-element character vectors were previously auto-unboxed by
+# jsonlite::toJSON(auto_unbox = TRUE) to a JSON string scalar ("data") rather
+# than an array (["data"]).  The fix stores roles as a list() so that jsonlite
+# always emits an array.  These tests guard against that regression.
+
+test_that("single asset role is stored as a list, not a character vector", {
+  item <- stac_item(
+    id       = "roles-test",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox     = c(0, 0, 0, 0),
+    datetime = "2024-01-01T00:00:00Z"
+  ) |>
+    add_asset(
+      key   = "data",
+      href  = "https://example.com/data.tif",
+      type  = "image/tiff; application=geotiff",
+      roles = c("data")
+    )
+
+  expect_type(item@assets$data$roles, "list")
+  expect_equal(item@assets$data$roles, list("data"))
+})
+
+test_that("single asset role serialises to a JSON array, not a scalar string", {
+  item <- stac_item(
+    id       = "roles-json-test",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox     = c(0, 0, 0, 0),
+    datetime = "2024-01-01T00:00:00Z"
+  ) |>
+    add_asset(
+      key   = "B1",
+      href  = "https://example.com/B1.tif",
+      type  = "image/tiff; application=geotiff",
+      roles = c("data")
+    )
+
+  json   <- jsonlite::toJSON(as.list(item), auto_unbox = TRUE, null = "null")
+  parsed <- jsonlite::fromJSON(json, simplifyVector = FALSE)
+
+  # Must be a list (JSON array), not a plain character string
+  expect_type(parsed$assets$B1$roles, "list")
+  expect_length(parsed$assets$B1$roles, 1L)
+  expect_equal(parsed$assets$B1$roles[[1]], "data")
+})
+
+test_that("multiple asset roles serialise to a JSON array", {
+  item <- stac_item(
+    id       = "multi-roles-test",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox     = c(0, 0, 0, 0),
+    datetime = "2024-01-01T00:00:00Z"
+  ) |>
+    add_asset(
+      key   = "overview",
+      href  = "https://example.com/overview.tif",
+      type  = "image/tiff; application=geotiff",
+      roles = c("data", "overview")
+    )
+
+  json   <- jsonlite::toJSON(as.list(item), auto_unbox = TRUE, null = "null")
+  parsed <- jsonlite::fromJSON(json, simplifyVector = FALSE)
+
+  expect_type(parsed$assets$overview$roles, "list")
+  expect_length(parsed$assets$overview$roles, 2L)
+  expect_equal(parsed$assets$overview$roles[[1]], "data")
+  expect_equal(parsed$assets$overview$roles[[2]], "overview")
+})
+
+test_that("asset roles survive a write/read round-trip as a list", {
+  item <- stac_item(
+    id       = "roles-roundtrip",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox     = c(0, 0, 0, 0),
+    datetime = "2024-01-01T00:00:00Z"
+  ) |>
+    add_asset(
+      key   = "data",
+      href  = "https://example.com/data.tif",
+      type  = "image/tiff; application=geotiff",
+      roles = c("data")
+    ) |>
+    add_asset(
+      key   = "thumbnail",
+      href  = "https://example.com/thumb.jpg",
+      type  = "image/jpeg",
+      roles = c("thumbnail")
+    )
+
+  path <- tempfile(fileext = ".json")
+  on.exit(unlink(path))
+  write_item(item, path)
+
+  # Verify raw JSON uses arrays, not scalars
+  raw_json <- paste(readLines(path, warn = FALSE), collapse = "\n")
+  expect_match(raw_json, '"roles":\\s*\\[',         perl = TRUE)
+  expect_no_match(raw_json, '"roles":\\s*"',        perl = TRUE)
+
+  # Verify restored object has list roles
+  restored <- read_stac(path)
+  expect_type(restored@assets$data$roles,      "list")
+  expect_type(restored@assets$thumbnail$roles, "list")
+  expect_equal(restored@assets$data$roles,      list("data"))
+  expect_equal(restored@assets$thumbnail$roles, list("thumbnail"))
+})
+
 
 test_that("item with temporal range matches pystac", {
   # Import pystac

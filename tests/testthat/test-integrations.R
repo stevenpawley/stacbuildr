@@ -58,7 +58,7 @@ test_that("item_from_stars adds the main asset with correct fields", {
   expect_true("data" %in% names(item@assets))
   expect_equal(item@assets$data$href, gsub("\\\\", "/", tif))
   expect_equal(item@assets$data$type, "image/tiff; application=geotiff")
-  expect_equal(item@assets$data$roles, c("data"))
+  expect_equal(item@assets$data$roles, list("data"))
 })
 
 test_that("item_from_stars adds raster extension with 6 band objects", {

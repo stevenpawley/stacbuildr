@@ -13,7 +13,7 @@ test_that("thumbnail_from_stars returns a valid thumbnail asset", {
 
   expect_true(file.exists(path))
   expect_equal(asset$type, "image/png")
-  expect_equal(asset$roles, c("thumbnail"))
+  expect_equal(asset$roles, list("thumbnail"))
   expect_equal(asset$href, gsub("\\\\", "/", normalizePath(path)))
 })
 
@@ -57,7 +57,7 @@ test_that("thumbnail_from_sf returns a valid thumbnail asset", {
 
   expect_true(file.exists(path))
   expect_equal(asset$type, "image/png")
-  expect_equal(asset$roles, c("thumbnail"))
+  expect_equal(asset$roles, list("thumbnail"))
   expect_equal(asset$href, gsub("\\\\", "/", normalizePath(path)))
 })
 
@@ -96,6 +96,6 @@ test_that("thumbnail asset can be added to a stac item", {
   item <- add_asset(item, key = "thumbnail", asset = asset)
 
   expect_true("thumbnail" %in% names(item@assets))
-  expect_equal(item@assets$thumbnail$roles, c("thumbnail"))
+  expect_equal(item@assets$thumbnail$roles, list("thumbnail"))
   expect_equal(item@assets$thumbnail$type, "image/png")
 })

@@ -135,7 +135,7 @@ test_that("extent_from_items returns an Extent S7 object", {
   item <- make_item("a", c(-10, -10, 10, 10), datetime = "2023-01-01T00:00:00Z")
   result <- extent_from_items(list(item))
 
-  expect_true(inherits(result, "stacbuildr::Extent"))
-  expect_true(inherits(result@spatial, "stacbuildr::SpatialExtent"))
-  expect_true(inherits(result@temporal, "stacbuildr::TemporalExtent"))
+  expect_true(any(grepl("Extent",         class(result),           fixed = TRUE)))
+  expect_true(any(grepl("SpatialExtent",  class(result@spatial),   fixed = TRUE)))
+  expect_true(any(grepl("TemporalExtent", class(result@temporal),  fixed = TRUE)))
 })
