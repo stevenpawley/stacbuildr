@@ -1,10 +1,10 @@
 # --- raster_band() ---
 
-test_that("raster_band creates a list with the requested data_type", {
+test_that("raster_band creates an S7 raster_band object with the requested data_type", {
   band <- raster_band(data_type = "uint16")
 
-  expect_type(band, "list")
-  expect_equal(band$data_type, "uint16")
+  expect_true(S7::S7_inherits(band, raster_band))
+  expect_equal(band@data_type, "uint16")
 })
 
 test_that("raster_band stores all optional fields", {
@@ -14,17 +14,17 @@ test_that("raster_band stores all optional fields", {
     spatial_resolution = 10,
     scale              = 2.75e-5,
     offset             = -0.2,
-    unit               = "reflectance",   # stored as band$unit (no prefix)
+    unit               = "reflectance",
     bits_per_sample    = 16
   )
 
-  expect_equal(band$nodata,                       0)
-  expect_equal(band$data_type,                    "float32")
-  expect_equal(band$`raster:spatial_resolution`,  10)
-  expect_equal(band$`raster:scale`,               2.75e-5)
-  expect_equal(band$`raster:offset`,              -0.2)
-  expect_equal(band$unit,                         "reflectance")
-  expect_equal(band$`raster:bits_per_sample`,     16L)
+  expect_equal(band@nodata,              0)
+  expect_equal(band@data_type,           "float32")
+  expect_equal(band@spatial_resolution,  10)
+  expect_equal(band@scale,               2.75e-5)
+  expect_equal(band@offset,              -0.2)
+  expect_equal(band@unit,                "reflectance")
+  expect_equal(band@bits_per_sample,     16L)
 })
 
 

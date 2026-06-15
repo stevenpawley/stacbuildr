@@ -3,7 +3,6 @@
 S3method(print,classification_bitfield)
 S3method(print,classification_class)
 S3method(print,eo_band)
-S3method(print,raster_band)
 S3method(print,scientific_publication)
 export(add_asset)
 export(add_child)

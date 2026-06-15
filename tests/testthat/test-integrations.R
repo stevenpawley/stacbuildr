@@ -137,9 +137,9 @@ test_that("bands_from_stars returns one band object per band", {
   bands <- bands_from_stars(r)
 
   expect_length(bands, 6)
-  expect_equal(bands[[1]]$data_type, "float64")
-  expect_equal(bands[[1]]$`raster:spatial_resolution`, 28.5)
-  expect_null(bands[[1]]$statistics)
+  expect_equal(bands[[1]]@data_type, "float64")
+  expect_equal(bands[[1]]@spatial_resolution, 28.5)
+  expect_length(bands[[1]]@statistics, 0)
 })
 
 test_that("bands_from_stars calculates statistics when requested", {
@@ -149,10 +149,10 @@ test_that("bands_from_stars calculates statistics when requested", {
   expect_length(bands, 6)
 
   for (band in bands) {
-    expect_false(is.null(band$statistics))
-    expect_true(band$statistics$minimum <= band$statistics$maximum)
-    expect_true(band$statistics$valid_percent > 0)
-    expect_true(band$statistics$valid_percent <= 100)
+    expect_true(length(band@statistics) > 0)
+    expect_true(band@statistics$minimum <= band@statistics$maximum)
+    expect_true(band@statistics$valid_percent > 0)
+    expect_true(band@statistics$valid_percent <= 100)
   }
 })
 
