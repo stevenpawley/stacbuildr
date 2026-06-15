@@ -659,7 +659,7 @@ bands_from_stars <- function(stars_obj, calculate_statistics = FALSE, sample_siz
       }
 
       if (length(vals) > 0) {
-        band$statistics <- raster_statistics(
+        band@statistics <- raster_statistics(
           minimum = min(vals),
           maximum = max(vals),
           mean = mean(vals),

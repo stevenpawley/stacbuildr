@@ -64,7 +64,6 @@ reference:
     contents:
       - add_raster_extension
       - raster_band
-      - print.raster_band
       - raster_statistics
       - raster_histogram
       - raster_from_file
