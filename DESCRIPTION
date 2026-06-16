@@ -24,6 +24,8 @@ Suggests:
     jsonvalidate
 Config/testthat/edition: 3
 Collate:
+    'operators.R'
+    'stacbuildr-package.R'
     'extent-geometry-classes.R'
     'catalog.R'
     'collection.R'

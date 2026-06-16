@@ -126,30 +126,30 @@
       "roles": [
         "data"
       ],
-      "bands": [
+      "eo:bands": [
         {
           "name": "band1",
-          "eo:common_name": "blue",
-          "eo:center_wavelength": 0.47,
-          "eo:full_width_half_max": 70
+          "common_name": "blue",
+          "center_wavelength": 0.47,
+          "full_width_half_max": 70
         },
         {
           "name": "band2",
-          "eo:common_name": "green",
-          "eo:center_wavelength": 0.56,
-          "eo:full_width_half_max": 80
+          "common_name": "green",
+          "center_wavelength": 0.56,
+          "full_width_half_max": 80
         },
         {
           "name": "band3",
-          "eo:common_name": "red",
-          "eo:center_wavelength": 0.645,
-          "eo:full_width_half_max": 90
+          "common_name": "red",
+          "center_wavelength": 0.645,
+          "full_width_half_max": 90
         },
         {
           "name": "band4",
-          "eo:common_name": "nir",
-          "eo:center_wavelength": 0.8,
-          "eo:full_width_half_max": 152
+          "common_name": "nir",
+          "center_wavelength": 0.8,
+          "full_width_half_max": 152
         }
       ]
     },
@@ -168,24 +168,24 @@
       "roles": [
         "visual"
       ],
-      "bands": [
+      "eo:bands": [
         {
           "name": "band3",
-          "eo:common_name": "red",
-          "eo:center_wavelength": 0.645,
-          "eo:full_width_half_max": 90
+          "common_name": "red",
+          "center_wavelength": 0.645,
+          "full_width_half_max": 90
         },
         {
           "name": "band2",
-          "eo:common_name": "green",
-          "eo:center_wavelength": 0.56,
-          "eo:full_width_half_max": 80
+          "common_name": "green",
+          "center_wavelength": 0.56,
+          "full_width_half_max": 80
         },
         {
           "name": "band1",
-          "eo:common_name": "blue",
-          "eo:center_wavelength": 0.47,
-          "eo:full_width_half_max": 70
+          "common_name": "blue",
+          "center_wavelength": 0.47,
+          "full_width_half_max": 70
         }
       ]
     },

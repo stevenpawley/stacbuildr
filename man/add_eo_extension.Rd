@@ -41,12 +41,10 @@ considered to be data that represents a snapshot of the Earth for a single date
 and time. It could consist of multiple spectral bands in any part of the
 electromagnetic spectrum.
 
-\strong{Important Note on STAC 1.1.0 Changes:}
-This extension formerly had a field eo:bands, which has been removed in
-favor of a general field bands in STAC common metadata. The structure is the
-same as an array of Band Objects but fields from the EO extension now have
-an \verb{eo:} prefix, while more general fields like \code{description} have been moved
-to common metadata and don't need a prefix.
+EO bands are stored in the \code{eo:bands} field in item properties or asset
+metadata, matching the convention used by pystac and most deployed STAC
+tooling. Although STAC 1.1.0 introduced a unified \code{bands} field, the
+\code{eo:bands} field remains the standard used in practice.
 }
 \details{
 \subsection{Extension Schema URI}{
@@ -57,18 +55,14 @@ The EO Extension v1.1.0 schema URI is:
 
 \subsection{Band Object Fields}{
 
-Each band can contain the following EO-specific fields (all with \verb{eo:} prefix):
-\itemize{
-\item \code{eo:common_name}: Common name of the band (e.g., "red", "green", "blue", "nir")
-\item \code{eo:center_wavelength}: Center wavelength in micrometers
-\item \code{eo:full_width_half_max}: Full width at half maximum (FWHM) in micrometers
-\item \code{eo:solar_illumination}: Solar illumination at the band's wavelength
-}
-
-Plus common metadata fields without prefix:
+All fields inside \code{eo:bands} use no prefix (matching pystac convention):
 \itemize{
 \item \code{name}: Name of the band (e.g., "B01", "B02", "B1", "B5")
 \item \code{description}: Description of the band
+\item \code{common_name}: Common name of the band (e.g., "red", "green", "blue", "nir")
+\item \code{center_wavelength}: Center wavelength in micrometers
+\item \code{full_width_half_max}: Full width at half maximum (FWHM) in micrometers
+\item \code{solar_illumination}: Solar illumination at the band's wavelength
 }
 }
 

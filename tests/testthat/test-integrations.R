@@ -78,7 +78,7 @@ test_that("item_from_stars adds raster extension with 6 band objects", {
   bands <- item@assets$data$`raster:bands`
   expect_length(bands, 6)
   expect_equal(bands[[1]]$data_type, "float64")
-  expect_equal(bands[[1]]$`raster:spatial_resolution`, 28.5)
+  expect_equal(bands[[1]]$spatial_resolution, 28.5)
 })
 
 test_that("item_from_stars skips raster extension when add_raster_bands is FALSE", {

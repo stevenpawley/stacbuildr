@@ -59,8 +59,8 @@ pixel values: \code{physical_value = scale * DN + offset}. Default is 1.}
 \item{histogram}{(list, optional) Histogram object created with
 \code{raster_histogram()} describing the distribution of pixel values.}
 
-\item{...Additional}{fields for the band object. Can include fields from
-other extensions like \code{"eo:common_name"}, \code{"eo:center_wavelength"}.}
+\item{...}{Additional fields for the band object. Can include fields from
+other extensions like \code{"common_name"}, \code{"center_wavelength"}.}
 }
 \value{
 An S7 class representing a raster band object.

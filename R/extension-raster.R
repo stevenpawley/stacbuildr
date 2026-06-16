@@ -8,15 +8,6 @@
 #' band level with information such as data type, nodata values, scale/offset
 #' transforms, and statistics.
 #'
-#' **Important Note on STAC 1.1.0 Changes:**
-#' In STAC 1.1.0, the `raster:bands` field was deprecated in favor of a common
-#' `bands` construct that merges functionality from both `eo:bands` and
-#' `raster:bands`. Some raster-specific fields (like `nodata`, `data_type`,
-#' `statistics`, `unit`) are now part of STAC common metadata and should be
-#' included directly in band objects. The remaining raster-specific fields
-#' (`raster:sampling`, `raster:bits_per_sample`, `raster:spatial_resolution`,
-#' `raster:scale`, `raster:offset`, `raster:histogram`) retain the `raster:` prefix.
-#'
 #' @param item A STAC Item object created with `stac_item()`.
 #' @param bands A list of band objects created with `raster_band()`. Each band
 #'   describes the characteristics of a single raster band (or layer). If the
@@ -33,19 +24,17 @@
 #' ## Band Object Fields
 #' Each band can contain both common metadata fields and raster-specific fields:
 #'
-#' **Common Metadata (no prefix):**
+#' **Common Metadata:**
 #' * `nodata`: Pixel values to be interpreted as nodata
 #' * `data_type`: Data type of the band (e.g., "uint8", "int16", "float32")
 #' * `unit`: Unit of measurement for pixel values
 #' * `statistics`: Object with min, max, mean, stddev, valid_percent
-#'
-#' **Raster-Specific (raster: prefix):**
-#' * `raster:sampling`: Pixel sampling method ("area" or "point")
-#' * `raster:bits_per_sample`: Actual number of bits used per sample
-#' * `raster:spatial_resolution`: Average spatial resolution in meters
-#' * `raster:scale`: Multiplicative scaling factor to convert DN to values
-#' * `raster:offset`: Additive offset to convert DN to values
-#' * `raster:histogram`: Histogram distribution of pixel values
+#' * `raster`: Pixel sampling method ("area" or "point")
+#' * `raster`: Actual number of bits used per sample
+#' * `raster`: Average spatial resolution in meters
+#' * `raster`: Multiplicative scaling factor to convert DN to values
+#' * `raster`: Additive offset to convert DN to values
+#' * `raster`: Histogram distribution of pixel values
 #'
 #' ## Scale and Offset
 #' In remote sensing, raster data often stores raw Digital Numbers (DN) that
@@ -322,22 +311,22 @@ S7::method(as.list, raster_band) <- function(x, ...) {
     y$statistics <- x@statistics
 
   if (length(x@sampling) > 0)
-    y$`raster:sampling` <- x@sampling
+    y$sampling <- x@sampling
 
   if (length(x@bits_per_sample) > 0)
-    y$`raster:bits_per_sample` <- x@bits_per_sample
+    y$bits_per_sample <- x@bits_per_sample
 
   if (length(x@spatial_resolution) > 0)
-    y$`raster:spatial_resolution` <- x@spatial_resolution
+    y$spatial_resolution <- x@spatial_resolution
 
   if (length(x@scale) > 0)
-    y$`raster:scale` <- x@scale
+    y$scale <- x@scale
 
   if (length(x@offset) > 0)
-    y$`raster:offset` <- x@offset
+    y$offset <- x@offset
 
   if (!is.null(x@histogram) && length(x@histogram) > 0)
-    y$`raster:histogram` <- x@histogram
+    y$histogram <- x@histogram
 
   if (length(x@extra_fields) > 0)
     y <- c(y, x@extra_fields)
