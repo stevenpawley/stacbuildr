@@ -39,36 +39,36 @@ library(stacbuildr)
 
 # Root catalog
 catalog <- stac_catalog(
-  id          = "my-catalog",
-  title       = "My Satellite Imagery Catalog",
+  id = "my-catalog",
+  title = "My Satellite Imagery Catalog",
   description = "A catalog of satellite imagery for environmental monitoring"
 )
 
 # Collection (extends catalog with extent, license, etc.)
 collection <- stac_collection(
-  id          = "sentinel-2-l2a",
-  title       = "Sentinel-2 Level-2A",
+  id = "sentinel-2-l2a",
+  title = "Sentinel-2 Level-2A",
   description = "Bottom-of-atmosphere reflectance imagery from Sentinel-2",
-  license     = "proprietary",
-  extent      = stac_extent(
-    spatial_bbox       = list(c(-180, -90, 180, 90)),
-    temporal_interval  = list(list("2015-06-27T00:00:00Z", NULL))  # NULL = ongoing
+  license = "proprietary",
+  extent = stac_extent(
+    spatial_bbox = list(c(-180, -90, 180, 90)),
+    temporal_interval = list(list("2015-06-27T00:00:00Z", NULL))  # NULL = ongoing
   ),
   keywords  = c("sentinel", "esa", "optical"),
   providers = list(
     stac_provider(name = "ESA", roles = c("producer", "licensor"),
-                  url  = "https://earth.esa.int")
+                  url = "https://earth.esa.int")
   )
 )
 
 # Item (a single scene / data granule)
 item <- stac_item(
-  id       = "S2A_MSIL2A_20230615",
+  id = "S2A_MSIL2A_20230615",
   geometry = list(type = "Polygon", coordinates = list(list(
     c(-105.5, 39.5), c(-104.5, 39.5), c(-104.5, 40.5),
     c(-105.5, 40.5), c(-105.5, 39.5)
   ))),
-  bbox     = c(-105.5, 39.5, -104.5, 40.5),
+  bbox = c(-105.5, 39.5, -104.5, 40.5),
   datetime = "2023-06-15T10:30:00Z",
   properties = list(platform = "sentinel-2a", instruments = c("msi"), gsd = 10)
 )
@@ -84,20 +84,25 @@ catalog <- catalog |>
   add_root_link("https://example.com/catalog.json")
 
 # Add a child collection to the catalog
-catalog <- add_child(catalog, collection)
+catalog <- catalog |> 
+  add_child(collection)
 
 # Add an item to a collection (with bidirectional links)
-collection <- add_item(
-  collection, item,
-  add_parent_links = TRUE,
-  parent_href = "./collection.json",
-  root_href   = "../catalog.json"
-)
+collection <- collection |> 
+  add_item(
+    item,
+    add_parent_links = TRUE,
+    parent_href = "./collection.json",
+    root_href = "../catalog.json"
+  )
 
 # Add arbitrary links
-collection <- add_link(collection, rel = "license",
-                        href = "https://sentinel.esa.int/legal-notice.html",
-                        type = "text/html")
+collection <- collection |> 
+  add_link(
+    rel = "license",
+    href = "https://sentinel.esa.int/legal-notice.html",
+    type = "text/html"
+  )
 ```
 
 ### Adding assets to items
@@ -106,16 +111,16 @@ collection <- add_link(collection, rel = "license",
 
 item <- item |>
   add_asset(
-    key   = "visual",
-    href  = "https://example.com/S2A_20230615_visual.tif",
+    key = "visual",
+    href = "https://example.com/S2A_20230615_visual.tif",
     title = "True Color Image",
-    type  = "image/tiff; application=geotiff; profile=cloud-optimized",
+    type = "image/tiff; application=geotiff; profile=cloud-optimized",
     roles = c("visual", "data")
   ) |>
   add_asset(
-    key   = "thumbnail",
-    href  = "https://example.com/S2A_20230615_thumb.png",
-    type  = "image/png",
+    key = "thumbnail",
+    href = "https://example.com/S2A_20230615_thumb.png",
+    type = "image/png",
     roles = c("thumbnail")
   )
 ```
@@ -125,7 +130,6 @@ item <- item |>
 #### Electro-Optical (EO) extension
 
 ``` r
-
 item <- item |>
   add_eo_extension(
     bands = list(
@@ -134,12 +138,15 @@ item <- item |>
       eo_band(name = "B2", common_name = "blue",  center_wavelength = 0.490)
     ),
     cloud_cover = 5.2,
-    asset_key   = "visual"   # attach bands to a specific asset
+    asset_key = "visual". # attach bands to a specific asset
   )
 
 # Pre-built band definitions for common sensors
-item <- add_eo_extension(item, bands = sentinel2_msi_bands())
-item <- add_eo_extension(item, bands = landsat_oli_bands(include_thermal = TRUE))
+item <- item |> 
+  add_eo_extension(bands = sentinel2_msi_bands())
+
+item <- item |> 
+  add_eo_extension(bands = landsat_oli_bands(include_thermal = TRUE))
 ```
 
 #### Raster extension
@@ -149,8 +156,12 @@ item <- add_eo_extension(item, bands = landsat_oli_bands(include_thermal = TRUE)
 item <- item |>
   add_raster_extension(
     bands = list(
-      raster_band(data_type = "uint16", nodata = 0,
-                  spatial_resolution = 10, scale = 0.0001)
+      raster_band(
+        data_type = "uint16",
+        nodata = 0,
+        spatial_resolution = 10,
+        scale = 0.0001
+      )
     ),
     asset_key = "visual"
   )
@@ -162,9 +173,9 @@ item <- item |>
 
 # Create a STAC Item directly from a GeoTIFF (via terra)
 item <- item_from_stars(
-  file                 = "path/to/image.tif",
-  datetime             = "2023-06-15T10:30:00Z",
-  add_raster_bands     = TRUE,
+  file = "path/to/image.tif",
+  datetime = "2023-06-15T10:30:00Z",
+  add_raster_bands = TRUE,
   calculate_statistics = FALSE
 )
 
@@ -173,7 +184,7 @@ library(sf)
 boundary <- st_read("boundary.shp")
 item <- item_from_sf(
   boundary,
-  id       = "study-area",
+  id = "study-area",
   datetime = "2023-01-01T00:00:00Z"
 )
 
@@ -194,14 +205,14 @@ write_stac(catalog, path = "output/stac")
 # Write as an absolute-URL catalog (for web hosting)
 write_stac(catalog, path = "output/stac",
            catalog_type = "absolute",
-           base_url     = "https://example.com/stac")
+           base_url = "https://example.com/stac")
 
 # Write individual objects
 write_catalog(collection, file = "collection.json")
 write_item(item, file = "items/my-item.json")
 
 # Read back from disk
-catalog    <- read_stac("output/stac/catalog.json")
+catalog <- read_stac("output/stac/catalog.json")
 collection <- read_stac("output/stac/collection/collection.json")
 ```
 

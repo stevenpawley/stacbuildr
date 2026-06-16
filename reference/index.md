@@ -1,5 +1,11 @@
 # Package index
 
+## Overview
+
+- [`stacbuildr-package`](https://stevenpawley.github.io/stacbuildr/reference/stacbuildr-package.md)
+  [`stacbuildr`](https://stevenpawley.github.io/stacbuildr/reference/stacbuildr-package.md)
+  : stacbuildr: Build SpatioTemporal Asset Catalogs (STAC) in R
+
 ## Core STAC Objects
 
 Create and manipulate the three fundamental STAC object types.
@@ -95,15 +101,17 @@ objects.
 - [`add_raster_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_raster_extension.md)
   : Add Raster Extension to a STAC Item or Asset
 - [`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md)
-  : Create a Raster Band Object
-- [`print(`*`<raster_band>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.raster_band.md)
-  : Print method for raster band objects
+  : Creates a band object for use with the Raster Extension. Describes
+  the characteristics of a single raster band including data type,
+  nodata values, scale/offset transforms, and statistics.
 - [`raster_statistics()`](https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.md)
   : Create Raster Statistics Object
 - [`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md)
   : Create Raster Histogram Object
 - [`raster_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/raster_from_file.md)
   : Extract Raster Band Metadata from a File
+- [`print()`](https://stevenpawley.github.io/stacbuildr/reference/print.raster_band.md)
+  : Print method for raster band objects
 
 ## EO Extension
 

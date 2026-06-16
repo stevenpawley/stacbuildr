@@ -5,7 +5,7 @@ Print method for raster band objects
 ## Usage
 
 ``` r
-# S3 method for class 'raster_band'
+## S7 method for class <stacbuildr::raster_band>
 print(x, ...)
 ```
 

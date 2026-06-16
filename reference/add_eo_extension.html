@@ -3,21 +3,17 @@
 considered to be data that represents a snapshot of the Earth for a single date
 and time. It could consist of multiple spectral bands in any part of the
 electromagnetic spectrum.
-Important Note on STAC 1.1.0 Changes:
-This extension formerly had a field eo:bands, which has been removed in
-favor of a general field bands in STAC common metadata. The structure is the
-same as an array of Band Objects but fields from the EO extension now have
-an eo: prefix, while more general fields like description have been moved
-to common metadata and don't need a prefix."><meta property="og:description" content="Adds the Electro-Optical (EO) Extension to a STAC Item. EO data is
+EO bands are stored in the eo:bands field in item properties or asset
+metadata, matching the convention used by pystac and most deployed STAC
+tooling. Although STAC 1.1.0 introduced a unified bands field, the
+eo:bands field remains the standard used in practice."><meta property="og:description" content="Adds the Electro-Optical (EO) Extension to a STAC Item. EO data is
 considered to be data that represents a snapshot of the Earth for a single date
 and time. It could consist of multiple spectral bands in any part of the
 electromagnetic spectrum.
-Important Note on STAC 1.1.0 Changes:
-This extension formerly had a field eo:bands, which has been removed in
-favor of a general field bands in STAC common metadata. The structure is the
-same as an array of Band Objects but fields from the EO extension now have
-an eo: prefix, while more general fields like description have been moved
-to common metadata and don't need a prefix."></head><body>
+EO bands are stored in the eo:bands field in item properties or asset
+metadata, matching the convention used by pystac and most deployed STAC
+tooling. Although STAC 1.1.0 introduced a unified bands field, the
+eo:bands field remains the standard used in practice."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -55,12 +51,10 @@ to common metadata and don't need a prefix."></head><body>
 considered to be data that represents a snapshot of the Earth for a single date
 and time. It could consist of multiple spectral bands in any part of the
 electromagnetic spectrum.</p>
-<p><strong>Important Note on STAC 1.1.0 Changes:</strong>
-This extension formerly had a field eo:bands, which has been removed in
-favor of a general field bands in STAC common metadata. The structure is the
-same as an array of Band Objects but fields from the EO extension now have
-an <code>eo:</code> prefix, while more general fields like <code>description</code> have been moved
-to common metadata and don't need a prefix.</p>
+<p>EO bands are stored in the <code>eo:bands</code> field in item properties or asset
+metadata, matching the convention used by pystac and most deployed STAC
+tooling. Although STAC 1.1.0 introduced a unified <code>bands</code> field, the
+<code>eo:bands</code> field remains the standard used in practice.</p>
     </div>
 
     <div class="section level2">
@@ -126,12 +120,12 @@ typically apply to the entire scene.</p></dd>
 <h3 id="band-object-fields">Band Object Fields<a class="anchor" aria-label="anchor" href="#band-object-fields"></a></h3>
 
 
-<p>Each band can contain the following EO-specific fields (all with <code>eo:</code> prefix):</p><ul><li><p><code>eo:common_name</code>: Common name of the band (e.g., "red", "green", "blue", "nir")</p></li>
-<li><p><code>eo:center_wavelength</code>: Center wavelength in micrometers</p></li>
-<li><p><code>eo:full_width_half_max</code>: Full width at half maximum (FWHM) in micrometers</p></li>
-<li><p><code>eo:solar_illumination</code>: Solar illumination at the band's wavelength</p></li>
-</ul><p>Plus common metadata fields without prefix:</p><ul><li><p><code>name</code>: Name of the band (e.g., "B01", "B02", "B1", "B5")</p></li>
+<p>All fields inside <code>eo:bands</code> use no prefix (matching pystac convention):</p><ul><li><p><code>name</code>: Name of the band (e.g., "B01", "B02", "B1", "B5")</p></li>
 <li><p><code>description</code>: Description of the band</p></li>
+<li><p><code>common_name</code>: Common name of the band (e.g., "red", "green", "blue", "nir")</p></li>
+<li><p><code>center_wavelength</code>: Center wavelength in micrometers</p></li>
+<li><p><code>full_width_half_max</code>: Full width at half maximum (FWHM) in micrometers</p></li>
+<li><p><code>solar_illumination</code>: Solar illumination at the band's wavelength</p></li>
 </ul></div>
 
 <div class="section">

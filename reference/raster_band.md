@@ -1,8 +1,7 @@
-# Create a Raster Band Object
+# Creates a band object for use with the Raster Extension. Describes the characteristics of a single raster band including data type, nodata values, scale/offset transforms, and statistics.
 
-Creates a band object for use with the Raster Extension. Describes the
-characteristics of a single raster band including data type, nodata
-values, scale/offset transforms, and statistics.
+`raster_band()` is an S7 object that is used to construct a
+`raster:bands` STAC metadata entry
 
 ## Usage
 
@@ -15,8 +14,8 @@ raster_band(
   sampling = NULL,
   bits_per_sample = NULL,
   spatial_resolution = NULL,
-  scale = NULL,
-  offset = NULL,
+  scale = 1,
+  offset = 0,
   histogram = NULL,
   ...
 )
@@ -51,9 +50,10 @@ raster_band(
 
 - sampling:
 
-  (character, optional) Pixel sampling method. Either "area" (pixel
-  represents area) or "point" (pixel represents point). Default is
-  "area".
+  single length character, must be either 'point' where the pixel value
+  represents a point sample at the centre of the pixel, or 'area' where
+  the pixel value should be assumed to represent a sampling over the
+  region of the pixel
 
 - bits_per_sample:
 
@@ -86,50 +86,8 @@ raster_band(
 - ...:
 
   Additional fields for the band object. Can include fields from other
-  extensions like `"eo:common_name"`, `"eo:center_wavelength"`.
+  extensions like `"common_name"`, `"center_wavelength"`.
 
 ## Value
 
-A list representing a raster band object.
-
-## Examples
-
-``` r
-# Simple band with just data type
-band <- raster_band(data_type = "uint8")
-
-# Band with nodata and scale/offset
-band <- raster_band(
-  nodata = 0,
-  data_type = "uint16",
-  scale = 0.0001,
-  offset = 0,
-  unit = "1"
-)
-
-# Band with statistics
-band <- raster_band(
-  nodata = -9999,
-  data_type = "int16",
-  spatial_resolution = 30,
-  statistics = raster_statistics(
-    minimum = -1000,
-    maximum = 8000,
-    mean = 2500,
-    stddev = 1500
-  )
-)
-
-# Band combining raster and EO extension
-band <- raster_band(
-  nodata = 0,
-  data_type = "uint16",
-  scale = 0.0001,
-  offset = -0.1,
-  spatial_resolution = 10,
-  unit = "1",
-  "eo:common_name" = "red",
-  "eo:center_wavelength" = 0.665,
-  "eo:full_width_half_max" = 0.038
-)
-```
+An S7 class representing a raster band object.

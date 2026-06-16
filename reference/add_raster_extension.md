@@ -5,16 +5,6 @@ raster-specific metadata. The Raster Extension describes raster assets
 at the band level with information such as data type, nodata values,
 scale/offset transforms, and statistics.
 
-**Important Note on STAC 1.1.0 Changes:** In STAC 1.1.0, the
-`raster:bands` field was deprecated in favor of a common `bands`
-construct that merges functionality from both `eo:bands` and
-`raster:bands`. Some raster-specific fields (like `nodata`, `data_type`,
-`statistics`, `unit`) are now part of STAC common metadata and should be
-included directly in band objects. The remaining raster-specific fields
-(`raster:sampling`, `raster:bits_per_sample`,
-`raster:spatial_resolution`, `raster:scale`, `raster:offset`,
-`raster:histogram`) retain the `raster:` prefix.
-
 ## Usage
 
 ``` r
@@ -58,7 +48,7 @@ The Raster Extension v1.1.0 schema URI is:
 Each band can contain both common metadata fields and raster-specific
 fields:
 
-**Common Metadata (no prefix):**
+**Common Metadata:**
 
 - `nodata`: Pixel values to be interpreted as nodata
 
@@ -68,19 +58,17 @@ fields:
 
 - `statistics`: Object with min, max, mean, stddev, valid_percent
 
-**Raster-Specific (raster: prefix):**
+- `raster`: Pixel sampling method ("area" or "point")
 
-- `raster:sampling`: Pixel sampling method ("area" or "point")
+- `raster`: Actual number of bits used per sample
 
-- `raster:bits_per_sample`: Actual number of bits used per sample
+- `raster`: Average spatial resolution in meters
 
-- `raster:spatial_resolution`: Average spatial resolution in meters
+- `raster`: Multiplicative scaling factor to convert DN to values
 
-- `raster:scale`: Multiplicative scaling factor to convert DN to values
+- `raster`: Additive offset to convert DN to values
 
-- `raster:offset`: Additive offset to convert DN to values
-
-- `raster:histogram`: Histogram distribution of pixel values
+- `raster`: Histogram distribution of pixel values
 
 ### Scale and Offset
 

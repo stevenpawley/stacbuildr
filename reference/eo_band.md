@@ -88,10 +88,9 @@ Wavelengths should be specified in micrometers. For example:
 
 ### Combining with Raster Extension
 
-EO bands can be combined with raster metadata by adding raster fields to
-the same band object. Common raster fields include `nodata`,
-`data_type`, `raster:scale`, `raster:offset`,
-`raster:spatial_resolution`.
+EO bands can be combined with raster metadata by adding raster fields
+via `...`. Common raster fields include `nodata`, `data_type`,
+`"raster:scale"`, `"raster:offset"`, `"raster:spatial_resolution"`.
 
 ## Examples
 
