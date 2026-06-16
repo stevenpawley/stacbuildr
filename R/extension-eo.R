@@ -6,12 +6,10 @@
 #' and time. It could consist of multiple spectral bands in any part of the
 #' electromagnetic spectrum.
 #'
-#' **Important Note on STAC 1.1.0 Changes:**
-#' This extension formerly had a field eo:bands, which has been removed in
-#' favor of a general field bands in STAC common metadata. The structure is the
-#' same as an array of Band Objects but fields from the EO extension now have
-#' an `eo:` prefix, while more general fields like `description` have been moved
-#' to common metadata and don't need a prefix.
+#' EO bands are stored in the `eo:bands` field in item properties or asset
+#' metadata, matching the convention used by pystac and most deployed STAC
+#' tooling. Although STAC 1.1.0 introduced a unified `bands` field, the
+#' `eo:bands` field remains the standard used in practice.
 #'
 #' @param item A STAC Item object created with `stac_item()`.
 #' @param bands (list, optional) A list of band objects created with `eo_band()`.
@@ -34,15 +32,13 @@
 #' `https://stac-extensions.github.io/eo/v1.1.0/schema.json`
 #'
 #' ## Band Object Fields
-#' Each band can contain the following EO-specific fields (all with `eo:` prefix):
-#' * `eo:common_name`: Common name of the band (e.g., "red", "green", "blue", "nir")
-#' * `eo:center_wavelength`: Center wavelength in micrometers
-#' * `eo:full_width_half_max`: Full width at half maximum (FWHM) in micrometers
-#' * `eo:solar_illumination`: Solar illumination at the band's wavelength
-#'
-#' Plus common metadata fields without prefix:
+#' All fields inside `eo:bands` use no prefix (matching pystac convention):
 #' * `name`: Name of the band (e.g., "B01", "B02", "B1", "B5")
 #' * `description`: Description of the band
+#' * `common_name`: Common name of the band (e.g., "red", "green", "blue", "nir")
+#' * `center_wavelength`: Center wavelength in micrometers
+#' * `full_width_half_max`: Full width at half maximum (FWHM) in micrometers
+#' * `solar_illumination`: Solar illumination at the band's wavelength
 #'
 #' ## Common Band Names
 #' The EO extension defines standard common names for typical spectral bands:
@@ -227,10 +223,10 @@ add_eo_extension <- function(
         stop(sprintf("Asset '%s' does not exist in item", asset_key))
       }
 
-      item@assets[[asset_key]]$bands <- bands
+      item@assets[[asset_key]]$`eo:bands` <- bands
     } else {
       # Add to item properties
-      item@properties$bands <- bands
+      item@properties$`eo:bands` <- bands
     }
   }
 
@@ -281,9 +277,9 @@ add_eo_extension <- function(
 #' * NIR: ~0.86 (860 nm)
 #'
 #' ## Combining with Raster Extension
-#' EO bands can be combined with raster metadata by adding raster fields to the
-#' same band object. Common raster fields include `nodata`, `data_type`,
-#' `raster:scale`, `raster:offset`, `raster:spatial_resolution`.
+#' EO bands can be combined with raster metadata by adding raster fields via
+#' `...`. Common raster fields include `nodata`, `data_type`,
+#' `"raster:scale"`, `"raster:offset"`, `"raster:spatial_resolution"`.
 #'
 #' @examples
 #' # Simple band with common name
@@ -376,20 +372,20 @@ eo_band <- function(
       ))
     }
 
-    band$`eo:common_name` <- common_name
+    band$common_name <- common_name
   }
 
-  # EO-specific fields (eo: prefix)
+  # EO-specific fields (no prefix inside eo:bands, per pystac convention)
   if (!is.null(center_wavelength)) {
-    band$`eo:center_wavelength` <- center_wavelength
+    band$center_wavelength <- center_wavelength
   }
 
   if (!is.null(full_width_half_max)) {
-    band$`eo:full_width_half_max` <- full_width_half_max
+    band$full_width_half_max <- full_width_half_max
   }
 
   if (!is.null(solar_illumination)) {
-    band$`eo:solar_illumination` <- solar_illumination
+    band$solar_illumination <- solar_illumination
   }
 
   # Add any extra fields (e.g., from raster extension)
@@ -642,24 +638,24 @@ print.eo_band <- function(x, ...) {
     cat("  Name:", x$name, "\n")
   }
 
-  if (!is.null(x$`eo:common_name`)) {
-    cat("  Common Name:", x$`eo:common_name`, "\n")
+  if (!is.null(x$common_name)) {
+    cat("  Common Name:", x$common_name, "\n")
   }
 
   if (!is.null(x$description)) {
     cat("  Description:", x$description, "\n")
   }
 
-  if (!is.null(x$`eo:center_wavelength`)) {
-    cat("  Center Wavelength:", x$`eo:center_wavelength`, "micrometres\n")
+  if (!is.null(x$center_wavelength)) {
+    cat("  Center Wavelength:", x$center_wavelength, "micrometres\n")
   }
 
-  if (!is.null(x$`eo:full_width_half_max`)) {
-    cat("  FWHM:", x$`eo:full_width_half_max`, "micrometres\n")
+  if (!is.null(x$full_width_half_max)) {
+    cat("  FWHM:", x$full_width_half_max, "micrometres\n")
   }
 
-  if (!is.null(x$`eo:solar_illumination`)) {
-    cat("  Solar Illumination:", x$`eo:solar_illumination`, "\n")
+  if (!is.null(x$solar_illumination)) {
+    cat("  Solar Illumination:", x$solar_illumination, "\n")
   }
 
   # Show raster fields if present

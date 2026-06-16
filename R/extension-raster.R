@@ -212,8 +212,8 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
 #'   `physical_value = scale * DN + offset`. Default is 0.
 #' @param histogram (list, optional) Histogram object created with
 #'   `raster_histogram()` describing the distribution of pixel values.
-#' @param ...Additional fields for the band object. Can include fields from
-#'   other extensions like `"eo:common_name"`, `"eo:center_wavelength"`.
+#' @param ... Additional fields for the band object. Can include fields from
+#'   other extensions like `"common_name"`, `"center_wavelength"`.
 #' @returns An S7 class representing a raster band object.
 #' @export
 raster_band <- S7::new_class(
