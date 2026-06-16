@@ -44,3 +44,4 @@ Collate:
 URL: https://github.com/stevenpawley/stacbuildr, https://stevenpawley.github.io/stacbuildr/
 BugReports: https://github.com/stevenpawley/stacbuildr/issues
 Config/roxygen2/version: 8.0.0
+VignetteBuilder: knitr

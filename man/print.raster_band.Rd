@@ -2,6 +2,7 @@
 % Please edit documentation in R/extension-raster.R
 \name{print.raster_band}
 \alias{print.raster_band}
+\alias{print}
 \title{Print method for raster band objects}
 \usage{
 ## S7 method for class <stacbuildr::raster_band>
