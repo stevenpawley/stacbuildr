@@ -457,3 +457,9 @@ package).
 - [`validate_stac_schema()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac_schema.md)
   : Validate a STAC Object Against the Official JSON Schema
 
+# Articles
+
+### All vignettes
+
+- [Comparison with
+  PySTAC](https://stevenpawley.github.io/stacbuildr/articles/pystac.md):
