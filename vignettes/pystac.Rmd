@@ -65,6 +65,7 @@ catalog_with_item <- catalog |>
   add_item(item)
 
 r_json <- jsonlite::toJSON(as.list(catalog_with_item), pretty = TRUE, auto_unbox = TRUE)
+r_json
 ```
 
 ```{r}
@@ -83,10 +84,12 @@ catalog_py$add_item(item_py)
 catalog_py$normalize_hrefs("/Users/stevenpawley/catalog.json")
 
 py_json <- jsonlite::toJSON(catalog_py$to_dict(), pretty = TRUE, auto_unbox = TRUE)
+py_json
+```
 
+
+```{r}
 # test outputs are the same
-r_json(py_json) == names(r_json)
-
 stopifnot(all(
   names(jsonlite::parse_json(py_json)) %in%
     names(jsonlite::parse_json(r_json))
