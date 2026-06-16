@@ -3,6 +3,10 @@ template:
   bootstrap: 5
 
 reference:
+  - title: "Overview"
+    contents:
+      - stacbuildr-package
+
   - title: "Core STAC Objects"
     desc: "Create and manipulate the three fundamental STAC object types."
     contents:
@@ -67,6 +71,7 @@ reference:
       - raster_statistics
       - raster_histogram
       - raster_from_file
+      - print.raster_band
 
   - title: "EO Extension"
     desc: >
