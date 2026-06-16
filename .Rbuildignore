@@ -10,3 +10,4 @@
 ^\.github$
 ^\.positai$
 ^\.claude$
+scratch.*

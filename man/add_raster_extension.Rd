@@ -25,15 +25,6 @@ Adds the Raster Extension to a STAC Item or modifies an asset to include
 raster-specific metadata. The Raster Extension describes raster assets at the
 band level with information such as data type, nodata values, scale/offset
 transforms, and statistics.
-
-\strong{Important Note on STAC 1.1.0 Changes:}
-In STAC 1.1.0, the \code{raster:bands} field was deprecated in favor of a common
-\code{bands} construct that merges functionality from both \code{eo:bands} and
-\code{raster:bands}. Some raster-specific fields (like \code{nodata}, \code{data_type},
-\code{statistics}, \code{unit}) are now part of STAC common metadata and should be
-included directly in band objects. The remaining raster-specific fields
-(\code{raster:sampling}, \code{raster:bits_per_sample}, \code{raster:spatial_resolution},
-\code{raster:scale}, \code{raster:offset}, \code{raster:histogram}) retain the \verb{raster:} prefix.
 }
 \details{
 \subsection{Extension Schema URI}{
@@ -46,22 +37,18 @@ The Raster Extension v1.1.0 schema URI is:
 
 Each band can contain both common metadata fields and raster-specific fields:
 
-\strong{Common Metadata (no prefix):}
+\strong{Common Metadata:}
 \itemize{
 \item \code{nodata}: Pixel values to be interpreted as nodata
 \item \code{data_type}: Data type of the band (e.g., "uint8", "int16", "float32")
 \item \code{unit}: Unit of measurement for pixel values
 \item \code{statistics}: Object with min, max, mean, stddev, valid_percent
-}
-
-\strong{Raster-Specific (raster: prefix):}
-\itemize{
-\item \code{raster:sampling}: Pixel sampling method ("area" or "point")
-\item \code{raster:bits_per_sample}: Actual number of bits used per sample
-\item \code{raster:spatial_resolution}: Average spatial resolution in meters
-\item \code{raster:scale}: Multiplicative scaling factor to convert DN to values
-\item \code{raster:offset}: Additive offset to convert DN to values
-\item \code{raster:histogram}: Histogram distribution of pixel values
+\item \code{raster}: Pixel sampling method ("area" or "point")
+\item \code{raster}: Actual number of bits used per sample
+\item \code{raster}: Average spatial resolution in meters
+\item \code{raster}: Multiplicative scaling factor to convert DN to values
+\item \code{raster}: Additive offset to convert DN to values
+\item \code{raster}: Histogram distribution of pixel values
 }
 }
 
