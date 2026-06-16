@@ -42,7 +42,8 @@
 #'
 #' **value = scale * DN + offset**
 #'
-#' For example, storing reflectance (0-1) as integers (0-10000) with scale=0.0001.
+#' For example, storing reflectance (0-1) as integers (0-10000) with
+#' scale=0.0001.
 #'
 #' ## Data Types
 #' Supported data type values include:
