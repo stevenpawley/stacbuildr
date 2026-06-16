@@ -45,3 +45,4 @@ URL: https://github.com/stevenpawley/stacbuildr, https://stevenpawley.github.io/
 BugReports: https://github.com/stevenpawley/stacbuildr/issues
 Config/roxygen2/version: 8.0.0
 VignetteBuilder: knitr
+RoxygenNote: 7.3.3
