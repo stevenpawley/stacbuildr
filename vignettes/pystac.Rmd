@@ -1,0 +1,99 @@
+---
+title: "Comparison with PySTAC"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparison with PySTAC}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(stacbuildr)
+library(reticulate)
+py_require("pystac")
+```
+
+# Comparison with PySTAC
+
+Basic catalog:
+
+```{r}
+catalog <- stac_catalog(
+  id = "environmental-data",
+  description = "A collection of environmental data",
+  title = "Environmental Data Catalog"
+)
+
+jsonlite::toJSON(as.list(catalog), pretty = TRUE, auto_unbox = TRUE)
+```
+
+```{r}
+pystac <- import("pystac")
+
+catalog_py <- pystac$Catalog(
+  id = "environmental-data",
+  description = "A collection of environmental data",
+  title = "Environmental Data Catalog"
+)
+
+jsonlite::toJSON(catalog_py$to_dict(), pretty = TRUE, auto_unbox = TRUE)
+```
+
+Items
+
+```{r}
+item <- stac_item(
+  id = "environmental-data/temperature",
+  geometry = list(
+    type = "Point",
+    coordinates = c(-122.45, 54.34)
+  ),
+  bbox = c(-125, 50, -120, 55),
+  datetime = "2023-07-06T08:00:00Z"
+)
+
+catalog_with_item <- catalog |>
+  add_self_link(normalizePath("~/catalog.json")) |>
+  add_root_link(normalizePath("~/catalog.json")) |>
+  add_item(item)
+
+r_json <- jsonlite::toJSON(as.list(catalog_with_item), pretty = TRUE, auto_unbox = TRUE)
+```
+
+```{r}
+item_py <- pystac$Item(
+  id = "environmental-data/temperature",
+  geometry = list(
+    type = "Point",
+    coordinates = c(-122.45, 54.34)
+  ),
+  bbox = c(-125, 50, -120, 55),
+  datetime = "2023-07-06T08:00:00Z",
+  properties = list()
+)
+
+catalog_py$add_item(item_py)
+catalog_py$normalize_hrefs("/Users/stevenpawley/catalog.json")
+
+py_json <- jsonlite::toJSON(catalog_py$to_dict(), pretty = TRUE, auto_unbox = TRUE)
+
+# test outputs are the same
+r_json(py_json) == names(r_json)
+
+stopifnot(all(
+  names(jsonlite::parse_json(py_json)) %in%
+    names(jsonlite::parse_json(r_json))
+))
+
+stopifnot(
+  length(jsonlite::parse_json(py_json)$links) == length(jsonlite::parse_json(r_json)$links)
+)
+```
+
