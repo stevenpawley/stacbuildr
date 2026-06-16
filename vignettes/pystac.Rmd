@@ -17,12 +17,20 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(stacbuildr)
 library(reticulate)
+
 py_require("pystac")
+pystac <- import("pystac")
 ```
 
 # Comparison with PySTAC
 
-Basic catalog:
+This vignette compares stacbuildr with the Python
+[PySTAC](https://pystac.readthedocs.io/) library by writing equivalent catalog
+structures to disk and comparing the resulting JSON.
+
+## Building a catalog with an item
+
+### stacbuildr
 
 ```{r}
 catalog <- stac_catalog(
@@ -31,26 +39,8 @@ catalog <- stac_catalog(
   title = "Environmental Data Catalog"
 )
 
-jsonlite::toJSON(as.list(catalog), pretty = TRUE, auto_unbox = TRUE)
-```
-
-```{r}
-pystac <- import("pystac")
-
-catalog_py <- pystac$Catalog(
-  id = "environmental-data",
-  description = "A collection of environmental data",
-  title = "Environmental Data Catalog"
-)
-
-jsonlite::toJSON(catalog_py$to_dict(), pretty = TRUE, auto_unbox = TRUE)
-```
-
-Items
-
-```{r}
 item <- stac_item(
-  id = "environmental-data/temperature",
+  id = "temperature",
   geometry = list(
     type = "Point",
     coordinates = c(-122.45, 54.34)
@@ -59,44 +49,96 @@ item <- stac_item(
   datetime = "2023-07-06T08:00:00Z"
 )
 
-catalog_with_item <- catalog |>
-  add_self_link(normalizePath("~/catalog.json")) |>
-  add_root_link(normalizePath("~/catalog.json")) |>
-  add_item(item)
-
-r_json <- jsonlite::toJSON(as.list(catalog_with_item), pretty = TRUE, auto_unbox = TRUE)
-r_json
+catalog_r <- catalog |> add_item(item)
 ```
 
+### PySTAC
+
 ```{r}
+catalog_py <- pystac$Catalog(
+  id = "environmental-data",
+  description = "A collection of environmental data",
+  title = "Environmental Data Catalog",
+  catalog_type = pystac$CatalogType$RELATIVE_PUBLISHED
+)
+
+dt <- import("datetime")
 item_py <- pystac$Item(
-  id = "environmental-data/temperature",
-  geometry = list(
+  id = "temperature",
+  geometry = reticulate::dict(
     type = "Point",
-    coordinates = c(-122.45, 54.34)
+    coordinates = list(c(-122.45, 54.34))
   ),
-  bbox = c(-125, 50, -120, 55),
-  datetime = "2023-07-06T08:00:00Z",
-  properties = list()
+  bbox = list(-125, 50, -120, 55),
+  datetime = dt$datetime$fromisoformat("2023-07-06T08:00:00+00:00"),
+  properties = reticulate::dict()
 )
 
 catalog_py$add_item(item_py)
-catalog_py$normalize_hrefs("/Users/stevenpawley/catalog.json")
-
-py_json <- jsonlite::toJSON(catalog_py$to_dict(), pretty = TRUE, auto_unbox = TRUE)
-py_json
 ```
 
+## Writing to disk and comparing
+
+Both libraries are asked to write a relative catalog. stacbuildr uses
+`catalog_type = "relative"` and PySTAC uses `CatalogType$RELATIVE_PUBLISHED`,
+which are equivalent.
 
 ```{r}
-# test outputs are the same
-stopifnot(all(
-  names(jsonlite::parse_json(py_json)) %in%
-    names(jsonlite::parse_json(r_json))
-))
+r_path <- file.path(tempdir(), "r-stac")
+write_stac(catalog_r, r_path, catalog_type = "relative", overwrite = TRUE)
+r_catalog <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
-stopifnot(
-  length(jsonlite::parse_json(py_json)$links) == length(jsonlite::parse_json(r_json)$links)
-)
+py_path <- file.path(tempdir(), "py-stac")
+catalog_py$normalize_hrefs(py_path)
+catalog_py$save(dest_href = py_path)
+py_catalog <- jsonlite::read_json(file.path(py_path, "catalog.json"))
 ```
 
+### Catalog JSON
+
+```{r}
+cat("R json output: \n")
+jsonlite::toJSON(r_catalog, pretty = TRUE, auto_unbox = TRUE)
+
+cat("\nPython json output: \n")
+jsonlite::toJSON(py_catalog, pretty = TRUE, auto_unbox = TRUE)
+```
+
+### Item JSON
+
+```{r}
+r_item <- jsonlite::read_json(file.path(r_path, "temperature", "temperature.json"))
+py_item <- jsonlite::read_json(file.path(py_path, "temperature", "temperature.json"))
+
+jsonlite::toJSON(r_item, pretty = TRUE, auto_unbox = TRUE)
+jsonlite::toJSON(py_item, pretty = TRUE, auto_unbox = TRUE)
+```
+
+## Checks
+
+The outputs are functionally equivalent with one known difference: pystac
+produces an absolute path for the `self` link even in `RELATIVE_PUBLISHED`
+mode, whereas stacbuildr uses a relative `./catalog.json`. This is a
+deliberate behavioural difference in pystac.
+
+```{r}
+get_link <- function(links, rel) {
+  Filter(function(x) x$rel == rel, links)[[1]]
+}
+
+# Top-level catalog fields match
+stopifnot(all(names(py_catalog) %in% names(r_catalog)))
+
+# Same number of links
+stopifnot(length(py_catalog$links) == length(r_catalog$links))
+
+# root link hrefs match
+stopifnot(get_link(r_catalog$links, "root")$href == get_link(py_catalog$links, "root")$href)
+
+# item link hrefs match
+stopifnot(get_link(r_catalog$links, "item")$href == get_link(py_catalog$links, "item")$href)
+
+# self link: stacbuildr uses relative, pystac uses absolute (known difference)
+stopifnot(get_link(r_catalog$links, "self")$href == "./catalog.json")
+stopifnot(startsWith(get_link(py_catalog$links, "self")$href, "/"))
+```

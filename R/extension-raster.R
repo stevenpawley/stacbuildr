@@ -335,14 +335,7 @@ S7::method(as.list, raster_band) <- function(x, ...) {
   return(y)
 }
 
-#' Print method for raster band objects
-#'
-#' @param x A raster band object
-#' @param ... Additional arguments (ignored)
-#' @name print.raster_band
-#' @aliases print.raster_band print
-#'
-#' @export
+#' @keywords internal
 S7::method(print, raster_band) <- function(x, ...) {
   cat("Raster Band:\n")
 

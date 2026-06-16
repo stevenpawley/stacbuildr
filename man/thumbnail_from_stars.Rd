@@ -43,7 +43,8 @@ library(stars)
 r <- read_stars(system.file("tif/L7_ETMs.tif", package = "stars"))
 asset <- thumbnail_from_stars(r, path = "thumbnail.png")
 
-item <- item_from_stars(r, href = "image.tif", datetime = "2023-01-01T00:00:00Z")
+item <- item_from_stars(r, href = "image.tif",
+                        datetime = "2023-01-01T00:00:00Z")
 item <- add_asset(item, key = "thumbnail", asset = asset)
 }
 

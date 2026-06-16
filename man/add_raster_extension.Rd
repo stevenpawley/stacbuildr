@@ -59,7 +59,8 @@ must be transformed to physical values using:
 
 \strong{value = scale * DN + offset}
 
-For example, storing reflectance (0-1) as integers (0-10000) with scale=0.0001.
+For example, storing reflectance (0-1) as integers (0-10000) with
+scale=0.0001.
 }
 
 \subsection{Data Types}{

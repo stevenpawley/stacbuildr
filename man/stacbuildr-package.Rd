@@ -103,9 +103,4 @@ documents
 \author{
 \strong{Maintainer}: Steven Pawley \email{dr.stevenpawley@gmail.com}
 
-Authors:
-\itemize{
-  \item Steven Pawley \email{dr.stevenpawley@gmail.com}
-}
-
 }

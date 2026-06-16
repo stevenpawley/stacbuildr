@@ -386,14 +386,16 @@ write_catalog_recursive <- function(
           item,
           paste0(base_url, "/", item@id, "/", item@id, ".json"),
           paste0(base_url, "/", catalog_file),
-          if (is_root) paste0(base_url, "/", catalog_file) else NULL
+          if (is_root) paste0(base_url, "/", catalog_file) else NULL,
+          parent_is_collection = inherits(catalog, "stac_collection")
         )
       } else {
         item <- update_item_links(
           item,
           paste0("./", item@id, ".json"),
           paste0("../", catalog_file),
-          if (is_root) paste0("../", catalog_file) else "../../catalog.json"
+          if (is_root) paste0("../", catalog_file) else "../../catalog.json",
+          parent_is_collection = inherits(catalog, "stac_collection")
         )
       }
 
@@ -535,7 +537,8 @@ update_catalog_links <- function(
 #' Internal function to update links in an item.
 #'
 #' @keywords internal
-update_item_links <- function(item, self_href, parent_href, root_href) {
+update_item_links <- function(item, self_href, parent_href, root_href,
+                              parent_is_collection = FALSE) {
   # Update self link
   item@links <- Filter(function(x) x$rel != "self", item@links)
   item <- add_link(
@@ -555,14 +558,16 @@ update_item_links <- function(item, self_href, parent_href, root_href) {
       type = "application/json"
     )
 
-    # If parent is a collection, also update collection link
+    # Only add collection link when parent is actually a collection
     item@links <- Filter(function(x) x$rel != "collection", item@links)
-    item <- add_link(
-      item,
-      rel = "collection",
-      href = parent_href,
-      type = "application/json"
-    )
+    if (parent_is_collection) {
+      item <- add_link(
+        item,
+        rel = "collection",
+        href = parent_href,
+        type = "application/json"
+      )
+    }
   }
 
   # Update root link

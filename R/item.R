@@ -384,7 +384,8 @@ S7::method(as.list, stac_item) <- function(x, ...) {
     geometry = x@geometry,
     properties = x@properties,
     links = x@links,
-    assets = x@assets
+    # Ensure assets serializes as {} not [] when empty
+    assets = if (length(x@assets) == 0) setNames(list(), character(0)) else x@assets
   )
   if (!is.null(x@bbox)) {
     out$bbox <- x@bbox
