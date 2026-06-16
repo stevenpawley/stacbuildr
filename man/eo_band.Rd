@@ -70,9 +70,9 @@ Wavelengths should be specified in micrometers. For example:
 
 \subsection{Combining with Raster Extension}{
 
-EO bands can be combined with raster metadata by adding raster fields to the
-same band object. Common raster fields include \code{nodata}, \code{data_type},
-\code{raster:scale}, \code{raster:offset}, \code{raster:spatial_resolution}.
+EO bands can be combined with raster metadata by adding raster fields via
+\code{...}. Common raster fields include \code{nodata}, \code{data_type},
+\code{"raster:scale"}, \code{"raster:offset"}, \code{"raster:spatial_resolution"}.
 }
 }
 \examples{
