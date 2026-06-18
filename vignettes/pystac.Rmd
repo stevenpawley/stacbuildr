@@ -20,6 +20,7 @@ library(reticulate)
 
 py_require("pystac")
 pystac <- import("pystac")
+dt <- import("datetime")
 ```
 
 # Comparison with PySTAC
@@ -49,7 +50,8 @@ item <- stac_item(
   datetime = "2023-07-06T08:00:00Z"
 )
 
-catalog_r <- catalog |> add_item(item)
+catalog <- catalog |> 
+  add_item(item)
 ```
 
 ### PySTAC
@@ -62,7 +64,6 @@ catalog_py <- pystac$Catalog(
   catalog_type = pystac$CatalogType$RELATIVE_PUBLISHED
 )
 
-dt <- import("datetime")
 item_py <- pystac$Item(
   id = "temperature",
   geometry = reticulate::dict(
@@ -85,23 +86,23 @@ which are equivalent.
 
 ```{r}
 r_path <- file.path(tempdir(), "r-stac")
-write_stac(catalog_r, r_path, catalog_type = "relative", overwrite = TRUE)
-r_catalog <- jsonlite::read_json(file.path(r_path, "catalog.json"))
+write_stac(catalog, r_path, catalog_type = "relative", overwrite = TRUE)
+catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 py_path <- file.path(tempdir(), "py-stac")
 catalog_py$normalize_hrefs(py_path)
 catalog_py$save(dest_href = py_path)
-py_catalog <- jsonlite::read_json(file.path(py_path, "catalog.json"))
+catalog_pyjson <- jsonlite::read_json(file.path(py_path, "catalog.json"))
 ```
 
 ### Catalog JSON
 
 ```{r}
 cat("R json output: \n")
-jsonlite::toJSON(r_catalog, pretty = TRUE, auto_unbox = TRUE)
+jsonlite::toJSON(catalog_rjson, pretty = TRUE, auto_unbox = TRUE)
 
 cat("\nPython json output: \n")
-jsonlite::toJSON(py_catalog, pretty = TRUE, auto_unbox = TRUE)
+jsonlite::toJSON(catalog_pyjson, pretty = TRUE, auto_unbox = TRUE)
 ```
 
 ### Item JSON
@@ -127,18 +128,89 @@ get_link <- function(links, rel) {
 }
 
 # Top-level catalog fields match
-stopifnot(all(names(py_catalog) %in% names(r_catalog)))
+stopifnot(all(names(py_catalog) %in% names(catalog_rjson)))
 
 # Same number of links
-stopifnot(length(py_catalog$links) == length(r_catalog$links))
+stopifnot(length(py_catalog$links) == length(catalog_rjson$links))
 
 # root link hrefs match
-stopifnot(get_link(r_catalog$links, "root")$href == get_link(py_catalog$links, "root")$href)
+stopifnot(get_link(catalog_rjson$links, "root")$href == get_link(py_catalog$links, "root")$href)
 
 # item link hrefs match
-stopifnot(get_link(r_catalog$links, "item")$href == get_link(py_catalog$links, "item")$href)
+stopifnot(get_link(catalog_rjson$links, "item")$href == get_link(py_catalog$links, "item")$href)
 
 # self link: stacbuildr uses relative, pystac uses absolute (known difference)
-stopifnot(get_link(r_catalog$links, "self")$href == "./catalog.json")
+stopifnot(get_link(catalog_rjson$links, "self")$href == "./catalog.json")
 stopifnot(startsWith(get_link(py_catalog$links, "self")$href, "/"))
+```
+
+## Assets
+
+The item assets are functionally equivalent, with the same fields and values.
+
+```{r}
+catalog <- stac_catalog(
+  id = "environmental-data",
+  description = "A collection of environmental data",
+  title = "Environmental Data Catalog"
+)
+
+item <- stac_item(
+  id = "temperature",
+  geometry = list(
+    type = "Point",
+    coordinates = c(-122.45, 54.34)
+  ),
+  bbox = c(-125, 50, -120, 55),
+  datetime = "2023-07-06T08:00:00Z"
+)
+
+asset <- stac_asset(
+  href = "https://example.com/temperature.tif",
+  title = "Temperature GeoTIFF",
+  description = "A GeoTIFF file containing temperature data.",
+  type = "image/tiff; application=geotiff"
+)
+
+item <- item |> 
+  add_asset("temperature", asset)
+
+catalog <- catalog |> 
+  add_item(item)
+```
+
+
+```{r}
+asset_py <- pystac$Asset(
+  href = "https://example.com/temperature.tif",
+  title = "Temperature GeoTIFF",
+  description = "A GeoTIFF file containing temperature data.",
+  media_type = "image/tiff; application=geotiff"
+)
+
+item_py$add_asset("temperature", asset_py)
+```
+
+Write the catalogs to disk again to include the asset and read the item JSON:
+
+```{r}
+write_stac(catalog, r_path, catalog_type = "relative", overwrite = TRUE)
+catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
+
+catalog_py$normalize_hrefs(py_path)
+catalog_py$save(dest_href = py_path)
+catalog_pyjson <- jsonlite::read_json(file.path(py_path, "catalog.json"))
+```
+
+Compare the asset in the resulting item JSON:
+
+```{r}
+r_item <- jsonlite::read_json(file.path(r_path, "temperature", "temperature.json"))
+py_item <- jsonlite::read_json(file.path(py_path, "temperature", "temperature.json"))
+
+cat("R json output: \n")
+jsonlite::toJSON(r_item, pretty = TRUE, auto_unbox = TRUE)
+
+cat("\nPython json output: \n")
+jsonlite::toJSON(py_item, pretty = TRUE, auto_unbox = TRUE)
 ```
