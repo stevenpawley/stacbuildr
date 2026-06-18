@@ -270,11 +270,12 @@ add_item <- function(
 #'
 #' @keywords internal
 find_link <- function(stac_object, rel) {
-  if (!is.list(stac_object$links) || length(stac_object$links) == 0) {
+  links <- if (inherits(stac_object, "S7_object")) stac_object@links else stac_object$links
+  if (!is.list(links) || length(links) == 0) {
     return(NULL)
   }
 
-  for (link in stac_object$links) {
+  for (link in links) {
     if (!is.null(link$rel) && link$rel == rel) {
       return(link)
     }
