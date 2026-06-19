@@ -751,23 +751,57 @@ parse_stac_collection <- function(parsed) {
 #'
 #' @description
 #' Retrieves the stored child catalogs/collections from a catalog object.
+#' When children are not in memory (e.g. after `read_stac()`), set
+#' `resolve = TRUE` to follow the `child` links and load them from disk.
 #'
 #' @param catalog A STAC Catalog or Collection object.
+#' @param resolve (logical) If `TRUE` and no children are stored in memory,
+#'   follow the `child` links and read each one from disk. Relative hrefs are
+#'   resolved against `base_path`. Default is `FALSE`.
+#' @param base_path (character) Directory used to resolve relative hrefs when
+#'   `resolve = TRUE`. Defaults to the working directory.
 #'
 #' @return A named list of child catalogs/collections, or NULL if none exist.
 #'
 #' @examples
 #' \dontrun{
+#' # In-memory children
 #' children <- get_children(catalog)
-#' names(children) # Get IDs of child catalogs
+#'
+#' # After read_stac(), follow links from disk
+#' catalog <- read_stac("path/to/catalog.json")
+#' children <- get_children(catalog, resolve = TRUE, base_path = "path/to")
+#' names(children)
 #' }
 #'
 #' @export
-get_children <- function(catalog) {
+get_children <- function(catalog, resolve = FALSE, base_path = ".") {
   if (!inherits(catalog, "stac_catalog")) {
     stop("'catalog' must be a stac_catalog or stac_collection object")
   }
-  attr(catalog, "stac_children")
+
+  stored <- attr(catalog, "stac_children")
+  if (!is.null(stored) || !resolve) return(stored)
+
+  child_links <- Filter(
+    function(link) !is.null(link$rel) && link$rel == "child",
+    catalog@links
+  )
+
+  if (length(child_links) == 0) return(NULL)
+
+  children <- lapply(child_links, function(link) {
+    href <- link$href
+    # Resolve relative hrefs against base_path
+    if (!grepl("^https?://", href) && !startsWith(href, "/")) {
+      href <- file.path(base_path, href)
+    }
+    read_stac(href)
+  })
+
+  # Name by child id
+  ids <- vapply(children, function(x) x@id, character(1))
+  stats::setNames(children, ids)
 }
 
 
@@ -775,21 +809,50 @@ get_children <- function(catalog) {
 #'
 #' @description
 #' Retrieves the stored items from a catalog or collection object.
+#' When items are not in memory (e.g. after `read_stac()`), set
+#' `resolve = TRUE` to follow the `item` links and load them from disk.
 #'
 #' @param catalog A STAC Catalog or Collection object.
+#' @param resolve (logical) If `TRUE` and no items are stored in memory,
+#'   follow the `item` links and read each one from disk. Relative hrefs are
+#'   resolved against `base_path`. Default is `FALSE`.
+#' @param base_path (character) Directory used to resolve relative hrefs when
+#'   `resolve = TRUE`. Defaults to the working directory.
 #'
 #' @return A list of items, or NULL if none exist.
 #'
 #' @examples
 #' \dontrun{
+#' # In-memory items
 #' items <- get_items(collection)
-#' length(items) # Number of items
+#'
+#' # After read_stac(), follow links from disk
+#' collection <- read_stac("path/to/collection.json")
+#' items <- get_items(collection, resolve = TRUE, base_path = "path/to")
+#' length(items)
 #' }
 #'
 #' @export
-get_items <- function(catalog) {
+get_items <- function(catalog, resolve = FALSE, base_path = ".") {
   if (!inherits(catalog, "stac_catalog")) {
     stop("'catalog' must be a stac_catalog or stac_collection object")
   }
-  attr(catalog, "stac_items")
+
+  stored <- attr(catalog, "stac_items")
+  if (!is.null(stored) || !resolve) return(stored)
+
+  item_links <- Filter(
+    function(link) !is.null(link$rel) && link$rel == "item",
+    catalog@links
+  )
+
+  if (length(item_links) == 0) return(NULL)
+
+  lapply(item_links, function(link) {
+    href <- link$href
+    if (!grepl("^https?://", href) && !startsWith(href, "/")) {
+      href <- file.path(base_path, href)
+    }
+    read_stac(href)
+  })
 }
