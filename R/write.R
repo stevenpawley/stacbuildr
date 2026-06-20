@@ -399,6 +399,7 @@ write_catalog_recursive <- function(
         )
       }
 
+      item <- relativize_asset_hrefs(item, item_dir)
       write_item(item, item_file, overwrite = overwrite, pretty = pretty)
     }
   }
@@ -587,6 +588,51 @@ update_item_links <- function(item, self_href, parent_href, root_href,
 
 #' Strip Stored Objects from STAC Object
 #'
+#' Compute a relative path from a directory to a target file
+#'
+#' @param target Absolute path to the target file.
+#' @param from_dir Absolute path to the directory to compute relative to.
+#' @return A relative path string, or `target` unchanged if it is a URL or
+#'   already relative.
+#'
+#' @keywords internal
+make_relative_href <- function(target, from_dir) {
+  if (is.null(target) || grepl("://", target, fixed = TRUE) || !startsWith(target, "/")) {
+    return(target)
+  }
+
+  target   <- normalizePath(target,   mustWork = FALSE)
+  from_dir <- normalizePath(from_dir, mustWork = FALSE)
+
+  target_parts <- Filter(nchar, strsplit(target,   "/")[[1]])
+  from_parts   <- Filter(nchar, strsplit(from_dir, "/")[[1]])
+
+  n <- min(length(target_parts), length(from_parts))
+  common_len <- 0L
+  for (i in seq_len(n)) {
+    if (target_parts[i] == from_parts[i]) common_len <- i else break
+  }
+
+  up    <- rep("..", length(from_parts) - common_len)
+  down  <- tail(target_parts, length(target_parts) - common_len)
+  parts <- c(up, down)
+  if (length(parts) == 0) "." else paste(parts, collapse = "/")
+}
+
+
+#' Relativize absolute local asset hrefs against an item directory
+#'
+#' @keywords internal
+relativize_asset_hrefs <- function(item, item_dir) {
+  if (is.null(item@assets) || length(item@assets) == 0) return(item)
+  item@assets <- lapply(item@assets, function(a) {
+    if (!is.null(a$href)) a$href <- make_relative_href(a$href, item_dir)
+    a
+  })
+  item
+}
+
+
 #' @description
 #' Internal function to remove stored child/item objects before writing to JSON.
 #' This ensures only the standard STAC fields are written to the file.
