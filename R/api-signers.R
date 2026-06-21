@@ -19,6 +19,9 @@ sign_azure_ad <- function(href, expiry_seconds = 3600L) {
   if (!requireNamespace("AzureStor", quietly = TRUE)) {
     stop("Package 'AzureStor' is required for asset signing.")
   }
+  if (!requireNamespace("AzureAuth", quietly = TRUE)) {
+    stop("Package 'AzureAuth' is required for asset signing.")
+  }
 
   endpoint  <- Sys.getenv("AZURE_STORAGE_ENDPOINT", "")
   container <- Sys.getenv("AZURE_STORAGE_CONTAINER", "")
@@ -39,7 +42,7 @@ sign_azure_ad <- function(href, expiry_seconds = 3600L) {
 
   expiry_time <- Sys.time() + expiry_seconds
 
-  token <- AzureStor::get_managed_token("https://storage.azure.com/")
+  token <- AzureAuth::get_managed_token("https://storage.azure.com/")
   endp  <- AzureStor::storage_endpoint(endpoint, token = token)
 
   # User delegation key is scoped to the SAS lifetime

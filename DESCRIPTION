@@ -27,6 +27,7 @@ Suggests:
     plumber,
     httr2,
     AzureStor,
+    AzureAuth,
     pool
 Config/testthat/edition: 3
 Collate:
