@@ -217,3 +217,31 @@ pr <- stac_api_router(
 
 pr_run(pr, port = 3485)
 ```
+
+### Deploying to Posit Connect
+
+When deploying to Posit Connect with multiple concurrent users, replace the
+single DBI connection with a connection pool from the `pool` package. A pool
+manages multiple connections and hands them out to simultaneous requests without
+contention. Store credentials in environment variables rather than hardcoding
+them — Posit Connect lets you set these per-deployment under the Vars tab.
+
+```{r, eval = FALSE}
+library(pool)
+library(plumber)
+
+pool <- dbPool(
+  RPostgres::Postgres(),
+  host     = Sys.getenv("PG_HOST"),
+  dbname   = Sys.getenv("PG_DBNAME"),
+  user     = Sys.getenv("PG_USER"),
+  password = Sys.getenv("PG_PASSWORD")
+)
+
+pr <- stac_api_router(
+  pool,
+  base_url = Sys.getenv("STAC_BASE_URL")  # e.g. "https://connect.example.com/stac"
+)
+
+pr_run(pr)
+```
