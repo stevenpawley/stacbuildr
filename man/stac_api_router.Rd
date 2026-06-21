@@ -9,7 +9,7 @@ stac_api_router(
   base_url = "http://localhost:8000",
   title = "STAC API",
   description = "A minimal STAC API served by stacbuildr",
-  require_auth = TRUE
+  sign_assets = FALSE
 )
 }
 \arguments{
@@ -20,6 +20,12 @@ stac_api_router(
 \item{title}{Human-readable API title.}
 
 \item{description}{API description.}
+
+\item{sign_assets}{Logical. When \code{TRUE}, asset hrefs in every item response
+are automatically signed with a short-lived SAS token before being
+returned. Requires \code{AzureStor} and the \code{AZURE_STORAGE_ENDPOINT} and
+\code{AZURE_STORAGE_CONTAINER} environment variables to be set. Default
+\code{FALSE}.}
 }
 \value{
 A \link[plumber:Plumber]{plumber::Plumber} router object.
@@ -52,26 +58,5 @@ Returns a \link[plumber:Plumber]{plumber::Plumber} router pre-wired with the fol
 \item \code{properties} — (POST only) JSON object for property equality matching,
 supporting any item property including extension fields such as
 \code{"eo:cloud_cover"}, \code{"sci:doi"}, \code{"classification:classes"}, etc.
-}
-\subsection{Authentication}{
-
-When \code{require_auth = TRUE} (the default), every non-OPTIONS request must
-carry an \verb{Authorization: Key <api-key>} header — the same convention used
-by Posit Connect for programmatic API access.
-
-Key validation is resolved in priority order:
-\enumerate{
-\item \strong{\code{CONNECT_SERVER} env var set} (always the case on Posit Connect):
-the key is validated live against \verb{<CONNECT_SERVER>/__api__/v1/user}.
-Requires the \code{httr2} package.
-\item \strong{\code{STAC_API_KEY} env var set}: the key is compared to that static value.
-Useful for local development or non-Connect deployments.
-\item \strong{Neither env var set}: the presence of a correctly-formatted header is
-accepted as-is. Use this mode only when Connect itself is enforcing auth
-at the infrastructure level.
-}
-
-To disable authentication entirely during development, pass
-\code{require_auth = FALSE}.
 }
 }
