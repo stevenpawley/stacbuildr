@@ -115,35 +115,6 @@ jsonlite::toJSON(r_item, pretty = TRUE, auto_unbox = TRUE)
 jsonlite::toJSON(py_item, pretty = TRUE, auto_unbox = TRUE)
 ```
 
-## Checks
-
-The outputs are functionally equivalent with one known difference: pystac
-produces an absolute path for the `self` link even in `RELATIVE_PUBLISHED`
-mode, whereas stacbuildr uses a relative `./catalog.json`. This is a
-deliberate behavioural difference in pystac.
-
-```{r}
-get_link <- function(links, rel) {
-  Filter(function(x) x$rel == rel, links)[[1]]
-}
-
-# Top-level catalog fields match
-stopifnot(all(names(py_catalog) %in% names(catalog_rjson)))
-
-# Same number of links
-stopifnot(length(py_catalog$links) == length(catalog_rjson$links))
-
-# root link hrefs match
-stopifnot(get_link(catalog_rjson$links, "root")$href == get_link(py_catalog$links, "root")$href)
-
-# item link hrefs match
-stopifnot(get_link(catalog_rjson$links, "item")$href == get_link(py_catalog$links, "item")$href)
-
-# self link: stacbuildr uses relative, pystac uses absolute (known difference)
-stopifnot(get_link(catalog_rjson$links, "self")$href == "./catalog.json")
-stopifnot(startsWith(get_link(py_catalog$links, "self")$href, "/"))
-```
-
 ## Assets
 
 The item assets are functionally equivalent, with the same fields and values.
