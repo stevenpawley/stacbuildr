@@ -9,7 +9,7 @@ stac_api_router(
   base_url = "http://localhost:8000",
   title = "STAC API",
   description = "A minimal STAC API served by stacbuildr",
-  sign_assets = FALSE
+  sign_fn = NULL
 )
 }
 \arguments{
@@ -21,17 +21,18 @@ stac_api_router(
 
 \item{description}{API description.}
 
-\item{sign_assets}{Logical. When \code{TRUE}, asset hrefs in every item response
-are automatically signed with a short-lived SAS token before being
-returned. Requires \code{AzureStor} and the \code{AZURE_STORAGE_ENDPOINT} and
-\code{AZURE_STORAGE_CONTAINER} environment variables to be set. Default
-\code{FALSE}.}
+\item{sign_fn}{A function \verb{function(href)} that accepts an unsigned asset
+href and returns a signed href string. When non-\code{NULL}, asset hrefs in
+every item response are signed before being returned. Pass
+\code{\link[=sign_azure_ad]{sign_azure_ad()}} to use Azure AD / managed identity, or supply your own
+function for other auth methods (service principal, Planetary Computer
+signing proxy, etc.). Default \code{NULL} (no signing).}
 }
 \value{
-A \link[plumber:Plumber]{plumber::Plumber} router object.
+A \code{plumber} router object.
 }
 \description{
-Returns a \link[plumber:Plumber]{plumber::Plumber} router pre-wired with the following endpoints:
+Returns a \code{plumber} router pre-wired with the following endpoints:
 }
 \details{
 \tabular{lll}{

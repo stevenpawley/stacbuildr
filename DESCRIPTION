@@ -48,9 +48,10 @@ Collate:
     'write.R'
     'api-db.R'
     'api-plumber.R'
+    'api-signers.R'
     'zzz.R'
 URL: https://github.com/stevenpawley/stacbuildr, https://stevenpawley.github.io/stacbuildr/
 BugReports: https://github.com/stevenpawley/stacbuildr/issues
 Config/roxygen2/version: 8.0.0
 VignetteBuilder: knitr
-RoxygenNote: 7.3.3
+RoxygenNote: 8.0.0

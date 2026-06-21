@@ -91,6 +91,8 @@
 #' @references
 #' STAC Specification: \url{https://stacspec.org}
 #'
+#' @importFrom stats setNames
+#' @importFrom utils tail
 #' @docType package
 #' @name stacbuildr-package
 #' @aliases stacbuildr

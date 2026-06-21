@@ -4,7 +4,7 @@
 
 #' Create a plumber router serving a minimal STAC API
 #'
-#' Returns a [plumber::Plumber] router pre-wired with the following endpoints:
+#' Returns a `plumber` router pre-wired with the following endpoints:
 #'
 #' | Method | Path | Description |
 #' |--------|------|-------------|
@@ -38,7 +38,7 @@
 #'   [sign_azure_ad()] to use Azure AD / managed identity, or supply your own
 #'   function for other auth methods (service principal, Planetary Computer
 #'   signing proxy, etc.). Default `NULL` (no signing).
-#' @return A [plumber::Plumber] router object.
+#' @return A `plumber` router object.
 #' @export
 stac_api_router <- function(
   con,
