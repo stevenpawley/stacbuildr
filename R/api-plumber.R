@@ -28,30 +28,15 @@
 #'   supporting any item property including extension fields such as
 #'   `"eo:cloud_cover"`, `"sci:doi"`, `"classification:classes"`, etc.
 #'
-#' ## Authentication
-#'
-#' When `require_auth = TRUE` (the default), every non-OPTIONS request must
-#' carry an `Authorization: Key <api-key>` header — the same convention used
-#' by Posit Connect for programmatic API access.
-#'
-#' Key validation is resolved in priority order:
-#'
-#' 1. **`CONNECT_SERVER` env var set** (always the case on Posit Connect):
-#'    the key is validated live against `<CONNECT_SERVER>/__api__/v1/user`.
-#'    Requires the `httr2` package.
-#' 2. **`STAC_API_KEY` env var set**: the key is compared to that static value.
-#'    Useful for local development or non-Connect deployments.
-#' 3. **Neither env var set**: the presence of a correctly-formatted header is
-#'    accepted as-is. Use this mode only when Connect itself is enforcing auth
-#'    at the infrastructure level.
-#'
-#' To disable authentication entirely during development, pass
-#' `require_auth = FALSE`.
-#'
 #' @param con A DBI connection.
 #' @param base_url Base URL of the API (no trailing slash). Used in link hrefs.
 #' @param title Human-readable API title.
 #' @param description API description.
+#' @param sign_assets Logical. When `TRUE`, asset hrefs in every item response
+#'   are automatically signed with a short-lived SAS token before being
+#'   returned. Requires `AzureStor` and the `AZURE_STORAGE_ENDPOINT` and
+#'   `AZURE_STORAGE_CONTAINER` environment variables to be set. Default
+#'   `FALSE`.
 #' @return A [plumber::Plumber] router object.
 #' @export
 stac_api_router <- function(
@@ -59,7 +44,7 @@ stac_api_router <- function(
   base_url = "http://localhost:8000",
   title = "STAC API",
   description = "A minimal STAC API served by stacbuildr",
-  require_auth = TRUE
+  sign_assets = FALSE
 ) {
   # Check that optional package is installed
   if (!requireNamespace("plumber", quietly = TRUE)) {
@@ -94,9 +79,11 @@ stac_api_router <- function(
     plumber::forward()
   })
 
-  # Inject standard STAC navigation links into a retrieved item
+  # Inject standard STAC navigation links and optionally sign asset hrefs
   prepare_item <- function(item) {
-    .inject_item_links(item, base_url)
+    item <- .inject_item_links(item, base_url)
+    if (sign_assets) item <- .sign_item_assets(item)
+    item
   }
 
   # STAC API spec requires the following `rel` types:
@@ -373,7 +360,106 @@ stac_api_router <- function(
     parsers = "json"
   )
 
+  # ---- GET /sign ----
+  pr <- plumber::pr_get(pr, "/sign", function(req, res, href = "") {
+    if (!nzchar(href)) {
+      res$status <- 400L
+      return(.error_body(400L, "Missing required query parameter: href"))
+    }
+    signed <- tryCatch(
+      .sign_azure_href(href),
+      error = function(e) {
+        res$status <- 500L
+        .error_body(500L, conditionMessage(e))
+      }
+    )
+    if (is.list(signed)) return(signed)   # error body already set
+    list(href = signed)
+  })
+
   pr
+}
+
+#' Sign all asset hrefs in a STAC Item list.
+#'
+#' Applies [.sign_azure_href()] to every asset href. Unsigned hrefs that do
+#' not belong to the configured Azure container (e.g. external URLs) are left
+#' unchanged. Signing failures emit a warning and leave the href unchanged
+#' rather than failing the whole request.
+#'
+#' @param item A STAC Item as a plain list (as returned from the database).
+#' @return The item with signed asset hrefs.
+#' @noRd
+.sign_item_assets <- function(item) {
+  if (is.null(item$assets) || length(item$assets) == 0) return(item)
+  item$assets <- lapply(item$assets, function(a) {
+    if (!is.null(a$href)) {
+      a$href <- tryCatch(
+        .sign_azure_href(a$href),
+        error = function(e) {
+          warning("Asset signing failed for '", a$href, "': ", conditionMessage(e))
+          a$href
+        }
+      )
+    }
+    a
+  })
+  item
+}
+
+#' Sign an Azure Blob Storage href with a short-lived user delegation SAS token.
+#'
+#' Reads the storage endpoint and container from environment variables so that
+#' nothing is hardcoded. Obtains a managed identity token at call time and uses
+#' it to generate a user delegation SAS — no storage account key is required.
+#'
+#' Required environment variables:
+#' * `AZURE_STORAGE_ENDPOINT` — full blob service URL, e.g.
+#'   `"https://myaccount.blob.core.windows.net/"`.
+#' * `AZURE_STORAGE_CONTAINER` — container name, e.g. `"stac"`.
+#'
+#' @param href Unsigned Azure Blob Storage URL.
+#' @param expiry_seconds Lifetime of the signed URL in seconds (default 3600).
+#' @return A signed URL string with a SAS token appended.
+#' @noRd
+.sign_azure_href <- function(href, expiry_seconds = 3600L) {
+  if (!requireNamespace("AzureStor", quietly = TRUE)) {
+    stop("Package 'AzureStor' is required for asset signing.")
+  }
+
+  endpoint  <- Sys.getenv("AZURE_STORAGE_ENDPOINT", "")
+  container <- Sys.getenv("AZURE_STORAGE_CONTAINER", "")
+
+  if (!nzchar(endpoint)) {
+    stop("AZURE_STORAGE_ENDPOINT environment variable is not set.")
+  }
+  if (!nzchar(container)) {
+    stop("AZURE_STORAGE_CONTAINER environment variable is not set.")
+  }
+
+  # Strip endpoint + container prefix to get the blob path
+  prefix <- paste0(sub("/+$", "", endpoint), "/", container, "/")
+  if (!startsWith(href, prefix)) {
+    stop(sprintf("href does not belong to container '%s': %s", container, href))
+  }
+  blob_path <- substring(href, nchar(prefix) + 1L)
+
+  expiry_time <- Sys.time() + expiry_seconds
+
+  token <- AzureStor::get_managed_token("https://storage.azure.com/")
+  endp  <- AzureStor::storage_endpoint(endpoint, token = token)
+
+  # User delegation key is scoped to the SAS lifetime
+  userkey <- AzureStor::get_user_delegation_key(endp, expiry = expiry_time)
+
+  AzureStor::get_user_delegation_sas(
+    account       = endp,
+    key           = userkey,
+    resource      = blob_path,
+    expiry        = expiry_time,
+    permissions   = "r",
+    resource_type = "b"
+  )
 }
 
 #' STAC API conformance class URIs.
