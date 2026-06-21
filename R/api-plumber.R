@@ -382,7 +382,7 @@ stac_api_router <- function(
 
 #' Sign all asset hrefs in a STAC Item list.
 #'
-#' Applies [.sign_azure_href()] to every asset href. Unsigned hrefs that do
+#' Unsigned hrefs that do
 #' not belong to the configured Azure container (e.g. external URLs) are left
 #' unchanged. Signing failures emit a warning and leave the href unchanged
 #' rather than failing the whole request.
