@@ -788,9 +788,11 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
 }
 
 
-# Serialise a STAC S7 object to a JSON string, mirroring the write_* pattern.
-#
-# @keywords internal
+#' Serialise a STAC S7 object to a JSON string, mirroring the write_* pattern.
+#' 
+#' @param stac_object STAC object
+#'
+#' @keywords internal
 stac_object_to_json_string <- function(stac_object) {
   obj <- strip_stored_objects(stac_object)
   if (inherits(obj, "S7_object")) {

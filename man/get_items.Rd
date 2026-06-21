@@ -4,21 +4,35 @@
 \alias{get_items}
 \title{Get Stored Items from Catalog or Collection}
 \usage{
-get_items(catalog)
+get_items(catalog, resolve = FALSE, base_path = ".")
 }
 \arguments{
 \item{catalog}{A STAC Catalog or Collection object.}
+
+\item{resolve}{(logical) If \code{TRUE} and no items are stored in memory,
+follow the \code{item} links and read each one from disk. Relative hrefs are
+resolved against \code{base_path}. Default is \code{FALSE}.}
+
+\item{base_path}{(character) Directory used to resolve relative hrefs when
+\code{resolve = TRUE}. Defaults to the working directory.}
 }
 \value{
 A list of items, or NULL if none exist.
 }
 \description{
 Retrieves the stored items from a catalog or collection object.
+When items are not in memory (e.g. after \code{read_stac()}), set
+\code{resolve = TRUE} to follow the \code{item} links and load them from disk.
 }
 \examples{
 \dontrun{
+# In-memory items
 items <- get_items(collection)
-length(items) # Number of items
+
+# After read_stac(), follow links from disk
+collection <- read_stac("path/to/collection.json")
+items <- get_items(collection, resolve = TRUE, base_path = "path/to")
+length(items)
 }
 
 }
