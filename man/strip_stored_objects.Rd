@@ -2,7 +2,8 @@
 % Please edit documentation in R/write.R
 \name{strip_stored_objects}
 \alias{strip_stored_objects}
-\title{Strip Stored Objects from STAC Object}
+\title{Internal function to remove stored child/item objects before writing to JSON.
+This ensures only the standard STAC fields are written to the file.}
 \usage{
 strip_stored_objects(stac_obj)
 }

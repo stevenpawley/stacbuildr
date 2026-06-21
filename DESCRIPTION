@@ -21,7 +21,11 @@ Suggests:
     knitr,
     rmarkdown,
     reticulate,
-    jsonvalidate
+    jsonvalidate,
+    DBI,
+    RPostgres,
+    plumber,
+    httr2
 Config/testthat/edition: 3
 Collate:
     'operators.R'
@@ -40,6 +44,8 @@ Collate:
     'thumbnail.R'
     'validation.R'
     'write.R'
+    'api-db.R'
+    'api-plumber.R'
     'zzz.R'
 URL: https://github.com/stevenpawley/stacbuildr, https://stevenpawley.github.io/stacbuildr/
 BugReports: https://github.com/stevenpawley/stacbuildr/issues

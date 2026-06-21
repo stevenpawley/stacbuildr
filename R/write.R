@@ -399,7 +399,9 @@ write_catalog_recursive <- function(
         )
       }
 
-      item <- relativize_asset_hrefs(item, item_dir)
+      if (catalog_type != "absolute") {
+        item <- relativize_asset_hrefs(item, item_dir)
+      }
       write_item(item, item_file, overwrite = overwrite, pretty = pretty)
     }
   }
@@ -633,7 +635,6 @@ relativize_asset_hrefs <- function(item, item_dir) {
 }
 
 
-#' @description
 #' Internal function to remove stored child/item objects before writing to JSON.
 #' This ensures only the standard STAC fields are written to the file.
 #'
