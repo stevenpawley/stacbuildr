@@ -211,8 +211,7 @@ library(plumber)
 
 pr <- stac_api_router(
   con,
-  base_url     = "http://127.0.0.1:3485",
-  require_auth = FALSE
+  base_url = "http://127.0.0.1:3485"
 )
 
 pr_run(pr, port = 3485)
@@ -237,6 +236,8 @@ pool <- dbPool(
   user     = Sys.getenv("PG_USER"),
   password = Sys.getenv("PG_PASSWORD")
 )
+
+onStop(function() poolClose(pool))
 
 pr <- stac_api_router(
   pool,
