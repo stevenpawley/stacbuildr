@@ -2,6 +2,13 @@ url: https://stevenpawley.github.io/stacbuildr/
 template:
   bootstrap: 5
 
+articles:
+  - title: "Articles"
+    navbar: ~
+    contents:
+      - stac-catalog
+      - pystac
+
 reference:
   - title: "Overview"
     contents:
@@ -120,3 +127,22 @@ reference:
     contents:
       - validate_stac
       - validate_stac_schema
+
+  - title: "Database Backend"
+    desc: >
+      Set up and manage a PostgreSQL/PostGIS database backing store for
+      STAC Collections and Items.
+    contents:
+      - stac_db_setup
+      - stac_db_insert_collection
+      - stac_db_insert_item
+      - stac_db_delete_collection
+      - stac_db_delete_item
+
+  - title: "STAC API Server"
+    desc: >
+      Serve a STAC API 1.0 compliant HTTP API via `plumber`, backed by the
+      PostgreSQL database. Includes asset signing helpers for Azure Blob Storage.
+    contents:
+      - stac_api_router
+      - sign_azure_ad
