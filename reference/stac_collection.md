@@ -70,7 +70,7 @@ stac_collection(
     open-ended intervals (e.g., `list("2020-01-01T00:00:00Z", NULL)` for
     ongoing data). Note: use
     [`list()`](https://rdrr.io/r/base/list.html) not
-    [`c()`](https://rdrr.io/r/base/c.html) —
+    [`c()`](https://rdrr.io/r/base/c.html) -
     [`c()`](https://rdrr.io/r/base/c.html) drops `NULL`, which would
     produce an invalid interval.
 

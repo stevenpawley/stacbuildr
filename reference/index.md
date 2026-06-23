@@ -65,6 +65,8 @@ Helper constructors for Collection fields.
   : Create STAC Summaries
 - [`extent_from_items()`](https://stevenpawley.github.io/stacbuildr/reference/extent_from_items.md)
   : Create Collection Extent from Multiple Items
+- [`add_item_assets()`](https://stevenpawley.github.io/stacbuildr/reference/add_item_assets.md)
+  : Add Item Asset Definitions to a Collection
 
 ## stars Integration
 

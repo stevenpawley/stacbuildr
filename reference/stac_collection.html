@@ -108,7 +108,7 @@ first bbox describes the overall spatial extent.</p></li>
 intervals. Each interval is a character vector of length 2 with ISO 8601
 datetime strings: <code>list("start", "end")</code>. Use <code>NULL</code> for open-ended intervals
 (e.g., <code>list("2020-01-01T00:00:00Z", NULL)</code> for ongoing data). Note: use
-<code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> not <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> — <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> drops <code>NULL</code>, which would produce an invalid interval.</p></li>
+<code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> not <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> - <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> drops <code>NULL</code>, which would produce an invalid interval.</p></li>
 </ul><p>Use the helper function <code><a href="stac_extent.html">stac_extent()</a></code> to create this structure easily.</p></dd>
 
 

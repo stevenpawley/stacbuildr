@@ -79,7 +79,7 @@ Both libraries are asked to write a relative catalog. stacbuildr uses
 
 r_path <- file.path(tempdir(), "r-stac")
 write_stac(catalog, r_path, catalog_type = "relative", overwrite = TRUE)
-#> STAC catalog written to: /tmp/Rtmp9ekDn1/r-stac
+#> STAC catalog written to: /tmp/RtmpytIDaY/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 py_path <- file.path(tempdir(), "py-stac")
@@ -143,7 +143,7 @@ jsonlite::toJSON(catalog_pyjson, pretty = TRUE, auto_unbox = TRUE)
 #>     },
 #>     {
 #>       "rel": "self",
-#>       "href": "/tmp/Rtmp9ekDn1/py-stac/catalog.json",
+#>       "href": "/tmp/RtmpytIDaY/py-stac/catalog.json",
 #>       "type": "application/json"
 #>     }
 #>   ],
@@ -295,7 +295,7 @@ JSON:
 ``` r
 
 write_stac(catalog, r_path, catalog_type = "relative", overwrite = TRUE)
-#> STAC catalog written to: /tmp/Rtmp9ekDn1/r-stac
+#> STAC catalog written to: /tmp/RtmpytIDaY/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 catalog_py$normalize_hrefs(py_path)

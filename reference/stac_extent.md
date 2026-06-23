@@ -24,7 +24,7 @@ stac_extent(spatial_bbox, temporal_interval)
   `list("start", "end")`. Use `NULL` for open-ended intervals:
   `list("start", NULL)`. Times should be in ISO 8601 format. Note: use
   [`list()`](https://rdrr.io/r/base/list.html) not
-  [`c()`](https://rdrr.io/r/base/c.html) —
+  [`c()`](https://rdrr.io/r/base/c.html) -
   [`c()`](https://rdrr.io/r/base/c.html) drops `NULL`, producing an
   invalid interval.
 
