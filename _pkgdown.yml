@@ -78,7 +78,6 @@ reference:
       - raster_statistics
       - raster_histogram
       - raster_from_file
-      - print.raster_band
 
   - title: "EO Extension"
     desc: >
