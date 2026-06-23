@@ -37,8 +37,8 @@ raster file.
 set.seed(42)
 m <- matrix(runif(100, 100, 3000), nrow = 10, ncol = 10)
 dem <- st_as_stars(m)
-dem <- st_set_dimensions(dem, 1, offset = -120, delta =  0.1)
-dem <- st_set_dimensions(dem, 2, offset = 49,   delta = -0.1)
+dem <- st_set_dimensions(dem, 1, offset = -120, delta = 0.1)
+dem <- st_set_dimensions(dem, 2, offset = 49, delta = -0.1)
 st_crs(dem) <- 4326
 names(dem) <- "elevation"
 
@@ -57,16 +57,16 @@ asset.
 ```{r}
 item <- r |>
   item_from_stars(
-    id       = "dem-001",
+    id = "dem-001",
     datetime = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ")
   ) |>
   add_asset(
-    key         = "dem",
-    href        = tif_path,
-    title       = "Digital Elevation Model",
+    key = "dem",
+    href = tif_path,
+    title = "Digital Elevation Model",
     description = "Synthetic DEM for demonstration",
-    type        = "image/tiff; application=geotiff",
-    roles       = "data"
+    type = "image/tiff; application=geotiff",
+    roles = "data"
   )
 
 item
@@ -76,24 +76,24 @@ item
 
 ```{r}
 collection <- stac_collection(
-  id          = "terrain",
+  id = "terrain",
   description = "Terrain datasets",
-  title       = "Terrain Collection",
-  license     = "CC-BY-4.0",
-  extent      = stac_extent(
-    spatial_bbox      = list(as.numeric(st_bbox(r))),
+  title = "Terrain Collection",
+  license = "CC-BY-4.0",
+  extent = stac_extent(
+    spatial_bbox = list(as.numeric(st_bbox(r))),
     temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
   )
 )
 
 catalog <- stac_catalog(
-  id          = "my-catalog",
+  id = "my-catalog",
   description = "Example STAC catalog",
-  title       = "My Catalog"
+  title = "My Catalog"
 )
 
 collection <- add_item(collection, item)
-catalog    <- add_child(catalog, collection)
+catalog <- add_child(catalog, collection)
 ```
 
 ## Write a static catalog to disk
@@ -121,7 +121,7 @@ write_stac(
   catalog,
   catalog_dir,
   catalog_type = "self-contained",
-  overwrite    = TRUE
+  overwrite = TRUE
 )
 ```
 
@@ -139,9 +139,14 @@ catalog/
 We can read it back:
 
 ```{r}
-cat_read  <- read_stac(file.path(catalog_dir, "catalog.json"))
+cat_read <- read_stac(file.path(catalog_dir, "catalog.json"))
 coll_read <- read_stac(file.path(catalog_dir, "terrain", "collection.json"))
-item_read <- read_stac(file.path(catalog_dir, "terrain", "dem-001", "dem-001.json"))
+item_read <- read_stac(file.path(
+  catalog_dir,
+  "terrain",
+  "dem-001",
+  "dem-001.json"
+))
 
 item_read
 ```
@@ -159,10 +164,10 @@ library(DBI)
 
 con <- dbConnect(
   RPostgres::Postgres(),
-  host     = "localhost",
-  port     = 5432,
-  dbname   = "stac",
-  user     = Sys.getenv("PG_USER"),
+  host = "localhost",
+  port = 5432,
+  dbname = "stac",
+  user = Sys.getenv("PG_USER"),
   password = Sys.getenv("PG_PASSWORD")
 )
 
@@ -231,9 +236,9 @@ library(plumber)
 
 pool <- dbPool(
   RPostgres::Postgres(),
-  host     = Sys.getenv("PG_HOST"),
-  dbname   = Sys.getenv("PG_DBNAME"),
-  user     = Sys.getenv("PG_USER"),
+  host = Sys.getenv("PG_HOST"),
+  dbname = Sys.getenv("PG_DBNAME"),
+  user = Sys.getenv("PG_USER"),
   password = Sys.getenv("PG_PASSWORD")
 )
 
@@ -241,7 +246,7 @@ onStop(function() poolClose(pool))
 
 pr <- stac_api_router(
   pool,
-  base_url = Sys.getenv("STAC_BASE_URL")  # e.g. "https://connect.example.com/stac"
+  base_url = Sys.getenv("STAC_BASE_URL") # e.g. "https://connect.example.com/stac"
 )
 
 pr_run(pr)

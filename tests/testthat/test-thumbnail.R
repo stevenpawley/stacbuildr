@@ -4,48 +4,48 @@ skip_if_not_installed("sf")
 tif <- system.file("tif/L7_ETMs.tif", package = "stars")
 sf_file <- system.file("shape/nc.shp", package = "sf")
 
-test_that("thumbnail_from_stars returns a valid thumbnail asset", {
+test_that("preview_from_stars returns a valid thumbnail asset", {
   r <- stars::read_stars(tif, quiet = TRUE)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  asset <- thumbnail_from_stars(r, path = path)
+  asset <- preview_from_stars(r, path = path)
 
   expect_true(file.exists(path))
   expect_equal(asset$type, "image/png")
-  expect_equal(asset$roles, list("thumbnail"))
+  expect_equal(asset$roles, list("overview"))
   expect_equal(asset$href, gsub("\\\\", "/", normalizePath(path)))
 })
 
-test_that("thumbnail_from_stars accepts a title", {
+test_that("preview_from_stars accepts a title", {
   r <- stars::read_stars(tif, quiet = TRUE)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  asset <- thumbnail_from_stars(r, path = path, title = "Preview")
+  asset <- preview_from_stars(r, path = path, title = "Preview")
 
   expect_equal(asset$title, "Preview")
 })
 
-test_that("thumbnail_from_stars accepts custom dimensions", {
+test_that("preview_from_stars accepts custom dimensions", {
   r <- stars::read_stars(tif, quiet = TRUE)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  thumbnail_from_stars(r, path = path, width = 128, height = 128)
+  preview_from_stars(r, path = path, width = 128, height = 128)
 
   expect_true(file.exists(path))
   expect_gt(file.size(path), 0)
 })
 
-test_that("thumbnail_from_stars errors on non-stars input", {
+test_that("preview_from_stars errors on non-stars input", {
   path <- tempfile(fileext = ".png")
-  expect_error(thumbnail_from_stars(list(), path = path), "must be a stars object")
+  expect_error(preview_from_stars(list(), path = path), "must be a stars object")
 })
 
-test_that("thumbnail_from_stars errors when path is missing", {
+test_that("preview_from_stars errors when path is missing", {
   r <- stars::read_stars(tif, quiet = TRUE)
-  expect_error(thumbnail_from_stars(r, path = ""), "'path' is required")
+  expect_error(preview_from_stars(r, path = ""), "'path' is required")
 })
 
 test_that("thumbnail_from_sf returns a valid thumbnail asset", {
@@ -92,10 +92,10 @@ test_that("thumbnail asset can be added to a stac item", {
     id = "L7_ETMs",
     datetime = "2023-06-15T10:30:00Z"
   )
-  asset <- thumbnail_from_stars(r, path = path)
+  asset <- preview_from_stars(r, path = path)
   item <- add_asset(item, key = "thumbnail", asset = asset)
 
   expect_true("thumbnail" %in% names(item@assets))
-  expect_equal(item@assets$thumbnail$roles, list("thumbnail"))
+  expect_equal(item@assets$thumbnail$roles, list("overview"))
   expect_equal(item@assets$thumbnail$type, "image/png")
 })
