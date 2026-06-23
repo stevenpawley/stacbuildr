@@ -21,7 +21,7 @@ item <- item_from_stars(
     id = "L7_ETMs",
     datetime = "2023-06-15T10:30:00Z"
   )
-asset <- thumbnail_from_stars(r, path = path)
+asset <- preview_from_stars(r, path = path)
 item <- add_asset(item, key = "thumbnail", asset = asset)
 expect_true("thumbnail" %in% names(item@assets))
 expect_equal(item@assets$thumbnail$roles, list("thumbnail"))

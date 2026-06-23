@@ -52,13 +52,13 @@ reference:
 
   - title: "stars Integration"
     desc: >
-      Create STAC Items and thumbnails directly from `stars` raster objects,
+      Create STAC Items and preview/thumbnails directly from `stars` raster objects,
       and extract band metadata.
     contents:
       - item_from_stars
       - bands_from_stars
       - items_from_directory
-      - thumbnail_from_stars
+      - preview_from_stars
 
   - title: "sf Integration"
     desc: "Create STAC Items and thumbnails from `sf` vector objects."

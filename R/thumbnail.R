@@ -21,7 +21,7 @@
 #' library(stars)
 #'
 #' r <- read_stars(system.file("tif/L7_ETMs.tif", package = "stars"))
-#' asset <- thumbnail_from_stars(r, path = "thumbnail.png")
+#' asset <- preview_from_stars(r, path = "thumbnail.png")
 #'
 #' item <- item_from_stars(r, href = "image.tif",
 #'                         datetime = "2023-01-01T00:00:00Z")
@@ -29,7 +29,7 @@
 #' }
 #'
 #' @export
-thumbnail_from_stars <- function(stars_obj, path, width = 256, height = 256,
+preview_from_stars <- function(stars_obj, path, width = 256, height = 256,
                                  title = NULL, ...) {
   if (!requireNamespace("stars", quietly = TRUE)) {
     stop("Package 'stars' is required. Install with: install.packages('stars')")
@@ -62,9 +62,10 @@ thumbnail_from_stars <- function(stars_obj, path, width = 256, height = 256,
 
   stac_asset(
     href = normalize_href(path),
+    rel = "preview",
     title = title,
     type = "image/png",
-    roles = c("thumbnail")
+    roles = c("overview")
   )
 }
 
