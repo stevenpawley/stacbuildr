@@ -68,8 +68,8 @@ Helper constructors for Collection fields.
 
 ## stars Integration
 
-Create STAC Items and thumbnails directly from `stars` raster objects,
-and extract band metadata.
+Create STAC Items and preview/thumbnails directly from `stars` raster
+objects, and extract band metadata.
 
 - [`item_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_stars.md)
   : Create a STAC Item from a Stars Object
@@ -77,7 +77,7 @@ and extract band metadata.
   : Extract Raster Band Metadata from a Stars Object
 - [`items_from_directory()`](https://stevenpawley.github.io/stacbuildr/reference/items_from_directory.md)
   : Batch Create Items from Raster Files
-- [`thumbnail_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_stars.md)
+- [`preview_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/preview_from_stars.md)
   : Generate a Thumbnail PNG from a Stars Raster Object
 
 ## sf Integration
@@ -110,8 +110,6 @@ objects.
   : Create Raster Histogram Object
 - [`raster_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/raster_from_file.md)
   : Extract Raster Band Metadata from a File
-- [`print()`](https://stevenpawley.github.io/stacbuildr/reference/print.raster_band.md)
-  : Print method for raster band objects
 
 ## EO Extension
 
@@ -183,3 +181,30 @@ package).
   : Validate a STAC Object
 - [`validate_stac_schema()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac_schema.md)
   : Validate a STAC Object Against the Official JSON Schema
+
+## Database Backend
+
+Set up and manage a PostgreSQL/PostGIS database backing store for STAC
+Collections and Items.
+
+- [`stac_db_setup()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_setup.md)
+  : Create the STAC database schema
+- [`stac_db_insert_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_insert_collection.md)
+  : Insert or update a STAC Collection in the database
+- [`stac_db_insert_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_insert_item.md)
+  : Insert or update a STAC Item in the database
+- [`stac_db_delete_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_delete_collection.md)
+  : Delete a STAC Collection and all its items from the database
+- [`stac_db_delete_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_delete_item.md)
+  : Delete a STAC Item from the database
+
+## STAC API Server
+
+Serve a STAC API 1.0 compliant HTTP API via `plumber`, backed by the
+PostgreSQL database. Includes asset signing helpers for Azure Blob
+Storage.
+
+- [`stac_api_router()`](https://stevenpawley.github.io/stacbuildr/reference/stac_api_router.md)
+  : Create a plumber router serving a minimal STAC API
+- [`sign_azure_ad()`](https://stevenpawley.github.io/stacbuildr/reference/sign_azure_ad.md)
+  : Sign an Azure Blob Storage href using Azure AD authentication.

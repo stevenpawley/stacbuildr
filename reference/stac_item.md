@@ -333,6 +333,6 @@ cat(item_json)
 #>     "datetime": "2023-12-31T23:59:59Z"
 #>   },
 #>   "links": [],
-#>   "assets": []
+#>   "assets": {}
 #> }
 ```
