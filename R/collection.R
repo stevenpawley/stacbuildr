@@ -30,7 +30,7 @@
 #'     intervals. Each interval is a character vector of length 2 with ISO 8601
 #'     datetime strings: `list("start", "end")`. Use `NULL` for open-ended intervals
 #'     (e.g., `list("2020-01-01T00:00:00Z", NULL)` for ongoing data). Note: use
-#'     `list()` not `c()` — `c()` drops `NULL`, which would produce an invalid interval.
+#'     `list()` not `c()` - `c()` drops `NULL`, which would produce an invalid interval.
 #'
 #'   Use the helper function `stac_extent()` to create this structure easily.
 #' @param title (character, optional) A short descriptive one-line title for the
@@ -368,14 +368,14 @@ S7::method(print, stac_collection) <- function(x, ...) {
   cat(sprintf("  description : %s\n", desc))
   cat(sprintf("  license     : %s\n", x@license))
 
-  # Spatial extent — show first bbox
+  # Spatial extent - show first bbox
   bbox <- x@extent@spatial@bbox[[1]]
   cat(sprintf(
     "  bbox        : [%.4f, %.4f, %.4f, %.4f]\n",
     bbox[1], bbox[2], bbox[3], bbox[4]
   ))
 
-  # Temporal extent — show first interval
+  # Temporal extent - show first interval
   interval <- x@extent@temporal@interval[[1]]
   t_start <- if (is.null(interval[[1]])) ".." else interval[[1]]
   t_end   <- if (is.null(interval[[2]])) ".." else interval[[2]]
@@ -417,7 +417,7 @@ S7::method(print, stac_collection) <- function(x, ...) {
 #' @param temporal_interval List of time intervals. Each interval should be a
 #'   list of length 2: `list("start", "end")`. Use `NULL` for open-ended
 #'   intervals: `list("start", NULL)`. Times should be in ISO 8601 format.
-#'   Note: use `list()` not `c()` — `c()` drops `NULL`, producing an invalid interval.
+#'   Note: use `list()` not `c()` - `c()` drops `NULL`, producing an invalid interval.
 #'
 #' @return An `Extent` S7 object formatted for STAC Collections.
 #'
@@ -579,7 +579,7 @@ add_item_assets <- function(collection) {
 
   items <- attr(collection, "stac_items")
   if (is.null(items) || length(items) == 0) {
-    stop("Collection has no items — add items with add_item() before calling add_item_assets()")
+    stop("Collection has no items - add items with add_item() before calling add_item_assets()")
   }
 
   all_keys <- unique(unlist(lapply(items, function(item) names(item@assets))))

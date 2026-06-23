@@ -15,7 +15,7 @@ overall extent.}
 \item{temporal_interval}{List of time intervals. Each interval should be a
 list of length 2: \code{list("start", "end")}. Use \code{NULL} for open-ended
 intervals: \code{list("start", NULL)}. Times should be in ISO 8601 format.
-Note: use \code{list()} not \code{c()} — \code{c()} drops \code{NULL}, producing an invalid interval.}
+Note: use \code{list()} not \code{c()} - \code{c()} drops \code{NULL}, producing an invalid interval.}
 }
 \value{
 An \code{Extent} S7 object formatted for STAC Collections.

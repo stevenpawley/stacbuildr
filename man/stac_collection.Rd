@@ -51,7 +51,7 @@ first bbox describes the overall spatial extent.
 intervals. Each interval is a character vector of length 2 with ISO 8601
 datetime strings: \code{list("start", "end")}. Use \code{NULL} for open-ended intervals
 (e.g., \code{list("2020-01-01T00:00:00Z", NULL)} for ongoing data). Note: use
-\code{list()} not \code{c()} — \code{c()} drops \code{NULL}, which would produce an invalid interval.
+\code{list()} not \code{c()} - \code{c()} drops \code{NULL}, which would produce an invalid interval.
 }
 
 Use the helper function \code{stac_extent()} to create this structure easily.}
