@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 library(stacbuildr)
 library(reticulate)
 
-py_require("pystac")
+py_require(c("pystac", "tzdata"))
 pystac <- import("pystac")
 dt <- import("datetime")
 ```
