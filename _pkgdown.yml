@@ -49,6 +49,7 @@ reference:
       - stac_provider
       - stac_summaries
       - extent_from_items
+      - add_item_assets
 
   - title: "stars Integration"
     desc: >
