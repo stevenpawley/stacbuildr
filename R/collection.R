@@ -521,3 +521,88 @@ stac_summaries <- function(...) {
   summaries <- list(...)
   summaries
 }
+
+
+#' Add Item Asset Definitions to a Collection
+#'
+#' @description
+#' Inspects the items already added to a collection and derives the
+#' `item_assets` field automatically, using the assets present on those items.
+#' For each unique asset key, the definition is taken from the first item that
+#' contains it (minus the `href` field, which is item-specific). The
+#' Item Assets extension URI is added to `stac_extensions` automatically.
+#'
+#' @param collection A `stac_collection` object with items added via
+#'   `add_item()`.
+#'
+#' @return The collection with `item_assets` populated and the Item Assets
+#'   extension added to `stac_extensions`.
+#'
+#' @references
+#' STAC Item Assets Definition Extension:
+#' \url{https://stac-extensions.github.io/item-assets/v1.0.0/schema.json}
+#'
+#' @seealso
+#' * [add_item()] for adding items to a collection
+#' * [stac_collection()] for creating collections
+#'
+#' @examples
+#' \dontrun{
+#' collection <- stac_collection(
+#'   id = "landsat",
+#'   description = "Landsat imagery",
+#'   license = "proprietary",
+#'   extent = stac_extent(
+#'     spatial_bbox = list(c(-180, -90, 180, 90)),
+#'     temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
+#'   )
+#' )
+#'
+#' item <- stac_item(
+#'   id = "LC09_001",
+#'   geometry = list(type = "Point", coordinates = c(-120, 48)),
+#'   bbox = c(-121, 47, -119, 49),
+#'   datetime = "2023-07-01T00:00:00Z"
+#' )
+#' item <- add_asset(item, key = "red",
+#'   href = "red.tif", type = "image/tiff", roles = "data", title = "Red Band")
+#'
+#' collection <- add_item(collection, item)
+#' collection <- add_item_assets(collection)
+#' }
+#'
+#' @export
+add_item_assets <- function(collection) {
+  if (!inherits(collection, "stac_collection")) {
+    stop("'collection' must be a stac_collection object")
+  }
+
+  items <- attr(collection, "stac_items")
+  if (is.null(items) || length(items) == 0) {
+    stop("Collection has no items — add items with add_item() before calling add_item_assets()")
+  }
+
+  all_keys <- unique(unlist(lapply(items, function(item) names(item@assets))))
+
+  item_assets <- lapply(stats::setNames(all_keys, all_keys), function(key) {
+    for (item in items) {
+      asset <- item@assets[[key]]
+      if (!is.null(asset)) {
+        return(asset[setdiff(names(asset), "href")])
+      }
+    }
+    NULL
+  })
+
+  item_assets <- Filter(Negate(is.null), item_assets)
+
+  collection@extra_fields$item_assets <- item_assets
+
+  ext_uri <- "https://stac-extensions.github.io/item-assets/v1.0.0/schema.json"
+  if (is.null(collection@stac_extensions) ||
+      !ext_uri %in% collection@stac_extensions) {
+    collection@stac_extensions <- c(collection@stac_extensions, ext_uri)
+  }
+
+  collection
+}
