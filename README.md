@@ -4,7 +4,9 @@
 [![R-CMD-check](https://github.com/stevenpawley/stacbuildr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/stevenpawley/stacbuildr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-**stacbuildr** is an R package for creating [STAC (SpatioTemporal Asset Catalog)](https://stacspec.org/) metadata. STAC is an open standard for describing geospatial data in a way that makes it indexable, searchable, and interoperable. The package implements STAC specification version 1.1.0 using [S7](https://rconsortium.github.io/S7/) classes and outputs valid STAC JSON.
+**stacbuildr** is an *experimental* R package for creating [STAC (SpatioTemporal Asset Catalog)](https://stacspec.org/) metadata. STAC is an open standard for describing geospatial data in a way that makes it indexable, searchable, and interoperable. The package implements STAC specification version 1.1.0 using [S7](https://rconsortium.github.io/S7/) classes and outputs valid STAC JSON.
+
+*Note* this package is in active development: breaking changes are expected and there is no guarantee of compliance with STACspec.
 
 ## Installation
 
