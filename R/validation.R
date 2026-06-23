@@ -293,14 +293,19 @@ validate_assets <- function(assets) {
       errors <- c(errors, paste0("Asset '", key, "' must have 'href' field"))
     }
 
-    # Validate roles if present (accept character vector or list of strings)
+    # Validate roles if present
     if (!is.null(asset$roles)) {
-      roles_ok <- is.character(asset$roles) ||
-        (is.list(asset$roles) && all(vapply(asset$roles, is.character, logical(1))))
-      if (!roles_ok) {
+      if (is.character(asset$roles)) {
+        warning(
+          "Asset '", key, "' 'roles' is a character vector; it should be a list ",
+          "to guarantee JSON array serialization. Use stac_asset() to construct assets.",
+          call. = FALSE
+        )
+      } else if (!is.list(asset$roles) ||
+                 !all(vapply(asset$roles, is.character, logical(1)))) {
         errors <- c(
           errors,
-          paste0("Asset '", key, "' 'roles' must be a character vector or list of strings")
+          paste0("Asset '", key, "' 'roles' must be a list of strings")
         )
       }
     }
