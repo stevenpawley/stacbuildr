@@ -175,6 +175,7 @@ stac_catalog <- S7::new_class(
                          type = "Catalog",
                          stac_extensions = NULL,
                          conformsTo = NULL,
+                         links = list(),
                          ...) {
     obj <- S7::new_object(
       S7::S7_object(),
@@ -185,7 +186,7 @@ stac_catalog <- S7::new_class(
       title = title,
       stac_extensions = stac_extensions,
       conformsTo = conformsTo,
-      links = list(),
+      links = links,
       extra_fields = list(...)
     )
     # When loaded as a package, S7 qualifies class names (e.g. "buildstac::stac_catalog").
