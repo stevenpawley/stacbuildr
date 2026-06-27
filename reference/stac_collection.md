@@ -405,7 +405,6 @@ cat(collection_json)
 #>         "center_wavelength": 0.56
 #>       }
 #>     ]
-#>   },
-#>   "links.1": []
+#>   }
 #> }
 ```

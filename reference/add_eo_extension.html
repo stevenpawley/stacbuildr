@@ -277,6 +277,7 @@ eo:center_wavelength would be 0.45um and the eo:full_width_half_max would be
 <span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">add_eo_extension</span><span class="op">(</span>bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">combined_band</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="add_raster_extension.html">add_raster_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">combined_band</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in add_raster_extension(add_eo_extension(item, bands = list(combined_band)),     bands = list(combined_band)):</span> 'bands' appears to be double-wrapped. Use bands = raster_from_file(...) not bands = list(raster_from_file(...))</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
