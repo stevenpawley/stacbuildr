@@ -1,15 +1,15 @@
-skip_if_not_installed("stars")
+skip_if_not_installed("terra")
 skip_if_not_installed("sf")
 
-tif <- system.file("tif/L7_ETMs.tif", package = "stars")
+tif <- test_path("testdata", "L7_ETMs.tif")
 sf_file <- system.file("shape/nc.shp", package = "sf")
 
-test_that("preview_from_stars returns a valid thumbnail asset", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("preview_from_terra returns a valid thumbnail asset", {
+  r <- terra::rast(tif)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  asset <- preview_from_stars(r, path = path)
+  asset <- preview_from_terra(r, path = path)
 
   expect_true(file.exists(path))
   expect_equal(asset$type, "image/png")
@@ -17,35 +17,35 @@ test_that("preview_from_stars returns a valid thumbnail asset", {
   expect_equal(asset$href, gsub("\\\\", "/", normalizePath(path)))
 })
 
-test_that("preview_from_stars accepts a title", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("preview_from_terra accepts a title", {
+  r <- terra::rast(tif)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  asset <- preview_from_stars(r, path = path, title = "Preview")
+  asset <- preview_from_terra(r, path = path, title = "Preview")
 
   expect_equal(asset$title, "Preview")
 })
 
-test_that("preview_from_stars accepts custom dimensions", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("preview_from_terra accepts custom dimensions", {
+  r <- terra::rast(tif)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  preview_from_stars(r, path = path, width = 128, height = 128)
+  preview_from_terra(r, path = path, width = 128, height = 128)
 
   expect_true(file.exists(path))
   expect_gt(file.size(path), 0)
 })
 
-test_that("preview_from_stars errors on non-stars input", {
+test_that("preview_from_terra errors on non-SpatRaster input", {
   path <- tempfile(fileext = ".png")
-  expect_error(preview_from_stars(list(), path = path), "must be a stars object")
+  expect_error(preview_from_terra(list(), path = path), "must be a SpatRaster object")
 })
 
-test_that("preview_from_stars errors when path is missing", {
-  r <- stars::read_stars(tif, quiet = TRUE)
-  expect_error(preview_from_stars(r, path = ""), "'path' is required")
+test_that("preview_from_terra errors when path is missing", {
+  r <- terra::rast(tif)
+  expect_error(preview_from_terra(r, path = ""), "'path' is required")
 })
 
 test_that("thumbnail_from_sf returns a valid thumbnail asset", {
@@ -82,17 +82,17 @@ test_that("thumbnail_from_sf errors when path is missing", {
 })
 
 test_that("thumbnail asset can be added to a stac item", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+  r <- terra::rast(tif)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  item <- item_from_stars(
+  item <- item_from_terra(
     r,
     href = tif,
     id = "L7_ETMs",
     datetime = "2023-06-15T10:30:00Z"
   )
-  asset <- preview_from_stars(r, path = path)
+  asset <- preview_from_terra(r, path = path)
   item <- add_asset(item, key = "thumbnail", asset = asset)
 
   expect_true("thumbnail" %in% names(item@assets))

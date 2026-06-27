@@ -507,7 +507,7 @@ raster_histogram <- function(count, min, max, buckets) {
 #' Extract Raster Band Metadata from a File
 #'
 #' @description
-#' Extracts raster metadata from a file using `stars` and `sf::gdal_utils`.
+#' Extracts raster metadata from a file using `terra` and `sf::gdal_utils`.
 #' Creates band objects with data type, spatial resolution, and optionally
 #' statistics.
 #'
@@ -516,7 +516,8 @@ raster_histogram <- function(count, min, max, buckets) {
 #'   mean, and standard deviation for each band. Default is FALSE (can be slow
 #'   for large files).
 #' @param sample_size (integer, optional) Number of pixels to sample per band
-#'   when calculating statistics. If NULL, all pixels are used.
+#'   when calculating statistics. If NULL, all pixels are used. Default is
+#'   1000 pixels.
 #'
 #' @return A list of raster band objects, one per band in the file.
 #'
@@ -540,11 +541,11 @@ raster_histogram <- function(count, min, max, buckets) {
 #' @export
 raster_from_file <- function(file,
                              calculate_statistics = FALSE,
-                             sample_size = NULL) {
-  if (!requireNamespace("stars", quietly = TRUE)) {
-    stop("Package 'stars' is required. Install with: install.packages('stars')")
+                             sample_size = 1000L) {
+  if (!requireNamespace("terra", quietly = TRUE)) {
+    stop("Package 'terra' is required. Install with: install.packages('terra')")
   }
 
-  r <- stars::read_stars(file, quiet = TRUE)
-  bands_from_stars(r, calculate_statistics = calculate_statistics, sample_size = sample_size)
+  r <- terra::rast(file)
+  bands_from_terra(r, calculate_statistics = calculate_statistics, sample_size = sample_size)
 }

@@ -16,7 +16,7 @@ Imports:
     S7,
     stats
 Suggests:
-    stars,
+    terra,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,

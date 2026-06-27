@@ -24,7 +24,7 @@ This vignette demonstrates how to build a STAC catalog with `stacbuildr`, coveri
 
 ```{r}
 library(stacbuildr)
-library(stars)
+library(terra)
 ```
 
 ## Create a synthetic DEM
@@ -35,28 +35,26 @@ raster file.
 
 ```{r}
 set.seed(42)
-m <- matrix(runif(100, 100, 3000), nrow = 10, ncol = 10)
-dem <- st_as_stars(m)
-dem <- st_set_dimensions(dem, 1, offset = -120, delta = 0.1)
-dem <- st_set_dimensions(dem, 2, offset = 49, delta = -0.1)
-st_crs(dem) <- 4326
+dem <- terra::rast(nrows = 10, ncols = 10, xmin = -120, xmax = -119,
+                   ymin = 48, ymax = 49, crs = "EPSG:4326")
+terra::values(dem) <- runif(terra::ncell(dem), 100, 3000)
 names(dem) <- "elevation"
 
 tif_path <- file.path(tempdir(), "dem.tif")
-write_stars(dem, tif_path)
+terra::writeRaster(dem, tif_path, overwrite = TRUE)
 
-r <- read_stars(tif_path)
+r <- terra::rast(tif_path)
 ```
 
 ## Create a STAC Item from the raster
 
-`item_from_stars()` extracts the spatial extent, CRS, and geometry from the
-`stars` object and returns a `stac_item`. We then attach the raster file as an
-asset.
+`item_from_terra()` extracts the spatial extent, CRS, and geometry from the
+`SpatRaster` object and returns a `stac_item`. We then attach the raster file
+as an asset.
 
 ```{r}
 item <- r |>
-  item_from_stars(
+  item_from_terra(
     id = "dem-001",
     datetime = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ")
   ) |>
@@ -81,7 +79,7 @@ collection <- stac_collection(
   title = "Terrain Collection",
   license = "CC-BY-4.0",
   extent = stac_extent(
-    spatial_bbox = list(as.numeric(st_bbox(r))),
+    spatial_bbox = list(c(terra::xmin(r), terra::ymin(r), terra::xmax(r), terra::ymax(r))),
     temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
   )
 )

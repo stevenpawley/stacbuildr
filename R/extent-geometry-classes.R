@@ -67,6 +67,18 @@ SpatialExtent <- S7::new_class(
         return(sprintf("Bbox[%d] must have 4 or 6 elements", i))
       }
       if (length(bbox) == 4) {
+        if (bbox[1] < -180 || bbox[1] > 180) {
+          return(sprintf("Bbox[%d]: west (%g) must be in [-180, 180]", i, bbox[1]))
+        }
+        if (bbox[3] < -180 || bbox[3] > 180) {
+          return(sprintf("Bbox[%d]: east (%g) must be in [-180, 180]", i, bbox[3]))
+        }
+        if (bbox[2] < -90 || bbox[2] > 90) {
+          return(sprintf("Bbox[%d]: south (%g) must be in [-90, 90]", i, bbox[2]))
+        }
+        if (bbox[4] < -90 || bbox[4] > 90) {
+          return(sprintf("Bbox[%d]: north (%g) must be in [-90, 90]", i, bbox[4]))
+        }
         if (bbox[1] > bbox[3]) {
           return(sprintf("Bbox[%d]: west (%g) must be <= east (%g)", i, bbox[1], bbox[3]))
         }
@@ -74,6 +86,18 @@ SpatialExtent <- S7::new_class(
           return(sprintf("Bbox[%d]: south (%g) must be <= north (%g)", i, bbox[2], bbox[4]))
         }
       } else {
+        if (bbox[1] < -180 || bbox[1] > 180) {
+          return(sprintf("Bbox[%d]: west (%g) must be in [-180, 180]", i, bbox[1]))
+        }
+        if (bbox[4] < -180 || bbox[4] > 180) {
+          return(sprintf("Bbox[%d]: east (%g) must be in [-180, 180]", i, bbox[4]))
+        }
+        if (bbox[2] < -90 || bbox[2] > 90) {
+          return(sprintf("Bbox[%d]: south (%g) must be in [-90, 90]", i, bbox[2]))
+        }
+        if (bbox[5] < -90 || bbox[5] > 90) {
+          return(sprintf("Bbox[%d]: north (%g) must be in [-90, 90]", i, bbox[5]))
+        }
         if (bbox[1] > bbox[4]) {
           return(sprintf("Bbox[%d]: west (%g) must be <= east (%g)", i, bbox[1], bbox[4]))
         }

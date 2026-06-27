@@ -20,7 +20,7 @@ when calculating statistics. If NULL, all pixels are used.}
 A list of raster band objects, one per band in the file.
 }
 \description{
-Extracts raster metadata from a file using \code{stars} and \code{sf::gdal_utils}.
+Extracts raster metadata from a file using \code{terra} and \code{sf::gdal_utils}.
 Creates band objects with data type, spatial resolution, and optionally
 statistics.
 }

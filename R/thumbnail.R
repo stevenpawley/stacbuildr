@@ -1,41 +1,41 @@
-#' Generate a Thumbnail PNG from a Stars Raster Object
+#' Generate a Thumbnail PNG from a Terra SpatRaster Object
 #'
 #' @description
-#' Renders a `stars` raster object to a PNG image and returns a STAC asset
+#' Renders a `SpatRaster` object to a PNG image and returns a STAC asset
 #' pointing to it. Multi-band rasters with 3 or more bands are rendered as an
 #' RGB composite using the first three bands; single-band rasters are rendered
 #' as greyscale.
 #'
-#' @param stars_obj A `stars` object.
+#' @param terra_obj A `SpatRaster` object (from the `terra` package).
 #' @param path (character, required) File path for the output PNG.
 #' @param width (integer) Image width in pixels. Default is 256.
 #' @param height (integer) Image height in pixels. Default is 256.
 #' @param title (character, optional) Title for the returned asset.
-#' @param ... Additional arguments passed to `plot()`.
+#' @param ... Additional arguments passed to `terra::plotRGB()` or `terra::plot()`.
 #'
 #' @return A STAC asset list with `href`, `type = "image/png"`, and
-#'   `roles = c("thumbnail")`.
+#'   `roles = c("overview")`.
 #'
 #' @examples
 #' \dontrun{
-#' library(stars)
+#' library(terra)
 #'
-#' r <- read_stars(system.file("tif/L7_ETMs.tif", package = "stars"))
-#' asset <- preview_from_stars(r, path = "thumbnail.png")
+#' r <- rast(system.file("ex/logo.tif", package = "terra"))
+#' asset <- preview_from_terra(r, path = "thumbnail.png")
 #'
-#' item <- item_from_stars(r, href = "image.tif",
+#' item <- item_from_terra(r, href = "image.tif",
 #'                         datetime = "2023-01-01T00:00:00Z")
 #' item <- add_asset(item, key = "thumbnail", asset = asset)
 #' }
 #'
 #' @export
-preview_from_stars <- function(stars_obj, path, width = 256, height = 256,
-                                 title = NULL, ...) {
-  if (!requireNamespace("stars", quietly = TRUE)) {
-    stop("Package 'stars' is required. Install with: install.packages('stars')")
+preview_from_terra <- function(terra_obj, path, width = 256, height = 256,
+                               title = NULL, ...) {
+  if (!requireNamespace("terra", quietly = TRUE)) {
+    stop("Package 'terra' is required. Install with: install.packages('terra')")
   }
-  if (!inherits(stars_obj, "stars")) {
-    stop("'stars_obj' must be a stars object")
+  if (!inherits(terra_obj, "SpatRaster")) {
+    stop("'terra_obj' must be a SpatRaster object")
   }
   if (missing(path) || is.null(path) || nchar(path) == 0) {
     stop("'path' is required and must be a non-empty string")
@@ -44,17 +44,12 @@ preview_from_stars <- function(stars_obj, path, width = 256, height = 256,
   grDevices::png(path, width = width, height = height)
 
   tryCatch({
-    dims <- dim(stars_obj)
-    has_band_dim <- length(dims) >= 3
-    n_bands <- if (has_band_dim) dims[3L] else 1L
+    n_bands <- terra::nlyr(terra_obj)
 
-    if (has_band_dim && n_bands >= 3L) {
-      plot(stars_obj[, , , 1:3], rgb = 1:3, axes = FALSE, key.pos = NULL,
-           main = "", ...)
-    } else if (has_band_dim && n_bands > 1L) {
-      plot(stars_obj[, , , 1L], axes = FALSE, key.pos = NULL, main = "", ...)
+    if (n_bands >= 3L) {
+      terra::plotRGB(terra_obj[[1:3]], ...)
     } else {
-      plot(stars_obj, axes = FALSE, key.pos = NULL, main = "", ...)
+      terra::plot(terra_obj[[1]], axes = FALSE, legend = FALSE, ...)
     }
   }, finally = {
     grDevices::dev.off()
@@ -62,7 +57,6 @@ preview_from_stars <- function(stars_obj, path, width = 256, height = 256,
 
   stac_asset(
     href = normalize_href(path),
-    rel = "preview",
     title = title,
     type = "image/png",
     roles = c("overview")

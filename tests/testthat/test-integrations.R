@@ -1,13 +1,12 @@
-# Skip all tests in this file if stars is not available
-skip_if_not_installed("stars")
+skip_if_not_installed("terra")
 skip_if_not_installed("sf")
 
-tif <- system.file("tif/L7_ETMs.tif", package = "stars")
+tif <- test_path("testdata", "L7_ETMs.tif")
 
-test_that("item_from_stars creates a valid item from a stars object", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("item_from_terra creates a valid item from a SpatRaster", {
+  r <- terra::rast(tif)
 
-  item <- item_from_stars(
+  item <- item_from_terra(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -31,10 +30,10 @@ test_that("item_from_stars creates a valid item from a stars object", {
   expect_true(bbox[4] > -9 && bbox[4] < -7) # ymax
 })
 
-test_that("item_from_stars derives id from href when id is NULL", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("item_from_terra derives id from href when id is NULL", {
+  r <- terra::rast(tif)
 
-  item <- item_from_stars(
+  item <- item_from_terra(
     r,
     href = tif,
     datetime = "2023-06-15T10:30:00Z"
@@ -43,10 +42,10 @@ test_that("item_from_stars derives id from href when id is NULL", {
   expect_equal(item@id, "L7_ETMs")
 })
 
-test_that("item_from_stars adds the main asset with correct fields", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("item_from_terra adds the main asset with correct fields", {
+  r <- terra::rast(tif)
 
-  item <- item_from_stars(
+  item <- item_from_terra(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -56,15 +55,15 @@ test_that("item_from_stars adds the main asset with correct fields", {
   )
 
   expect_true("data" %in% names(item@assets))
-  expect_equal(item@assets$data$href, gsub("\\\\", "/", tif))
+  expect_equal(item@assets$data$href, gsub("\\\\", "/", normalizePath(tif)))
   expect_equal(item@assets$data$type, "image/tiff; application=geotiff")
   expect_equal(item@assets$data$roles, list("data"))
 })
 
-test_that("item_from_stars adds raster extension with 6 band objects", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("item_from_terra adds raster extension with 6 band objects", {
+  r <- terra::rast(tif)
 
-  item <- item_from_stars(
+  item <- item_from_terra(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -77,14 +76,14 @@ test_that("item_from_stars adds raster extension with 6 band objects", {
 
   bands <- item@assets$data$`raster:bands`
   expect_length(bands, 6)
-  expect_equal(bands[[1]]$data_type, "float64")
+  expect_equal(bands[[1]]$data_type, "uint8")
   expect_equal(bands[[1]]$spatial_resolution, 28.5)
 })
 
-test_that("item_from_stars skips raster extension when add_raster_bands is FALSE", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("item_from_terra skips raster extension when add_raster_bands is FALSE", {
+  r <- terra::rast(tif)
 
-  item <- item_from_stars(
+  item <- item_from_terra(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -97,10 +96,10 @@ test_that("item_from_stars skips raster extension when add_raster_bands is FALSE
   expect_null(item@assets$data$`raster:bands`)
 })
 
-test_that("item_from_stars adds projection extension for non-WGS84 CRS", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("item_from_terra adds projection extension for non-WGS84 CRS", {
+  r <- terra::rast(tif)
 
-  item <- item_from_stars(
+  item <- item_from_terra(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -118,10 +117,10 @@ test_that("item_from_stars adds projection extension for non-WGS84 CRS", {
   expect_equal(item@properties$`proj:transform`[[5]], -28.5) # y pixel size (negative)
 })
 
-test_that("item_from_stars validates correctly", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("item_from_terra validates correctly", {
+  r <- terra::rast(tif)
 
-  item <- item_from_stars(
+  item <- item_from_terra(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -132,19 +131,19 @@ test_that("item_from_stars validates correctly", {
   expect_true(result$valid)
 })
 
-test_that("bands_from_stars returns one band object per band", {
-  r <- stars::read_stars(tif, quiet = TRUE)
-  bands <- bands_from_stars(r)
+test_that("bands_from_terra returns one band object per band", {
+  r <- terra::rast(tif)
+  bands <- bands_from_terra(r)
 
   expect_length(bands, 6)
-  expect_equal(bands[[1]]@data_type, "float64")
+  expect_equal(bands[[1]]@data_type, "uint8")
   expect_equal(bands[[1]]@spatial_resolution, 28.5)
   expect_length(bands[[1]]@statistics, 0)
 })
 
-test_that("bands_from_stars calculates statistics when requested", {
-  r <- stars::read_stars(tif, quiet = TRUE)
-  bands <- bands_from_stars(r, calculate_statistics = TRUE)
+test_that("bands_from_terra calculates statistics when requested", {
+  r <- terra::rast(tif)
+  bands <- bands_from_terra(r, calculate_statistics = TRUE)
 
   expect_length(bands, 6)
 
@@ -156,21 +155,21 @@ test_that("bands_from_stars calculates statistics when requested", {
   }
 })
 
-test_that("item_from_stars errors on non-stars input", {
+test_that("item_from_terra errors on non-SpatRaster input", {
   expect_error(
-    item_from_stars(
-      "not_a_stars_object",
+    item_from_terra(
+      "not_a_SpatRaster",
       href = tif,
       datetime = "2023-06-15T10:30:00Z"
     ),
-    "'stars_obj' must be a stars object"
+    "'terra_obj' must be a SpatRaster object"
   )
 })
 
-test_that("item_from_stars works without href when id is supplied", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("item_from_terra works without href when id is supplied", {
+  r <- terra::rast(tif)
 
-  item <- item_from_stars(
+  item <- item_from_terra(
     r,
     id = "L7_ETMs",
     datetime = "2023-06-15T10:30:00Z"
@@ -180,11 +179,11 @@ test_that("item_from_stars works without href when id is supplied", {
   expect_length(item@assets, 0)
 })
 
-test_that("item_from_stars errors when both href and id are NULL", {
-  r <- stars::read_stars(tif, quiet = TRUE)
+test_that("item_from_terra errors when both href and id are NULL", {
+  r <- terra::rast(tif)
 
   expect_error(
-    item_from_stars(r, datetime = "2023-06-15T10:30:00Z"),
+    item_from_terra(r, datetime = "2023-06-15T10:30:00Z"),
     "'id' is required when 'href' is not provided"
   )
 })

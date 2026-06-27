@@ -1,11 +1,11 @@
-#' Create a STAC Item from a Stars Object
+#' Create a STAC Item from a Terra SpatRaster Object
 #'
 #' @description
-#' Creates a STAC Item from a `stars` raster object. Automatically extracts
-#' spatial metadata including geometry, bbox, CRS, and optionally band
+#' Creates a STAC Item from a `terra` `SpatRaster` object. Automatically
+#' extracts spatial metadata including geometry, bbox, CRS, and optionally band
 #' information and statistics.
 #'
-#' @param stars_obj A `stars` object.
+#' @param terra_obj A `SpatRaster` object (from the `terra` package).
 #' @param href (character, optional) URI for the main raster asset. If provided,
 #'   the raster is added as an asset and `id` is derived from the basename when
 #'   not explicitly set. If NULL, no asset is added and `id` must be supplied.
@@ -41,17 +41,17 @@
 #'
 #' @examples
 #' \dontrun{
-#' library(stars)
+#' library(terra)
 #'
-#' r <- read_stars("path/to/image.tif")
+#' r <- rast("path/to/image.tif")
 #'
-#' item <- item_from_stars(
+#' item <- item_from_terra(
 #'   r,
 #'   href = "path/to/image.tif",
 #'   datetime = "2023-06-15T10:30:00Z"
 #' )
 #'
-#' item <- item_from_stars(
+#' item <- item_from_terra(
 #'   r,
 #'   href = "https://example.com/image.tif",
 #'   id = "LC08_001",
@@ -62,8 +62,8 @@
 #' }
 #'
 #' @export
-item_from_stars <- function(
-  stars_obj,
+item_from_terra <- function(
+  terra_obj,
   href = NULL,
   id = NULL,
   datetime = NULL,
@@ -77,15 +77,15 @@ item_from_stars <- function(
   reproject_to_wgs84 = TRUE,
   ...
 ) {
-  if (!requireNamespace("stars", quietly = TRUE)) {
-    stop("Package 'stars' is required. Install with: install.packages('stars')")
+  if (!requireNamespace("terra", quietly = TRUE)) {
+    stop("Package 'terra' is required. Install with: install.packages('terra')")
   }
   if (!requireNamespace("sf", quietly = TRUE)) {
     stop("Package 'sf' is required. Install with: install.packages('sf')")
   }
 
-  if (!inherits(stars_obj, "stars")) {
-    stop("'stars_obj' must be a stars object")
+  if (!inherits(terra_obj, "SpatRaster")) {
+    stop("'terra_obj' must be a SpatRaster object")
   }
 
   # Generate ID from href if not provided
@@ -104,7 +104,7 @@ item_from_stars <- function(
   }
 
   # Extract spatial metadata
-  spatial_meta <- extract_stars_spatial_metadata(stars_obj, reproject_to_wgs84)
+  spatial_meta <- extract_terra_spatial_metadata(terra_obj, reproject_to_wgs84)
 
   # Create the item
   item <- stac_item(
@@ -126,15 +126,12 @@ item_from_stars <- function(
       roles = asset_roles
     )
 
-    # Add nodata as a standalone asset-level field if available (proxy only;
-    # in-memory stars objects use R NA natively with no explicit nodata flag)
-    if (inherits(stars_obj, "stars_proxy")) {
-      src <- stars_obj[[1]][[1]]
-      if (is.character(src) && file.exists(src)) {
-        nodata_val <- gdal_nodata(src)
-        if (!is.null(nodata_val)) {
-          item@assets[[asset_key]]$nodata <- nodata_val
-        }
+    # Add nodata for file-backed rasters
+    src <- terra::sources(terra_obj)
+    if (length(src) > 0 && nchar(src[1]) > 0 && file.exists(src[1])) {
+      nodata_val <- gdal_nodata(src[1])
+      if (!is.null(nodata_val)) {
+        item@assets[[asset_key]]$nodata <- nodata_val
       }
     }
   }
@@ -156,8 +153,8 @@ item_from_stars <- function(
 
   # Extract and add band information
   if (add_raster_bands || add_eo_bands) {
-    bands <- bands_from_stars(
-      stars_obj,
+    bands <- bands_from_terra(
+      terra_obj,
       calculate_statistics = calculate_statistics
     )
 
@@ -177,9 +174,9 @@ item_from_stars <- function(
   }
 
   # Add projection extension if CRS is not WGS84
-  crs <- sf::st_crs(stars_obj)
+  crs <- sf::st_crs(terra::crs(terra_obj))
   if (!isTRUE(crs$epsg == 4326L)) {
-    item <- add_projection_metadata_stars(item, stars_obj)
+    item <- add_projection_metadata_terra(item, terra_obj)
   }
 
   item
@@ -330,23 +327,34 @@ bbox_from_sf <- function(sf_obj) {
 }
 
 
-#' Extract Spatial Metadata from a Stars Object
+#' Extract Spatial Metadata from a Terra SpatRaster
 #'
 #' @description
-#' Internal function to extract spatial metadata (geometry, bbox) from a stars
-#' object.
+#' Internal function to extract spatial metadata (geometry, bbox) from a
+#' `SpatRaster` object.
 #'
-#' @param stars_obj A stars object.
+#' @param terra_obj A `SpatRaster` object.
 #' @param reproject_to_wgs84 If TRUE, reprojects to WGS84.
 #'
 #' @return A list with geometry and bbox.
 #'
 #' @keywords internal
-extract_stars_spatial_metadata <- function(stars_obj, reproject_to_wgs84 = TRUE) {
-  bbox_sfc <- sf::st_as_sfc(sf::st_bbox(stars_obj))
+extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE) {
+  crs <- sf::st_crs(terra::crs(terra_obj))
+  bbox_sfc <- sf::st_as_sfc(
+    sf::st_bbox(
+      c(
+        xmin = terra::xmin(terra_obj),
+        ymin = terra::ymin(terra_obj),
+        xmax = terra::xmax(terra_obj),
+        ymax = terra::ymax(terra_obj)
+      ),
+      crs = crs
+    )
+  )
   bbox_sf <- sf::st_as_sf(data.frame(geometry = bbox_sfc))
 
-  if (reproject_to_wgs84 && !isTRUE(sf::st_crs(stars_obj)$epsg == 4326L)) {
+  if (reproject_to_wgs84 && !isTRUE(crs$epsg == 4326L)) {
     bbox_sf <- sf::st_transform(bbox_sf, 4326)
   }
 
@@ -357,18 +365,18 @@ extract_stars_spatial_metadata <- function(stars_obj, reproject_to_wgs84 = TRUE)
 }
 
 
-#' Add Projection Extension Metadata from a Stars Object
+#' Add Projection Extension Metadata from a Terra SpatRaster
 #'
 #' @description
 #' Adds projection extension metadata to a STAC Item for rasters not in WGS84.
 #'
 #' @param item A STAC Item object.
-#' @param stars_obj A stars object.
+#' @param terra_obj A `SpatRaster` object.
 #'
 #' @return The modified STAC Item.
 #'
 #' @keywords internal
-add_projection_metadata_stars <- function(item, stars_obj) {
+add_projection_metadata_terra <- function(item, terra_obj) {
   ext_uri <- "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
 
   if (is.null(item@stac_extensions)) {
@@ -379,8 +387,7 @@ add_projection_metadata_stars <- function(item, stars_obj) {
     item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
-  crs <- sf::st_crs(stars_obj)
-  dims <- stars::st_dimensions(stars_obj)
+  crs <- sf::st_crs(terra::crs(terra_obj))
 
   if (!is.na(crs$epsg)) {
     item@properties$`proj:epsg` <- as.integer(crs$epsg)
@@ -388,16 +395,14 @@ add_projection_metadata_stars <- function(item, stars_obj) {
 
   item@properties$`proj:wkt2` <- crs$wkt
 
-  x_dim <- dims[["x"]]
-  y_dim <- dims[["y"]]
   item@properties$`proj:shape` <- c(
-    y_dim$to - y_dim$from + 1L,
-    x_dim$to - x_dim$from + 1L
+    terra::nrow(terra_obj),
+    terra::ncol(terra_obj)
   )
 
   item@properties$`proj:transform` <- c(
-    x_dim$delta, 0, x_dim$offset,
-    0, y_dim$delta, y_dim$offset
+    terra::xres(terra_obj), 0, terra::xmin(terra_obj),
+    0, -terra::yres(terra_obj), terra::ymax(terra_obj)
   )
 
   item
@@ -571,75 +576,38 @@ extent_from_items <- function(items) {
 }
 
 
-#' Extract Raster Band Metadata from a Stars Object
+#' Extract Raster Band Metadata from a Terra SpatRaster
 #'
 #' @description
-#' Extracts band metadata from a `stars` object. Creates band objects with data
-#' type and spatial resolution, optionally calculating statistics.
+#' Extracts band metadata from a `SpatRaster` object. Creates band objects with
+#' data type and spatial resolution, optionally calculating statistics.
 #'
-#' @param stars_obj A `stars` object.
+#' @param terra_obj A `SpatRaster` object (from the `terra` package).
 #' @param calculate_statistics (logical, optional) If TRUE, calculates min, max,
 #'   mean, and standard deviation for each band. Default is FALSE.
 #' @param sample_size (integer, optional) Number of pixels to sample per band
-#'   when calculating statistics. If NULL, all pixels are used.
+#'   when calculating statistics. Default is 1000 pixels.
 #'
 #' @return A list of raster band objects, one per band.
 #'
 #' @export
-bands_from_stars <- function(stars_obj, calculate_statistics = FALSE, sample_size = NULL) {
-  if (!requireNamespace("stars", quietly = TRUE)) {
-    stop("Package 'stars' is required. Install with: install.packages('stars')")
+bands_from_terra <- function(terra_obj, calculate_statistics = FALSE, sample_size = 1000L) {
+  if (!requireNamespace("terra", quietly = TRUE)) {
+    stop("Package 'terra' is required. Install with: install.packages('terra')")
   }
 
-  if (!inherits(stars_obj, "stars")) {
-    stop("'stars_obj' must be a stars object")
+  if (!inherits(terra_obj, "SpatRaster")) {
+    stop("'terra_obj' must be a SpatRaster object")
   }
 
-  dims <- stars::st_dimensions(stars_obj)
+  spatial_resolution <- mean(terra::res(terra_obj))
+  n_bands <- terra::nlyr(terra_obj)
 
-  # Spatial resolution from x/y dimension deltas
-  x_dim <- dims[["x"]]
-  y_dim <- dims[["y"]]
-  if (!is.null(x_dim) && !is.null(y_dim)) {
-    spatial_resolution <- mean(c(abs(x_dim$delta), abs(y_dim$delta)))
-  } else {
-    spatial_resolution <- NULL
-  }
-
-  # Bands are either a named "band" dimension or separate attributes
-  band_dim_idx <- which(names(dims) == "band")
-  has_band_dim <- length(band_dim_idx) > 0
-  is_proxy <- inherits(stars_obj, "stars_proxy")
-
-  # For proxy objects, extract the source file path for GDAL dtype lookup
-  proxy_file <- if (is_proxy) {
-    src <- stars_obj[[1]][[1]]
-    if (is.character(src) && file.exists(src)) src else NULL
-  } else {
-    NULL
-  }
-
-  if (has_band_dim) {
-    n_bands <- dims[["band"]]$to - dims[["band"]]$from + 1L
-    get_band_values <- function(i) {
-      as.vector(stars_obj[, , , i][[1]])
-    }
-    data_type <- if (!is.null(proxy_file)) gdal_dtype(proxy_file) else stars_dtype(stars_obj[[1]])
-    data_types <- rep(data_type, n_bands)
-  } else {
-    n_bands <- length(stars_obj)
-    get_band_values <- function(i) as.vector(stars_obj[[i]])
-    if (!is.null(proxy_file)) {
-      data_type <- gdal_dtype(proxy_file)
-      data_types <- rep(data_type, n_bands)
-    } else {
-      data_types <- vapply(
-        seq_len(n_bands),
-        function(i) stars_dtype(stars_obj[[i]]),
-        character(1)
-      )
-    }
-  }
+  data_types <- vapply(
+    seq_len(n_bands),
+    function(i) terra_dtype(terra::datatype(terra_obj)[i]),
+    character(1)
+  )
 
   bands <- vector("list", n_bands)
 
@@ -650,21 +618,21 @@ bands_from_stars <- function(stars_obj, calculate_statistics = FALSE, sample_siz
     )
 
     if (calculate_statistics) {
-      all_vals <- get_band_values(i)
-      n_total <- length(all_vals)
-      vals <- all_vals[!is.na(all_vals)]
-
-      if (!is.null(sample_size) && length(vals) > sample_size) {
-        vals <- sample(vals, sample_size)
+      if (!is.null(sample_size)) {
+        vals <- as.vector(
+          spatSample(terra_obj[[i]], sample_size, as.df = FALSE)
+        )
+      } else {
+        vals <- as.vector(terra::values(terra_obj[[i]]))
       }
 
       if (length(vals) > 0) {
         band@statistics <- raster_statistics(
-          minimum = min(vals),
-          maximum = max(vals),
-          mean = mean(vals),
-          stddev = stats::sd(vals),
-          valid_percent = 100 * length(all_vals[!is.na(all_vals)]) / n_total
+          minimum = min(vals, na.rm = TRUE),
+          maximum = max(vals, na.rm = TRUE),
+          mean = mean(vals, na.rm = TRUE),
+          stddev = stats::sd(vals, na.rm = TRUE),
+          valid_percent = 100 * length(vals[!is.na(vals)]) / length(vals)
         )
       }
     }
@@ -676,14 +644,18 @@ bands_from_stars <- function(stars_obj, calculate_statistics = FALSE, sample_siz
 }
 
 
-#' Map R typeof to STAC raster data type string
+#' Map terra datatype string to STAC raster data type string
 #'
 #' @keywords internal
-stars_dtype <- function(x) {
-  switch(typeof(x),
-    "integer" = "int32",
-    "double"  = "float64",
-    "logical" = "uint8",
+terra_dtype <- function(dt) {
+  switch(dt,
+    "INT1U"  = "uint8",
+    "INT2U"  = "uint16",
+    "INT2S"  = "int16",
+    "INT4U"  = "uint32",
+    "INT4S"  = "int32",
+    "FLT4S"  = "float32",
+    "FLT8S"  = "float64",
     "other"
   )
 }
@@ -758,7 +730,7 @@ gdal_nodata <- function(file) {
 #' @param pattern File pattern to match (regex). Default matches common raster formats.
 #' @param datetime_from_filename Function to extract datetime from filename.
 #'   Should return ISO 8601 string. If NULL, uses current time.
-#' @param ... Additional arguments passed to `item_from_stars()`.
+#' @param ... Additional arguments passed to `item_from_terra()`.
 #'
 #' @return A list of STAC Item objects.
 #'
@@ -816,8 +788,8 @@ items_from_directory <- function(
 
   message(sprintf("Creating items for %d files...", length(files)))
 
-  if (!requireNamespace("stars", quietly = TRUE)) {
-    stop("Package 'stars' is required. Install with: install.packages('stars')")
+  if (!requireNamespace("terra", quietly = TRUE)) {
+    stop("Package 'terra' is required. Install with: install.packages('terra')")
   }
 
   # Create items
@@ -833,9 +805,9 @@ items_from_directory <- function(
 
     tryCatch(
       {
-        r <- stars::read_stars(file, quiet = TRUE)
-        item <- item_from_stars(
-          stars_obj = r,
+        r <- terra::rast(file)
+        item <- item_from_terra(
+          terra_obj = r,
           href = normalizePath(file),
           datetime = datetime,
           ...

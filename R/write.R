@@ -309,13 +309,14 @@ write_catalog_recursive <- function(
   overwrite,
   pretty,
   is_root = FALSE,
-  parent_href = NULL
+  parent_href = NULL,
+  root_href = NULL
 ) {
-  # Determine the catalog filename
-  if (inherits(catalog, "stac_collection")) {
-    catalog_file <- "collection.json"
-  } else {
-    catalog_file <- "catalog.json"
+  catalog_file <- if (inherits(catalog, "stac_collection")) "collection.json" else "catalog.json"
+
+  # For the root, establish root_href once and thread it down through children.
+  if (is_root && catalog_type == "absolute") {
+    root_href <- paste0(base_url, "/", catalog_file)
   }
 
   # Update catalog links
@@ -325,7 +326,8 @@ write_catalog_recursive <- function(
     catalog_type,
     base_url,
     is_root,
-    parent_href
+    parent_href,
+    root_href
   )
 
   # Get stored children and items
@@ -365,7 +367,8 @@ write_catalog_recursive <- function(
         overwrite,
         pretty,
         is_root = FALSE,
-        parent_href = child_parent_href
+        parent_href = child_parent_href,
+        root_href = root_href
       )
     }
   }
@@ -386,7 +389,7 @@ write_catalog_recursive <- function(
           item,
           paste0(base_url, "/", item@id, "/", item@id, ".json"),
           paste0(base_url, "/", catalog_file),
-          if (is_root) paste0(base_url, "/", catalog_file) else NULL,
+          root_href,
           parent_is_collection = inherits(catalog, "stac_collection")
         )
       } else {
@@ -431,7 +434,8 @@ update_catalog_links <- function(
   catalog_type,
   base_url = NULL,
   is_root = FALSE,
-  parent_href = NULL
+  parent_href = NULL,
+  root_href = NULL
 ) {
   # Determine the catalog filename
   if (inherits(catalog, "stac_collection")) {
@@ -458,8 +462,7 @@ update_catalog_links <- function(
   } else {
     # For non-root catalogs, root points to the root
     if (catalog_type == "absolute") {
-      # Get base_url without trailing path
-      root_href <- sub("/[^/]+$", "/catalog.json", base_url)
+      # root_href is threaded down from the root call
     } else {
       # Calculate relative path to root (this assumes single-level nesting)
       root_href <- "../catalog.json"

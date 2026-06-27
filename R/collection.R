@@ -588,7 +588,13 @@ add_item_assets <- function(collection) {
     for (item in items) {
       asset <- item@assets[[key]]
       if (!is.null(asset)) {
-        return(asset[setdiff(names(asset), "href")])
+        asset <- asset[setdiff(names(asset), "href")]
+        if (!is.null(asset$`raster:bands`)) {
+          asset$`raster:bands` <- lapply(asset$`raster:bands`, function(band) {
+            band[setdiff(names(band), "statistics")]
+          })
+        }
+        return(asset)
       }
     }
     NULL
