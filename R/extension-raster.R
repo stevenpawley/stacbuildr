@@ -132,6 +132,15 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
     stop("'bands' must be a list of band objects")
   }
 
+  # Detect double-wrapping: raster_from_file() returns a list, so
+  # list(raster_from_file(...)) produces list(list(band, ...))
+  if (length(bands) == 1 && is.list(bands[[1]]) && !S7::S7_inherits(bands[[1]], raster_band)) {
+    stop(
+      "'bands' appears to be double-wrapped. ",
+      "Use bands = raster_from_file(...) not bands = list(raster_from_file(...))"
+    )
+  }
+
   # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
 
