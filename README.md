@@ -150,14 +150,12 @@ item <- item |>
 ```r
 item <- item |>
   add_raster_extension(
-    bands = list(
-      raster_band(
+    bands = raster_band(
         data_type = "uint16",
         nodata = 0,
         spatial_resolution = 10,
         scale = 0.0001
-      )
-    ),
+      ),
     asset_key = "visual"
   )
 ```

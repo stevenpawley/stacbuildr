@@ -190,8 +190,8 @@ combined_band$`raster:scale` <- 0.0001
 combined_band$`raster:offset` <- 0
 
 item <- item |>
-  add_eo_extension(bands = list(combined_band)) |>
-  add_raster_extension(bands = list(combined_band))
+  add_eo_extension(bands = combined_band) |>
+  add_raster_extension(bands = combined_band)
 
 }
 \references{
