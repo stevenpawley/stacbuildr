@@ -134,7 +134,7 @@ item <- item |>
       eo_band(name = "B2", common_name = "blue",  center_wavelength = 0.490)
     ),
     cloud_cover = 5.2,
-    asset_key = "visual". # attach bands to a specific asset
+    asset_key = "visual"  # attach bands to a specific asset
   )
 
 # Pre-built band definitions for common sensors
@@ -165,13 +165,30 @@ item <- item |>
 ### Integrations with spatial R packages
 
 ```r
-# Create a STAC Item directly from a GeoTIFF (via terra)
-item <- item_from_stars(
-  file = "path/to/image.tif",
+library(terra)
+
+# Create a STAC Item from a SpatRaster (with projection extension added automatically)
+r <- rast("path/to/image.tif")
+item <- item_from_terra(
+  r,
+  href = "path/to/image.tif",
+  id = "my-scene",
   datetime = "2023-06-15T10:30:00Z",
   add_raster_bands = TRUE,
   calculate_statistics = FALSE
 )
+
+# Or read raster band metadata separately and attach to an existing item
+bands <- raster_from_file("path/to/image.tif", calculate_statistics = TRUE)
+item <- item |>
+  add_asset("data", href = "path/to/image.tif",
+            type = "image/tiff; application=geotiff; profile=cloud-optimized",
+            roles = list("data")) |>
+  add_raster_extension(bands = bands, asset_key = "data")
+
+# Generate a thumbnail PNG from a SpatRaster and attach it as an asset
+item <- item |>
+  add_asset("thumbnail", preview_from_terra(r, tempfile(fileext = ".png")))
 
 # Create a STAC Item from an sf object
 library(sf)
@@ -405,7 +422,7 @@ curl -H "Authorization: Key <connect-api-key>" \
 | `sf` | Vector geometry handling |
 | `geojsonsf` | sf ↔ GeoJSON conversion |
 
-Optional: `stars` (reading raster files), `DBI` + `RPostgres` + `plumber` + `httr2` (serving the STAC API)
+Optional: `terra` (raster integration — `item_from_terra`, `raster_from_file`, `preview_from_terra`), `DBI` + `RPostgres` + `plumber` + `httr2` (serving the STAC API)
 
 ## References
 
