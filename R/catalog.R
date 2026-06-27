@@ -51,6 +51,9 @@ property_description <- S7::new_property(
 #'   conformance to STAC API specifications or other standards. Typically used
 #'   when the catalog is served via an API. Introduced in STAC 1.1.0. Default
 #'   is `NULL`.
+#' @param links (list, optional) Initial list of link objects. Links are
+#'   typically managed via `add_link()`, `add_child()`, and related helpers
+#'   after construction. Default is an empty list.
 #' @param ... Additional fields to include in the catalog. Any extra named
 #'   arguments will be added to the catalog object. This allows for custom
 #'   extensions or additional metadata beyond the core specification.

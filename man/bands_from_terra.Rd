@@ -4,7 +4,7 @@
 \alias{bands_from_terra}
 \title{Extract Raster Band Metadata from a Terra SpatRaster}
 \usage{
-bands_from_terra(terra_obj, calculate_statistics = FALSE, sample_size = NULL)
+bands_from_terra(terra_obj, calculate_statistics = FALSE, sample_size = 1000L)
 }
 \arguments{
 \item{terra_obj}{A \code{SpatRaster} object (from the \code{terra} package).}
@@ -13,7 +13,7 @@ bands_from_terra(terra_obj, calculate_statistics = FALSE, sample_size = NULL)
 mean, and standard deviation for each band. Default is FALSE.}
 
 \item{sample_size}{(integer, optional) Number of pixels to sample per band
-when calculating statistics. If NULL, all pixels are used.}
+when calculating statistics. Default is 1000 pixels.}
 }
 \value{
 A list of raster band objects, one per band.

@@ -620,7 +620,7 @@ bands_from_terra <- function(terra_obj, calculate_statistics = FALSE, sample_siz
     if (calculate_statistics) {
       if (!is.null(sample_size)) {
         vals <- as.vector(
-          spatSample(terra_obj[[i]], sample_size, as.df = FALSE)
+          terra::spatSample(terra_obj[[i]], sample_size, as.df = FALSE)
         )
       } else {
         vals <- as.vector(terra::values(terra_obj[[i]]))
