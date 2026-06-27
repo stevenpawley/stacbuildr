@@ -6,13 +6,13 @@ test_env <- simulate_test_env(package = "stacbuildr", path = "..")
 attach(test_env, warn.conflicts = FALSE)
 
 # prequel ----------------------------------------------------------------------
-skip_if_not_installed("stars")
+skip_if_not_installed("terra")
 skip_if_not_installed("sf")
-tif <- system.file("tif/L7_ETMs.tif", package = "stars")
+tif <- test_path("testdata", "L7_ETMs.tif")
 
 # test -------------------------------------------------------------------------
-r <- stars::read_stars(tif, quiet = TRUE)
-item <- item_from_stars(
+r <- terra::rast(tif)
+item <- item_from_terra(
     r,
     href = tif,
     id = "L7_ETMs",
@@ -21,6 +21,6 @@ item <- item_from_stars(
     asset_roles = c("data")
   )
 expect_true("data" %in% names(item@assets))
-expect_equal(item@assets$data$href, gsub("\\\\", "/", tif))
+expect_equal(item@assets$data$href, gsub("\\\\", "/", normalizePath(tif)))
 expect_equal(item@assets$data$type, "image/tiff; application=geotiff")
 expect_equal(item@assets$data$roles, list("data"))

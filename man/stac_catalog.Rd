@@ -12,6 +12,7 @@ stac_catalog(
   type = "Catalog",
   stac_extensions = NULL,
   conformsTo = NULL,
+  links = list(),
   ...
 )
 }
