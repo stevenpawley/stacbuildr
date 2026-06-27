@@ -4,7 +4,7 @@
 \alias{raster_from_file}
 \title{Extract Raster Band Metadata from a File}
 \usage{
-raster_from_file(file, calculate_statistics = FALSE, sample_size = NULL)
+raster_from_file(file, calculate_statistics = FALSE, sample_size = 1000L)
 }
 \arguments{
 \item{file}{(character, required) Path to the raster file.}
@@ -14,7 +14,8 @@ mean, and standard deviation for each band. Default is FALSE (can be slow
 for large files).}
 
 \item{sample_size}{(integer, optional) Number of pixels to sample per band
-when calculating statistics. If NULL, all pixels are used.}
+when calculating statistics. If NULL, all pixels are used. Default is
+1000 pixels.}
 }
 \value{
 A list of raster band objects, one per band in the file.

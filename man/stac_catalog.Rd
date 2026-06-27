@@ -49,6 +49,10 @@ conformance to STAC API specifications or other standards. Typically used
 when the catalog is served via an API. Introduced in STAC 1.1.0. Default
 is \code{NULL}.}
 
+\item{links}{(list, optional) Initial list of link objects. Links are
+typically managed via \code{add_link()}, \code{add_child()}, and related helpers
+after construction. Default is an empty list.}
+
 \item{...}{Additional fields to include in the catalog. Any extra named
 arguments will be added to the catalog object. This allows for custom
 extensions or additional metadata beyond the core specification.}
