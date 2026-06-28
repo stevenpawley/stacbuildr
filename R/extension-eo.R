@@ -741,6 +741,115 @@ worldview3_bands <- function() {
   )
 }
 
+#' Create Standard Planet SkySat Bands
+#'
+#' @description
+#' Helper function to create standard band definitions for Planet SkySat
+#' sensors.
+#'
+#' @return A list of EO band objects representing Planet SkySat bands.
+#'
+#' @examples
+#' bands <- skysat_bands()
+skysat_bands <- function() {
+  list(
+    eo_band(
+      name = "B01",
+      common_name = "blue",
+      center_wavelength = 0.4825,
+      full_width_half_max = 0.065
+    ),
+    eo_band(
+      name = "B02",
+      common_name = "green",
+      center_wavelength = 0.555,
+      full_width_half_max = 0.08
+    ),
+    eo_band(
+      name = "B03",
+      common_name = "red",
+      center_wavelength = 0.65,
+      full_width_half_max = 0.09
+    ),
+    eo_band(
+      name = "B04",
+      common_name = "nir",
+      center_wavelength = 0.77,
+      full_width_half_max = 0.06
+    ),
+    eo_band(
+      name = "PAN",
+      common_name = "pan",
+      center_wavelength = 0.675,
+      full_width_half_max = 0.45
+    )
+  )
+}
+
+
+#' Create Standard PlanetScope Bands
+#'
+#' @description
+#' Helper function to create standard band definitions for PlanetScope
+#' sensors (Dove Classic, Dove-R, SuperDove).
+#'
+#' @return A list of EO band objects representing PlanetScope bands.
+#'
+#' @examples
+#' bands <- planetscope_bands()
+planetscope_bands <- function() {
+  list(
+    eo_band(
+      name = "B01",
+      common_name = "coastal",
+      center_wavelength = 0.443,
+      full_width_half_max = 0.02
+    ),
+    eo_band(
+      name = "B02",
+      common_name = "blue",
+      center_wavelength = 0.49,
+      full_width_half_max = 0.05
+    ),
+    eo_band(
+      name = "B03",
+      common_name = "green1",
+      center_wavelength = 0.531,
+      full_width_half_max = 0.036
+    ),
+    eo_band(
+      name = "B04",
+      common_name = "green",
+      center_wavelength = 0.565,
+      full_width_half_max = 0.036
+    ),
+    eo_band(
+      name = "B05",
+      common_name = "yellow",
+      center_wavelength = 0.61,
+      full_width_half_max = 0.02
+    ),
+    eo_band(
+      name = "B06",
+      common_name = "red",
+      center_wavelength = 0.665,
+      full_width_half_max = 0.031
+    ),
+    eo_band(
+      name = "B07",
+      common_name = "rededge",
+      center_wavelength = 0.705,
+      full_width_half_max = 0.015
+    ),
+    eo_band(
+      name = "B08",
+      common_name = "nir",
+      center_wavelength = 0.865,
+      full_width_half_max = 0.04
+    )
+  )
+}
+
 
 #' Print method for EO band objects
 #'
