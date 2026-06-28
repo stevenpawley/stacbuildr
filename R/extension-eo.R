@@ -634,6 +634,7 @@ sentinel2_msi_bands <- function() {
 #'
 #' @examples
 #' bands <- worldview3_bands()
+#' @export
 worldview3_bands <- function() {
   list(
     eo_band(
@@ -751,6 +752,7 @@ worldview3_bands <- function() {
 #'
 #' @examples
 #' bands <- skysat_bands()
+#' @export
 skysat_bands <- function() {
   list(
     eo_band(
@@ -797,6 +799,7 @@ skysat_bands <- function() {
 #'
 #' @examples
 #' bands <- planetscope_bands()
+#' @export
 planetscope_bands <- function() {
   list(
     eo_band(

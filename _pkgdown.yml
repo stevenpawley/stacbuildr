@@ -90,6 +90,9 @@ reference:
       - print.eo_band
       - landsat_oli_bands
       - sentinel2_msi_bands
+      - worldview3_bands
+      - skysat_bands
+      - planetscope_bands
 
   - title: "Classification Extension"
     desc: >
