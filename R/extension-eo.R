@@ -547,79 +547,196 @@ sentinel2_msi_bands <- function() {
       name = "B01",
       common_name = "coastal",
       center_wavelength = 0.443,
-      full_width_half_max = 0.027
+      full_width_half_max = 0.02
     ),
     eo_band(
       name = "B02",
       common_name = "blue",
-      center_wavelength = 0.490,
-      full_width_half_max = 0.098
+      center_wavelength = 0.493,
+      full_width_half_max = 0.065
     ),
     eo_band(
       name = "B03",
       common_name = "green",
-      center_wavelength = 0.560,
-      full_width_half_max = 0.045
+      center_wavelength = 0.559,
+      full_width_half_max = 0.035
     ),
     eo_band(
       name = "B04",
       common_name = "red",
       center_wavelength = 0.665,
-      full_width_half_max = 0.038
+      full_width_half_max = 0.031
     ),
     eo_band(
       name = "B05",
       common_name = "rededge071",
-      center_wavelength = 0.705,
-      full_width_half_max = 0.019
+      center_wavelength = 0.704,
+      full_width_half_max = 0.015
     ),
     eo_band(
       name = "B06",
       common_name = "rededge075",
       center_wavelength = 0.740,
-      full_width_half_max = 0.018
+      full_width_half_max = 0.014
     ),
     eo_band(
       name = "B07",
       common_name = "rededge078",
-      center_wavelength = 0.783,
-      full_width_half_max = 0.028
+      center_wavelength = 0.781,
+      full_width_half_max = 0.019
     ),
     eo_band(
       name = "B08",
       common_name = "nir",
-      center_wavelength = 0.842,
-      full_width_half_max = 0.145
+      center_wavelength = 0.833,
+      full_width_half_max = 0.105
     ),
     eo_band(
       name = "B8A",
       common_name = "nir08",
-      center_wavelength = 0.865,
-      full_width_half_max = 0.033
+      center_wavelength = 0.864,
+      full_width_half_max = 0.021
     ),
     eo_band(
       name = "B09",
       common_name = "nir09",
-      center_wavelength = 0.945,
-      full_width_half_max = 0.026
+      center_wavelength = 0.944,
+      full_width_half_max = 0.020
     ),
     eo_band(
       name = "B10",
       common_name = "cirrus",
-      center_wavelength = 1.3735,
-      full_width_half_max = 0.075
+      center_wavelength = 1.375,
+      full_width_half_max = 0.029
     ),
     eo_band(
       name = "B11",
       common_name = "swir16",
-      center_wavelength = 1.610,
-      full_width_half_max = 0.143
+      center_wavelength = 1.612,
+      full_width_half_max = 0.092
     ),
     eo_band(
       name = "B12",
       common_name = "swir22",
-      center_wavelength = 2.190,
-      full_width_half_max = 0.242
+      center_wavelength = 2.194,
+      full_width_half_max = 0.179
+    )
+  )
+}
+
+#' Create Standard WorldView-3 Bands
+#'
+#' @description
+#' Helper function to create standard band definitions for WorldView-3
+#' sensors.
+#'
+#' @return A list of EO band objects representing WorldView-3 bands.
+#'
+#' @examples
+#' bands <- worldview3_bands()
+worldview3_bands <- function() {
+  list(
+    eo_band(
+      name = "PAN",
+      common_name = "pan",
+      center_wavelength = 0.625,
+      full_width_half_max = 0.350
+    ),
+    eo_band(
+      name = "B01",
+      common_name = "coastal",
+      center_wavelength = 0.425,
+      full_width_half_max = 0.050
+    ),
+    eo_band(
+      name = "B02",
+      common_name = "blue",
+      center_wavelength = 0.480,
+      full_width_half_max = 0.060
+    ),
+    eo_band(
+      name = "B03",
+      common_name = "green",
+      center_wavelength = 0.545,
+      full_width_half_max = 0.070
+    ),
+    eo_band(
+      name = "B04",
+      common_name = "yellow",
+      center_wavelength = 0.605,
+      full_width_half_max = 0.040
+    ),
+    eo_band(
+      name = "B05",
+      common_name = "red",
+      center_wavelength = 0.660,
+      full_width_half_max = 0.060
+    ),
+    eo_band(
+      name = "B06",
+      common_name = "rededge",
+      center_wavelength = 0.725,
+      full_width_half_max = 0.040
+    ),
+    eo_band(
+      name = "B07",
+      common_name = "nir01",
+      center_wavelength = 0.833,
+      full_width_half_max = 0.125
+    ),
+    eo_band(
+      name = "B08",
+      common_name = "nir02",
+      center_wavelength = 0.950,
+      full_width_half_max = 0.180
+    ),
+    eo_band(
+      name = "B09",
+      common_name = "swir01",
+      center_wavelength = 1.210,
+      full_width_half_max = 0.030
+    ),
+    eo_band(
+      name = "B10",
+      common_name = "swir02",
+      center_wavelength = 1.570,
+      full_width_half_max = 0.040
+    ),
+    eo_band(
+      name = "B11",
+      common_name = "swir03",
+      center_wavelength = 1.660,
+      full_width_half_max = 0.040
+    ),
+    eo_band(
+      name = "B12",
+      common_name = "swir04",
+      center_wavelength = 1.730,
+      full_width_half_max = 0.040
+    ),
+    eo_band(
+      name = "B13",
+      common_name = "swir05",
+      center_wavelength = 2.165,
+      full_width_half_max = 0.040
+    ),
+    eo_band(
+      name = "B14",
+      common_name = "swir06",
+      center_wavelength = 2.205,
+      full_width_half_max = 0.040
+    ),
+    eo_band(
+      name = "B15",
+      common_name = "swir07",
+      center_wavelength = 2.260,
+      full_width_half_max = 0.050
+    ),
+    eo_band(
+      name = "B16",
+      common_name = "swir08",
+      center_wavelength = 2.330,
+      full_width_half_max = 0.070
     )
   )
 }
