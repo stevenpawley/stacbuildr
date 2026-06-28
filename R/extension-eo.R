@@ -495,14 +495,14 @@ landsat_oli_bands <- function(include_thermal = FALSE) {
         eo_band(
           name = "B10",
           common_name = "lwir11",
-          center_wavelength = 10.9,
-          full_width_half_max = 0.8
+          center_wavelength = 10.895,
+          full_width_half_max = 0.59
         ),
         eo_band(
           name = "B11",
           common_name = "lwir12",
-          center_wavelength = 12.0,
-          full_width_half_max = 1.0
+          center_wavelength = 12.005,
+          full_width_half_max = 1.01
         )
       )
     )
