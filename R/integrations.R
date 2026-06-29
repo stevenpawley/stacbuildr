@@ -174,8 +174,8 @@ item_from_terra <- function(
   }
 
   # Add projection extension if CRS is not WGS84
-  crs <- sf::st_crs(terra::crs(terra_obj))
-  if (!isTRUE(crs$epsg == 4326L)) {
+  crs <- terra::crs(terra_obj, describe = TRUE)
+  if (crs$epsg != 4326L) {
     item <- add_projection_metadata_terra(item, terra_obj)
   }
 
@@ -340,7 +340,7 @@ bbox_from_sf <- function(sf_obj) {
 #'
 #' @keywords internal
 extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE) {
-  crs <- sf::st_crs(terra::crs(terra_obj))
+  crs <- terra::crs(terra_obj)
   bbox_sfc <- sf::st_as_sfc(
     sf::st_bbox(
       c(
@@ -354,7 +354,7 @@ extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE)
   )
   bbox_sf <- sf::st_as_sf(data.frame(geometry = bbox_sfc))
 
-  if (reproject_to_wgs84 && !isTRUE(crs$epsg == 4326L)) {
+  if (reproject_to_wgs84 && crs$epsg != 4326L) {
     bbox_sf <- sf::st_transform(bbox_sf, 4326)
   }
 
@@ -387,22 +387,28 @@ add_projection_metadata_terra <- function(item, terra_obj) {
     item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
-  crs <- sf::st_crs(terra::crs(terra_obj))
+  crs <- terra::crs(terra_obj, describe = TRUE)
 
-  if (!is.na(crs$epsg)) {
-    item@properties$`proj:epsg` <- as.integer(crs$epsg)
+  if (!is.na(crs$code)) {
+    item@properties$`proj:epsg` <- as.integer(crs$code)
   }
 
-  item@properties$`proj:wkt2` <- crs$wkt
+  item@properties$`proj:wkt2` <- terra::crs(terra_obj)
 
   item@properties$`proj:shape` <- c(
     terra::nrow(terra_obj),
     terra::ncol(terra_obj)
   )
 
+
+  # add affine transform parameters  
   item@properties$`proj:transform` <- c(
-    terra::xres(terra_obj), 0, terra::xmin(terra_obj),
-    0, -terra::yres(terra_obj), terra::ymax(terra_obj)
+    terra::ext(terra_obj)$xmin, # xoff
+    terra::xres(terra_obj),     # xscale
+    0,                          # xskew
+    terra::ext(terra_obj)$ymax, # yoff
+    0,                          # yskew
+    -terra::yres(terra_obj)     # yscale (negative)
   )
 
   item
