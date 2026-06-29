@@ -48,6 +48,7 @@ Collate:
     'validation.R'
     'write.R'
     'api-db.R'
+    'api-plumber-helper.R'
     'api-plumber.R'
     'api-signers.R'
     'zzz.R'
