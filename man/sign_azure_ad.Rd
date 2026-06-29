@@ -7,7 +7,8 @@
 sign_azure_ad(
   href,
   endpoint = Sys.getenv("AZURE_STORAGE_ENDPOINT"),
-  expiry_seconds = 3600L
+  expiry_seconds = 3600L,
+  token = AzureAuth::get_managed_token("https://storage.azure.com/")
 )
 }
 \arguments{
@@ -18,12 +19,19 @@ sign_azure_ad(
 \code{AZURE_STORAGE_ENDPOINT} environment variable.}
 
 \item{expiry_seconds}{Lifetime of the signed URL in seconds (default 3600).}
+
+\item{token}{An Azure AD token obtained from \code{\link[AzureAuth:get_managed_token]{AzureAuth::get_managed_token()}}
+or \code{\link[AzureAuth:get_azure_token]{AzureAuth::get_azure_token()}}. Defaults to a managed identity token,
+which works on Azure-hosted infrastructure (VMs, App Service, Container
+Apps). For service principal auth, obtain a token with
+\code{AzureAuth::get_azure_token()} and capture it in a closure:
+\verb{\\(href) sign_azure_ad(href, token = my_token)}.}
 }
 \value{
 A signed URL string with a SAS token appended.
 }
 \description{
-Generates a short-lived user delegation SAS token via a managed identity (or
-any other Azure AD credential accepted by \code{AzureStor}). Suitable for passing
-directly as the \code{sign_fn} argument of \code{\link[=stac_api_router]{stac_api_router()}}.
+Generates a short-lived user delegation SAS token using an Azure AD token.
+Suitable for passing directly as the \code{sign_fn} argument of
+\code{\link[=stac_api_router]{stac_api_router()}}.
 }

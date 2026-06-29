@@ -1,20 +1,27 @@
 #' Sign an Azure Blob Storage href using Azure AD authentication.
 #'
-#' Generates a short-lived user delegation SAS token via a managed identity (or
-#' any other Azure AD credential accepted by `AzureStor`). Suitable for passing
-#' directly as the `sign_fn` argument of [stac_api_router()].
+#' Generates a short-lived user delegation SAS token using an Azure AD token.
+#' Suitable for passing directly as the `sign_fn` argument of
+#' [stac_api_router()].
 #'
 #' @param href Unsigned Azure Blob Storage URL.
 #' @param endpoint Full blob service URL, e.g.
 #'   `"https://myaccount.blob.core.windows.net/"`. Defaults to the
 #'   `AZURE_STORAGE_ENDPOINT` environment variable.
 #' @param expiry_seconds Lifetime of the signed URL in seconds (default 3600).
+#' @param token An Azure AD token obtained from [AzureAuth::get_managed_token()]
+#'   or [AzureAuth::get_azure_token()]. Defaults to a managed identity token,
+#'   which works on Azure-hosted infrastructure (VMs, App Service, Container
+#'   Apps). For service principal auth, obtain a token with
+#'   `AzureAuth::get_azure_token()` and capture it in a closure:
+#'   `\(href) sign_azure_ad(href, token = my_token)`.
 #' @return A signed URL string with a SAS token appended.
 #' @export
 sign_azure_ad <- function(
   href,
   endpoint = Sys.getenv("AZURE_STORAGE_ENDPOINT"),
-  expiry_seconds = 3600L
+  expiry_seconds = 3600L,
+  token = AzureAuth::get_managed_token("https://storage.azure.com/")
 ) {
   if (!requireNamespace("AzureStor", quietly = TRUE)) {
     stop("Package 'AzureStor' is required for asset signing.")
@@ -34,8 +41,7 @@ sign_azure_ad <- function(
   start_time  <- Sys.time() - 300
   expiry_time <- Sys.time() + expiry_seconds
 
-  token <- AzureAuth::get_managed_token("https://storage.azure.com/")
-  endp  <- AzureStor::storage_endpoint(endpoint, token = token)
+  endp <- AzureStor::storage_endpoint(endpoint, token = token)
 
   userkey <- AzureStor::get_user_delegation_key(
     endp,
