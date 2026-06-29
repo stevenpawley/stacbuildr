@@ -354,7 +354,7 @@ extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE)
   )
   bbox_sf <- sf::st_as_sf(data.frame(geometry = bbox_sfc))
 
-  if (reproject_to_wgs84 && isTRUE(crs$epsg != 4326L)) {
+  if (reproject_to_wgs84 && !isTRUE(crs$epsg == 4326L)) {
     bbox_sf <- sf::st_transform(bbox_sf, 4326)
   }
 
