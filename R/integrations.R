@@ -175,7 +175,7 @@ item_from_terra <- function(
 
   # Add projection extension if CRS is not WGS84
   crs <- terra::crs(terra_obj, describe = TRUE)
-  if (crs$epsg != 4326L) {
+  if (crs$code != 4326L) {
     item <- add_projection_metadata_terra(item, terra_obj)
   }
 
