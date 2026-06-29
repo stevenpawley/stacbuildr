@@ -403,12 +403,12 @@ add_projection_metadata_terra <- function(item, terra_obj) {
 
   # add affine transform parameters  
   item@properties$`proj:transform` <- c(
-    terra::ext(terra_obj)$xmin, # xoff
     terra::xres(terra_obj),     # xscale
-    0,                          # xskew
-    terra::ext(terra_obj)$ymax, # yoff
-    0,                          # yskew
-    -terra::yres(terra_obj)     # yscale (negative)
+    0,                          # row rotation
+    terra::ext(terra_obj)$xmin, # top-left x
+    0,                          # column rotation
+    -terra::yres(terra_obj)     # pixel height (negative for north up)
+    terra::ext(terra_obj)$ymax, # top-left-y
   )
 
   item
