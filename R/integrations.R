@@ -407,8 +407,8 @@ add_projection_metadata_terra <- function(item, terra_obj) {
     0,                          # row rotation
     terra::ext(terra_obj)$xmin, # top-left x
     0,                          # column rotation
-    -terra::yres(terra_obj),     # pixel height (negative for north up)
-    terra::ext(terra_obj)$ymax, # top-left-y
+    -terra::yres(terra_obj),    # pixel height (negative for north up)
+    terra::ext(terra_obj)$ymax  # top-left-y
   )
 
   item
