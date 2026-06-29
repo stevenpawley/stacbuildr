@@ -377,6 +377,7 @@ extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE)
 #'
 #' @keywords internal
 add_projection_metadata_terra <- function(item, terra_obj) {
+  # Add projection extension to the item metadata `stac_extensions`
   ext_uri <- "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
 
   if (is.null(item@stac_extensions)) {
@@ -387,19 +388,18 @@ add_projection_metadata_terra <- function(item, terra_obj) {
     item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
+  # Add the projection extension `proj:epsg` fields
   crs <- terra::crs(terra_obj, describe = TRUE)
-
   if (!is.na(crs$code)) {
     item@properties$`proj:epsg` <- as.integer(crs$code)
   }
 
   item@properties$`proj:wkt2` <- terra::crs(terra_obj)
-
   item@properties$`proj:shape` <- c(
     terra::nrow(terra_obj),
     terra::ncol(terra_obj)
   )
-
+  item@properties$`proj:bbox` <- as.vector(terra::ext(terra_obj))[c(1,3,2,4)]
 
   # add affine transform parameters  
   item@properties$`proj:transform` <- c(
