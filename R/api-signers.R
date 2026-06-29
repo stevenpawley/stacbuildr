@@ -68,3 +68,90 @@ sign_azure_ad <- function(
 
   paste0(href, "?", sas_token)
 }
+
+#' Sign a Google Cloud Storage href using Application Default Credentials.
+#'
+#' Generates a short-lived V4 signed URL for a GCS object. Authentication is
+#' handled by `googleCloudStorageR` / `googleAuthR` — call
+#' `googleCloudStorageR::gcs_auth()` (or set `GOOGLE_APPLICATION_CREDENTIALS`)
+#' before use. On GCE the metadata server is used automatically. Suitable for
+#' passing directly as the `sign_fn` argument of [stac_api_router()].
+#'
+#' @param href Unsigned GCS URL. Accepts both `gs://bucket/object` and
+#'   `https://storage.googleapis.com/bucket/object` forms.
+#' @param expiry_seconds Lifetime of the signed URL in seconds (default 3600).
+#' @return A signed URL string.
+#' @export
+sign_gcp <- function(href, expiry_seconds = 3600L) {
+  if (!requireNamespace("googleCloudStorageR", quietly = TRUE)) {
+    stop("Package 'googleCloudStorageR' is required for GCP asset signing.")
+  }
+
+  # Parse bucket and object from gs:// or https://storage.googleapis.com/ URLs
+  path   <- sub("^gs://", "", href)
+  path   <- sub("^https://storage\\.googleapis\\.com/", "", path)
+  bucket <- sub("/.*", "", path)
+  object <- sub("^[^/]+/", "", path)
+
+  meta_obj <- googleCloudStorageR::gcs_get_object(
+    object_name = object,
+    bucket      = bucket,
+    meta        = TRUE
+  )
+
+  googleCloudStorageR::gcs_signed_url(
+    meta_obj,
+    expiration_ts = Sys.time() + expiry_seconds
+  )
+}
+
+#' Sign an AWS S3 href using a presigned URL.
+#'
+#' Generates a short-lived presigned GET URL for an S3 object using
+#' `paws.storage`. Authentication follows the standard AWS credential chain:
+#' environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
+#' `AWS_SESSION_TOKEN`), `~/.aws/credentials`, or an IAM instance profile
+#' (EC2, ECS, Lambda). Suitable for passing directly as the `sign_fn`
+#' argument of [stac_api_router()].
+#'
+#' @param href Unsigned S3 URL. Accepts `s3://bucket/key`, virtual-hosted
+#'   style (`https://bucket.s3.region.amazonaws.com/key`), and path style
+#'   (`https://s3.region.amazonaws.com/bucket/key`).
+#' @param expiry_seconds Lifetime of the presigned URL in seconds
+#'   (default 3600).
+#' @param region AWS region. Defaults to the `AWS_DEFAULT_REGION` environment
+#'   variable, falling back to `"us-east-1"`.
+#' @return A presigned URL string.
+#' @export
+sign_aws_s3 <- function(
+  href,
+  expiry_seconds = 3600L,
+  region = Sys.getenv("AWS_DEFAULT_REGION", unset = "us-east-1")
+) {
+  if (!requireNamespace("paws.storage", quietly = TRUE)) {
+    stop("Package 'paws.storage' is required for AWS S3 asset signing.")
+  }
+
+  if (startsWith(href, "s3://")) {
+    path   <- sub("^s3://", "", href)
+    bucket <- sub("/.*", "", path)
+    key    <- sub("^[^/]+/", "", path)
+  } else if (grepl("\\.s3[.-].*\\.amazonaws\\.com", href)) {
+    # Virtual-hosted: https://bucket.s3[.region].amazonaws.com/key
+    bucket <- sub("\\..+", "", sub("^https://", "", href))
+    key    <- sub("^https://[^/]+/", "", href)
+  } else {
+    # Path style: https://s3[.region].amazonaws.com/bucket/key
+    path   <- sub("^https://s3[^/]*/", "", href)
+    bucket <- sub("/.*", "", path)
+    key    <- sub("^[^/]+/", "", path)
+  }
+
+  svc <- paws.storage::s3(config = list(region = region))
+
+  svc$generate_presigned_url(
+    client_method = "get_object",
+    params        = list(Bucket = bucket, Key = key),
+    expires_in    = expiry_seconds
+  )
+}
