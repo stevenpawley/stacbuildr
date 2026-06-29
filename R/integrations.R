@@ -340,7 +340,7 @@ bbox_from_sf <- function(sf_obj) {
 #'
 #' @keywords internal
 extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE) {
-  crs <- terra::crs(terra_obj)
+  crs <- sf::st_crs(terra::crs(terra_obj))
   bbox_sfc <- sf::st_as_sfc(
     sf::st_bbox(
       c(
