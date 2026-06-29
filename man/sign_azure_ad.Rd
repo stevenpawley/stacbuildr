@@ -4,10 +4,18 @@
 \alias{sign_azure_ad}
 \title{Sign an Azure Blob Storage href using Azure AD authentication.}
 \usage{
-sign_azure_ad(href, expiry_seconds = 3600L)
+sign_azure_ad(
+  href,
+  endpoint = Sys.getenv("AZURE_STORAGE_ENDPOINT"),
+  expiry_seconds = 3600L
+)
 }
 \arguments{
 \item{href}{Unsigned Azure Blob Storage URL.}
+
+\item{endpoint}{Full blob service URL, e.g.
+\code{"https://myaccount.blob.core.windows.net/"}. Defaults to the
+\code{AZURE_STORAGE_ENDPOINT} environment variable.}
 
 \item{expiry_seconds}{Lifetime of the signed URL in seconds (default 3600).}
 }
@@ -16,16 +24,6 @@ A signed URL string with a SAS token appended.
 }
 \description{
 Generates a short-lived user delegation SAS token via a managed identity (or
-any other Azure AD credential accepted by \code{AzureStor}). Reads the storage
-endpoint and container from environment variables so that nothing is
-hardcoded. Suitable for passing directly as the \code{sign_fn} argument of
-\code{\link[=stac_api_router]{stac_api_router()}}.
-}
-\details{
-Required environment variables:
-\itemize{
-\item \code{AZURE_STORAGE_ENDPOINT} — full blob service URL, e.g.
-\code{"https://myaccount.blob.core.windows.net/"}.
-\item \code{AZURE_STORAGE_CONTAINER} — container name, e.g. \code{"stac"}.
-}
+any other Azure AD credential accepted by \code{AzureStor}). Suitable for passing
+directly as the \code{sign_fn} argument of \code{\link[=stac_api_router]{stac_api_router()}}.
 }
