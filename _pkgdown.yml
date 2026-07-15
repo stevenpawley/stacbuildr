@@ -122,6 +122,14 @@ reference:
       - table_column
       - print.table_column
 
+  - title: "Vector Extension"
+    desc: >
+      Add the STAC Vector Extension to Items, describing geometry types and
+      mapping resolution (minimum mapping unit/width, reference scale) of
+      vector data.
+    contents:
+      - add_vector_extension
+
   - title: "Read / Write"
     desc: "Serialise STAC objects to JSON on disk and read them back."
     contents:
