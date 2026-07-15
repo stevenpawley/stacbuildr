@@ -43,6 +43,7 @@ Collate:
     'extension-raster.R'
     'extension-classification.R'
     'extension-scientific.R'
+    'extension-table.R'
     'integrations.R'
     'thumbnail.R'
     'validation.R'

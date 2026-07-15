@@ -113,6 +113,15 @@ reference:
       - scientific_publication
       - print.scientific_publication
 
+  - title: "Table Extension"
+    desc: >
+      Add the STAC Table Extension to Items, describing tabular datasets
+      (e.g. GeoParquet) including columns, primary geometry, and row count.
+    contents:
+      - add_table_extension
+      - table_column
+      - print.table_column
+
   - title: "Read / Write"
     desc: "Serialise STAC objects to JSON on disk and read them back."
     contents:
