@@ -44,6 +44,7 @@ Collate:
     'extension-classification.R'
     'extension-scientific.R'
     'extension-table.R'
+    'extension-vector.R'
     'integrations.R'
     'thumbnail.R'
     'validation.R'
