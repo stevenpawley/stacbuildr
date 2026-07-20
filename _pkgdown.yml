@@ -130,6 +130,18 @@ reference:
     contents:
       - add_vector_extension
 
+  - title: "Datacube Extension"
+    desc: >
+      Add the STAC Datacube Extension to Items, describing N-dimensional
+      data cube dimensions (spatial, temporal, geometry, or additional) and
+      variables.
+    contents:
+      - add_datacube_extension
+      - cube_dimension
+      - cube_variable
+      - print.cube_dimension
+      - print.cube_variable
+
   - title: "Read / Write"
     desc: "Serialise STAC objects to JSON on disk and read them back."
     contents:
