@@ -178,3 +178,5 @@ reference:
     contents:
       - stac_api_router
       - sign_azure_ad
+      - sign_aws_s3
+      - sign_gcp
