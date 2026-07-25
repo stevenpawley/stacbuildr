@@ -34,7 +34,7 @@ thumbnail_from_sf(sf_obj, path, width = 256, height = 256, title = NULL, ...)
 - ...:
 
   Additional arguments passed to
-  [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
+  [`plot()`](https://rspatial.github.io/terra/reference/plot.html).
 
 ## Value
 

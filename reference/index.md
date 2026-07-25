@@ -68,19 +68,19 @@ Helper constructors for Collection fields.
 - [`add_item_assets()`](https://stevenpawley.github.io/stacbuildr/reference/add_item_assets.md)
   : Add Item Asset Definitions to a Collection
 
-## stars Integration
+## terra Integration
 
-Create STAC Items and preview/thumbnails directly from `stars` raster
+Create STAC Items and preview/thumbnails directly from `terra` raster
 objects, and extract band metadata.
 
-- [`item_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_stars.md)
-  : Create a STAC Item from a Stars Object
-- [`bands_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/bands_from_stars.md)
-  : Extract Raster Band Metadata from a Stars Object
+- [`item_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_terra.md)
+  : Create a STAC Item from a Terra SpatRaster Object
+- [`bands_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/bands_from_terra.md)
+  : Extract Raster Band Metadata from a Terra SpatRaster
 - [`items_from_directory()`](https://stevenpawley.github.io/stacbuildr/reference/items_from_directory.md)
   : Batch Create Items from Raster Files
-- [`preview_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/preview_from_stars.md)
-  : Generate a Thumbnail PNG from a Stars Raster Object
+- [`preview_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/preview_from_terra.md)
+  : Generate a Thumbnail PNG from a Terra SpatRaster Object
 
 ## sf Integration
 
@@ -128,6 +128,12 @@ definitions for common sensors.
   : Create Standard Landsat 8/9 OLI Bands
 - [`sentinel2_msi_bands()`](https://stevenpawley.github.io/stacbuildr/reference/sentinel2_msi_bands.md)
   : Create Standard Sentinel-2 MSI Bands
+- [`worldview3_bands()`](https://stevenpawley.github.io/stacbuildr/reference/worldview3_bands.md)
+  : Create Standard WorldView-3 Bands
+- [`skysat_bands()`](https://stevenpawley.github.io/stacbuildr/reference/skysat_bands.md)
+  : Create Standard Planet SkySat Bands
+- [`planetscope_bands()`](https://stevenpawley.github.io/stacbuildr/reference/planetscope_bands.md)
+  : Create Standard PlanetScope Bands
 
 ## Classification Extension
 
@@ -155,6 +161,44 @@ human-readable citation, and related publications for a dataset.
   : Create a Scientific Publication Object
 - [`print(`*`<scientific_publication>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.scientific_publication.md)
   : Print method for scientific_publication objects
+
+## Table Extension
+
+Add the STAC Table Extension to Items, describing tabular datasets
+(e.g. GeoParquet) including columns, primary geometry, and row count.
+
+- [`add_table_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_table_extension.md)
+  : Add Table Extension to a STAC Item
+- [`table_column()`](https://stevenpawley.github.io/stacbuildr/reference/table_column.md)
+  : Create a Table Column Object
+- [`print(`*`<table_column>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.table_column.md)
+  : Print method for table_column objects
+
+## Vector Extension
+
+Add the STAC Vector Extension to Items, describing geometry types and
+mapping resolution (minimum mapping unit/width, reference scale) of
+vector data.
+
+- [`add_vector_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_vector_extension.md)
+  : Add Vector Extension to a STAC Item
+
+## Datacube Extension
+
+Add the STAC Datacube Extension to Items, describing N-dimensional data
+cube dimensions (spatial, temporal, geometry, or additional) and
+variables.
+
+- [`add_datacube_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_datacube_extension.md)
+  : Add Datacube Extension to a STAC Item
+- [`cube_dimension()`](https://stevenpawley.github.io/stacbuildr/reference/cube_dimension.md)
+  : Create a Datacube Dimension Object
+- [`cube_variable()`](https://stevenpawley.github.io/stacbuildr/reference/cube_variable.md)
+  : Create a Datacube Variable Object
+- [`print(`*`<cube_dimension>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.cube_dimension.md)
+  : Print method for cube_dimension objects
+- [`print(`*`<cube_variable>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.cube_variable.md)
+  : Print method for cube_variable objects
 
 ## Read / Write
 
@@ -210,3 +254,8 @@ Storage.
   : Create a plumber router serving a minimal STAC API
 - [`sign_azure_ad()`](https://stevenpawley.github.io/stacbuildr/reference/sign_azure_ad.md)
   : Sign an Azure Blob Storage href using Azure AD authentication.
+- [`sign_aws_s3()`](https://stevenpawley.github.io/stacbuildr/reference/sign_aws_s3.md)
+  : Sign an AWS S3 href using a presigned URL.
+- [`sign_gcp()`](https://stevenpawley.github.io/stacbuildr/reference/sign_gcp.md)
+  : Sign a Google Cloud Storage href using Application Default
+  Credentials.

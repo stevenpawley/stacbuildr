@@ -13,10 +13,8 @@ This vignette demonstrates how to build a STAC catalog with
 ``` r
 
 library(stacbuildr)
-library(stars)
-#> Loading required package: abind
-#> Loading required package: sf
-#> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
+library(terra)
+#> terra 1.9.34
 ```
 
 ## Create a synthetic DEM
@@ -28,29 +26,28 @@ path to your own raster file.
 ``` r
 
 set.seed(42)
-m <- matrix(runif(100, 100, 3000), nrow = 10, ncol = 10)
-dem <- st_as_stars(m)
-dem <- st_set_dimensions(dem, 1, offset = -120, delta = 0.1)
-dem <- st_set_dimensions(dem, 2, offset = 49, delta = -0.1)
-st_crs(dem) <- 4326
+dem <- terra::rast(nrows = 10, ncols = 10, xmin = -120, xmax = -119,
+                   ymin = 48, ymax = 49, crs = "EPSG:4326")
+terra::values(dem) <- runif(terra::ncell(dem), 100, 3000)
 names(dem) <- "elevation"
 
 tif_path <- file.path(tempdir(), "dem.tif")
-write_stars(dem, tif_path)
+terra::writeRaster(dem, tif_path, overwrite = TRUE)
 
-r <- read_stars(tif_path)
+r <- terra::rast(tif_path)
 ```
 
 ## Create a STAC Item from the raster
 
-[`item_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_stars.md)
-extracts the spatial extent, CRS, and geometry from the `stars` object
-and returns a `stac_item`. We then attach the raster file as an asset.
+[`item_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_terra.md)
+extracts the spatial extent, CRS, and geometry from the `SpatRaster`
+object and returns a `stac_item`. We then attach the raster file as an
+asset.
 
 ``` r
 
 item <- r |>
-  item_from_stars(
+  item_from_terra(
     id = "dem-001",
     datetime = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ")
   ) |>
@@ -67,7 +64,7 @@ item
 #> <STAC Item>
 #>   id          : dem-001
 #>   stac_version: 1.1.0
-#>   datetime    : 2026-06-27T05:34:05Z
+#>   datetime    : 2026-07-25T15:47:04Z
 #>   geometry    : Polygon
 #>   bbox        : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   assets      : 1 [dem]
@@ -85,7 +82,7 @@ collection <- stac_collection(
   title = "Terrain Collection",
   license = "CC-BY-4.0",
   extent = stac_extent(
-    spatial_bbox = list(as.numeric(st_bbox(r))),
+    spatial_bbox = list(c(terra::xmin(r), terra::ymin(r), terra::xmax(r), terra::ymax(r))),
     temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
   )
 )
@@ -131,7 +128,7 @@ write_stac(
   catalog_type = "self-contained",
   overwrite = TRUE
 )
-#> STAC catalog written to: /tmp/RtmpUmQRN9/catalog
+#> STAC catalog written to: /tmp/Rtmp8dayRb/catalog
 ```
 
 The resulting directory structure looks like:
@@ -161,7 +158,7 @@ item_read
 #>   id          : dem-001
 #>   collection  : terrain
 #>   stac_version: 1.1.0
-#>   datetime    : 2026-06-27T05:34:05Z
+#>   datetime    : 2026-07-25T15:47:04Z
 #>   geometry    : Polygon
 #>   bbox        : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   assets      : 1 [dem]

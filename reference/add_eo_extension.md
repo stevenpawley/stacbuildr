@@ -230,7 +230,6 @@ combined_band$`raster:scale` <- 0.0001
 combined_band$`raster:offset` <- 0
 
 item <- item |>
-  add_eo_extension(bands = list(combined_band)) |>
-  add_raster_extension(bands = list(combined_band))
-#> Error in add_raster_extension(add_eo_extension(item, bands = list(combined_band)),     bands = list(combined_band)): 'bands' appears to be double-wrapped. Use bands = raster_from_file(...) not bands = list(raster_from_file(...))
+  add_eo_extension(bands = combined_band) |>
+  add_raster_extension(bands = combined_band)
 ```

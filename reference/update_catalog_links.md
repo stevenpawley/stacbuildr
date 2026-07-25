@@ -12,6 +12,7 @@ update_catalog_links(
   catalog_type,
   base_url = NULL,
   is_root = FALSE,
-  parent_href = NULL
+  parent_href = NULL,
+  root_href = NULL
 )
 ```

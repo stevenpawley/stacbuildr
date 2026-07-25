@@ -197,23 +197,24 @@
 <div class="section level4">
 <h4 id="electro-optical-eo-extension">Electro-Optical (EO) extension<a class="anchor" aria-label="anchor" href="#electro-optical-eo-extension"></a>
 </h4>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>item <span class="ot">&lt;-</span> item <span class="sc">|&gt;</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="fu">add_eo_extension</span>(</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="at">bands =</span> <span class="fu">list</span>(</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>      <span class="fu">eo_band</span>(<span class="at">name =</span> <span class="st">"B4"</span>, <span class="at">common_name =</span> <span class="st">"red"</span>,   <span class="at">center_wavelength =</span> <span class="fl">0.665</span>),</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>      <span class="fu">eo_band</span>(<span class="at">name =</span> <span class="st">"B3"</span>, <span class="at">common_name =</span> <span class="st">"green"</span>, <span class="at">center_wavelength =</span> <span class="fl">0.560</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>      <span class="fu">eo_band</span>(<span class="at">name =</span> <span class="st">"B2"</span>, <span class="at">common_name =</span> <span class="st">"blue"</span>,  <span class="at">center_wavelength =</span> <span class="fl">0.490</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>    ),</span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>    <span class="at">cloud_cover =</span> <span class="fl">5.2</span>,</span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>    <span class="at">asset_key =</span> <span class="st">"visual"</span>. <span class="co"># attach bands to a specific asset</span></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>  )</span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co"># Pre-built band definitions for common sensors</span></span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>item <span class="ot">&lt;-</span> item <span class="sc">|&gt;</span> </span>
-<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>  <span class="fu">add_eo_extension</span>(<span class="at">bands =</span> <span class="fu">sentinel2_msi_bands</span>())</span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>item <span class="ot">&lt;-</span> item <span class="sc">|&gt;</span> </span>
-<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  <span class="fu">add_eo_extension</span>(<span class="at">bands =</span> <span class="fu">landsat_oli_bands</span>(<span class="at">include_thermal =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/add_eo_extension.html">add_eo_extension</a></span><span class="op">(</span></span>
+<span>    bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="reference/eo_band.html">eo_band</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B4"</span>, common_name <span class="op">=</span> <span class="st">"red"</span>,   center_wavelength <span class="op">=</span> <span class="fl">0.665</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="reference/eo_band.html">eo_band</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B3"</span>, common_name <span class="op">=</span> <span class="st">"green"</span>, center_wavelength <span class="op">=</span> <span class="fl">0.560</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="reference/eo_band.html">eo_band</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B2"</span>, common_name <span class="op">=</span> <span class="st">"blue"</span>,  center_wavelength <span class="op">=</span> <span class="fl">0.490</span><span class="op">)</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    cloud_cover <span class="op">=</span> <span class="fl">5.2</span>,</span>
+<span>    asset_key <span class="op">=</span> <span class="st">"visual"</span>  <span class="co"># attach bands to a specific asset</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Pre-built band definitions for common sensors</span></span>
+<span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/add_eo_extension.html">add_eo_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="fu"><a href="reference/sentinel2_msi_bands.html">sentinel2_msi_bands</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="reference/add_eo_extension.html">add_eo_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="fu"><a href="reference/landsat_oli_bands.html">landsat_oli_bands</a></span><span class="op">(</span>include_thermal <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="raster-extension">Raster extension<a class="anchor" aria-label="anchor" href="#raster-extension"></a>
@@ -221,14 +222,12 @@
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/add_raster_extension.html">add_raster_extension</a></span><span class="op">(</span></span>
-<span>    bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="reference/raster_band.html">raster_band</a></span><span class="op">(</span></span>
+<span>    bands <span class="op">=</span> <span class="fu"><a href="reference/raster_band.html">raster_band</a></span><span class="op">(</span></span>
 <span>        data_type <span class="op">=</span> <span class="st">"uint16"</span>,</span>
 <span>        nodata <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>        spatial_resolution <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>        scale <span class="op">=</span> <span class="fl">0.0001</span></span>
-<span>      <span class="op">)</span></span>
-<span>    <span class="op">)</span>,</span>
+<span>      <span class="op">)</span>,</span>
 <span>    asset_key <span class="op">=</span> <span class="st">"visual"</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 </div>
@@ -237,13 +236,30 @@
 <h3 id="integrations-with-spatial-r-packages">Integrations with spatial R packages<a class="anchor" aria-label="anchor" href="#integrations-with-spatial-r-packages"></a>
 </h3>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Create a STAC Item directly from a GeoTIFF (via terra)</span></span>
-<span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/item_from_stars.html">item_from_stars</a></span><span class="op">(</span></span>
-<span>  file <span class="op">=</span> <span class="st">"path/to/image.tif"</span>,</span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Create a STAC Item from a SpatRaster (with projection extension added automatically)</span></span>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="st">"path/to/image.tif"</span><span class="op">)</span></span>
+<span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/item_from_terra.html">item_from_terra</a></span><span class="op">(</span></span>
+<span>  <span class="va">r</span>,</span>
+<span>  href <span class="op">=</span> <span class="st">"path/to/image.tif"</span>,</span>
+<span>  id <span class="op">=</span> <span class="st">"my-scene"</span>,</span>
 <span>  datetime <span class="op">=</span> <span class="st">"2023-06-15T10:30:00Z"</span>,</span>
 <span>  add_raster_bands <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  calculate_statistics <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Or read raster band metadata separately and attach to an existing item</span></span>
+<span><span class="va">bands</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/raster_from_file.html">raster_from_file</a></span><span class="op">(</span><span class="st">"path/to/image.tif"</span>, calculate_statistics <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/add_asset.html">add_asset</a></span><span class="op">(</span><span class="st">"data"</span>, href <span class="op">=</span> <span class="st">"path/to/image.tif"</span>,</span>
+<span>            type <span class="op">=</span> <span class="st">"image/tiff; application=geotiff; profile=cloud-optimized"</span>,</span>
+<span>            roles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/add_raster_extension.html">add_raster_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="va">bands</span>, asset_key <span class="op">=</span> <span class="st">"data"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Generate a thumbnail PNG from a SpatRaster and attach it as an asset</span></span>
+<span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/add_asset.html">add_asset</a></span><span class="op">(</span><span class="st">"thumbnail"</span>, <span class="fu"><a href="reference/preview_from_terra.html">preview_from_terra</a></span><span class="op">(</span><span class="va">r</span>, <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".png"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create a STAC Item from an sf object</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
@@ -503,7 +519,7 @@
 </tr>
 </tbody>
 </table>
-<p>Optional: <code>stars</code> (reading raster files), <code>DBI</code> + <code>RPostgres</code> + <code>plumber</code> + <code>httr2</code> (serving the STAC API)</p>
+<p>Optional: <code>terra</code> (raster integration — <code>item_from_terra</code>, <code>raster_from_file</code>, <code>preview_from_terra</code>), <code>DBI</code> + <code>RPostgres</code> + <code>plumber</code> + <code>httr2</code> (serving the STAC API)</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -556,6 +572,9 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/stevenpawley/stacbuildr/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/stevenpawley/stacbuildr/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://CRAN.R-project.org/package=stacbuildr" class="external-link"><img src="https://www.r-pkg.org/badges/version/stacbuildr" alt="CRAN status"></a></li>
+<li><a href="https://stevenpawley.r-universe.dev/stacbuildr" class="external-link"><img src="https://stevenpawley.r-universe.dev/stacbuildr/badges/version" alt="R-universe version"></a></li>
 </ul>
 </div>
 
@@ -568,7 +587,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

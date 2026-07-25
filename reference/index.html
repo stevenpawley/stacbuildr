@@ -235,9 +235,9 @@
         </dt>
         <dd>Add Item Asset Definitions to a Collection</dd>
       </dl></div><div class="section level2">
-      <h2 id="stars-integration">stars Integration<a class="anchor" aria-label="anchor" href="#stars-integration"></a></h2>
+      <h2 id="terra-integration">terra Integration<a class="anchor" aria-label="anchor" href="#terra-integration"></a></h2>
 
-      <div class="section-desc"><p>Create STAC Items and preview/thumbnails directly from <code>stars</code> raster objects, and extract band metadata.</p></div>
+      <div class="section-desc"><p>Create STAC Items and preview/thumbnails directly from <code>terra</code> raster objects, and extract band metadata.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -246,17 +246,17 @@
 
       <dl><dt>
 
-          <code><a href="item_from_stars.html">item_from_stars()</a></code>
+          <code><a href="item_from_terra.html">item_from_terra()</a></code>
 
         </dt>
-        <dd>Create a STAC Item from a Stars Object</dd>
+        <dd>Create a STAC Item from a Terra SpatRaster Object</dd>
 
         <dt>
 
-          <code><a href="bands_from_stars.html">bands_from_stars()</a></code>
+          <code><a href="bands_from_terra.html">bands_from_terra()</a></code>
 
         </dt>
-        <dd>Extract Raster Band Metadata from a Stars Object</dd>
+        <dd>Extract Raster Band Metadata from a Terra SpatRaster</dd>
 
         <dt>
 
@@ -267,10 +267,10 @@
 
         <dt>
 
-          <code><a href="preview_from_stars.html">preview_from_stars()</a></code>
+          <code><a href="preview_from_terra.html">preview_from_terra()</a></code>
 
         </dt>
-        <dd>Generate a Thumbnail PNG from a Stars Raster Object</dd>
+        <dd>Generate a Thumbnail PNG from a Terra SpatRaster Object</dd>
       </dl></div><div class="section level2">
       <h2 id="sf-integration">sf Integration<a class="anchor" aria-label="anchor" href="#sf-integration"></a></h2>
 
@@ -396,6 +396,27 @@
 
         </dt>
         <dd>Create Standard Sentinel-2 MSI Bands</dd>
+
+        <dt>
+
+          <code><a href="worldview3_bands.html">worldview3_bands()</a></code>
+
+        </dt>
+        <dd>Create Standard WorldView-3 Bands</dd>
+
+        <dt>
+
+          <code><a href="skysat_bands.html">skysat_bands()</a></code>
+
+        </dt>
+        <dd>Create Standard Planet SkySat Bands</dd>
+
+        <dt>
+
+          <code><a href="planetscope_bands.html">planetscope_bands()</a></code>
+
+        </dt>
+        <dd>Create Standard PlanetScope Bands</dd>
       </dl></div><div class="section level2">
       <h2 id="classification-extension">Classification Extension<a class="anchor" aria-label="anchor" href="#classification-extension"></a></h2>
 
@@ -470,6 +491,96 @@
 
         </dt>
         <dd>Print method for scientific_publication objects</dd>
+      </dl></div><div class="section level2">
+      <h2 id="table-extension">Table Extension<a class="anchor" aria-label="anchor" href="#table-extension"></a></h2>
+
+      <div class="section-desc"><p>Add the STAC Table Extension to Items, describing tabular datasets (e.g. GeoParquet) including columns, primary geometry, and row count.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="add_table_extension.html">add_table_extension()</a></code>
+
+        </dt>
+        <dd>Add Table Extension to a STAC Item</dd>
+
+        <dt>
+
+          <code><a href="table_column.html">table_column()</a></code>
+
+        </dt>
+        <dd>Create a Table Column Object</dd>
+
+        <dt>
+
+          <code><a href="print.table_column.html">print(<i>&lt;table_column&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for table_column objects</dd>
+      </dl></div><div class="section level2">
+      <h2 id="vector-extension">Vector Extension<a class="anchor" aria-label="anchor" href="#vector-extension"></a></h2>
+
+      <div class="section-desc"><p>Add the STAC Vector Extension to Items, describing geometry types and mapping resolution (minimum mapping unit/width, reference scale) of vector data.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="add_vector_extension.html">add_vector_extension()</a></code>
+
+        </dt>
+        <dd>Add Vector Extension to a STAC Item</dd>
+      </dl></div><div class="section level2">
+      <h2 id="datacube-extension">Datacube Extension<a class="anchor" aria-label="anchor" href="#datacube-extension"></a></h2>
+
+      <div class="section-desc"><p>Add the STAC Datacube Extension to Items, describing N-dimensional data cube dimensions (spatial, temporal, geometry, or additional) and variables.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="add_datacube_extension.html">add_datacube_extension()</a></code>
+
+        </dt>
+        <dd>Add Datacube Extension to a STAC Item</dd>
+
+        <dt>
+
+          <code><a href="cube_dimension.html">cube_dimension()</a></code>
+
+        </dt>
+        <dd>Create a Datacube Dimension Object</dd>
+
+        <dt>
+
+          <code><a href="cube_variable.html">cube_variable()</a></code>
+
+        </dt>
+        <dd>Create a Datacube Variable Object</dd>
+
+        <dt>
+
+          <code><a href="print.cube_dimension.html">print(<i>&lt;cube_dimension&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for cube_dimension objects</dd>
+
+        <dt>
+
+          <code><a href="print.cube_variable.html">print(<i>&lt;cube_variable&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for cube_variable objects</dd>
       </dl></div><div class="section level2">
       <h2 id="read-write">Read / Write<a class="anchor" aria-label="anchor" href="#read-write"></a></h2>
 
@@ -597,6 +708,20 @@
 
         </dt>
         <dd>Sign an Azure Blob Storage href using Azure AD authentication.</dd>
+
+        <dt>
+
+          <code><a href="sign_aws_s3.html">sign_aws_s3()</a></code>
+
+        </dt>
+        <dd>Sign an AWS S3 href using a presigned URL.</dd>
+
+        <dt>
+
+          <code><a href="sign_gcp.html">sign_gcp()</a></code>
+
+        </dt>
+        <dd>Sign a Google Cloud Storage href using Application Default Credentials.</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
@@ -607,7 +732,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

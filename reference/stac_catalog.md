@@ -17,6 +17,7 @@ stac_catalog(
   type = "Catalog",
   stac_extensions = NULL,
   conformsTo = NULL,
+  links = list(),
   ...
 )
 ```
@@ -69,6 +70,14 @@ stac_catalog(
   catalog is served via an API. Introduced in STAC 1.1.0. Default is
   `NULL`.
 
+- links:
+
+  (list, optional) Initial list of link objects. Links are typically
+  managed via
+  [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md),
+  [`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md),
+  and related helpers after construction. Default is an empty list.
+
 - ...:
 
   Additional fields to include in the catalog. Any extra named arguments
@@ -79,8 +88,8 @@ stac_catalog(
 
 An S7 object of class `stac_catalog` containing the catalog metadata.
 Convert to a plain list for JSON serialization with
-[`as.list()`](https://rdrr.io/r/base/list.html), or write directly to
-disk using
+[`as.list()`](https://rspatial.github.io/terra/reference/as.list.html),
+or write directly to disk using
 [`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md).
 
 ## Details

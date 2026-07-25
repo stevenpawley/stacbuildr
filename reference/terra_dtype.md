@@ -1,9 +1,9 @@
-# Map terra Data Type Strings to STAC Raster Data Types
+# Map terra datatype string to STAC raster data type string
 
-Map terra Data Type Strings to STAC Raster Data Types
+Map terra datatype string to STAC raster data type string
 
 ## Usage
 
 ``` r
-terra_dtype(dtype_str)
+terra_dtype(dt)
 ```

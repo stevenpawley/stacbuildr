@@ -15,6 +15,7 @@ write_catalog_recursive(
   overwrite,
   pretty,
   is_root = FALSE,
-  parent_href = NULL
+  parent_href = NULL,
+  root_href = NULL
 )
 ```

@@ -1,9 +1,24 @@
-# Add Projection Extension Metadata from a SpatRaster Object
+# Add Projection Extension Metadata from a Terra SpatRaster
 
-Add Projection Extension Metadata from a SpatRaster Object
+Adds projection extension metadata to a STAC Item for rasters not in
+WGS84.
 
 ## Usage
 
 ``` r
-add_projection_metadata_terra(item, spat_rast)
+add_projection_metadata_terra(item, terra_obj)
 ```
+
+## Arguments
+
+- item:
+
+  A STAC Item object.
+
+- terra_obj:
+
+  A `SpatRaster` object.
+
+## Value
+
+The modified STAC Item.

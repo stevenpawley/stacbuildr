@@ -31,7 +31,7 @@ items_from_directory(
 - ...:
 
   Additional arguments passed to
-  [`item_from_stars()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_stars.md).
+  [`item_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_terra.md).
 
 ## Value
 

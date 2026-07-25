@@ -1,6 +1,6 @@
 # Extract Raster Band Metadata from a File
 
-Extracts raster metadata from a file using `stars` and
+Extracts raster metadata from a file using `terra` and
 [`sf::gdal_utils`](https://r-spatial.github.io/sf/reference/gdal_utils.html).
 Creates band objects with data type, spatial resolution, and optionally
 statistics.
@@ -8,7 +8,7 @@ statistics.
 ## Usage
 
 ``` r
-raster_from_file(file, calculate_statistics = FALSE, sample_size = NULL)
+raster_from_file(file, calculate_statistics = FALSE, sample_size = 1000L)
 ```
 
 ## Arguments
@@ -26,7 +26,8 @@ raster_from_file(file, calculate_statistics = FALSE, sample_size = NULL)
 - sample_size:
 
   (integer, optional) Number of pixels to sample per band when
-  calculating statistics. If NULL, all pixels are used.
+  calculating statistics. If NULL, all pixels are used. Default is 1000
+  pixels.
 
 ## Value
 
