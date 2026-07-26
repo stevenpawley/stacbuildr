@@ -141,6 +141,16 @@ reference:
       - cube_variable
       - print.cube_dimension
       - print.cube_variable
+    
+  - title: "Render Extension"
+    desc: >
+      Add the STAC Render Extension to Items or Collections, describing
+      aspects of rendering behaviour of items or collections in terms
+      of colour ramps, nodata values, and band scaling.
+    contents:
+      - render_object
+      - add_render_extension
+      - print.render_object
 
   - title: "Read / Write"
     desc: "Serialise STAC objects to JSON on disk and read them back."
