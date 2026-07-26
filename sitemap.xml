@@ -18,6 +18,7 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_parent_link.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_projection_metadata_terra.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_raster_extension.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_render_extension.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_root_link.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_scientific_extension.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_self_link.html</loc></url>
@@ -59,6 +60,7 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.cube_dimension.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.cube_variable.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.eo_band.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.render_object.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.scientific_publication.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.table_column.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/raster_band.html</loc></url>
@@ -68,6 +70,7 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/read_stac.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/relativize_asset_hrefs.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/remove_item.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/render_object.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/sentinel2_msi_bands.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/sign_aws_s3.html</loc></url>

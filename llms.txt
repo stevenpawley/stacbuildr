@@ -665,6 +665,19 @@ variables.
 - [`print(`*`<cube_variable>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.cube_variable.md)
   : Print method for cube_variable objects
 
+## Render Extension
+
+Add the STAC Render Extension to Items or Collections, describing
+aspects of rendering behaviour of items or collections in terms of
+colour ramps, nodata values, and band scaling.
+
+- [`render_object()`](https://stevenpawley.github.io/stacbuildr/reference/render_object.md)
+  : Create a STAC Render Object
+- [`add_render_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_render_extension.md)
+  : Add Render Extension to a STAC Item or Collection
+- [`print(`*`<render_object>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.render_object.md)
+  : Print method for render_object objects
+
 ## Read / Write
 
 Serialise STAC objects to JSON on disk and read them back.
