@@ -322,3 +322,110 @@ test_that("url_join collapses relative segments", {
     "https://example.com/dem.tif"
   )
 })
+
+test_that("write_item drops a collection field that has no collection link", {
+  item <- stac_item(
+    id = "orphan",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z",
+    collection = "somewhere-else"
+  )
+
+  file <- withr::local_tempfile(fileext = ".json")
+  expect_warning(write_item(item, file), "collection")
+
+  # The Item schema forbids the field unless a collection link is present
+  written <- jsonlite::fromJSON(file, simplifyVector = FALSE)
+  expect_null(written$collection)
+})
+
+test_that("write_item keeps a collection field paired with a collection link", {
+  item <- stac_item(
+    id = "paired",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z",
+    collection = "my-collection"
+  ) |>
+    add_link("collection", "../collection.json")
+
+  file <- withr::local_tempfile(fileext = ".json")
+  expect_no_warning(write_item(item, file))
+
+  written <- jsonlite::fromJSON(file, simplifyVector = FALSE)
+  expect_equal(written$collection, "my-collection")
+})
+
+test_that("write_item warns when a collection link has no collection field", {
+  item <- stac_item(
+    id = "linked",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  ) |>
+    add_link("collection", "../collection.json")
+
+  file <- withr::local_tempfile(fileext = ".json")
+  # The id cannot be inferred, so this one is reported rather than repaired
+  expect_warning(write_item(item, file), "collection")
+})
+
+test_that("write_stac drops a stale collection field under a plain catalog", {
+  item <- stac_item(
+    id = "stale",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z",
+    collection = "ghost"
+  )
+  catalog <- add_item(
+    stac_catalog(id = "root", description = "Plain catalog"),
+    item
+  )
+
+  path <- withr::local_tempdir()
+  expect_warning(write_stac(catalog, path, overwrite = TRUE), "collection")
+
+  written <- jsonlite::fromJSON(
+    file.path(path, "stale", "stale.json"),
+    simplifyVector = FALSE
+  )
+  expect_null(written$collection)
+  expect_false(any(vapply(
+    written$links, function(l) identical(l$rel, "collection"), logical(1)
+  )))
+})
+
+test_that("write_stac keeps the collection pair intact under a collection", {
+  item <- stac_item(
+    id = "kept",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  )
+  collection <- add_item(
+    stac_collection(
+      id = "colroot",
+      description = "d",
+      license = "MIT",
+      extent = stac_extent(
+        spatial_bbox = list(c(-1, -1, 1, 1)),
+        temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
+      )
+    ),
+    item
+  )
+
+  path <- withr::local_tempdir()
+  expect_no_warning(write_stac(collection, path, overwrite = TRUE))
+
+  written <- jsonlite::fromJSON(
+    file.path(path, "kept", "kept.json"),
+    simplifyVector = FALSE
+  )
+  expect_equal(written$collection, "colroot")
+  expect_true(any(vapply(
+    written$links, function(l) identical(l$rel, "collection"), logical(1)
+  )))
+})
