@@ -240,8 +240,20 @@ item_from_sf <- function(
     cli::cli_abort("'sf_obj' must be an sf object")
   }
 
-  # Convert to WGS84 if necessary
-  if (sf::st_crs(sf_obj)$epsg != 4326) {
+  # Convert to WGS84 if necessary. Compare CRS objects rather than EPSG codes:
+  # st_crs(x)$epsg is NA for any CRS not given as an EPSG code, OGC:CRS84
+  # included even though it is WGS84 longitude/latitude, and NA != 4326 is NA,
+  # which is not a usable condition.
+  crs <- sf::st_crs(sf_obj)
+  if (is.na(crs)) {
+    cli::cli_abort(c(
+      "{.arg sf_obj} has no CRS.",
+      "i" = "STAC geometries are WGS84 longitude/latitude, so the CRS is
+             needed to check whether the coordinates must be transformed.",
+      ">" = "Set it with {.code sf::st_crs(sf_obj) <- <crs>}."
+    ))
+  }
+  if (crs != sf::st_crs(4326)) {
     sf_obj <- sf::st_transform(sf_obj, 4326)
   }
 
@@ -359,7 +371,14 @@ bbox_from_sf <- function(sf_obj) {
 #'
 #' @keywords internal
 extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE) {
-  crs <- sf::st_crs(terra::crs(terra_obj))
+  # terra reports a missing CRS as "", which st_crs() rejects outright, so
+  # normalise it to an NA crs and let the check below report it properly.
+  crs_wkt <- terra::crs(terra_obj)
+  crs <- if (is.na(crs_wkt) || !nzchar(crs_wkt)) {
+    sf::st_crs(NA)
+  } else {
+    sf::st_crs(crs_wkt)
+  }
   bbox_sfc <- sf::st_as_sfc(
     sf::st_bbox(
       c(
@@ -373,8 +392,20 @@ extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE)
   )
   bbox_sf <- sf::st_as_sf(data.frame(geometry = bbox_sfc))
 
-  if (reproject_to_wgs84 && !isTRUE(crs$epsg == 4326L)) {
-    bbox_sf <- sf::st_transform(bbox_sf, 4326)
+  if (reproject_to_wgs84) {
+    if (is.na(crs)) {
+      cli::cli_abort(c(
+        "{.arg terra_obj} has no CRS.",
+        "i" = "STAC geometries are WGS84 longitude/latitude, so the CRS is
+               needed to transform the raster extent.",
+        ">" = "Set it with {.code terra::crs(terra_obj) <- <crs>}, or pass
+               {.code reproject_to_wgs84 = FALSE} if it is already
+               longitude/latitude."
+      ))
+    }
+    if (crs != sf::st_crs(4326)) {
+      bbox_sf <- sf::st_transform(bbox_sf, 4326)
+    }
   }
 
   list(
@@ -407,9 +438,15 @@ add_projection_metadata_terra <- function(item, terra_obj) {
     item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
-  # Add the projection extension `proj:epsg` fields
+  # Add the projection extension `proj:epsg` field. Only an EPSG authority
+  # code belongs here: terra also reports codes from other authorities, such
+  # as OGC:CRS84, which are not integers and would coerce to NA with a warning.
   crs <- terra::crs(terra_obj, describe = TRUE)
-  if (!is.na(crs$code)) {
+  if (
+    !is.na(crs$code) &&
+      isTRUE(crs$authority == "EPSG") &&
+      grepl("^[0-9]+$", crs$code)
+  ) {
     item@properties$`proj:epsg` <- as.integer(crs$code)
   }
 

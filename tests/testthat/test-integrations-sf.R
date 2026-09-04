@@ -138,3 +138,35 @@ test_that("geometry_from_sf rejects an sf object with no geometries", {
 
   expect_error(geometry_from_sf(nc[0, ]), "no geometries")
 })
+
+test_that("item_from_sf accepts any WGS84 lon/lat CRS, not just EPSG:4326", {
+  # st_crs(x)$epsg is NA for a CRS not given as an EPSG code, so comparing the
+  # code rejected OGC:CRS84 even though it is WGS84 longitude/latitude
+  crs84 <- sf::st_sf(
+    a = 1,
+    geometry = sf::st_sfc(sf::st_point(c(10, 20)), crs = "OGC:CRS84")
+  )
+
+  item <- item_from_sf(crs84, id = "crs84", datetime = "2020-01-01T00:00:00Z")
+  expect_equal(item@bbox, c(10, 20, 10, 20), ignore_attr = TRUE)
+})
+
+test_that("item_from_sf reprojects a non-WGS84 CRS", {
+  webmerc <- sf::st_sf(
+    a = 1,
+    geometry = sf::st_sfc(sf::st_point(c(1113195, 2273031)), crs = 3857)
+  )
+
+  item <- item_from_sf(webmerc, id = "3857", datetime = "2020-01-01T00:00:00Z")
+  expect_equal(item@bbox[1:2], c(10, 20), tolerance = 1e-4, ignore_attr = TRUE)
+})
+
+test_that("item_from_sf reports a missing CRS instead of failing on NA", {
+  no_crs <- sf::st_sf(a = 1, geometry = sf::st_sfc(sf::st_point(c(10, 20))))
+
+  # Previously "missing value where TRUE/FALSE needed" from NA != 4326
+  expect_error(
+    item_from_sf(no_crs, id = "none", datetime = "2020-01-01T00:00:00Z"),
+    "no CRS"
+  )
+})
