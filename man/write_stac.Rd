@@ -22,11 +22,14 @@ be written. Will be created if it doesn't exist.}
 
 \item{catalog_type}{(character, optional) Type of catalog to create. One of:
 \itemize{
-\item \code{"self-contained"}: All links use relative paths within the catalog structure.
-Best for portability and publishing.
-\item \code{"relative"}: Links use relative paths but may reference external resources.
-\item \code{"absolute"}: All links use absolute URLs. Best for web-served catalogs.
-Default is \code{"self-contained"}.
+\item \code{"self-contained"}: Links between catalog, collection and item files, and
+absolute local asset hrefs, are written as paths relative to the file
+that contains them.
+\item \code{"relative"}: Currently behaves identically to \code{"self-contained"}.
+\item \code{"absolute"}: All links use absolute URLs built from \code{base_url}. Best for
+web-served catalogs.
+Default is \code{"self-contained"}. Note that no catalog type copies or moves
+asset files — see Details.
 }}
 
 \item{overwrite}{(logical, optional) If \code{TRUE}, overwrites existing files. If
@@ -51,18 +54,31 @@ Children and items are automatically retrieved from the catalog's stored objects
 \details{
 \subsection{Catalog Types}{
 
-\strong{Self-Contained Catalogs:}
-All links use relative paths and all referenced resources are within the
-catalog directory structure. This is the most portable option and recommended
-for sharing or archiving catalogs.
-
-\strong{Relative Catalogs:}
-Links use relative paths but may reference resources outside the catalog tree.
-Useful when integrating with existing file structures.
+\strong{Self-Contained and Relative Catalogs:}
+Links between catalog, collection and item files are written as relative
+paths. Asset hrefs that are absolute local paths are rewritten relative to
+the directory holding the item JSON; hrefs that are already relative, or that
+are URLs (anything containing \verb{://}), are left unchanged. These two types
+currently produce identical output.
 
 \strong{Absolute Catalogs:}
 All links use absolute URLs. Required when the catalog will be served from a
-web server. Requires \code{base_url} to be specified.
+web server. Requires \code{base_url} to be specified. Asset hrefs are left as
+given.
+}
+
+\subsection{Assets Are Not Copied}{
+
+\code{write_stac()} writes JSON only. It never copies, moves, or rewrites asset
+files, so an asset stored outside \code{path} stays there and is referenced by a
+relative path that climbs out of the catalog directory, such as
+\code{../../../data/dem.tif}.
+
+This is narrower than what the STAC best-practices document means by a
+self-contained catalog, where every referenced file lives inside the catalog
+directory so the whole tree can be archived or relocated as a unit. To get
+that, place the asset files under \code{path} yourself before calling
+\code{write_stac()}; only then is the written catalog portable in that sense.
 }
 
 \subsection{Directory Structure}{

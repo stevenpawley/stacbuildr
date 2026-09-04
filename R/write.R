@@ -11,11 +11,14 @@
 #' @param path (character, required) Root directory path where the catalog should
 #'   be written. Will be created if it doesn't exist.
 #' @param catalog_type (character, optional) Type of catalog to create. One of:
-#'   * `"self-contained"`: All links use relative paths within the catalog structure.
-#'     Best for portability and publishing.
-#'   * `"relative"`: Links use relative paths but may reference external resources.
-#'   * `"absolute"`: All links use absolute URLs. Best for web-served catalogs.
-#'   Default is `"self-contained"`.
+#'   * `"self-contained"`: Links between catalog, collection and item files, and
+#'     absolute local asset hrefs, are written as paths relative to the file
+#'     that contains them.
+#'   * `"relative"`: Currently behaves identically to `"self-contained"`.
+#'   * `"absolute"`: All links use absolute URLs built from `base_url`. Best for
+#'     web-served catalogs.
+#'   Default is `"self-contained"`. Note that no catalog type copies or moves
+#'   asset files — see Details.
 #' @param overwrite (logical, optional) If `TRUE`, overwrites existing files. If
 #'   `FALSE`, throws an error if files already exist. Default is `FALSE`.
 #' @param pretty (logical, optional) If `TRUE`, writes formatted JSON with
@@ -27,18 +30,30 @@
 #' @details
 #' ## Catalog Types
 #'
-#' **Self-Contained Catalogs:**
-#' All links use relative paths and all referenced resources are within the
-#' catalog directory structure. This is the most portable option and recommended
-#' for sharing or archiving catalogs.
-#'
-#' **Relative Catalogs:**
-#' Links use relative paths but may reference resources outside the catalog tree.
-#' Useful when integrating with existing file structures.
+#' **Self-Contained and Relative Catalogs:**
+#' Links between catalog, collection and item files are written as relative
+#' paths. Asset hrefs that are absolute local paths are rewritten relative to
+#' the directory holding the item JSON; hrefs that are already relative, or that
+#' are URLs (anything containing `://`), are left unchanged. These two types
+#' currently produce identical output.
 #'
 #' **Absolute Catalogs:**
 #' All links use absolute URLs. Required when the catalog will be served from a
-#' web server. Requires `base_url` to be specified.
+#' web server. Requires `base_url` to be specified. Asset hrefs are left as
+#' given.
+#'
+#' ## Assets Are Not Copied
+#'
+#' `write_stac()` writes JSON only. It never copies, moves, or rewrites asset
+#' files, so an asset stored outside `path` stays there and is referenced by a
+#' relative path that climbs out of the catalog directory, such as
+#' `../../../data/dem.tif`.
+#'
+#' This is narrower than what the STAC best-practices document means by a
+#' self-contained catalog, where every referenced file lives inside the catalog
+#' directory so the whole tree can be archived or relocated as a unit. To get
+#' that, place the asset files under `path` yourself before calling
+#' `write_stac()`; only then is the written catalog portable in that sense.
 #'
 #' ## Directory Structure
 #' The function creates a directory structure based on the catalog hierarchy:
