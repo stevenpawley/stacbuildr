@@ -388,7 +388,7 @@ check_path_segment <- function(id, what) {
       "Cannot write {what} with the id {.val {id[offending]}}.",
       "i" = "write_stac() uses the id as a directory name, so it cannot
              contain a path separator or be {.val .} or {.val ..}.",
-      ">" = "Rename the {what} before writing."
+      ">" = "Rename it before writing."
     ))
   }
 
