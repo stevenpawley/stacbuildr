@@ -187,3 +187,50 @@ test_that("item_from_terra errors when both href and id are NULL", {
     "'id' is required when 'href' is not provided"
   )
 })
+
+test_that("item_from_terra handles CRSs without an EPSG code", {
+  skip_if_not_installed("terra")
+
+  make <- function(crs) {
+    r <- terra::rast(
+      nrows = 4, ncols = 4, xmin = 0, xmax = 1, ymin = 0, ymax = 1, crs = crs
+    )
+    terra::values(r) <- 1
+    r
+  }
+
+  # OGC:CRS84 is WGS84 lon/lat but has no EPSG code; proj:epsg must be left
+  # unset rather than coerced from "CRS84" to NA
+  item <- expect_no_warning(
+    item_from_terra(make("OGC:CRS84"), id = "crs84", datetime = "2020-01-01T00:00:00Z")
+  )
+  expect_null(item@properties$`proj:epsg`)
+  expect_equal(item@bbox, c(0, 0, 1, 1), ignore_attr = TRUE)
+
+  # A genuine EPSG code is still recorded
+  utm <- item_from_terra(make("EPSG:32633"), id = "utm", datetime = "2020-01-01T00:00:00Z")
+  expect_equal(utm@properties$`proj:epsg`, 32633L)
+})
+
+test_that("item_from_terra reports a missing CRS instead of failing in st_crs", {
+  skip_if_not_installed("terra")
+
+  r <- terra::rast(
+    nrows = 4, ncols = 4, xmin = 0, xmax = 1, ymin = 0, ymax = 1, crs = ""
+  )
+  terra::values(r) <- 1
+
+  # terra reports a missing CRS as "", which st_crs() rejects as "invalid crs"
+  expect_error(
+    item_from_terra(r, id = "none", datetime = "2020-01-01T00:00:00Z"),
+    "no CRS"
+  )
+
+  # reproject_to_wgs84 = FALSE is the escape hatch for lon/lat with no CRS set
+  expect_no_error(
+    item_from_terra(
+      r, id = "none", datetime = "2020-01-01T00:00:00Z",
+      reproject_to_wgs84 = FALSE
+    )
+  )
+})
