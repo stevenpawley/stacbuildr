@@ -369,6 +369,33 @@ write_item <- function(item, file, overwrite = FALSE, pretty = TRUE) {
 }
 
 
+# Check that an id can serve as a single directory name.
+#
+# write_stac() lays a catalog out by id, giving each child and item its own
+# directory. An id holding a path separator would silently nest extra
+# directories, and one containing ".." would climb out of the catalog root
+# altogether and write over unrelated files. STAC itself puts almost no
+# constraint on ids (the schema asks only for a non-empty string), so this is
+# a filesystem constraint and is enforced here, where an id becomes a path,
+# rather than in the constructors.
+#
+# @keywords internal
+check_path_segment <- function(id, what) {
+  offending <- grepl("[/\\\\]", id) | id %in% c(".", "..")
+
+  if (any(offending)) {
+    cli::cli_abort(c(
+      "Cannot write {what} with the id {.val {id[offending]}}.",
+      "i" = "write_stac() uses the id as a directory name, so it cannot
+             contain a path separator or be {.val .} or {.val ..}.",
+      ">" = "Rename the {what} before writing."
+    ))
+  }
+
+  invisible(id)
+}
+
+
 #' Recursively Write Catalog Structure
 #'
 #' @description
@@ -424,6 +451,7 @@ write_catalog_recursive <- function(
   if (!is.null(stored_children) && length(stored_children) > 0) {
     for (child_id in names(stored_children)) {
       child <- stored_children[[child_id]]
+      check_path_segment(child_id, "a child")
       child_path <- file.path(path, child_id)
 
       # Create child directory
@@ -464,6 +492,7 @@ write_catalog_recursive <- function(
   # Write items — each item gets its own subdirectory: {id}/{id}.json
   if (!is.null(stored_items) && length(stored_items) > 0) {
     for (item in stored_items) {
+      check_path_segment(item@id, "an item")
       item_dir <- file.path(path, item@id)
       if (!dir.exists(item_dir)) {
         dir.create(item_dir, recursive = TRUE)
