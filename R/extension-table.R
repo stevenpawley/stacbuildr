@@ -246,9 +246,10 @@ table_column <- function(name, description = NULL, type = NULL, ...) {
 #'
 #' @export
 print.table_column <- function(x, ...) {
-  cat("Table Column:\n")
-  if (!is.null(x$name)) cat("  Name:", x$name, "\n")
-  if (!is.null(x$type)) cat("  Type:", x$type, "\n")
-  if (!is.null(x$description)) cat("  Description:", x$description, "\n")
+  stac_print_header("Table Column")
+  stac_print_list_fields(
+    x,
+    styles = list(name = stac_style_id, type = stac_style_key)
+  )
   invisible(x)
 }

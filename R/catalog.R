@@ -247,7 +247,7 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
 #'   `c("links", "children")`. Defaults to the `stacbuildr.print.expand` option.
 #' @noRd
 S7::method(print, stac_catalog) <- function(x, ..., expand = NULL) {
-  stac_print_header(x@type)
+  stac_print_header(paste("STAC", x@type))
   stac_print_field("id", x@id, stac_style_id)
 
   if (!is.null(x@title)) {

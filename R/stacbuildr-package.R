@@ -12,8 +12,8 @@
 #'
 #' ### S7 Classes (use `@` to access properties)
 #'
-#' The primary STAC document types and `raster_band` are S7 objects. Use the
-#' `@` operator to read or modify their properties:
+#' The primary STAC document types, `raster_band` and the extent objects are
+#' S7 objects. Use the `@` operator to read or modify their properties:
 #'
 #' | Constructor | Class | Example access |
 #' | --- | --- | --- |
@@ -21,24 +21,34 @@
 #' | [stac_catalog()] | `stac_catalog` | `catalog@title` |
 #' | [stac_collection()] | `stac_collection` | `collection@description` |
 #' | [raster_band()] | `raster_band` | `band@data_type`, `band@scale` |
+#' | [stac_extent()] | `Extent` | `extent@spatial`, `extent@temporal` |
 #'
-#' ### Plain Lists (use `$` to access fields)
+#' Note that `stac_collection` extends `stac_catalog`, so a Collection
+#' satisfies `inherits(x, "stac_catalog")` as well.
 #'
-#' Helper constructors return ordinary R lists. These are embedded inside S7
-#' objects but are not S7 classes themselves:
+#' ### Classed Lists (use `$` to access fields)
 #'
-#' | Constructor | Typically used in |
-#' | --- | --- |
-#' | [stac_asset()] | `item@assets` |
-#' | [raster_statistics()] | `band@statistics` |
-#' | [raster_histogram()] | `band@histogram` |
-#' | [eo_band()] | asset `"eo:bands"` field |
-#' | [stac_provider()] | `collection@providers` |
-#' | [stac_extent()] | `collection@extent` |
-#' | [stac_summaries()] | `collection@summaries` |
-#' | [classification_class()] | classification extension |
-#' | [classification_bitfield()] | classification extension |
-#' | [scientific_publication()] | scientific extension |
+#' The remaining constructors return ordinary R lists carrying an S3 class.
+#' They are embedded inside S7 objects but are not S7 classes themselves. The
+#' class exists so that each object prints as itself; fields are reached with
+#' `$` as for any list, and the class is dropped on serialisation so it never
+#' reaches the written JSON.
+#'
+#' | Constructor | Class | Typically used in |
+#' | --- | --- | --- |
+#' | [stac_asset()] | `stac_asset` | `item@assets` |
+#' | [raster_statistics()] | `raster_statistics` | `band@statistics` |
+#' | [raster_histogram()] | `raster_histogram` | `band@histogram` |
+#' | [eo_band()] | `eo_band` | asset `"eo:bands"` field |
+#' | [stac_provider()] | `stac_provider` | `collection@providers` |
+#' | [stac_summaries()] | `stac_summaries` | `collection@summaries` |
+#' | [classification_class()] | `classification_class` | classification extension |
+#' | [classification_bitfield()] | `classification_bitfield` | classification extension |
+#' | [scientific_publication()] | `scientific_publication` | scientific extension |
+#' | [table_column()] | `table_column` | table extension |
+#' | [render_object()] | `render_object` | render extension |
+#' | [cube_dimension()] | `cube_dimension` | datacube extension |
+#' | [cube_variable()] | `cube_variable` | datacube extension |
 #'
 #' ## Printing
 #'

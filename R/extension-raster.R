@@ -345,43 +345,47 @@ S7::method(as.list, raster_band) <- function(x, ...) {
 }
 
 #' @keywords internal
-S7::method(print, raster_band) <- function(x, ...) {
-  cat("Raster Band:\n")
+S7::method(print, raster_band) <- function(x, ..., expand = NULL) {
+  stac_print_header("Raster Band")
+  width <- stac_print_list_fields(
+    list(
+      data_type = x@data_type,
+      nodata = x@nodata,
+      spatial_resolution = x@spatial_resolution,
+      unit = x@unit,
+      transform = sprintf("value = %g * DN + %g", x@scale, x@offset)
+    ),
+    units = c(spatial_resolution = "m"),
+    styles = list(data_type = stac_style_key)
+  )
 
-  if (length(x@data_type) > 0) {
-    cat("  Data Type:", x@data_type, "\n")
-  }
+  statistics <- x@statistics %||% list()
+  histogram <- x@histogram %||% list()
 
-  if (length(x@nodata) > 0) {
-    cat("  NoData:", x@nodata, "\n")
-  }
-
-  if (length(x@spatial_resolution) > 0) {
-    cat("  Spatial Resolution:", x@spatial_resolution, "m\n")
-  }
-
-  cat("  Transform: value =", x@scale, "* DN +", x@offset, "\n")
-
-  if (length(x@unit) > 0) {
-    cat("  Unit:", x@unit, "\n")
-  }
-
-  if (!is.null(x@statistics) && length(x@statistics) > 0) {
-    cat("  Statistics:\n")
-    if (!is.null(x@statistics$minimum)) {
-      cat("    Min:", x@statistics$minimum, "\n")
+  collapsed <- c(
+    if (length(statistics) > 0) {
+      stac_print_section(
+        "statistics",
+        length(statistics),
+        summary = stac_preview(names(statistics)),
+        lines = function() stac_field_lines(statistics),
+        expanded = stac_expanded(expand, "statistics"),
+        width = width
+      )
+    },
+    if (length(histogram) > 0) {
+      stac_print_section(
+        "histogram",
+        length(histogram),
+        summary = stac_preview(names(histogram)),
+        lines = function() stac_field_lines(histogram),
+        expanded = stac_expanded(expand, "histogram"),
+        width = width
+      )
     }
-    if (!is.null(x@statistics$maximum)) {
-      cat("    Max:", x@statistics$maximum, "\n")
-    }
-    if (!is.null(x@statistics$mean)) {
-      cat("    Mean:", x@statistics$mean, "\n")
-    }
-    if (!is.null(x@statistics$stddev)) {
-      cat("    Std Dev:", x@statistics$stddev, "\n")
-    }
-  }
+  )
 
+  stac_print_hint(sum(collapsed))
   invisible(x)
 }
 
@@ -439,7 +443,34 @@ raster_statistics <- function(minimum = NULL,
     stats$valid_percent <- valid_percent
   }
 
+  class(stats) <- c("raster_statistics", "list")
   stats
+}
+
+
+#' Print method for raster statistics
+#'
+#' @param x A statistics object created with [raster_statistics()].
+#' @param ... Additional arguments (ignored).
+#'
+#' @return `x`, invisibly.
+#'
+#' @export
+print.raster_statistics <- function(x, ...) {
+  stac_print_header("Raster Statistics")
+
+  if (length(x) == 0) {
+    stac_print_empty()
+    return(invisible(x))
+  }
+
+  # "valid_percent" is wider than the default label column
+  width <- max(stac_label_width, nchar(names(x)))
+  for (key in names(x)) {
+    stac_print_field(key, stac_fmt_value(x[[key]]), stac_style_value, width)
+  }
+
+  invisible(x)
 }
 
 # raster_histogram ----
@@ -492,12 +523,33 @@ raster_histogram <- function(count, min, max, buckets) {
     ))
   }
 
-  list(
-    count   = as.integer(count),
-    min     = min,
-    max     = max,
-    buckets = as.integer(buckets)
+  structure(
+    list(
+      count   = as.integer(count),
+      min     = min,
+      max     = max,
+      buckets = as.integer(buckets)
+    ),
+    class = c("raster_histogram", "list")
   )
+}
+
+
+#' Print method for raster histograms
+#'
+#' @param x A histogram object created with [raster_histogram()].
+#' @param ... Additional arguments (ignored).
+#'
+#' @return `x`, invisibly.
+#'
+#' @export
+print.raster_histogram <- function(x, ...) {
+  stac_print_header("Raster Histogram")
+  stac_print_field("count", stac_fmt_value(x$count), stac_style_count)
+  stac_print_field("range", sprintf("%g / %g", x$min, x$max))
+  stac_print_field("buckets", stac_fmt_value(x$buckets))
+
+  invisible(x)
 }
 
 

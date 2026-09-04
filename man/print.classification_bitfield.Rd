@@ -4,7 +4,7 @@
 \alias{print.classification_bitfield}
 \title{Print method for classification_bitfield objects}
 \usage{
-\method{print}{classification_bitfield}(x, ...)
+\method{print}{classification_bitfield}(x, ..., expand = NULL)
 }
 \arguments{
 \item{x}{A classification_bitfield object}

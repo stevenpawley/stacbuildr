@@ -410,7 +410,7 @@ S7::method(as.list, stac_item) <- function(x, ...) {
 #'   option.
 #' @noRd
 S7::method(print, stac_item) <- function(x, ..., expand = NULL) {
-  stac_print_header("Item")
+  stac_print_header("STAC Item")
   stac_print_field("id", x@id, stac_style_id)
 
   if (!is.null(x@collection)) {

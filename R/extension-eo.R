@@ -863,40 +863,15 @@ planetscope_bands <- function() {
 #'
 #' @export
 print.eo_band <- function(x, ...) {
-  cat("EO Band:\n")
-
-  if (!is.null(x$name)) {
-    cat("  Name:", x$name, "\n")
-  }
-
-  if (!is.null(x$common_name)) {
-    cat("  Common Name:", x$common_name, "\n")
-  }
-
-  if (!is.null(x$description)) {
-    cat("  Description:", x$description, "\n")
-  }
-
-  if (!is.null(x$center_wavelength)) {
-    cat("  Center Wavelength:", x$center_wavelength, "micrometres\n")
-  }
-
-  if (!is.null(x$full_width_half_max)) {
-    cat("  FWHM:", x$full_width_half_max, "micrometres\n")
-  }
-
-  if (!is.null(x$solar_illumination)) {
-    cat("  Solar Illumination:", x$solar_illumination, "\n")
-  }
-
-  # Show raster fields if present
-  if (!is.null(x$data_type)) {
-    cat("  Data Type:", x$data_type, "\n")
-  }
-
-  if (!is.null(x$`raster:spatial_resolution`)) {
-    cat("  Spatial Resolution:", x$`raster:spatial_resolution`, "m\n")
-  }
-
+  stac_print_header("EO Band")
+  stac_print_list_fields(
+    x,
+    units = c(
+      center_wavelength = "micrometres",
+      full_width_half_max = "micrometres",
+      "raster:spatial_resolution" = "m"
+    ),
+    styles = list(name = stac_style_id, common_name = stac_style_key)
+  )
   invisible(x)
 }
