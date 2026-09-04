@@ -127,14 +127,16 @@ write_stac <- function(
   base_url = NULL
 ) {
   if (!inherits(catalog, "stac_catalog")) {
-    stop("'catalog' must be a stac_catalog or stac_collection object")
+    cli::cli_abort(
+      "'catalog' must be a stac_catalog or stac_collection object"
+    )
   }
 
   catalog_type <- match.arg(catalog_type)
 
   # Validate base_url requirement for absolute catalogs
   if (catalog_type == "absolute" && is.null(base_url)) {
-    stop("'base_url' is required when catalog_type is 'absolute'")
+    cli::cli_abort("'base_url' is required when catalog_type is 'absolute'")
   }
 
   # Create root directory if it doesn't exist
@@ -154,7 +156,7 @@ write_stac <- function(
     parent_href = NULL
   )
 
-  message(sprintf("STAC catalog written to: %s", path))
+  cli::cli_alert_success("STAC catalog written to {.file {path}}")
   invisible(path)
 }
 
@@ -188,14 +190,15 @@ write_stac <- function(
 #' @export
 write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
   if (!inherits(catalog, "stac_catalog")) {
-    stop("'catalog' must be a stac_catalog or stac_collection object")
+    cli::cli_abort(
+      "'catalog' must be a stac_catalog or stac_collection object"
+    )
   }
 
   if (file.exists(file) && !overwrite) {
-    stop(sprintf(
-      "File '%s' already exists. Use overwrite = TRUE to replace.",
-      file
-    ))
+    cli::cli_abort(
+      "File '{file}' already exists. Use overwrite = TRUE to replace."
+    )
   }
 
   # Create parent directory if needed
@@ -256,14 +259,13 @@ write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
 #' @export
 write_item <- function(item, file, overwrite = FALSE, pretty = TRUE) {
   if (!inherits(item, "stac_item")) {
-    stop("'item' must be a stac_item object")
+    cli::cli_abort("'item' must be a stac_item object")
   }
 
   if (file.exists(file) && !overwrite) {
-    stop(sprintf(
-      "File '%s' already exists. Use overwrite = TRUE to replace.",
-      file
-    ))
+    cli::cli_abort(
+      "File '{file}' already exists. Use overwrite = TRUE to replace."
+    )
   }
 
   # Create parent directory if needed
@@ -672,13 +674,13 @@ strip_stored_objects <- function(stac_obj) {
 #' @export
 read_stac <- function(file) {
   if (!file.exists(file)) {
-    stop(sprintf("File not found: %s", file))
+    cli::cli_abort("File not found: {file}")
   }
 
   parsed <- jsonlite::fromJSON(file, simplifyVector = FALSE)
 
   if (is.null(parsed$type)) {
-    stop("Invalid STAC file: missing 'type' field")
+    cli::cli_abort("Invalid STAC file: missing 'type' field")
   }
 
   switch(parsed$type,
@@ -686,7 +688,7 @@ read_stac <- function(file) {
     "Catalog"    = parse_stac_catalog(parsed),
     "Collection" = parse_stac_collection(parsed),
     {
-      warning(sprintf("Unknown STAC type: %s", parsed$type))
+      cli::cli_warn("Unknown STAC type: {parsed$type}")
       parsed
     }
   )
@@ -827,7 +829,9 @@ parse_stac_collection <- function(parsed) {
 #' @export
 get_children <- function(catalog, resolve = FALSE, base_path = ".") {
   if (!inherits(catalog, "stac_catalog")) {
-    stop("'catalog' must be a stac_catalog or stac_collection object")
+    cli::cli_abort(
+      "'catalog' must be a stac_catalog or stac_collection object"
+    )
   }
 
   stored <- attr(catalog, "stac_children")
@@ -885,7 +889,9 @@ get_children <- function(catalog, resolve = FALSE, base_path = ".") {
 #' @export
 get_items <- function(catalog, resolve = FALSE, base_path = ".") {
   if (!inherits(catalog, "stac_catalog")) {
-    stop("'catalog' must be a stac_catalog or stac_collection object")
+    cli::cli_abort(
+      "'catalog' must be a stac_catalog or stac_collection object"
+    )
   }
 
   stored <- attr(catalog, "stac_items")

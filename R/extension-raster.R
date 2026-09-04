@@ -125,20 +125,20 @@
 #' @export
 add_raster_extension <- function(item, bands, asset_key = NULL) {
   if (!inherits(item, "stac_item")) {
-    stop("'item' must be a stac_item object")
+    cli::cli_abort("'item' must be a stac_item object")
   }
 
   if (!is.list(bands)) {
-    stop("'bands' must be a list of band objects")
+    cli::cli_abort("'bands' must be a list of band objects")
   }
 
   # Detect double-wrapping: raster_from_file() returns a list, so
   # list(raster_from_file(...)) produces list(list(band, ...))
   if (length(bands) == 1 && is.list(bands[[1]]) && !S7::S7_inherits(bands[[1]], raster_band)) {
-    stop(
-      "'bands' appears to be double-wrapped. ",
-      "Use bands = raster_from_file(...) not bands = list(raster_from_file(...))"
-    )
+    cli::cli_abort(c(
+      "'bands' appears to be double-wrapped.",
+      "i" = "Use bands = raster_from_file(...), not bands = list(raster_from_file(...))."
+    ))
   }
 
   # Add extension to stac_extensions if not already present
@@ -161,7 +161,7 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
   if (!is.null(asset_key)) {
     # Add to specific asset
     if (is.null(item@assets[[asset_key]])) {
-      stop(sprintf("Asset '%s' does not exist in item", asset_key))
+      cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
 
     item@assets[[asset_key]]$`raster:bands` <- bands
@@ -243,10 +243,9 @@ raster_band <- S7::new_class(
           )
 
           if (!value %in% valid_types) {
-            warning(sprintf(
-              "'%s' is not a standard data type. Valid types: %s",
-              value,
-              paste(valid_types, collapse = ", ")
+            cli::cli_warn(c(
+              "'{value}' is not a standard data type.",
+              "i" = "Valid types: {paste(valid_types, collapse = ', ')}"
             ))
           }
         }
@@ -438,7 +437,7 @@ raster_statistics <- function(minimum = NULL,
   }
   if (!is.null(valid_percent)) {
     if (valid_percent < 0 || valid_percent > 100) {
-      warning("'valid_percent' should be between 0 and 100")
+      cli::cli_warn("'valid_percent' should be between 0 and 100")
     }
     stats$valid_percent <- valid_percent
   }
@@ -502,25 +501,24 @@ print.raster_statistics <- function(x, ...) {
 #' @export
 raster_histogram <- function(count, min, max, buckets) {
   if (missing(count) || missing(min) || missing(max) || missing(buckets)) {
-    stop("'count', 'min', 'max', and 'buckets' are all required")
+    cli::cli_abort("'count', 'min', 'max', and 'buckets' are all required")
   }
   if (length(count) != 1L || !is.numeric(count)) {
-    stop("'count' must be a single number")
+    cli::cli_abort("'count' must be a single number")
   }
   if (length(min) != 1L || !is.numeric(min)) {
-    stop("'min' must be a single number")
+    cli::cli_abort("'min' must be a single number")
   }
   if (length(max) != 1L || !is.numeric(max)) {
-    stop("'max' must be a single number")
+    cli::cli_abort("'max' must be a single number")
   }
   if (min >= max) {
-    stop("'min' must be smaller than 'max'")
+    cli::cli_abort("'min' must be smaller than 'max'")
   }
   if (length(buckets) != count) {
-    stop(sprintf(
-      "'buckets' length (%d) must equal 'count' (%d)",
-      length(buckets), as.integer(count)
-    ))
+    cli::cli_abort(
+      "'buckets' length ({length(buckets)}) must equal 'count' ({as.integer(count)})"
+    )
   }
 
   structure(
@@ -595,7 +593,10 @@ raster_from_file <- function(file,
                              calculate_statistics = FALSE,
                              sample_size = 1000L) {
   if (!requireNamespace("terra", quietly = TRUE)) {
-    stop("Package 'terra' is required. Install with: install.packages('terra')")
+    cli::cli_abort(c(
+      "Package 'terra' is required.",
+      "i" = "Install with: install.packages('terra')"
+    ))
   }
 
   r <- terra::rast(file)

@@ -14,7 +14,9 @@
       a$href <- tryCatch(
         sign_fn(a$href),
         error = function(e) {
-          warning("Asset signing failed for '", a$href, "': ", conditionMessage(e))
+          cli::cli_warn(
+            "Asset signing failed for '{a$href}': {conditionMessage(e)}"
+          )
           a$href
         }
       )

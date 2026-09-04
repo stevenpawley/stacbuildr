@@ -353,11 +353,11 @@ validate_assets <- function(assets) {
     # Validate roles if present
     if (!is.null(asset$roles)) {
       if (is.character(asset$roles)) {
-        warning(
-          "Asset '", key, "' 'roles' is a character vector; it should be a list ",
-          "to guarantee JSON array serialization. Use stac_asset() to construct assets.",
-          call. = FALSE
-        )
+        cli::cli_warn(c(
+          "Asset '{key}' 'roles' is a character vector; it should be a list \
+           to guarantee JSON array serialization.",
+          "i" = "Use stac_asset() to construct assets."
+        ))
       } else if (!is.list(asset$roles) ||
                  !all(vapply(asset$roles, is.character, logical(1)))) {
         errors <- c(
@@ -809,10 +809,10 @@ validate_item_properties <- function(properties) {
 #' @export
 validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
   if (!requireNamespace("jsonvalidate", quietly = TRUE)) {
-    stop(
-      "Package 'jsonvalidate' is required for schema validation. ",
-      "Install with: install.packages('jsonvalidate')"
-    )
+    cli::cli_abort(c(
+      "Package 'jsonvalidate' is required for schema validation.",
+      "i" = "Install with: install.packages('jsonvalidate')"
+    ))
   }
 
   if (!inherits(stac_object, c("stac_item", "stac_catalog"))) {
@@ -952,7 +952,9 @@ bundle_schema_url <- function(schema_url) {
       on.exit(close(con), add = TRUE)
       paste(readLines(con, warn = FALSE), collapse = "\n")
     }, error = function(e) {
-      stop(sprintf("Failed to download schema '%s': %s", url, conditionMessage(e)))
+      cli::cli_abort(
+        "Failed to download schema '{url}': {conditionMessage(e)}"
+      )
     })
 
     parsed    <- tryCatch(jsonlite::fromJSON(txt, simplifyVector = FALSE), error = function(e) NULL)

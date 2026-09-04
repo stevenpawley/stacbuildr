@@ -83,27 +83,29 @@ render_object <- function(
   ...
 ) {
   if (missing(assets) || !is.character(assets) || length(assets) == 0) {
-    stop("'assets' must be a non-empty character vector")
+    cli::cli_abort("'assets' must be a non-empty character vector")
   }
 
   if (!is.null(title) && (!is.character(title) || length(title) != 1)) {
-    stop("'title' must be a single character string")
+    cli::cli_abort("'title' must be a single character string")
   }
 
   if (!is.null(rescale)) {
     if (!is.list(rescale) || length(rescale) == 0) {
-      stop("'rescale' must be a non-empty list of numeric vectors")
+      cli::cli_abort("'rescale' must be a non-empty list of numeric vectors")
     }
     valid_rescale <- vapply(rescale, function(x) {
       is.numeric(x) && length(x) == 2
     }, logical(1))
     if (!all(valid_rescale)) {
-      stop("Each element of 'rescale' must be a numeric vector of length 2")
+      cli::cli_abort(
+        "Each element of 'rescale' must be a numeric vector of length 2"
+      )
     }
   }
 
   if (!is.null(minmax_zoom) && !(is.numeric(minmax_zoom) && length(minmax_zoom) == 2)) {
-    stop("'minmax_zoom' must be a numeric vector of length 2")
+    cli::cli_abort("'minmax_zoom' must be a numeric vector of length 2")
   }
 
   render <- list(assets = assets)
@@ -213,7 +215,7 @@ render_object <- function(
 #' @export
 add_render_extension <- function(item, renders) {
   if (!inherits(item, c("stac_item", "stac_collection"))) {
-    stop("'item' must be a stac_item or stac_collection object")
+    cli::cli_abort("'item' must be a stac_item or stac_collection object")
   }
 
   renders <- validate_render_named_list(renders)
@@ -246,21 +248,21 @@ add_render_extension <- function(item, renders) {
 #' @noRd
 validate_render_named_list <- function(x) {
   if (!is.list(x) || length(x) == 0) {
-    stop("'renders' must be a non-empty named list")
+    cli::cli_abort("'renders' must be a non-empty named list")
   }
 
   nms <- names(x)
   if (is.null(nms) || any(nms == "") || any(is.na(nms))) {
-    stop("'renders' must be a fully named list")
+    cli::cli_abort("'renders' must be a fully named list")
   }
 
   if (any(duplicated(nms))) {
-    stop("'renders' must not contain duplicate names")
+    cli::cli_abort("'renders' must not contain duplicate names")
   }
 
   not_cls <- !vapply(x, inherits, logical(1), "render_object")
   if (any(not_cls)) {
-    stop("All elements of 'renders' must be render_object objects")
+    cli::cli_abort("All elements of 'renders' must be render_object objects")
   }
 
   x

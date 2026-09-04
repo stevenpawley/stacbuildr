@@ -98,7 +98,7 @@ add_table_extension <- function(
   asset_key = NULL
 ) {
   if (!inherits(item, "stac_item")) {
-    stop("'item' must be a stac_item object")
+    cli::cli_abort("'item' must be a stac_item object")
   }
 
   if (
@@ -107,43 +107,44 @@ add_table_extension <- function(
       is.null(row_count) &&
       is.null(storage_options)
   ) {
-    stop(
-      "At least one of 'columns', 'primary_geometry', 'row_count', or ",
-      "'storage_options' must be provided"
+    cli::cli_abort(
+      "At least one of 'columns', 'primary_geometry', 'row_count', or 'storage_options' must be provided"
     )
   }
 
   if (!is.null(columns)) {
     if (!is.list(columns) || length(columns) == 0) {
-      stop("'columns' must be a non-empty list of table_column objects")
+      cli::cli_abort(
+        "'columns' must be a non-empty list of table_column objects"
+      )
     }
     not_col <- !vapply(columns, inherits, logical(1), "table_column")
     if (any(not_col)) {
-      stop("All elements of 'columns' must be table_column objects")
+      cli::cli_abort("All elements of 'columns' must be table_column objects")
     }
   }
 
   if (!is.null(primary_geometry)) {
     if (!is.character(primary_geometry) || length(primary_geometry) != 1) {
-      stop("'primary_geometry' must be a single character string")
+      cli::cli_abort("'primary_geometry' must be a single character string")
     }
   }
 
   if (!is.null(row_count)) {
     if (!is.numeric(row_count) || length(row_count) != 1 || row_count < 0) {
-      stop("'row_count' must be a single non-negative number")
+      cli::cli_abort("'row_count' must be a single non-negative number")
     }
   }
 
   if (!is.null(storage_options)) {
     if (!is.list(storage_options)) {
-      stop("'storage_options' must be a list")
+      cli::cli_abort("'storage_options' must be a list")
     }
     if (is.null(asset_key)) {
-      stop(
-        "'asset_key' must be provided when 'storage_options' is supplied, ",
-        "as 'table:storage_options' is an asset-level field"
-      )
+      cli::cli_abort(c(
+        "'asset_key' must be provided when 'storage_options' is supplied.",
+        "i" = "'table:storage_options' is an asset-level field."
+      ))
     }
   }
 
@@ -175,7 +176,7 @@ add_table_extension <- function(
   # table:storage_options is an asset-level field
   if (!is.null(storage_options)) {
     if (is.null(item@assets[[asset_key]])) {
-      stop(sprintf("Asset '%s' does not exist in item", asset_key))
+      cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
 
     item@assets[[asset_key]]$`table:storage_options` <- storage_options
@@ -216,7 +217,7 @@ add_table_extension <- function(
 #' @export
 table_column <- function(name, description = NULL, type = NULL, ...) {
   if (missing(name) || !is.character(name) || length(name) != 1) {
-    stop("'name' must be a single character string")
+    cli::cli_abort("'name' must be a single character string")
   }
 
   col <- list(name = name)

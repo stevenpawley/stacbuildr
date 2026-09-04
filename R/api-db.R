@@ -104,7 +104,7 @@ stac_db_setup <- function(con) {
 #' @export
 stac_db_insert_collection <- function(con, collection) {
   if (!inherits(collection, "stac_collection")) {
-    stop("'collection' must be a stac_collection object")
+    cli::cli_abort("'collection' must be a stac_collection object")
   }
 
   content_json <- jsonlite::toJSON(
@@ -154,10 +154,10 @@ stac_db_insert_collection <- function(con, collection) {
 #' @export
 stac_db_insert_item <- function(con, item) {
   if (!inherits(item, "stac_item")) {
-    stop("'item' must be a stac_item object")
+    cli::cli_abort("'item' must be a stac_item object")
   }
   if (is.null(item@collection) || nchar(item@collection) == 0) {
-    stop("item@collection must be set before inserting")
+    cli::cli_abort("item@collection must be set before inserting")
   }
 
   content_json <- jsonlite::toJSON(
@@ -490,7 +490,7 @@ stac_db_delete_collection <- function(con, id) {
   }
   vals <- suppressWarnings(as.numeric(strsplit(bbox, ",", fixed = TRUE)[[1]]))
   if (length(vals) != 4 || any(is.na(vals))) {
-    stop(
+    cli::cli_abort(
       "'bbox' must be a comma-separated list of four numbers: west,south,east,north"
     )
   }

@@ -61,7 +61,7 @@ stac_asset <- function(href,
                        roles = NULL,
                        ...) {
   if (missing(href) || is.null(href) || nchar(href) == 0) {
-    stop("'href' is required and must be a non-empty string")
+    cli::cli_abort("'href' is required and must be a non-empty string")
   }
 
   asset <- list(href = href)
@@ -187,19 +187,19 @@ add_asset <- function(item,
                       roles = NULL,
                       ...) {
   if (!inherits(item, "stac_item")) {
-    stop("'item' must be a stac_item object")
+    cli::cli_abort("'item' must be a stac_item object")
   }
 
   if (missing(key) || is.null(key) || nchar(key) == 0) {
-    stop("'key' is required and must be a non-empty string")
+    cli::cli_abort("'key' is required and must be a non-empty string")
   }
 
   # If an asset object is provided, validate it
   if (!is.null(asset)) {
     if (!is.list(asset) || is.null(asset$href)) {
-      stop(paste0(
+      cli::cli_abort(c(
         "'asset' must be a list with at least an 'href' field",
-        " (use stac_asset())"
+        "i" = "Use stac_asset() to build one."
       ))
     }
   } else {
