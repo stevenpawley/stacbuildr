@@ -14,6 +14,7 @@ s3_print_classes <- c(
   "stac_asset",
   "stac_provider",
   "stac_summaries",
+  "stac_validation",
   "table_column"
 )
 
