@@ -55,3 +55,30 @@ normalize_common_arrays <- function(x) {
   }
   x
 }
+
+
+# Guard against two children or two items in the same catalog sharing an id.
+#
+# write_stac() derives each output path from the object's id, so a repeated id
+# means the second object overwrites the first file while both links survive,
+# leaving a catalog whose links point twice at a single file. Catching it where
+# the object is added keeps the error next to the mistake rather than
+# surfacing it as silent data loss at write time.
+#
+# @keywords internal
+check_duplicate_ids <- function(new_ids, existing_ids, what) {
+  clashes <- intersect(new_ids, existing_ids)
+  repeats <- unique(new_ids[duplicated(new_ids)])
+  duplicates <- unique(c(clashes, repeats))
+
+  if (length(duplicates) > 0) {
+    cli::cli_abort(c(
+      "Cannot add {what} with a duplicate id: {.val {duplicates}}.",
+      "i" = "write_stac() names each file after the id, so the second would
+             overwrite the first while both links remained.",
+      ">" = "Give the {what} a unique id, or drop the duplicate."
+    ))
+  }
+
+  invisible(NULL)
+}
