@@ -84,4 +84,7 @@ export(write_catalog)
 export(write_item)
 export(write_stac)
 importFrom(stats,setNames)
-importFrom(utils,tail)
+importFrom(utils,
+  modifyList,
+  tail
+)

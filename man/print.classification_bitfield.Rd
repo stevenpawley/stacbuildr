@@ -10,6 +10,13 @@
 \item{x}{A classification_bitfield object}
 
 \item{...}{Additional arguments (ignored)}
+
+\item{expand}{Controls the collapsible \code{classes} section. \code{TRUE} expands
+it, \code{FALSE} (the default) collapses it, or give the section name
+\code{"classes"}. Defaults to the \code{stacbuildr.print.expand} option.}
+}
+\value{
+\code{x}, invisibly.
 }
 \description{
 Print method for classification_bitfield objects
