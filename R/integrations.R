@@ -306,13 +306,22 @@ geometry_from_sf <- function(sf_obj) {
     ))
   }
 
-  # A STAC item has one geometry — union multiple features into one
-  if (nrow(sf_obj) > 1) {
-    sf_obj <- sf::st_sf(geometry = sf::st_union(sf_obj))
+  # Drop the attribute columns up front. sf_geojson(atomise = TRUE) only omits
+  # the Feature wrapper for an sf object that has no attributes; given one that
+  # does, it returns a whole Feature (properties included), which is not a
+  # valid STAC item geometry. Working from the sfc sidesteps that entirely.
+  geom <- sf::st_geometry(sf_obj)
+
+  if (length(geom) == 0) {
+    cli::cli_abort("'sf_obj' has no geometries")
   }
 
-  # atomise = TRUE returns the geometry JSON directly (no Feature wrapper)
-  geojson_str <- geojsonsf::sf_geojson(sf_obj, atomise = TRUE)
+  # A STAC item has one geometry — union multiple features into one
+  if (length(geom) > 1) {
+    geom <- sf::st_union(geom)
+  }
+
+  geojson_str <- geojsonsf::sfc_geojson(geom)
   jsonlite::fromJSON(geojson_str, simplifyVector = FALSE)
 }
 

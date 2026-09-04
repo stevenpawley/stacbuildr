@@ -95,3 +95,46 @@ test_that("item_from_sf errors on non-sf input", {
   )
 })
 
+
+test_that("geometry_from_sf returns a bare geometry, not a Feature", {
+  nc <- sf::st_read(sf_file, quiet = TRUE)
+
+  # sf_geojson(atomise = TRUE) only drops the Feature wrapper when the sf
+  # object carries no attribute columns, so a single row of a normal sf table
+  # used to serialise as a whole Feature with a nested "geometry" member.
+  geometry <- geometry_from_sf(nc[1, ])
+
+  expect_setequal(names(geometry), c("type", "coordinates"))
+  expect_equal(geometry$type, "MultiPolygon")
+  expect_false("properties" %in% names(geometry))
+
+  # geometry-only input keeps working
+  geometry_only <- geometry_from_sf(sf::st_sf(geometry = sf::st_geometry(nc[1, ])))
+  expect_setequal(names(geometry_only), c("type", "coordinates"))
+})
+
+test_that("geometry_from_sf preserves full coordinate precision", {
+  nc <- sf::st_read(sf_file, quiet = TRUE)
+  one <- nc[1, ]
+
+  geometry <- geometry_from_sf(one)
+  first <- unlist(geometry$coordinates[[1]][[1]][[1]])
+  expected <- as.numeric(sf::st_coordinates(one)[1, 1:2])
+
+  expect_equal(first, expected, tolerance = 0)
+})
+
+test_that("item_from_sf produces a schema-shaped geometry for one feature", {
+  nc <- sf::st_read(sf_file, quiet = TRUE)
+
+  item <- item_from_sf(nc[1, ], id = "nc-1", datetime = "2025-01-01T00:00:00Z")
+
+  expect_setequal(names(item@geometry), c("type", "coordinates"))
+  expect_true(item@geometry$type %in% c("Polygon", "MultiPolygon"))
+})
+
+test_that("geometry_from_sf rejects an sf object with no geometries", {
+  nc <- sf::st_read(sf_file, quiet = TRUE)
+
+  expect_error(geometry_from_sf(nc[0, ]), "no geometries")
+})
