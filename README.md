@@ -235,6 +235,16 @@ catalog <- read_stac("output/stac/catalog.json")
 collection <- read_stac("output/stac/collection/collection.json")
 ```
 
+The `catalog_type` values correspond one-to-one with the link layouts in
+[Use of links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links) in the STAC best-practices document, and with
+PySTAC's `CatalogType`:
+
+| `catalog_type` | STAC best practices | PySTAC |
+| --- | --- | --- |
+| `"self-contained"` | [Self-contained Catalogs](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs) | `SELF_CONTAINED` |
+| `"relative"` | [Relative Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog) | `RELATIVE_PUBLISHED` |
+| `"absolute"` | [Absolute Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog) | `ABSOLUTE_PUBLISHED` |
+
 The written directory structure follows STAC conventions:
 
 ```

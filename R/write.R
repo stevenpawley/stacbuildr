@@ -11,8 +11,10 @@
 #' @param path (character, required) Root directory path where the catalog should
 #'   be written. Will be created if it doesn't exist.
 #' @param catalog_type (character, optional) Type of catalog to create. These
-#'   correspond to the three catalog layouts in the STAC best-practices
-#'   document, and to PySTAC's `CatalogType` values. One of:
+#'   correspond to the three link layouts defined in
+#'   [Use of links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links)
+#'   in the STAC best-practices document, and to PySTAC's `CatalogType` values.
+#'   One of:
 #'   * `"self-contained"`: Every structural link is relative and no object
 #'     carries a `self` link. Portable — the tree can be moved or archived.
 #'   * `"relative"`: A self-contained catalog plus a single absolute `self` link
@@ -34,10 +36,17 @@
 #' @details
 #' ## Catalog Types
 #'
-#' The three types match the catalog layouts described in the
-#' [STAC best-practices document](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#catalog-layout),
-#' and map onto PySTAC's `CatalogType$SELF_CONTAINED`,
-#' `CatalogType$RELATIVE_PUBLISHED` and `CatalogType$ABSOLUTE_PUBLISHED`.
+#' The three types match the link layouts defined in
+#' [Use of links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links)
+#' in the STAC best-practices document, and map onto PySTAC's
+#' `CatalogType$SELF_CONTAINED`, `CatalogType$RELATIVE_PUBLISHED` and
+#' `CatalogType$ABSOLUTE_PUBLISHED`:
+#'
+#' | `catalog_type` | STAC best practices | PySTAC |
+#' | --- | --- | --- |
+#' | `"self-contained"` | [Self-contained Catalogs](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs) | `SELF_CONTAINED` |
+#' | `"relative"` | [Relative Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog) | `RELATIVE_PUBLISHED` |
+#' | `"absolute"` | [Absolute Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog) | `ABSOLUTE_PUBLISHED` |
 #'
 #' **Self-Contained Catalogs:**
 #' Links between catalog, collection and item files are written as relative
@@ -69,10 +78,12 @@
 #' relative path that climbs out of the catalog directory, such as
 #' `../../../data/dem.tif`.
 #'
-#' This is narrower than what the STAC best-practices document means by a
-#' self-contained catalog, where every referenced file lives inside the catalog
-#' directory so the whole tree can be archived or relocated as a unit. To get
-#' that, place the asset files under `path` yourself before calling
+#' This is narrower than a
+#' [self-contained catalog with assets](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-with-assets),
+#' where every referenced file lives inside the catalog directory so the whole
+#' tree can be archived or relocated as a unit. A catalog written here is
+#' [metadata only](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-metadata-only)
+#' unless you place the asset files under `path` yourself before calling
 #' `write_stac()`; only then is the written catalog portable in that sense.
 #'
 #' ## Directory Structure
@@ -98,6 +109,11 @@
 #' function retrieves these stored objects and writes them recursively.
 #'
 #' @return Invisibly returns the path where the catalog was written.
+#'
+#' @references
+#' STAC best practices, [Use of links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links),
+#' which defines the self-contained, relative published and absolute published
+#' layouts. See <https://stacspec.org/> for the specification as a whole.
 #'
 #' @seealso
 #' * [write_catalog()] for writing a single catalog/collection file
