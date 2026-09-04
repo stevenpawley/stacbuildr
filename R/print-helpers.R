@@ -28,6 +28,8 @@ stac_sym <- function(name) {
       branch    = "\u251c\u2500",
       last      = "\u2514\u2500",
       info      = cli::symbol$info,
+      tick      = cli::symbol$tick,
+      cross     = cli::symbol$cross,
       ellipsis  = "\u2026"
     )
   } else {
@@ -37,6 +39,8 @@ stac_sym <- function(name) {
       branch    = "|-",
       last      = "`-",
       info      = "i",
+      tick      = "v",
+      cross     = "x",
       ellipsis  = "..."
     )
   }
@@ -53,6 +57,9 @@ stac_style_key   <- function(x) cli::col_magenta(x)
 stac_style_url   <- function(x) cli::col_blue(x)
 stac_style_muted <- function(x) cli::col_silver(x)
 stac_style_arrow <- function(x) cli::col_blue(x)
+stac_style_ok    <- function(x) cli::col_green(x)
+stac_style_bad   <- function(x) cli::col_red(x)
+stac_style_warn  <- function(x) cli::col_yellow(x)
 stac_style_value <- function(x) x
 
 # Value formatting -------------------------------------------------------

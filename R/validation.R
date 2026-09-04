@@ -26,12 +26,81 @@ validate_stac <- function(stac_object, strict = FALSE) {
   } else if (inherits(stac_object, "stac_catalog")) {
     validate_catalog(stac_object, strict)
   } else {
-    list(
-      valid = FALSE,
-      errors = "Object must be a stac_catalog, stac_collection, or stac_item",
-      warnings = character()
+    new_stac_validation(
+      errors = "Object must be a stac_catalog, stac_collection, or stac_item"
     )
   }
+}
+
+
+# Result returned by every validator. Classed so that it prints as a report
+# rather than a raw list; the fields themselves stay a plain named list, so
+# `result$valid`, `result$errors` and `result$warnings` work as before.
+new_stac_validation <- function(errors = character(),
+                                warnings = character(),
+                                valid = NULL) {
+  structure(
+    list(
+      valid = valid %||% (length(errors) == 0),
+      errors = errors,
+      warnings = warnings
+    ),
+    class = c("stac_validation", "list")
+  )
+}
+
+
+#' Print method for STAC validation results
+#'
+#' @param x A validation result from [validate_stac()] or
+#'   [validate_stac_schema()].
+#' @param ... Additional arguments (ignored).
+#'
+#' @return `x`, invisibly.
+#'
+#' @export
+print.stac_validation <- function(x, ...) {
+  stac_print_header("STAC Validation")
+
+  if (isTRUE(x$valid)) {
+    cat(sprintf(
+      "  %s %s\n",
+      stac_style_ok(stac_sym("tick")),
+      stac_style_ok("valid")
+    ))
+  } else {
+    stac_print_issues(x$errors, "error", stac_sym("cross"), stac_style_bad)
+  }
+
+  # warnings are reported whether or not the object is valid
+  stac_print_issues(x$warnings, "warning", stac_sym("info"), stac_style_warn)
+
+  invisible(x)
+}
+
+# One "<symbol> N errors" heading followed by a numbered list.
+stac_print_issues <- function(issues, label, symbol, style) {
+  if (length(issues) == 0) {
+    return(invisible(NULL))
+  }
+
+  cat(sprintf(
+    "  %s %s\n",
+    style(symbol),
+    style(sprintf(
+      "%d %s%s", length(issues), label, if (length(issues) == 1L) "" else "s"
+    ))
+  ))
+
+  width <- nchar(as.character(length(issues)))
+  for (i in seq_along(issues)) {
+    cat(sprintf(
+      "      %s %s\n",
+      stac_style_muted(sprintf("%*d.", width, i)),
+      stac_truncate(issues[[i]], stac_avail(9L + width))
+    ))
+  }
+  invisible(NULL)
 }
 
 
@@ -83,11 +152,7 @@ validate_catalog <- function(catalog, strict = FALSE) {
     }
   }
 
-  list(
-    valid = length(errors) == 0,
-    errors = errors,
-    warnings = warnings
-  )
+  new_stac_validation(errors = errors, warnings = warnings)
 }
 
 
@@ -158,11 +223,7 @@ validate_collection <- function(collection, strict = FALSE) {
     errors <- c(errors, provider_errors)
   }
 
-  list(
-    valid = length(errors) == 0,
-    errors = errors,
-    warnings = warnings
-  )
+  new_stac_validation(errors = errors, warnings = warnings)
 }
 
 
@@ -235,11 +296,7 @@ validate_item <- function(item, strict = FALSE) {
     errors <- c(errors, asset_errors)
   }
 
-  list(
-    valid = length(errors) == 0,
-    errors = errors,
-    warnings = warnings
-  )
+  new_stac_validation(errors = errors, warnings = warnings)
 }
 
 
@@ -759,10 +816,8 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
   }
 
   if (!inherits(stac_object, c("stac_item", "stac_catalog"))) {
-    return(list(
-      valid    = FALSE,
-      errors   = "Object must be a stac_catalog, stac_collection, or stac_item",
-      warnings = character()
+    return(new_stac_validation(
+      errors = "Object must be a stac_catalog, stac_collection, or stac_item"
     ))
   }
 
@@ -785,11 +840,7 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
 
   all_errors <- c(errors, ext_errors)
 
-  list(
-    valid    = length(all_errors) == 0,
-    errors   = all_errors,
-    warnings = character()
-  )
+  new_stac_validation(errors = all_errors)
 }
 
 
