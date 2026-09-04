@@ -475,16 +475,12 @@ validate_bbox <- function(bbox, prefix = "bbox") {
   if (!length(bbox) %in% c(4, 6)) {
     errors <- c(errors, paste0(prefix, " must have 4 or 6 elements"))
   } else if (length(bbox) == 4) {
-    if (bbox[1] > bbox[3]) {
-      errors <- c(errors, paste0(prefix, ": west must be <= east"))
-    }
+    # West may exceed east: that is how RFC 7946 section 5.2 represents a bbox
+    # crossing the antimeridian. Only latitude and elevation are ordered.
     if (bbox[2] > bbox[4]) {
       errors <- c(errors, paste0(prefix, ": south must be <= north"))
     }
   } else if (length(bbox) == 6) {
-    if (bbox[1] > bbox[4]) {
-      errors <- c(errors, paste0(prefix, ": west must be <= east"))
-    }
     if (bbox[2] > bbox[5]) {
       errors <- c(errors, paste0(prefix, ": south must be <= north"))
     }

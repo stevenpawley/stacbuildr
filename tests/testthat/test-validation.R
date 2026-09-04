@@ -10,14 +10,58 @@ test_that("validation catches invalid bbox", {
   item <- stac_item(
     id = "test-invalid-bbox",
     geometry = list(type = "Point", coordinates = c(-104.5, 40.5)),
-    bbox = c(10, 20, 5, 15), # west > east, south > north
+    bbox = c(10, 20, 5, 15), # south > north
     datetime = "2023-06-15T17:30:00Z",
     properties = list()
   )
 
   result <- validate_stac(item)
   expect_false(result$valid)
-  expect_true(any(grepl("west.*east", result$errors, ignore.case = TRUE)))
+  expect_true(any(grepl("south.*north", result$errors, ignore.case = TRUE)))
+})
+
+test_that("validation accepts a bbox crossing the antimeridian", {
+  # RFC 7946 section 5.2 represents an antimeridian-crossing bbox with a west
+  # value greater than the east value; this is the Fiji example from the RFC.
+  item <- stac_item(
+    id = "fiji",
+    geometry = list(type = "Point", coordinates = c(179, -18)),
+    bbox = c(177, -20, -178, -16),
+    datetime = "2023-06-15T17:30:00Z"
+  )
+
+  expect_true(validate_stac(item)$valid)
+
+  extent <- stac_extent(
+    spatial_bbox = list(c(177, -20, -178, -16)),
+    temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
+  )
+  collection <- stac_collection(
+    id = "fiji",
+    description = "Straddles the antimeridian",
+    license = "MIT",
+    extent = extent
+  )
+
+  expect_true(validate_stac(collection)$valid)
+})
+
+test_that("validation still orders latitude and elevation", {
+  expect_error(
+    stac_extent(
+      spatial_bbox = list(c(0, 20, 1, 10)),
+      temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
+    ),
+    "south \\(20\\) must be <= north"
+  )
+
+  expect_error(
+    stac_extent(
+      spatial_bbox = list(c(0, 0, 100, 1, 1, 50)),
+      temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
+    ),
+    "min elevation \\(100\\) must be <= max elevation"
+  )
 })
 
 test_that("validation catches missing datetime", {

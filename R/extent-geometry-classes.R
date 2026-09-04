@@ -25,17 +25,16 @@ Bbox <- S7::new_class(
       return("Bbox must have 4 or 6 coordinates")
     }
 
+    # Longitudes are deliberately not ordered. A bbox that crosses the
+    # antimeridian has a west value greater than its east value: RFC 7946
+    # section 5.2 gives [177.0, -20.0, -178.0, -16.0] for the Fiji archipelago
+    # as the canonical example. Latitudes and elevations have no such wrap and
+    # must stay ordered.
     if (length(coords) == 4) {
-      if (coords[1] > coords[3]) {
-        return("West coordinate must be <= east coordinate")
-      }
       if (coords[2] > coords[4]) {
         return("South coordinate must be <= north coordinate")
       }
     } else if (length(coords) == 6) {
-      if (coords[1] > coords[4]) {
-        return("West coordinate must be <= east coordinate")
-      }
       if (coords[2] > coords[5]) {
         return("South coordinate must be <= north coordinate")
       }
@@ -57,7 +56,8 @@ SpatialExtent <- S7::new_class(
       return("SpatialExtent must contain at least one bbox")
     }
 
-    # Validate each bbox
+    # Validate each bbox. Longitudes are range-checked but not ordered: a bbox
+    # crossing the antimeridian has west > east (RFC 7946 section 5.2).
     for (i in seq_along(self@bbox)) {
       bbox <- self@bbox[[i]]
       if (!is.numeric(bbox)) {
@@ -79,9 +79,6 @@ SpatialExtent <- S7::new_class(
         if (bbox[4] < -90 || bbox[4] > 90) {
           return(sprintf("Bbox[%d]: north (%g) must be in [-90, 90]", i, bbox[4]))
         }
-        if (bbox[1] > bbox[3]) {
-          return(sprintf("Bbox[%d]: west (%g) must be <= east (%g)", i, bbox[1], bbox[3]))
-        }
         if (bbox[2] > bbox[4]) {
           return(sprintf("Bbox[%d]: south (%g) must be <= north (%g)", i, bbox[2], bbox[4]))
         }
@@ -97,9 +94,6 @@ SpatialExtent <- S7::new_class(
         }
         if (bbox[5] < -90 || bbox[5] > 90) {
           return(sprintf("Bbox[%d]: north (%g) must be in [-90, 90]", i, bbox[5]))
-        }
-        if (bbox[1] > bbox[4]) {
-          return(sprintf("Bbox[%d]: west (%g) must be <= east (%g)", i, bbox[1], bbox[4]))
         }
         if (bbox[2] > bbox[5]) {
           return(sprintf("Bbox[%d]: south (%g) must be <= north (%g)", i, bbox[2], bbox[5]))
