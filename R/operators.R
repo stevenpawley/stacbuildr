@@ -76,7 +76,7 @@ check_duplicate_ids <- function(new_ids, existing_ids, what) {
       "Cannot add {what} with a duplicate id: {.val {duplicates}}.",
       "i" = "write_stac() names each file after the id, so the second would
              overwrite the first while both links remained.",
-      ">" = "Give the {what} a unique id, or drop the duplicate."
+      ">" = "Use a unique id, or drop the duplicate."
     ))
   }
 

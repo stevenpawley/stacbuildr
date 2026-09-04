@@ -79,41 +79,45 @@
 #'   )
 #' )
 #'
-#' # Create an item
-#' item <- stac_item(
-#'   id = "LC08_L1TP_001001_20200101_20200101_01_T1",
-#'   geometry = list(
-#'     type = "Polygon",
-#'     coordinates = list(list(
-#'       c(-180, -90), c(180, -90), c(180, 90), c(-180, 90), c(-180, -90)
-#'     ))
-#'   ),
-#'   bbox = c(-180, -90, 180, 90),
-#'   datetime = "2020-01-01T00:00:00Z",
-#'   properties = list()
-#' )
+#' # Create an item. Every id in a catalog must be unique, so this helper
+#' # varies it per scene.
+#' make_item <- function(id) {
+#'   stac_item(
+#'     id = id,
+#'     geometry = list(
+#'       type = "Polygon",
+#'       coordinates = list(list(
+#'         c(-180, -90), c(180, -90), c(180, 90), c(-180, 90), c(-180, -90)
+#'       ))
+#'     ),
+#'     bbox = c(-180, -90, 180, 90),
+#'     datetime = "2020-01-01T00:00:00Z",
+#'     properties = list()
+#'   )
+#' }
 #'
-#' # Add the item to the collection (simple)
-#' collection <- add_item(collection, item)
+#' # Add a single item to the collection
+#' collection <- add_item(collection, make_item("LC08_20200101"))
 #'
-#' # Add the item with parent links
+#' # Add an item with parent links
 #' collection <- add_item(
 #'   collection,
-#'   item,
+#'   make_item("LC08_20200102"),
 #'   add_parent_links = TRUE,
 #'   parent_href = "./collection.json",
 #'   root_href = "../catalog.json"
 #' )
 #'
-#' # Add multiple items
-#' items <- list(item, item, item)
+#' # Add multiple items at once
+#' items <- lapply(c("LC08_20200103", "LC08_20200104"), make_item)
 #' collection <- add_item(collection, items)
 #'
 #' # Add multiple items with custom hrefs
+#' more_items <- lapply(c("LC08_20200105", "LC08_20200106"), make_item)
 #' collection <- add_item(
 #'   collection,
-#'   items,
-#'   href = c("./2020/item1.json", "./2020/item2.json", "./2020/item3.json")
+#'   more_items,
+#'   href = c("./2020/item5.json", "./2020/item6.json")
 #' )
 #'
 #' @export
