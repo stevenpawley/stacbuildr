@@ -10,6 +10,7 @@ Roxygen: list(markdown = TRUE)
 Depends:
     R (>= 4.1.0)
 Imports: 
+    cli,
     jsonlite,
     sf,
     geojsonsf,
@@ -18,6 +19,7 @@ Imports:
 Suggests:
     terra,
     testthat (>= 3.0.0),
+    withr,
     knitr,
     rmarkdown,
     reticulate,
@@ -34,6 +36,7 @@ Suggests:
 Config/testthat/edition: 3
 Collate:
     'operators.R'
+    'print-helpers.R'
     'stacbuildr-package.R'
     'extent-geometry-classes.R'
     'catalog.R'
@@ -60,6 +63,5 @@ Collate:
     'zzz.R'
 URL: https://github.com/stevenpawley/stacbuildr, https://stevenpawley.github.io/stacbuildr/
 BugReports: https://github.com/stevenpawley/stacbuildr/issues
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
 VignetteBuilder: knitr
-RoxygenNote: 8.0.0
