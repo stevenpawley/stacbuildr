@@ -10,37 +10,57 @@
 #'   or `stac_collection()`.
 #' @param path (character, required) Root directory path where the catalog should
 #'   be written. Will be created if it doesn't exist.
-#' @param catalog_type (character, optional) Type of catalog to create. One of:
-#'   * `"self-contained"`: Links between catalog, collection and item files, and
-#'     absolute local asset hrefs, are written as paths relative to the file
-#'     that contains them.
-#'   * `"relative"`: Currently behaves identically to `"self-contained"`.
-#'   * `"absolute"`: All links use absolute URLs built from `base_url`. Best for
-#'     web-served catalogs.
+#' @param catalog_type (character, optional) Type of catalog to create. These
+#'   correspond to the three catalog layouts in the STAC best-practices
+#'   document, and to PySTAC's `CatalogType` values. One of:
+#'   * `"self-contained"`: Every structural link is relative and no object
+#'     carries a `self` link. Portable — the tree can be moved or archived.
+#'   * `"relative"`: A self-contained catalog plus a single absolute `self` link
+#'     on the root, identifying where the catalog is published. Requires
+#'     `base_url`.
+#'   * `"absolute"`: All links and asset hrefs use absolute URLs built from
+#'     `base_url`, and every object carries a `self` link. Best for web-served
+#'     catalogs. Requires `base_url`.
 #'   Default is `"self-contained"`. Note that no catalog type copies or moves
 #'   asset files — see Details.
 #' @param overwrite (logical, optional) If `TRUE`, overwrites existing files. If
 #'   `FALSE`, throws an error if files already exist. Default is `FALSE`.
 #' @param pretty (logical, optional) If `TRUE`, writes formatted JSON with
 #'   indentation. If `FALSE`, writes compact JSON. Default is `TRUE`.
-#' @param base_url (character, optional) Base URL for absolute links when
-#'   `catalog_type = "absolute"`. For example, `"https://example.com/stac"`.
-#'   Required when using absolute catalog type.
+#' @param base_url (character, optional) Base URL identifying where the catalog
+#'   is published, for example `"https://example.com/stac"`. Required when
+#'   `catalog_type` is `"relative"` or `"absolute"`; ignored otherwise.
 #'
 #' @details
 #' ## Catalog Types
 #'
-#' **Self-Contained and Relative Catalogs:**
+#' The three types match the catalog layouts described in the
+#' [STAC best-practices document](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#catalog-layout),
+#' and map onto PySTAC's `CatalogType$SELF_CONTAINED`,
+#' `CatalogType$RELATIVE_PUBLISHED` and `CatalogType$ABSOLUTE_PUBLISHED`.
+#'
+#' **Self-Contained Catalogs:**
 #' Links between catalog, collection and item files are written as relative
-#' paths. Asset hrefs that are absolute local paths are rewritten relative to
+#' paths. Because a `self` link must be absolute, self-contained catalogs carry
+#' no `self` link at all, and any `self` link already present on an object is
+#' dropped. Asset hrefs that are absolute local paths are rewritten relative to
 #' the directory holding the item JSON; hrefs that are already relative, or that
-#' are URLs (anything containing `://`), are left unchanged. These two types
-#' currently produce identical output.
+#' are URLs (anything containing `://`), are left unchanged. This is the
+#' portable layout: the written tree can be relocated without rewriting links.
+#'
+#' **Relative Catalogs:**
+#' Identical to a self-contained catalog, except that the root catalog or
+#' collection carries one absolute `self` link built from `base_url`, recording
+#' where the catalog is published. No other object gets a `self` link. Use this
+#' when the catalog is published at a known location but should still be
+#' usable after being downloaded.
 #'
 #' **Absolute Catalogs:**
-#' All links use absolute URLs. Required when the catalog will be served from a
-#' web server. Requires `base_url` to be specified. Asset hrefs are left as
-#' given.
+#' All links use absolute URLs and every object carries a `self` link. Required
+#' when the catalog will be served from a web server. Asset hrefs that are
+#' already URLs are left unchanged, and relative asset hrefs are resolved
+#' against the item's URL. An asset href that is an absolute local filesystem
+#' path has no URL equivalent, so it is left unchanged and a warning is raised.
 #'
 #' ## Assets Are Not Copied
 #'
@@ -120,6 +140,14 @@
 #' # Write entire structure - children and items are automatically written!
 #' write_stac(catalog, "output/stac")
 #'
+#' # Write as a relative catalog, recording where it is published
+#' write_stac(
+#'   catalog,
+#'   "output/stac",
+#'   catalog_type = "relative",
+#'   base_url = "https://example.com/stac"
+#' )
+#'
 #' # Write as absolute catalog for web serving
 #' write_stac(
 #'   catalog,
@@ -149,9 +177,19 @@ write_stac <- function(
 
   catalog_type <- match.arg(catalog_type)
 
-  # Validate base_url requirement for absolute catalogs
-  if (catalog_type == "absolute" && is.null(base_url)) {
-    cli::cli_abort("'base_url' is required when catalog_type is 'absolute'")
+  # Both absolute and relative catalogs need to know where they are published
+  if (catalog_type %in% c("absolute", "relative") && is.null(base_url)) {
+    cli::cli_abort(c(
+      "{.arg base_url} is required when {.arg catalog_type} is {.val {catalog_type}}.",
+      "i" = if (catalog_type == "relative") {
+        "A relative catalog carries an absolute self link on its root, which
+         needs the published location."
+      } else {
+        "An absolute catalog builds every link from the published location."
+      },
+      ">" = "Use {.code catalog_type = \"self-contained\"} for a portable
+             catalog with no published location."
+    ))
   }
 
   # Create root directory if it doesn't exist
@@ -327,13 +365,24 @@ write_catalog_recursive <- function(
   pretty,
   is_root = FALSE,
   parent_href = NULL,
-  root_href = NULL
+  root_href = NULL,
+  depth = 0L,
+  root_file = NULL
 ) {
   catalog_file <- if (inherits(catalog, "stac_collection")) "collection.json" else "catalog.json"
 
-  # For the root, establish root_href once and thread it down through children.
-  if (is_root && catalog_type == "absolute") {
-    root_href <- paste0(base_url, "/", catalog_file)
+  # For the root, establish root_href and the root filename once, then thread
+  # both down through the children. Relative root hrefs are rebuilt at each
+  # level from the nesting depth so they stay correct beyond one level.
+  if (is_root) {
+    root_file <- catalog_file
+    root_href <- if (catalog_type == "absolute") {
+      paste0(base_url, "/", catalog_file)
+    } else {
+      paste0("./", catalog_file)
+    }
+  } else if (catalog_type != "absolute") {
+    root_href <- paste0(strrep("../", depth), root_file)
   }
 
   # Update catalog links
@@ -385,7 +434,9 @@ write_catalog_recursive <- function(
         pretty,
         is_root = FALSE,
         parent_href = child_parent_href,
-        root_href = root_href
+        root_href = root_href,
+        depth = depth + 1L,
+        root_file = root_file
       )
     }
   }
@@ -399,27 +450,32 @@ write_catalog_recursive <- function(
       }
       item_file <- file.path(item_dir, paste0(item@id, ".json"))
 
-      # Items live one level below the collection dir, so relative hrefs
-      # from inside the item dir are one level deeper than the collection.
+      # Items live one level below the catalog dir, so relative hrefs from
+      # inside the item dir are one level deeper than the catalog.
       if (catalog_type == "absolute") {
+        item_base_url <- paste0(base_url, "/", item@id)
         item <- update_item_links(
           item,
-          paste0(base_url, "/", item@id, "/", item@id, ".json"),
+          paste0(item_base_url, "/", item@id, ".json"),
           paste0(base_url, "/", catalog_file),
           root_href,
           parent_is_collection = inherits(catalog, "stac_collection")
         )
       } else {
+        # Self-contained and relative catalogs carry no item self links; only
+        # the root of a relative catalog gets one, and it must be absolute.
         item <- update_item_links(
           item,
-          paste0("./", item@id, ".json"),
+          NULL,
           paste0("../", catalog_file),
-          if (is_root) paste0("../", catalog_file) else "../../catalog.json",
+          paste0(strrep("../", depth + 1L), root_file),
           parent_is_collection = inherits(catalog, "stac_collection")
         )
       }
 
-      if (catalog_type != "absolute") {
+      if (catalog_type == "absolute") {
+        item <- absolutize_asset_hrefs(item, item_base_url)
+      } else {
         item <- relativize_asset_hrefs(item, item_dir)
       }
       write_item(item, item_file, overwrite = overwrite, pretty = pretty)
@@ -461,37 +517,28 @@ update_catalog_links <- function(
     catalog_file <- "catalog.json"
   }
 
-  # Build self link
-  if (catalog_type == "absolute") {
-    self_href <- paste0(base_url, "/", catalog_file)
+  # Build the self link. A self link must be absolute, so self-contained
+  # catalogs get none at all and relative catalogs get one on the root only.
+  self_href <- if (catalog_type == "absolute" || (catalog_type == "relative" && is_root)) {
+    paste0(base_url, "/", catalog_file)
   } else {
-    self_href <- paste0("./", catalog_file)
+    NULL
   }
 
-  # Remove existing self link and add updated one
+  # Remove any existing self link and add the updated one
   catalog@links <- Filter(function(x) x$rel != "self", catalog@links)
-  catalog <- add_self_link(catalog, self_href)
+  if (!is.null(self_href)) {
+    catalog <- add_self_link(catalog, self_href)
+  }
 
-  # Add root link
-  if (is_root) {
-    catalog@links <- Filter(function(x) x$rel != "root", catalog@links)
-    catalog <- add_root_link(catalog, self_href)
-  } else {
-    # For non-root catalogs, root points to the root
-    if (catalog_type == "absolute") {
-      # root_href is threaded down from the root call
-    } else {
-      # Calculate relative path to root (this assumes single-level nesting)
-      root_href <- "../catalog.json"
-    }
-    catalog@links <- Filter(function(x) x$rel != "root", catalog@links)
-    catalog <- add_root_link(catalog, root_href)
+  # Add root link — root_href is computed by the caller from the nesting depth
+  catalog@links <- Filter(function(x) x$rel != "root", catalog@links)
+  catalog <- add_root_link(catalog, root_href)
 
-    # Add parent link
-    if (!is.null(parent_href)) {
-      catalog@links <- Filter(function(x) x$rel != "parent", catalog@links)
-      catalog <- add_parent_link(catalog, parent_href)
-    }
+  # Add parent link for non-root catalogs
+  if (!is_root && !is.null(parent_href)) {
+    catalog@links <- Filter(function(x) x$rel != "parent", catalog@links)
+    catalog <- add_parent_link(catalog, parent_href)
   }
 
   # Update child links based on stored children
@@ -562,14 +609,18 @@ update_catalog_links <- function(
 #' @keywords internal
 update_item_links <- function(item, self_href, parent_href, root_href,
                               parent_is_collection = FALSE) {
-  # Update self link
+  # Update self link. `self_href` is NULL for self-contained and relative
+  # catalogs, where items carry no self link because it would have to be
+  # absolute.
   item@links <- Filter(function(x) x$rel != "self", item@links)
-  item <- add_link(
-    item,
-    rel = "self",
-    href = self_href,
-    type = "application/geo+json"
-  )
+  if (!is.null(self_href)) {
+    item <- add_link(
+      item,
+      rel = "self",
+      href = self_href,
+      type = "application/geo+json"
+    )
+  }
 
   # Update parent link
   if (!is.null(parent_href)) {
@@ -639,6 +690,91 @@ make_relative_href <- function(target, from_dir) {
   down  <- tail(target_parts, length(target_parts) - common_len)
   parts <- c(up, down)
   if (length(parts) == 0) "." else paste(parts, collapse = "/")
+}
+
+
+#' Join a relative path onto a base URL
+#'
+#' Appends `rel` to `base`, collapsing any `.` and `..` segments so the result
+#' is a clean absolute URL.
+#'
+#' @param base Absolute base URL, for example `"https://example.com/stac/item"`.
+#' @param rel Relative path, for example `"../data/dem.tif"`.
+#' @return An absolute URL string.
+#'
+#' @keywords internal
+url_join <- function(base, rel) {
+  matched <- regmatches(
+    base,
+    regexec("^([a-zA-Z][a-zA-Z0-9+.-]*://[^/]*)(/.*)?$", base)
+  )[[1]]
+
+  if (length(matched) == 3) {
+    prefix <- matched[2]
+    path <- matched[3]
+  } else {
+    prefix <- ""
+    path <- base
+  }
+
+  segments <- Filter(
+    nzchar,
+    strsplit(paste0(path, "/", rel), "/", fixed = TRUE)[[1]]
+  )
+
+  resolved <- character(0)
+  for (segment in segments) {
+    if (segment == ".") {
+      next
+    } else if (segment == "..") {
+      if (length(resolved) > 0) resolved <- resolved[-length(resolved)]
+    } else {
+      resolved <- c(resolved, segment)
+    }
+  }
+
+  paste0(prefix, "/", paste(resolved, collapse = "/"))
+}
+
+
+#' Absolutize relative asset hrefs against an item's base URL
+#'
+#' Absolute published catalogs require absolute asset hrefs. Hrefs that are
+#' already URLs are left alone; relative hrefs are resolved against
+#' `item_base_url`; absolute local filesystem paths cannot be mapped to a URL
+#' and are left unchanged with a warning.
+#'
+#' @keywords internal
+absolutize_asset_hrefs <- function(item, item_base_url) {
+  if (is.null(item@assets) || length(item@assets) == 0) return(item)
+
+  unresolved <- character(0)
+
+  item@assets <- lapply(item@assets, function(a) {
+    if (is.null(a$href)) return(a)
+    if (grepl("://", a$href, fixed = TRUE)) return(a)
+
+    if (startsWith(a$href, "/")) {
+      unresolved <<- c(unresolved, a$href)
+      return(a)
+    }
+
+    a$href <- url_join(item_base_url, a$href)
+    a
+  })
+
+  if (length(unresolved) > 0) {
+    cli::cli_warn(c(
+      "Item {.val {item@id}} has local asset paths that cannot be made absolute.",
+      "i" = "An absolute catalog requires absolute asset hrefs, but a local
+             filesystem path has no URL equivalent.",
+      "x" = "Left unchanged: {.file {unresolved}}",
+      ">" = "Give these assets URL hrefs, or paths relative to the item
+             directory, before writing an absolute catalog."
+    ))
+  }
+
+  item
 }
 
 
