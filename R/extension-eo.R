@@ -388,12 +388,14 @@ eo_band <- function(
     band$solar_illumination <- solar_illumination
   }
 
-  # Add any extra fields (e.g., from raster extension)
+  # Add any extra fields (e.g., from raster extension). c() drops attributes,
+  # so the class has to be set after the merge.
   extra_fields <- list(...)
   if (length(extra_fields) > 0) {
     band <- c(band, extra_fields)
   }
 
+  class(band) <- c("eo_band", "list")
   band
 }
 
