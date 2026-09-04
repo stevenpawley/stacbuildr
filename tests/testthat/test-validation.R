@@ -32,3 +32,22 @@ test_that("validation catches missing datetime", {
     "datetime"
   )
 })
+
+test_that("suppress_unknown_format_warnings muffles ajv unknown-format warnings", {
+  expect_silent(
+    suppress_unknown_format_warnings(
+      warning('unknown format "iri" ignored in schema at path "#/properties/href"')
+    )
+  )
+})
+
+test_that("suppress_unknown_format_warnings lets other warnings through", {
+  expect_warning(
+    suppress_unknown_format_warnings(warning("something actually wrong")),
+    "something actually wrong"
+  )
+})
+
+test_that("suppress_unknown_format_warnings returns the expression value", {
+  expect_equal(suppress_unknown_format_warnings(41 + 1), 42)
+})

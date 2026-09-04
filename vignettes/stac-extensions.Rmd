@@ -655,6 +655,16 @@ set of fields reused at every level, and will happily accept a document the
 prose spec would call wrong. A clean schema check means nothing contradicts the
 schema, not that the metadata is correct.
 
+There is a gap in the core schemas too. STAC annotates its URL-bearing fields —
+`href`, `providers[].url`, and the `stac_extensions` entries — with the JSON
+Schema `iri` and `iri-reference` formats. The `ajv` validator underneath
+`jsonvalidate` implements the `uri` family but not the internationalised `iri`
+variants, so it skips those assertions: the fields are checked for type but not
+for shape, and a malformed URL will pass. `ajv` warns once per occurrence when
+it does this; `stacbuildr` filters those particular warnings out, since they say
+nothing about the object being validated, and lets every other warning
+through.
+
 Here is the finished set of extensions on our scene:
 
 ```{r}
