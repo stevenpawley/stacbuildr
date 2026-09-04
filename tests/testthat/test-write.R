@@ -429,3 +429,55 @@ test_that("write_stac keeps the collection pair intact under a collection", {
     written$links, function(l) identical(l$rel, "collection"), logical(1)
   )))
 })
+
+test_that("write_stac rejects ids that are not usable as directory names", {
+  make <- function(id) {
+    stac_item(
+      id = id,
+      geometry = list(type = "Point", coordinates = c(0, 0)),
+      bbox = c(0, 0, 0, 0),
+      datetime = "2020-01-01T00:00:00Z"
+    )
+  }
+  catalog <- function(item_id) {
+    add_item(stac_catalog(id = "root", description = "d"), make(item_id))
+  }
+
+  # A separator would silently nest directories; ".." would climb out of the
+  # catalog root and write over unrelated files
+  expect_error(
+    write_stac(catalog("a/b"), withr::local_tempdir(), overwrite = TRUE),
+    "path separator"
+  )
+  expect_error(
+    write_stac(catalog("../escape"), withr::local_tempdir(), overwrite = TRUE),
+    "path separator"
+  )
+  expect_error(
+    write_stac(catalog("."), withr::local_tempdir(), overwrite = TRUE),
+    "path separator"
+  )
+
+  child <- add_child(
+    stac_catalog(id = "root", description = "d"),
+    stac_catalog(id = "../evil", description = "d")
+  )
+  expect_error(
+    write_stac(child, withr::local_tempdir(), overwrite = TRUE),
+    "path separator"
+  )
+})
+
+test_that("write_stac allows ids with spaces and non-ASCII characters", {
+  item <- stac_item(
+    id = "my item",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  )
+  catalog <- add_item(stac_catalog(id = "root", description = "d"), item)
+
+  path <- withr::local_tempdir()
+  expect_no_error(write_stac(catalog, path, overwrite = TRUE))
+  expect_true(file.exists(file.path(path, "my item", "my item.json")))
+})
