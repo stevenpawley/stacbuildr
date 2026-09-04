@@ -81,9 +81,14 @@ catalog_py$add_item(item_py)
 ## Writing to disk and comparing
 
 Both libraries are asked to write a self-contained catalog. stacbuildr's
-`catalog_type` values line up one-to-one with PySTAC's `CatalogType`:
-`"self-contained"` with `SELF_CONTAINED`, `"relative"` with
-`RELATIVE_PUBLISHED`, and `"absolute"` with `ABSOLUTE_PUBLISHED`.
+`catalog_type` values line up one-to-one with PySTAC's `CatalogType`, and both
+follow [Use of links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links) in the STAC best-practices document:
+
+| stacbuildr | PySTAC | STAC best practices |
+| --- | --- | --- |
+| `"self-contained"` | `SELF_CONTAINED` | [Self-contained Catalogs](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs) |
+| `"relative"` | `RELATIVE_PUBLISHED` | [Relative Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog) |
+| `"absolute"` | `ABSOLUTE_PUBLISHED` | [Absolute Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog) |
 
 We use the self-contained type here because these catalogs are written to a
 temporary directory rather than published anywhere. The other two types record

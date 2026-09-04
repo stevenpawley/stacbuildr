@@ -21,8 +21,10 @@ or \code{stac_collection()}.}
 be written. Will be created if it doesn't exist.}
 
 \item{catalog_type}{(character, optional) Type of catalog to create. These
-correspond to the three catalog layouts in the STAC best-practices
-document, and to PySTAC's \code{CatalogType} values. One of:
+correspond to the three link layouts defined in
+\href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links}{Use of links}
+in the STAC best-practices document, and to PySTAC's \code{CatalogType} values.
+One of:
 \itemize{
 \item \code{"self-contained"}: Every structural link is relative and no object
 carries a \code{self} link. Portable — the tree can be moved or archived.
@@ -58,10 +60,17 @@ Children and items are automatically retrieved from the catalog's stored objects
 \details{
 \subsection{Catalog Types}{
 
-The three types match the catalog layouts described in the
-\href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#catalog-layout}{STAC best-practices document},
-and map onto PySTAC's \code{CatalogType$SELF_CONTAINED},
-\code{CatalogType$RELATIVE_PUBLISHED} and \code{CatalogType$ABSOLUTE_PUBLISHED}.
+The three types match the link layouts defined in
+\href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links}{Use of links}
+in the STAC best-practices document, and map onto PySTAC's
+\code{CatalogType$SELF_CONTAINED}, \code{CatalogType$RELATIVE_PUBLISHED} and
+\code{CatalogType$ABSOLUTE_PUBLISHED}:\tabular{lll}{
+   \code{catalog_type} \tab STAC best practices \tab PySTAC \cr
+   \code{"self-contained"} \tab \href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs}{Self-contained Catalogs} \tab \code{SELF_CONTAINED} \cr
+   \code{"relative"} \tab \href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog}{Relative Published Catalog} \tab \code{RELATIVE_PUBLISHED} \cr
+   \code{"absolute"} \tab \href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog}{Absolute Published Catalog} \tab \code{ABSOLUTE_PUBLISHED} \cr
+}
+
 
 \strong{Self-Contained Catalogs:}
 Links between catalog, collection and item files are written as relative
@@ -94,10 +103,12 @@ files, so an asset stored outside \code{path} stays there and is referenced by a
 relative path that climbs out of the catalog directory, such as
 \code{../../../data/dem.tif}.
 
-This is narrower than what the STAC best-practices document means by a
-self-contained catalog, where every referenced file lives inside the catalog
-directory so the whole tree can be archived or relocated as a unit. To get
-that, place the asset files under \code{path} yourself before calling
+This is narrower than a
+\href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-with-assets}{self-contained catalog with assets},
+where every referenced file lives inside the catalog directory so the whole
+tree can be archived or relocated as a unit. A catalog written here is
+\href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-metadata-only}{metadata only}
+unless you place the asset files under \code{path} yourself before calling
 \code{write_stac()}; only then is the written catalog portable in that sense.
 }
 
@@ -181,6 +192,11 @@ write_stac(
 write_stac(catalog, "output/stac", overwrite = TRUE)
 }
 
+}
+\references{
+STAC best practices, \href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links}{Use of links},
+which defines the self-contained, relative published and absolute published
+layouts. See \url{https://stacspec.org/} for the specification as a whole.
 }
 \seealso{
 \itemize{
