@@ -131,18 +131,26 @@ print(catalog, expand = TRUE)
 `write_stac()` recursively writes the catalog, collection, and item JSON files.
 The `catalog_type` argument controls how links and asset hrefs are written:
 
-- `"self-contained"` — all links and asset hrefs are relative paths within the
-  catalog directory. Most portable: zip and share or move the folder anywhere.
-  Use for sharing or archiving.
-- `"relative"` — links between catalog/collection/item files are relative, but
-  asset hrefs are left as-is (absolute local paths or external URLs). Use when
-  the catalog indexes large on-disk data you don't want to copy.
+- `"self-contained"` — links between catalog/collection/item files, and asset
+  hrefs given as absolute local paths, are rewritten relative to the file that
+  contains them. Use for sharing or archiving.
+- `"relative"` — currently identical to `"self-contained"`.
 - `"absolute"` — all links use full URLs built from `base_url`. Use when
   publishing to a web server so remote clients can crawl the catalog over HTTP.
   Assets should also be URLs (S3, HTTPS) in this case.
 
-Since the DEM lives in `tempdir()` alongside the catalog, we use
-`"self-contained"` here:
+One thing to be aware of: `write_stac()` writes JSON and nothing else. It does
+not copy asset files into the catalog directory. Our DEM lives in `data_dir`,
+which is a sibling of the catalog rather than inside it, so the written item
+gets an href like `../../../data/dem.tif` — a valid relative path, but one that
+points outside the tree.
+
+That is narrower than the STAC best-practices meaning of "self-contained", where
+every referenced file sits inside the catalog directory so the folder can be
+zipped and moved as a unit. If you need that, copy the assets under
+`catalog_dir` yourself before calling `write_stac()`.
+
+We use `"self-contained"` here:
 
 ```{r}
 catalog_dir <- file.path(tempdir(), "catalog")
