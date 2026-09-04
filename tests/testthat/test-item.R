@@ -757,3 +757,29 @@ test_that("items with a datetime range keep a null datetime property", {
   expect_equal(parsed$properties$start_datetime, "2023-06-15T00:00:00Z")
   expect_equal(parsed$properties$end_datetime, "2023-06-15T23:59:59Z")
 })
+
+test_that("add_item rejects duplicate item ids", {
+  make <- function(id) {
+    stac_item(
+      id = id,
+      geometry = list(type = "Point", coordinates = c(0, 0)),
+      bbox = c(0, 0, 0, 0),
+      datetime = "2020-01-01T00:00:00Z"
+    )
+  }
+  catalog <- stac_catalog(id = "root", description = "d")
+
+  # write_stac() names each file after the item id, so a repeat would
+  # overwrite the first file while leaving both item links in place
+  expect_error(
+    add_item(add_item(catalog, make("a")), make("a")),
+    "duplicate id"
+  )
+  expect_error(
+    add_item(catalog, list(make("a"), make("a"))),
+    "duplicate id"
+  )
+
+  expect_no_error(add_item(catalog, list(make("a"), make("b"))))
+  expect_no_error(add_item(add_item(catalog, make("a")), make("b")))
+})

@@ -484,6 +484,12 @@ add_child <- function(catalog,
     cli::cli_abort("'child' must be a stac_catalog or stac_collection object")
   }
 
+  check_duplicate_ids(
+    new_ids = child@id,
+    existing_ids = names(attr(catalog, "stac_children") %||% list()),
+    what = "a child"
+  )
+
   if (is.null(href)) {
     if (inherits(child, "stac_collection")) {
       href <- paste0("./", child@id, "/collection.json")

@@ -149,6 +149,16 @@ add_item <- function(
     )
   }
 
+  check_duplicate_ids(
+    new_ids = vapply(items_list, function(it) it@id, character(1)),
+    existing_ids = vapply(
+      attr(catalog, "stac_items") %||% list(),
+      function(it) it@id,
+      character(1)
+    ),
+    what = "an item"
+  )
+
   # Validate href if provided
   if (!is.null(href)) {
     if (length(href) != n_items) {
