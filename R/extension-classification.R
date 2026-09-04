@@ -451,6 +451,11 @@ print.classification_class <- function(x, ...) {
 #'
 #' @param x A classification_bitfield object
 #' @param ... Additional arguments (ignored)
+#' @param expand Controls the collapsible `classes` section. `TRUE` expands
+#'   it, `FALSE` (the default) collapses it, or give the section name
+#'   `"classes"`. Defaults to the `stacbuildr.print.expand` option.
+#'
+#' @return `x`, invisibly.
 #'
 #' @export
 print.classification_bitfield <- function(x, ..., expand = NULL) {
