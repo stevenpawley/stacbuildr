@@ -399,22 +399,32 @@ S7::method(as.list, stac_item) <- function(x, ...) {
   out
 }
 
-S7::method(print, stac_item) <- function(x, ...) {
-  cat("<STAC Item>\n")
-  cat(sprintf("  id          : %s\n", x@id))
+#' Print a STAC Item
+#'
+#' @param x A `stac_item` object.
+#' @param ... Ignored.
+#' @param expand Controls the collapsible sections (marked with an arrow).
+#'   Use `TRUE` to expand all of them, `FALSE` (the default) to collapse all, or
+#'   a character vector of section names to expand only those, e.g.
+#'   `c("assets", "properties")`. Defaults to the `stacbuildr.print.expand`
+#'   option.
+#' @noRd
+S7::method(print, stac_item) <- function(x, ..., expand = NULL) {
+  stac_print_header("Item")
+  stac_print_field("id", x@id, stac_style_id)
 
   if (!is.null(x@collection)) {
-    cat(sprintf("  collection  : %s\n", x@collection))
+    stac_print_field("collection", x@collection, stac_style_key)
   }
 
-  cat(sprintf("  stac_version: %s\n", x@stac_version))
+  stac_print_field("stac_version", x@stac_version, stac_style_muted)
 
   # Datetime / time range
   if (!is.null(x@properties$datetime)) {
-    cat(sprintf("  datetime    : %s\n", x@properties$datetime))
+    stac_print_field("datetime", x@properties$datetime)
   } else if (!is.null(x@properties$start_datetime)) {
-    cat(sprintf(
-      "  datetime    : %s / %s\n",
+    stac_print_field("datetime", sprintf(
+      "%s / %s",
       x@properties$start_datetime,
       x@properties$end_datetime %||% ".."
     ))
@@ -422,34 +432,60 @@ S7::method(print, stac_item) <- function(x, ...) {
 
   # Geometry type and bbox
   if (!is.null(x@geometry)) {
-    cat(sprintf("  geometry    : %s\n", x@geometry$type))
+    stac_print_field("geometry", x@geometry$type)
   } else {
-    cat("  geometry    : NULL (non-spatial)\n")
+    stac_print_field("geometry", "NULL (non-spatial)", stac_style_muted)
   }
 
   if (!is.null(x@bbox)) {
-    cat(sprintf(
-      "  bbox        : [%.4f, %.4f, %.4f, %.4f]\n",
+    stac_print_field("bbox", sprintf(
+      "[%.4f, %.4f, %.4f, %.4f]",
       x@bbox[1], x@bbox[2], x@bbox[3], x@bbox[4]
     ))
   }
 
-  if (length(x@assets) > 0) {
-    cat(sprintf("  assets      : %d [%s]\n", length(x@assets), paste(names(x@assets), collapse = ", ")))
-  } else {
-    cat("  assets      : 0\n")
-  }
+  # Properties other than the datetime fields already shown above
+  props <- x@properties[
+    !names(x@properties) %in% c("datetime", "start_datetime", "end_datetime")
+  ]
+  extensions <- x@stac_extensions %||% character(0)
 
-  if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
-    cat(sprintf("  extensions  : %d\n", length(x@stac_extensions)))
-  }
+  collapsed <- c(
+    if (length(props) > 0) {
+      stac_print_section(
+        "properties",
+        length(props),
+        summary = stac_preview(names(props)),
+        lines = function() stac_field_lines(props),
+        expanded = stac_expanded(expand, "properties")
+      )
+    },
+    stac_print_section(
+      "assets",
+      length(x@assets),
+      summary = stac_preview(names(x@assets)),
+      lines = function() stac_asset_lines(x@assets),
+      expanded = stac_expanded(expand, "assets")
+    ),
+    if (length(extensions) > 0) {
+      stac_print_section(
+        "extensions",
+        length(extensions),
+        summary = stac_preview(stac_extension_names(extensions)),
+        lines = function() stac_extension_lines(extensions),
+        expanded = stac_expanded(expand, "extensions")
+      )
+    },
+    stac_print_section(
+      "links",
+      length(x@links),
+      summary = stac_preview(vapply(x@links, function(l) l$rel %||% "", character(1))),
+      lines = function() stac_link_lines(x@links),
+      expanded = stac_expanded(expand, "links")
+    )
+  )
 
-  if (length(x@links) > 0) {
-    rels <- vapply(x@links, `[[`, character(1), "rel")
-    cat(sprintf("  links       : %d [%s]\n", length(rels), paste(rels, collapse = ", ")))
-  } else {
-    cat("  links       : 0\n")
-  }
+  stac_print_hint(sum(collapsed))
 
   invisible(x)
 }

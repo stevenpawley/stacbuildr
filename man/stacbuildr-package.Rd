@@ -47,6 +47,39 @@ objects but are not S7 classes themselves:\tabular{ll}{
 
 }
 
+\subsection{Printing}{
+
+Catalogs, Collections and Items print a coloured summary. Fields that hold
+more than one value (assets, links, properties, children, items,
+extensions, providers, summaries) are shown as collapsed sections marked
+with a \verb{▸} arrow, listing a count and a short preview. Expand them with
+the \code{expand} argument:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{print(item)                          # everything collapsed
+print(item, expand = TRUE)           # expand every section
+print(item, expand = c("assets"))    # expand only the assets
+}\if{html}{\out{</div>}}
+
+Two options change the defaults:
+\itemize{
+\item \code{stacbuildr.print.expand} - the default value of \code{expand}, e.g.
+\code{options(stacbuildr.print.expand = TRUE)} to always print in full.
+\item \code{stacbuildr.print.hint} - set to \code{FALSE} to suppress the footer that
+reports how many sections were collapsed.
+}
+
+Extension metadata is shown wherever it is stored: item-level fields such
+as \code{"sci:doi"} or \code{"eo:cloud_cover"} appear in the \code{properties} section,
+asset-level fields such as \code{"eo:bands"} or \code{"raster:bands"} appear under
+the asset that carries them, and the declared schema URIs are listed in the
+\code{extensions} section by name and version. Arrays of objects are summarised
+by the name of each object, e.g. \code{eo:bands [B4, B5]}.
+
+Colour and the box-drawing characters come from \pkg{cli} and are dropped
+automatically when the console does not support them (log files, knitr,
+\verb{R CMD check}). Use \code{options(cli.num_colors = 1)} to turn colour off.
+}
+
 \subsection{Typical Workflow}{
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{library(stacbuildr)
