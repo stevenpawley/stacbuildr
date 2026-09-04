@@ -202,6 +202,116 @@ Geometry <- S7::new_class(
   }
 )
 
+# Print methods -----------------------------------------------------------
+
+# Format one bbox as "[w, s, e, n]", or with the elevation pair for a 3D bbox.
+stac_format_bbox <- function(bbox) {
+  if (length(bbox) == 6L) {
+    return(sprintf(
+      "[%g, %g, %g, %g] elev [%g, %g]",
+      bbox[1], bbox[2], bbox[4], bbox[5], bbox[3], bbox[6]
+    ))
+  }
+  sprintf("[%s]", paste(vapply(bbox, function(v) sprintf("%g", v), character(1)),
+                        collapse = ", "))
+}
+
+# Format one interval as "start / end", with ".." for an open end.
+stac_format_interval <- function(interval) {
+  ends <- vapply(interval, function(v) {
+    if (is.null(v) || length(v) == 0L || is.na(v)) ".." else as.character(v)
+  }, character(1))
+  paste(ends, collapse = " / ")
+}
+
+S7::method(print, Bbox) <- function(x, ...) {
+  stac_print_header("Bbox")
+  stac_print_list_fields(list(
+    dimensions = if (length(x@coordinates) == 6L) "3D" else "2D",
+    coordinates = stac_format_bbox(x@coordinates)
+  ))
+  invisible(x)
+}
+
+S7::method(print, SpatialExtent) <- function(x, ..., expand = NULL) {
+  stac_print_header("Spatial Extent")
+  collapsed <- stac_print_section(
+    "bbox",
+    length(x@bbox),
+    summary = if (length(x@bbox) > 0) stac_format_bbox(x@bbox[[1]]),
+    lines = function() vapply(x@bbox, stac_format_bbox, character(1)),
+    expanded = stac_expanded(expand, "bbox")
+  )
+  stac_print_hint(sum(collapsed))
+  invisible(x)
+}
+
+S7::method(print, TemporalExtent) <- function(x, ..., expand = NULL) {
+  stac_print_header("Temporal Extent")
+  collapsed <- stac_print_section(
+    "interval",
+    length(x@interval),
+    summary = if (length(x@interval) > 0) stac_format_interval(x@interval[[1]]),
+    lines = function() vapply(x@interval, stac_format_interval, character(1)),
+    expanded = stac_expanded(expand, "interval")
+  )
+  stac_print_hint(sum(collapsed))
+  invisible(x)
+}
+
+S7::method(print, Extent) <- function(x, ...) {
+  stac_print_header("STAC Extent")
+
+  bboxes <- x@spatial@bbox
+  intervals <- x@temporal@interval
+
+  # The first bbox and interval are the overall extent; any others are the
+  # more precise sub-regions and sub-periods the spec allows.
+  stac_print_list_fields(list(
+    bbox = if (length(bboxes) > 0) stac_format_bbox(bboxes[[1]]),
+    datetime = if (length(intervals) > 0) stac_format_interval(intervals[[1]])
+  ))
+
+  if (length(bboxes) > 1L) {
+    stac_print_field(
+      "sub-regions", stac_fmt_value(length(bboxes) - 1L), stac_style_count
+    )
+  }
+  if (length(intervals) > 1L) {
+    stac_print_field(
+      "sub-periods", stac_fmt_value(length(intervals) - 1L), stac_style_count
+    )
+  }
+
+  invisible(x)
+}
+
+S7::method(print, Geometry) <- function(x, ...) {
+  stac_print_header("Geometry")
+  stac_print_list_fields(
+    list(
+      type = x@type,
+      coordinates = stac_geometry_summary(x@coordinates)
+    ),
+    styles = list(type = stac_style_key)
+  )
+  invisible(x)
+}
+
+# GeoJSON coordinates nest differently per geometry type, so report the
+# position count rather than trying to render them.
+stac_geometry_summary <- function(coords) {
+  if (is.null(coords)) {
+    return(NULL)
+  }
+  if (is.numeric(coords) && !is.list(coords)) {
+    return(sprintf("[%s]", paste(sprintf("%g", coords), collapse = ", ")))
+  }
+  n <- length(unlist(coords)) %/% 2L
+  sprintf("%d position%s", n, if (n == 1L) "" else "s")
+}
+
+
 # Methods to support serialization to JSON
 S7::method(as.list, SpatialExtent) <- function(x, ...) {
   list(bbox = x@bbox)
