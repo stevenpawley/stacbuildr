@@ -228,7 +228,7 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
     out$stac_extensions <- as.list(x@stac_extensions)
   }
   if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
-    out$conformsTo <- x@conformsTo
+    out$conformsTo <- as_json_array(x@conformsTo)
   }
   out$links <- x@links
   if (length(x@extra_fields) > 0) {
