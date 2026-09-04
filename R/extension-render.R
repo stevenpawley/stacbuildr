@@ -274,14 +274,7 @@ validate_render_named_list <- function(x) {
 #'
 #' @export
 print.render_object <- function(x, ...) {
-  cat("Render Object:\n")
-  if (!is.null(x$assets)) cat("  Assets:", paste(x$assets, collapse = ", "), "\n")
-  if (!is.null(x$title)) cat("  Title:", x$title, "\n")
-  if (!is.null(x$resampling)) cat("  Resampling:", x$resampling, "\n")
-  if (!is.null(x$colormap_name)) cat("  Color Map:", x$colormap_name, "\n")
-  if (!is.null(x$expression)) cat("  Expression:", x$expression, "\n")
-  if (!is.null(x$minmax_zoom)) {
-    cat("  Min/Max Zoom:", paste(x$minmax_zoom, collapse = ", "), "\n")
-  }
+  stac_print_header("Render Object")
+  stac_print_list_fields(x, styles = list(assets = stac_style_key))
   invisible(x)
 }

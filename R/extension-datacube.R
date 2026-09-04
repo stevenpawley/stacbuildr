@@ -350,13 +350,8 @@ cube_dimension <- function(
 #'
 #' @export
 print.cube_dimension <- function(x, ...) {
-  cat("Datacube Dimension:\n")
-  if (!is.null(x$type)) cat("  Type:", x$type, "\n")
-  if (!is.null(x$axis)) cat("  Axis:", x$axis, "\n")
-  if (!is.null(x$extent)) cat("  Extent:", paste(x$extent, collapse = ", "), "\n")
-  if (!is.null(x$values)) cat("  Values:", paste(x$values, collapse = ", "), "\n")
-  if (!is.null(x$unit)) cat("  Unit:", x$unit, "\n")
-  if (!is.null(x$description)) cat("  Description:", x$description, "\n")
+  stac_print_header("Datacube Dimension")
+  stac_print_list_fields(x, styles = list(type = stac_style_key))
   invisible(x)
 }
 
@@ -455,13 +450,7 @@ cube_variable <- function(
 #'
 #' @export
 print.cube_variable <- function(x, ...) {
-  cat("Datacube Variable:\n")
-  if (!is.null(x$type)) cat("  Type:", x$type, "\n")
-  if (!is.null(x$dimensions)) {
-    cat("  Dimensions:", paste(x$dimensions, collapse = ", "), "\n")
-  }
-  if (!is.null(x$data_type)) cat("  Data Type:", x$data_type, "\n")
-  if (!is.null(x$unit)) cat("  Unit:", x$unit, "\n")
-  if (!is.null(x$description)) cat("  Description:", x$description, "\n")
+  stac_print_header("Datacube Variable")
+  stac_print_list_fields(x, styles = list(type = stac_style_key))
   invisible(x)
 }

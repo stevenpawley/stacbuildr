@@ -362,7 +362,7 @@ S7::method(as.list, stac_collection) <- function(x, ...) {
 #'   option.
 #' @noRd
 S7::method(print, stac_collection) <- function(x, ..., expand = NULL) {
-  stac_print_header(x@type)
+  stac_print_header(paste("STAC", x@type))
   stac_print_field("id", x@id, stac_style_id)
 
   if (!is.null(x@title)) {
@@ -554,7 +554,36 @@ stac_provider <- function(name, description = NULL, roles = NULL, url = NULL) {
     provider$url <- url
   }
 
+  class(provider) <- c("stac_provider", "list")
   provider
+}
+
+
+#' Print method for STAC providers
+#'
+#' @param x A provider object created with [stac_provider()].
+#' @param ... Additional arguments (ignored).
+#'
+#' @return `x`, invisibly.
+#'
+#' @export
+print.stac_provider <- function(x, ...) {
+  stac_print_header("STAC Provider")
+  stac_print_field("name", x$name %||% "", stac_style_id)
+
+  if (!is.null(x$roles)) {
+    stac_print_field("roles", sprintf(
+      "[%s]", paste(unlist(x$roles), collapse = ", ")
+    ))
+  }
+  if (!is.null(x$url)) {
+    stac_print_field("url", x$url, stac_style_url)
+  }
+  if (!is.null(x$description)) {
+    stac_print_field("description", x$description)
+  }
+
+  invisible(x)
 }
 
 
@@ -585,7 +614,33 @@ stac_provider <- function(name, description = NULL, roles = NULL, url = NULL) {
 #' @export
 stac_summaries <- function(...) {
   summaries <- list(...)
+  class(summaries) <- c("stac_summaries", "list")
   summaries
+}
+
+
+#' Print method for STAC summaries
+#'
+#' @param x A summaries object created with [stac_summaries()].
+#' @param ... Additional arguments (ignored).
+#'
+#' @return `x`, invisibly.
+#'
+#' @export
+print.stac_summaries <- function(x, ...) {
+  stac_print_header("STAC Summaries")
+
+  if (length(x) == 0) {
+    stac_print_empty()
+    return(invisible(x))
+  }
+
+  width <- max(stac_label_width, nchar(names(x)))
+  for (key in names(x)) {
+    stac_print_field(key, stac_fmt_value(x[[key]]), stac_style_value, width)
+  }
+
+  invisible(x)
 }
 
 

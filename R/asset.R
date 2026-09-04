@@ -78,13 +78,65 @@ stac_asset <- function(href,
   if (!is.null(roles))
     asset$roles <- as.list(roles)
 
-  # Add extension fields
+  # Add extension fields. c() drops attributes, so the class has to be set
+  # after the merge.
   extra_fields <- list(...)
   if (length(extra_fields) > 0) {
     asset <- c(asset, extra_fields)
   }
 
+  class(asset) <- c("stac_asset", "list")
   asset
+}
+
+
+#' Print method for STAC assets
+#'
+#' @param x A STAC asset object created with [stac_asset()].
+#' @param ... Additional arguments (ignored).
+#' @param expand Controls the collapsible extension-field section. `TRUE`
+#'   expands it, `FALSE` (the default) collapses it, or give the section name
+#'   `"fields"`. Defaults to the `stacbuildr.print.expand` option.
+#'
+#' @return `x`, invisibly.
+#'
+#' @export
+print.stac_asset <- function(x, ..., expand = NULL) {
+  stac_print_header("STAC Asset")
+  stac_print_field("href", x$href %||% "", stac_style_url)
+
+  if (!is.null(x$title)) {
+    stac_print_field("title", x$title)
+  }
+  if (!is.null(x$type)) {
+    stac_print_field("type", x$type, stac_style_key)
+  }
+  if (!is.null(x$roles)) {
+    stac_print_field("roles", sprintf(
+      "[%s]", paste(unlist(x$roles), collapse = ", ")
+    ))
+  }
+  if (!is.null(x$description)) {
+    stac_print_field("description", x$description)
+  }
+
+  # Anything beyond the core fields comes from an extension
+  fields <- x[!names(x) %in% stac_asset_core_fields]
+  collapsed <- if (length(fields) > 0) {
+    stac_print_section(
+      "fields",
+      length(fields),
+      summary = stac_preview(names(fields)),
+      lines = function() stac_field_lines(fields),
+      expanded = stac_expanded(expand, "fields")
+    )
+  } else {
+    FALSE
+  }
+
+  stac_print_hint(sum(collapsed))
+
+  invisible(x)
 }
 
 

@@ -146,17 +146,53 @@ stac_expanded <- function(expand, section) {
 
 # Printing primitives ----------------------------------------------------
 
-stac_print_header <- function(type) {
-  cat(stac_style_type(sprintf("<STAC %s>", type)), "\n", sep = "")
+stac_print_header <- function(title) {
+  cat(stac_style_type(sprintf("<%s>", title)), "\n", sep = "")
 }
 
 # A plain "label : value" line, with the value trimmed to fit the console.
-stac_print_field <- function(label, value, style = stac_style_value) {
+stac_print_field <- function(label,
+                             value,
+                             style = stac_style_value,
+                             width = stac_label_width) {
   cat(sprintf(
     "  %s : %s\n",
-    stac_style_label(stac_pad(label)),
-    style(stac_truncate(value, stac_avail(17L)))
+    stac_style_label(stac_pad(label, width)),
+    style(stac_truncate(value, stac_avail(width + 5L)))
   ))
+}
+
+# Print every field of a list as "label : value" lines, sized to the widest
+# label present. Empty fields are dropped, so callers can pass optional ones
+# unconditionally. `units` appends a unit to named fields, `styles` overrides
+# the value style, and `skip` leaves fields for the caller to render itself
+# (as a collapsible section, say).
+stac_print_list_fields <- function(x,
+                                   units = character(0),
+                                   styles = list(),
+                                   skip = character(0)) {
+  keep <- !names(x) %in% skip &
+    !vapply(x, function(v) is.null(v) || length(v) == 0L, logical(1))
+  fields <- x[keep]
+  if (length(fields) == 0L) {
+    return(invisible(stac_label_width))
+  }
+
+  width <- max(stac_label_width, nchar(names(fields)))
+  for (nm in names(fields)) {
+    value <- stac_fmt_value(fields[[nm]], stac_avail(width + 5L))
+    if (nm %in% names(units)) {
+      value <- paste(value, units[[nm]])
+    }
+    stac_print_field(nm, value, styles[[nm]] %||% stac_style_value, width)
+  }
+  # so that any sections printed afterwards can line their colons up
+  invisible(width)
+}
+
+# "(empty)" placeholder for an object with nothing to show.
+stac_print_empty <- function() {
+  cat(stac_style_muted("  (empty)\n"))
 }
 
 #' Print one collapsible section
@@ -176,7 +212,8 @@ stac_print_section <- function(label,
                                n,
                                summary = NULL,
                                lines = NULL,
-                               expanded = FALSE) {
+                               expanded = FALSE,
+                               width = stac_label_width) {
   expanded <- expanded && n > 0L
   arrow <- if (n == 0L) {
     " "
@@ -189,7 +226,7 @@ stac_print_section <- function(label,
   cat(sprintf(
     "  %s %s : %s%s\n",
     arrow,
-    stac_style_label(stac_pad(label, stac_label_width - 2L)),
+    stac_style_label(stac_pad(label, width - 2L)),
     stac_style_count(n),
     if (!expanded && !is.null(summary) && n > 0L) {
       paste0(" ", stac_style_muted(summary))
@@ -365,6 +402,21 @@ stac_field_lines <- function(x, width = 10L, indent = 9L) {
       stac_style_key(stac_pad(key, key_width)),
       " ",
       stac_fmt_value(x[[key]], value_width)
+    )
+  }, character(1), USE.NAMES = FALSE)
+}
+
+# Classification classes -> "value  label" entries.
+stac_classification_lines <- function(classes) {
+  values <- vapply(classes, function(cls) as.character(cls$value %||% "?"), character(1))
+  value_width <- max(nchar(values), 0L)
+  vapply(seq_along(classes), function(i) {
+    cls <- classes[[i]]
+    stac_entry(
+      values[[i]],
+      value_width,
+      cls$title %||% cls$name %||% "",
+      style = stac_style_count
     )
   }, character(1), USE.NAMES = FALSE)
 }

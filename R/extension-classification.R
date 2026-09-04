@@ -415,17 +415,20 @@ classification_bitfield <- function(
 #'
 #' @export
 print.classification_class <- function(x, ...) {
-  cat("Classification Class:\n")
-  cat("  Value:", x$value, "\n")
+  stac_print_header("Classification Class")
 
-  if (!is.null(x$name))        cat("  Name:", x$name, "\n")
-  if (!is.null(x$title))       cat("  Title:", x$title, "\n")
-  if (!is.null(x$description)) cat("  Description:", x$description, "\n")
-  if (!is.null(x$color_hint))  cat("  Color Hint: #", x$color_hint, "\n", sep = "")
-  if (isTRUE(x$nodata))        cat("  NoData: TRUE\n")
-  if (!is.null(x$percentage))  cat("  Percentage:", x$percentage, "%\n")
-  if (!is.null(x$count))       cat("  Count:", x$count, "\n")
+  fields <- x
+  if (!is.null(fields$color_hint)) {
+    fields$color_hint <- paste0("#", fields$color_hint)
+  }
+  if (!is.null(fields$percentage)) {
+    fields$percentage <- paste0(fields$percentage, "%")
+  }
 
+  stac_print_list_fields(
+    fields,
+    styles = list(name = stac_style_id, value = stac_style_count)
+  )
   invisible(x)
 }
 
@@ -436,20 +439,25 @@ print.classification_class <- function(x, ...) {
 #' @param ... Additional arguments (ignored)
 #'
 #' @export
-print.classification_bitfield <- function(x, ...) {
-  cat("Classification Bitfield:\n")
-  cat("  Offset:", x$offset, "\n")
-  cat("  Length:", x$length, "bit(s)\n")
+print.classification_bitfield <- function(x, ..., expand = NULL) {
+  stac_print_header("Classification Bitfield")
+  width <- stac_print_list_fields(
+    x,
+    units = c(length = "bit(s)"),
+    styles = list(name = stac_style_id, offset = stac_style_count),
+    skip = "classes"
+  )
 
-  if (!is.null(x$name))        cat("  Name:", x$name, "\n")
-  if (!is.null(x$description)) cat("  Description:", x$description, "\n")
-  if (!is.null(x$roles))       cat("  Roles:", paste(unlist(x$roles), collapse = ", "), "\n")
+  classes <- x$classes %||% list()
+  collapsed <- stac_print_section(
+    "classes",
+    length(classes),
+    summary = stac_preview(stac_object_labels(classes)),
+    lines = function() stac_classification_lines(classes),
+    expanded = stac_expanded(expand, "classes"),
+    width = width
+  )
 
-  cat("  Classes (", length(x$classes), "):\n", sep = "")
-  for (cls in x$classes) {
-    label <- if (!is.null(cls$title)) cls$title else if (!is.null(cls$name)) cls$name else "?"
-    cat("    ", cls$value, ": ", label, "\n", sep = "")
-  }
-
+  stac_print_hint(sum(collapsed))
   invisible(x)
 }

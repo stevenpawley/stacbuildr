@@ -229,8 +229,7 @@ scientific_publication <- function(doi = NULL, citation = NULL) {
 #'
 #' @export
 print.scientific_publication <- function(x, ...) {
-  cat("Scientific Publication:\n")
-  if (!is.null(x$doi))      cat("  DOI:     ", x$doi, "\n", sep = "")
-  if (!is.null(x$citation)) cat("  Citation:", x$citation, "\n")
+  stac_print_header("Scientific Publication")
+  stac_print_list_fields(x, styles = list(doi = stac_style_id))
   invisible(x)
 }

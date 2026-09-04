@@ -7,8 +7,13 @@ s3_print_classes <- c(
   "cube_dimension",
   "cube_variable",
   "eo_band",
+  "raster_histogram",
+  "raster_statistics",
   "render_object",
   "scientific_publication",
+  "stac_asset",
+  "stac_provider",
+  "stac_summaries",
   "table_column"
 )
 

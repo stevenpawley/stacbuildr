@@ -12,6 +12,11 @@ test_that("print dispatches for the S3 sub-object classes", {
 
   cases <- list(
     eo_band = eo_band(name = "B4", common_name = "red"),
+    stac_asset = stac_asset(href = "./b4.tif", type = "image/tiff", roles = "data"),
+    stac_provider = stac_provider(name = "USGS", roles = "producer"),
+    stac_summaries = stac_summaries(platform = list("landsat-8")),
+    raster_statistics = raster_statistics(minimum = 0, maximum = 1),
+    raster_histogram = raster_histogram(count = 2, min = 0, max = 1, buckets = c(1, 2)),
     classification_class = classification_class(value = 1, name = "water"),
     classification_bitfield = classification_bitfield(
       offset = 2, length = 2,
@@ -40,6 +45,145 @@ test_that("eo_band carries its class through extra fields", {
   band <- eo_band(name = "B4", "raster:scale" = 1e-4)
   expect_s3_class(band, "eo_band")
   expect_equal(band$`raster:scale`, 1e-4)
+})
+
+test_that("every sub-object prints in the shared style", {
+  local_reproducible_output(unicode = FALSE)
+
+  cases <- list(
+    "EO Band" = eo_band(name = "B4", common_name = "red", center_wavelength = 0.665),
+    "Raster Band" = raster_band(data_type = "uint16", scale = 1, offset = 0),
+    "Raster Statistics" = raster_statistics(minimum = 0, maximum = 1),
+    "Raster Histogram" = raster_histogram(count = 1, min = 0, max = 1, buckets = 1),
+    "Classification Class" = classification_class(value = 1, name = "water"),
+    "Classification Bitfield" = classification_bitfield(
+      offset = 1, length = 1,
+      classes = list(classification_class(value = 0, name = "none"))
+    ),
+    "Datacube Dimension" = cube_dimension(type = "spatial", axis = "x", extent = list(0, 1)),
+    "Datacube Variable" = cube_variable(dimensions = "x", type = "data"),
+    "Render Object" = render_object(assets = "B4"),
+    "Scientific Publication" = scientific_publication(doi = "10.1/x", citation = "c"),
+    "Table Column" = table_column(name = "g", type = "geometry"),
+    "STAC Asset" = stac_asset(href = "./b4.tif"),
+    "STAC Provider" = stac_provider(name = "USGS"),
+    "STAC Summaries" = stac_summaries(platform = list("landsat-8"))
+  )
+
+  for (title in names(cases)) {
+    out <- capture.output(print(cases[[title]]))
+    # a "<Title>" header, then aligned "label : value" lines
+    expect_identical(out[[1]], sprintf("<%s>", title))
+    expect_true(any(grepl(" : ", out, fixed = TRUE)), label = title)
+  }
+})
+
+test_that("sub-object fields keep their units and formatting", {
+  local_reproducible_output(unicode = FALSE)
+
+  out <- capture.output(print(eo_band(name = "B4", center_wavelength = 0.665)))
+  expect_true(any(grepl("0.665 micrometres", out, fixed = TRUE)))
+
+  out <- capture.output(print(classification_class(value = 1, color_hint = "0000FF", percentage = 12.5)))
+  expect_true(any(grepl("#0000FF", out, fixed = TRUE)))
+  expect_true(any(grepl("12.5%", out, fixed = TRUE)))
+
+  out <- capture.output(print(classification_bitfield(
+    offset = 1, length = 2,
+    classes = list(classification_class(value = 0, name = "none"))
+  )))
+  expect_true(any(grepl("2 bit(s)", out, fixed = TRUE)))
+
+  out <- capture.output(print(raster_band(data_type = "uint16", scale = 0.5, offset = 2)))
+  expect_true(any(grepl("value = 0.5 * DN + 2", out, fixed = TRUE)))
+})
+
+test_that("sub-object sections expand", {
+  local_reproducible_output(unicode = FALSE)
+
+  bf <- classification_bitfield(
+    offset = 1, length = 1,
+    classes = list(
+      classification_class(value = 0, name = "none"),
+      classification_class(value = 1, name = "low")
+    )
+  )
+  # collapsed: an arrow, a count and a preview, but no tree branches
+  out <- capture.output(print(bf))
+  expect_true(any(grepl("> classes", out, fixed = TRUE)))
+  expect_false(any(grepl("`- ", out, fixed = TRUE)))
+
+  # expanded: one branch per class, labelled "<value> <name>"
+  out <- capture.output(print(bf, expand = TRUE))
+  expect_true(any(grepl("v classes", out, fixed = TRUE)))
+  expect_true(any(grepl("|- 0 none", out, fixed = TRUE)))
+  expect_true(any(grepl("`- 1 low", out, fixed = TRUE)))
+
+  band <- raster_band(
+    data_type = "uint16", scale = 1, offset = 0,
+    statistics = raster_statistics(minimum = 1, maximum = 10)
+  )
+  out <- capture.output(print(band, expand = "statistics"))
+  expect_true(any(grepl("minimum", out, fixed = TRUE)))
+})
+
+test_that("the classed helpers stay ordinary lists", {
+  # the class is for printing only: $ access, is.list() and [[ must all work
+  objs <- list(
+    stac_asset(href = "./b4.tif", type = "image/tiff"),
+    stac_provider(name = "USGS"),
+    stac_summaries(platform = list("landsat-8")),
+    raster_statistics(minimum = 0, maximum = 1),
+    raster_histogram(count = 1, min = 0, max = 1, buckets = 1),
+    eo_band(name = "B4")
+  )
+  for (o in objs) {
+    expect_true(is.list(o))
+    expect_type(o, "list")
+    expect_length(names(o), length(o))
+  }
+
+  expect_equal(stac_asset(href = "./b4.tif")$href, "./b4.tif")
+  expect_equal(stac_provider(name = "USGS")[["name"]], "USGS")
+  expect_equal(raster_statistics(minimum = 3)$minimum, 3)
+})
+
+test_that("classed helpers survive being embedded in S7 objects", {
+  band <- raster_band(
+    data_type = "uint16",
+    statistics = raster_statistics(minimum = 1, maximum = 10),
+    histogram = raster_histogram(count = 2, min = 0, max = 1, buckets = c(1, 2))
+  )
+  expect_s3_class(band@statistics, "raster_statistics")
+  expect_s3_class(band@histogram, "raster_histogram")
+
+  item <- stac_item(
+    id = "i",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2023-01-01T00:00:00Z"
+  )
+  item <- add_asset(item, "B4", href = "./b4.tif", type = "image/tiff")
+  expect_s3_class(item@assets$B4, "stac_asset")
+})
+
+test_that("the new classes do not leak into JSON", {
+  item <- stac_item(
+    id = "i",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2023-01-01T00:00:00Z"
+  )
+  item <- add_asset(
+    item, "B4",
+    href = "./b4.tif", type = "image/tiff", roles = "data"
+  )
+  path <- withr::local_tempfile(fileext = ".json")
+  write_item(item, path)
+
+  json <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  expect_named(json$assets$B4, c("href", "type", "roles"))
+  expect_equal(json$assets$B4$href, "./b4.tif")
 })
 
 test_that("the eo_band class does not leak into JSON", {
