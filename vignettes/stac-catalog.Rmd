@@ -84,6 +84,10 @@ collection <- stac_collection(
   )
 )
 
+collection
+```
+
+```{r}
 catalog <- stac_catalog(
   id = "my-catalog",
   description = "Example STAC catalog",
@@ -92,6 +96,8 @@ catalog <- stac_catalog(
 
 collection <- add_item(collection, item)
 catalog <- add_child(catalog, collection)
+
+print(catalog, expand = TRUE)
 ```
 
 ## Write a static catalog to disk
@@ -157,9 +163,46 @@ not evaluated when the vignette is built.
 
 ### Set up the database
 
+`stac_db_setup()` creates tables and indexes inside an existing database; it
+cannot create the database itself, because PostgreSQL only accepts
+`CREATE DATABASE` from a connection to a *different* database. Create it once
+up front, either from the shell:
+
+```sh
+createdb stac
+```
+
+or from R, by connecting to the default `postgres` maintenance database:
+
 ```{r, eval = FALSE}
 library(DBI)
 
+admin <- dbConnect(
+  RPostgres::Postgres(),
+  host = "localhost",
+  port = 5432,
+  dbname = "postgres",
+  user = Sys.getenv("PG_USER"),
+  password = Sys.getenv("PG_PASSWORD")
+)
+
+if (nrow(dbGetQuery(
+  admin,
+  "SELECT 1 FROM pg_database WHERE datname = 'stac'"
+)) == 0) {
+  dbExecute(admin, "CREATE DATABASE stac")
+}
+
+dbDisconnect(admin)
+```
+
+The role also needs permission to run `CREATE EXTENSION postgis`, which
+`stac_db_setup()` issues on first use. A superuser connection, or a database
+created from the `template_postgis` template, satisfies this.
+
+Now connect to the `stac` database and create the schema:
+
+```{r, eval = FALSE}
 con <- dbConnect(
   RPostgres::Postgres(),
   host = "localhost",
