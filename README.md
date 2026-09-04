@@ -210,8 +210,16 @@ extent <- extent_from_items(items)
 ### Writing and reading
 
 ```r
-# Write the entire catalog hierarchy to disk as JSON files
+# Write the entire catalog hierarchy to disk as JSON files.
+# The default "self-contained" type uses relative links throughout, so the
+# tree stays portable.
 write_stac(catalog, path = "output/stac")
+
+# Write as a relative catalog: relative links, plus one absolute self link on
+# the root recording where the catalog is published
+write_stac(catalog, path = "output/stac",
+           catalog_type = "relative",
+           base_url = "https://example.com/stac")
 
 # Write as an absolute-URL catalog (for web hosting)
 write_stac(catalog, path = "output/stac",
