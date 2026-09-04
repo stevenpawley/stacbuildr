@@ -49,9 +49,10 @@ stac_api_router <- function(
 ) {
   # Check that optional package is installed
   if (!requireNamespace("plumber", quietly = TRUE)) {
-    stop(
-      "Package 'plumber' is required. Install with: install.packages('plumber')"
-    )
+    cli::cli_abort(c(
+      "Package 'plumber' is required.",
+      "i" = "Install with: install.packages('plumber')"
+    ))
   }
 
   # Custom serializer (how results are returned back to the client)
@@ -195,6 +196,8 @@ stac_api_router <- function(
 
       bbox_parsed <- tryCatch(.parse_bbox_param(bbox), error = function(e) {
         res$status <- 400L
+        # base stop(): this message becomes an HTTP response body, so it must
+        # stay plain text rather than picking up cli's bullets and styling
         stop(e$message)
       })
       dt <- .parse_datetime_param(datetime)
@@ -271,6 +274,8 @@ stac_api_router <- function(
 
       bbox_parsed <- tryCatch(.parse_bbox_param(bbox), error = function(e) {
         res$status <- 400L
+        # base stop(): this message becomes an HTTP response body, so it must
+        # stay plain text rather than picking up cli's bullets and styling
         stop(e$message)
       })
       dt <- .parse_datetime_param(datetime)
@@ -322,7 +327,7 @@ stac_api_router <- function(
       bbox_parsed <- if (!is.null(bbox_raw)) {
         b <- tryCatch(as.numeric(unlist(bbox_raw)), error = function(e) {
           res$status <- 400L
-          stop("'bbox' must be a JSON array of four numbers")
+          cli::cli_abort("'bbox' must be a JSON array of four numbers")
         })
         if (length(b) != 4L) {
           res$status <- 400L

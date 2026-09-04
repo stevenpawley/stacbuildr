@@ -481,7 +481,7 @@ add_child <- function(catalog,
                       href = NULL,
                       title = NULL) {
   if (!inherits(child, "stac_catalog")) {
-    stop("'child' must be a stac_catalog or stac_collection object")
+    cli::cli_abort("'child' must be a stac_catalog or stac_collection object")
   }
 
   if (is.null(href)) {

@@ -87,7 +87,7 @@ add_vector_extension <- function(
   asset_key = NULL
 ) {
   if (!inherits(item, "stac_item")) {
-    stop("'item' must be a stac_item object")
+    cli::cli_abort("'item' must be a stac_item object")
   }
 
   if (
@@ -96,9 +96,8 @@ add_vector_extension <- function(
       is.null(mmw) &&
       is.null(reference_scale)
   ) {
-    stop(
-      "At least one of 'geometry_types', 'mmu', 'mmw', or 'reference_scale' ",
-      "must be provided"
+    cli::cli_abort(
+      "At least one of 'geometry_types', 'mmu', 'mmw', or 'reference_scale' must be provided"
     )
   }
 
@@ -114,32 +113,31 @@ add_vector_extension <- function(
     )
 
     if (!is.character(geometry_types) || length(geometry_types) == 0) {
-      stop("'geometry_types' must be a non-empty character vector")
+      cli::cli_abort("'geometry_types' must be a non-empty character vector")
     }
 
     invalid <- setdiff(geometry_types, valid_geometry_types)
     if (length(invalid) > 0) {
-      stop(sprintf(
-        "Invalid geometry type(s): %s. Valid types: %s",
-        paste(invalid, collapse = ", "),
-        paste(valid_geometry_types, collapse = ", ")
+      cli::cli_abort(c(
+        "Invalid geometry type(s): {paste(invalid, collapse = ', ')}",
+        "i" = "Valid types: {paste(valid_geometry_types, collapse = ', ')}"
       ))
     }
 
     if (any(duplicated(geometry_types))) {
-      stop("'geometry_types' must not contain duplicate values")
+      cli::cli_abort("'geometry_types' must not contain duplicate values")
     }
   }
 
   if (!is.null(mmu)) {
     if (!is.numeric(mmu) || length(mmu) != 1 || mmu <= 0) {
-      stop("'mmu' must be a single number greater than 0")
+      cli::cli_abort("'mmu' must be a single number greater than 0")
     }
   }
 
   if (!is.null(mmw)) {
     if (!is.numeric(mmw) || length(mmw) != 1 || mmw <= 0) {
-      stop("'mmw' must be a single number greater than 0")
+      cli::cli_abort("'mmw' must be a single number greater than 0")
     }
   }
 
@@ -149,7 +147,9 @@ add_vector_extension <- function(
         length(reference_scale) != 1 ||
         reference_scale <= 0
     ) {
-      stop("'reference_scale' must be a single number greater than 0")
+      cli::cli_abort(
+        "'reference_scale' must be a single number greater than 0"
+      )
     }
   }
 
@@ -173,7 +173,7 @@ add_vector_extension <- function(
   if (!is.null(asset_key)) {
     # Add to specific asset
     if (is.null(item@assets[[asset_key]])) {
-      stop(sprintf("Asset '%s' does not exist in item", asset_key))
+      cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
 
     for (field_name in names(fields)) {

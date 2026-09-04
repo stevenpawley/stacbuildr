@@ -125,23 +125,29 @@ add_classification_extension <- function(
   asset_key = NULL
 ) {
   if (!inherits(item, "stac_item")) {
-    stop("'item' must be a stac_item object")
+    cli::cli_abort("'item' must be a stac_item object")
   }
 
   if (!is.null(classes) && !is.null(bitfields)) {
-    stop("Only one of 'classes' or 'bitfields' may be provided, not both")
+    cli::cli_abort(
+      "Only one of 'classes' or 'bitfields' may be provided, not both"
+    )
   }
 
   if (is.null(classes) && is.null(bitfields)) {
-    stop("At least one of 'classes' or 'bitfields' must be provided")
+    cli::cli_abort(
+      "At least one of 'classes' or 'bitfields' must be provided"
+    )
   }
 
   if (!is.null(classes) && !is.list(classes)) {
-    stop("'classes' must be a list of classification_class objects")
+    cli::cli_abort("'classes' must be a list of classification_class objects")
   }
 
   if (!is.null(bitfields) && !is.list(bitfields)) {
-    stop("'bitfields' must be a list of classification_bitfield objects")
+    cli::cli_abort(
+      "'bitfields' must be a list of classification_bitfield objects"
+    )
   }
 
   ext_uri <- "https://stac-extensions.github.io/classification/v2.0.0/schema.json"
@@ -156,7 +162,7 @@ add_classification_extension <- function(
 
   if (!is.null(asset_key)) {
     if (is.null(item@assets[[asset_key]])) {
-      stop(sprintf("Asset '%s' does not exist in item", asset_key))
+      cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
 
     if (!is.null(classes)) {
@@ -245,32 +251,36 @@ classification_class <- function(
   count = NULL
 ) {
   if (missing(value)) {
-    stop("'value' is required")
+    cli::cli_abort("'value' is required")
   }
   if (!is.numeric(value) || length(value) != 1) {
-    stop("'value' must be a single integer")
+    cli::cli_abort("'value' must be a single integer")
   }
 
   if (!is.null(name)) {
     if (!grepl("^[A-Za-z0-9_-]+$", name)) {
-      stop("'name' must consist only of letters, numbers, hyphens, and underscores")
+      cli::cli_abort(
+        "'name' must consist only of letters, numbers, hyphens, and underscores"
+      )
     }
   }
 
   if (!is.null(color_hint)) {
     if (!grepl("^[0-9A-F]{6}$", color_hint)) {
-      stop("'color_hint' must be exactly 6 upper-case hexadecimal characters (e.g., 'FF0000')")
+      cli::cli_abort(
+        "'color_hint' must be exactly 6 upper-case hexadecimal characters (e.g., 'FF0000')"
+      )
     }
   }
 
   if (!is.null(percentage)) {
     if (!is.numeric(percentage) || percentage < 0 || percentage > 100) {
-      stop("'percentage' must be a number between 0 and 100")
+      cli::cli_abort("'percentage' must be a number between 0 and 100")
     }
   }
 
   if (!is.null(nodata) && !is.logical(nodata)) {
-    stop("'nodata' must be TRUE or FALSE")
+    cli::cli_abort("'nodata' must be TRUE or FALSE")
   }
 
   cls <- list(value = as.integer(value))
@@ -368,29 +378,33 @@ classification_bitfield <- function(
   roles = NULL
 ) {
   if (missing(offset) || missing(length) || missing(classes)) {
-    stop("'offset', 'length', and 'classes' are all required")
+    cli::cli_abort("'offset', 'length', and 'classes' are all required")
   }
 
   if (!is.numeric(offset) || length(offset) != 1 || offset < 0) {
-    stop("'offset' must be a non-negative integer")
+    cli::cli_abort("'offset' must be a non-negative integer")
   }
 
   if (!is.numeric(length) || length(length) != 1 || length < 1) {
-    stop("'length' must be a positive integer")
+    cli::cli_abort("'length' must be a positive integer")
   }
 
   if (!is.list(classes) || length(classes) == 0) {
-    stop("'classes' must be a non-empty list of classification_class objects")
+    cli::cli_abort(
+      "'classes' must be a non-empty list of classification_class objects"
+    )
   }
 
   if (!is.null(name)) {
     if (!grepl("^[A-Za-z0-9_-]+$", name)) {
-      stop("'name' must consist only of letters, numbers, hyphens, and underscores")
+      cli::cli_abort(
+        "'name' must consist only of letters, numbers, hyphens, and underscores"
+      )
     }
   }
 
   if (!is.null(roles) && !is.character(roles)) {
-    stop("'roles' must be a character vector")
+    cli::cli_abort("'roles' must be a character vector")
   }
 
   bf <- list(

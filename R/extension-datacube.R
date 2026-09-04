@@ -91,11 +91,13 @@ add_datacube_extension <- function(
   asset_key = NULL
 ) {
   if (!inherits(item, "stac_item")) {
-    stop("'item' must be a stac_item object")
+    cli::cli_abort("'item' must be a stac_item object")
   }
 
   if (is.null(dimensions) && is.null(variables)) {
-    stop("At least one of 'dimensions' or 'variables' must be provided")
+    cli::cli_abort(
+      "At least one of 'dimensions' or 'variables' must be provided"
+    )
   }
 
   if (!is.null(dimensions)) {
@@ -117,10 +119,9 @@ add_datacube_extension <- function(
   if (!is.null(dimensions) && !is.null(variables)) {
     overlap <- intersect(names(dimensions), names(variables))
     if (length(overlap) > 0) {
-      stop(sprintf(
-        "'dimensions' and 'variables' must not share keys: %s",
-        paste(overlap, collapse = ", ")
-      ))
+      cli::cli_abort(
+        "'dimensions' and 'variables' must not share keys: {paste(overlap, collapse = ', ')}"
+      )
     }
   }
 
@@ -142,7 +143,7 @@ add_datacube_extension <- function(
   if (!is.null(asset_key)) {
     # Add to specific asset
     if (is.null(item@assets[[asset_key]])) {
-      stop(sprintf("Asset '%s' does not exist in item", asset_key))
+      cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
 
     for (field_name in names(fields)) {
@@ -163,21 +164,23 @@ add_datacube_extension <- function(
 #' @noRd
 validate_cube_named_list <- function(x, arg_name, class_name) {
   if (!is.list(x) || length(x) == 0) {
-    stop(sprintf("'%s' must be a non-empty named list", arg_name))
+    cli::cli_abort("'{arg_name}' must be a non-empty named list")
   }
 
   nms <- names(x)
   if (is.null(nms) || any(nms == "") || any(is.na(nms))) {
-    stop(sprintf("'%s' must be a fully named list", arg_name))
+    cli::cli_abort("'{arg_name}' must be a fully named list")
   }
 
   if (any(duplicated(nms))) {
-    stop(sprintf("'%s' must not contain duplicate names", arg_name))
+    cli::cli_abort("'{arg_name}' must not contain duplicate names")
   }
 
   not_cls <- !vapply(x, inherits, logical(1), class_name)
   if (any(not_cls)) {
-    stop(sprintf("All elements of '%s' must be %s objects", arg_name, class_name))
+    cli::cli_abort(
+      "All elements of '{arg_name}' must be {class_name} objects"
+    )
   }
 
   x
@@ -286,28 +289,34 @@ cube_dimension <- function(
   ...
 ) {
   if (missing(type) || !is.character(type) || length(type) != 1 || is.na(type)) {
-    stop("'type' must be a single character string")
+    cli::cli_abort("'type' must be a single character string")
   }
 
   dim <- list(type = type)
 
   if (type == "spatial") {
     if (is.null(axis) || !axis %in% c("x", "y", "z")) {
-      stop("'axis' must be one of 'x', 'y', or 'z' when type = 'spatial'")
+      cli::cli_abort(
+        "'axis' must be one of 'x', 'y', or 'z' when type = 'spatial'"
+      )
     }
 
     if (axis %in% c("x", "y")) {
       if (is.null(extent) || length(extent) != 2) {
-        stop("'extent' (length 2) is required for horizontal spatial dimensions")
+        cli::cli_abort(
+          "'extent' (length 2) is required for horizontal spatial dimensions"
+        )
       }
     } else if (is.null(extent) && is.null(values)) {
-      stop("Either 'extent' or 'values' is required for vertical ('z') spatial dimensions")
+      cli::cli_abort(
+        "Either 'extent' or 'values' is required for vertical ('z') spatial dimensions"
+      )
     }
 
     dim$axis <- axis
   } else if (type == "geometry") {
     if (is.null(bbox)) {
-      stop("'bbox' is required when type = 'geometry'")
+      cli::cli_abort("'bbox' is required when type = 'geometry'")
     }
 
     if (!is.null(axes)) dim$axes <- axes
@@ -315,12 +324,14 @@ cube_dimension <- function(
     if (!is.null(geometry_types)) dim$geometry_types <- geometry_types
   } else if (type == "temporal") {
     if (is.null(extent) || length(extent) != 2) {
-      stop("'extent' (length 2) is required when type = 'temporal'")
+      cli::cli_abort("'extent' (length 2) is required when type = 'temporal'")
     }
   } else {
     # Additional (custom) dimension, e.g. spectral, pressure level
     if (is.null(extent) && is.null(values)) {
-      stop("Either 'extent' or 'values' is required for additional dimensions")
+      cli::cli_abort(
+        "Either 'extent' or 'values' is required for additional dimensions"
+      )
     }
   }
 
@@ -413,15 +424,17 @@ cube_variable <- function(
   ...
 ) {
   if (missing(type) || !is.character(type) || length(type) != 1 || is.na(type)) {
-    stop("'type' must be a single character string")
+    cli::cli_abort("'type' must be a single character string")
   }
 
   if (!type %in% c("data", "auxiliary")) {
-    stop("'type' must be either 'data' or 'auxiliary'")
+    cli::cli_abort("'type' must be either 'data' or 'auxiliary'")
   }
 
   if (!is.character(dimensions)) {
-    stop("'dimensions' must be a character vector (use character(0) for none)")
+    cli::cli_abort(
+      "'dimensions' must be a character vector (use character(0) for none)"
+    )
   }
 
   var <- list(dimensions = dimensions, type = type)

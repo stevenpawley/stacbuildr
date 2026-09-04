@@ -258,10 +258,10 @@ stac_item <- S7::new_class(
     if (
       !is.null(datetime) && (!is.null(start_datetime) || !is.null(end_datetime))
     ) {
-      warning(
-        "Both 'datetime' and 'start_datetime'/'end_datetime' provided. ",
-        "Using 'start_datetime' and 'end_datetime'."
-      )
+      cli::cli_warn(c(
+        "Both 'datetime' and 'start_datetime'/'end_datetime' provided.",
+        "i" = "Using 'start_datetime' and 'end_datetime'."
+      ))
       datetime <- NULL
     }
 

@@ -24,13 +24,15 @@ sign_azure_ad <- function(
   token = AzureAuth::get_managed_token("https://storage.azure.com/")
 ) {
   if (!requireNamespace("AzureStor", quietly = TRUE)) {
-    stop("Package 'AzureStor' is required for asset signing.")
+    cli::cli_abort("Package 'AzureStor' is required for asset signing.")
   }
   if (!requireNamespace("AzureAuth", quietly = TRUE)) {
-    stop("Package 'AzureAuth' is required for asset signing.")
+    cli::cli_abort("Package 'AzureAuth' is required for asset signing.")
   }
   if (!nzchar(endpoint)) {
-    stop("'endpoint' is empty. Set AZURE_STORAGE_ENDPOINT or pass it directly.")
+    cli::cli_abort(
+      "'endpoint' is empty. Set AZURE_STORAGE_ENDPOINT or pass it directly."
+    )
   }
 
   # Normalise double slashes that can appear in href (but preserve ://)
@@ -84,7 +86,9 @@ sign_azure_ad <- function(
 #' @export
 sign_gcp <- function(href, expiry_seconds = 3600L) {
   if (!requireNamespace("googleCloudStorageR", quietly = TRUE)) {
-    stop("Package 'googleCloudStorageR' is required for GCP asset signing.")
+    cli::cli_abort(
+      "Package 'googleCloudStorageR' is required for GCP asset signing."
+    )
   }
 
   # Parse bucket and object from gs:// or https://storage.googleapis.com/ URLs
@@ -129,7 +133,9 @@ sign_aws_s3 <- function(
   region = Sys.getenv("AWS_DEFAULT_REGION", unset = "us-east-1")
 ) {
   if (!requireNamespace("paws.storage", quietly = TRUE)) {
-    stop("Package 'paws.storage' is required for AWS S3 asset signing.")
+    cli::cli_abort(
+      "Package 'paws.storage' is required for AWS S3 asset signing."
+    )
   }
 
   if (startsWith(href, "s3://")) {

@@ -32,13 +32,16 @@
 preview_from_terra <- function(terra_obj, path, width = 256, height = 256,
                                title = NULL, ...) {
   if (!requireNamespace("terra", quietly = TRUE)) {
-    stop("Package 'terra' is required. Install with: install.packages('terra')")
+    cli::cli_abort(c(
+      "Package 'terra' is required.",
+      "i" = "Install with: install.packages('terra')"
+    ))
   }
   if (!inherits(terra_obj, "SpatRaster")) {
-    stop("'terra_obj' must be a SpatRaster object")
+    cli::cli_abort("'terra_obj' must be a SpatRaster object")
   }
   if (missing(path) || is.null(path) || nchar(path) == 0) {
-    stop("'path' is required and must be a non-empty string")
+    cli::cli_abort("'path' is required and must be a non-empty string")
   }
 
   grDevices::png(path, width = width, height = height)
@@ -95,10 +98,10 @@ preview_from_terra <- function(terra_obj, path, width = 256, height = 256,
 thumbnail_from_sf <- function(sf_obj, path, width = 256, height = 256,
                               title = NULL, ...) {
   if (!inherits(sf_obj, "sf")) {
-    stop("'sf_obj' must be an sf object")
+    cli::cli_abort("'sf_obj' must be an sf object")
   }
   if (missing(path) || is.null(path) || nchar(path) == 0) {
-    stop("'path' is required and must be a non-empty string")
+    cli::cli_abort("'path' is required and must be a non-empty string")
   }
 
   grDevices::png(path, width = width, height = height)

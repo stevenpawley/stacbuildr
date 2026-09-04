@@ -78,14 +78,20 @@ item_from_terra <- function(
   ...
 ) {
   if (!requireNamespace("terra", quietly = TRUE)) {
-    stop("Package 'terra' is required. Install with: install.packages('terra')")
+    cli::cli_abort(c(
+      "Package 'terra' is required.",
+      "i" = "Install with: install.packages('terra')"
+    ))
   }
   if (!requireNamespace("sf", quietly = TRUE)) {
-    stop("Package 'sf' is required. Install with: install.packages('sf')")
+    cli::cli_abort(c(
+      "Package 'sf' is required.",
+      "i" = "Install with: install.packages('sf')"
+    ))
   }
 
   if (!inherits(terra_obj, "SpatRaster")) {
-    stop("'terra_obj' must be a SpatRaster object")
+    cli::cli_abort("'terra_obj' must be a SpatRaster object")
   }
 
   # Generate ID from href if not provided
@@ -93,14 +99,14 @@ item_from_terra <- function(
     if (!is.null(href)) {
       id <- tools::file_path_sans_ext(basename(href))
     } else {
-      stop("'id' is required when 'href' is not provided")
+      cli::cli_abort("'id' is required when 'href' is not provided")
     }
   }
 
   # Use current time if datetime not provided
   if (is.null(datetime)) {
     datetime <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ")
-    warning("No datetime provided, using current time")
+    cli::cli_warn("No datetime provided, using current time")
   }
 
   # Extract spatial metadata
@@ -167,7 +173,7 @@ item_from_terra <- function(
     }
 
     if (add_eo_bands) {
-      warning(
+      cli::cli_warn(
         "EO extension requires wavelength metadata not available in raster data"
       )
     }
@@ -224,11 +230,14 @@ item_from_sf <- function(
   ...
 ) {
   if (!requireNamespace("sf", quietly = TRUE)) {
-    stop("Package 'sf' is required. Install with: install.packages('sf')")
+    cli::cli_abort(c(
+      "Package 'sf' is required.",
+      "i" = "Install with: install.packages('sf')"
+    ))
   }
 
   if (!inherits(sf_obj, "sf")) {
-    stop("'sf_obj' must be an sf object")
+    cli::cli_abort("'sf_obj' must be an sf object")
   }
 
   # Convert to WGS84 if necessary
@@ -287,13 +296,14 @@ item_from_sf <- function(
 #' @export
 geometry_from_sf <- function(sf_obj) {
   if (!requireNamespace("sf", quietly = TRUE)) {
-    stop("Package 'sf' is required")
+    cli::cli_abort("Package 'sf' is required")
   }
 
   if (!requireNamespace("geojsonsf", quietly = TRUE)) {
-    stop(
-      "Package 'geojsonsf' is required. Install with: install.packages('geojsonsf')"
-    )
+    cli::cli_abort(c(
+      "Package 'geojsonsf' is required.",
+      "i" = "Install with: install.packages('geojsonsf')"
+    ))
   }
 
   # A STAC item has one geometry — union multiple features into one
@@ -319,7 +329,7 @@ geometry_from_sf <- function(sf_obj) {
 #' @export
 bbox_from_sf <- function(sf_obj) {
   if (!requireNamespace("sf", quietly = TRUE)) {
-    stop("Package 'sf' is required")
+    cli::cli_abort("Package 'sf' is required")
   }
 
   bbox <- sf::st_bbox(sf_obj)
@@ -528,7 +538,7 @@ is_cog <- function(file) {
 #' @export
 extent_from_items <- function(items) {
   if (length(items) == 0) {
-    stop("No items provided")
+    cli::cli_abort("No items provided")
   }
 
   # Extract all bboxes
@@ -563,7 +573,7 @@ extent_from_items <- function(items) {
   }
 
   if (length(datetimes) == 0) {
-    stop("No datetime information found in items")
+    cli::cli_abort("No datetime information found in items")
   }
 
   # Calculate temporal extent
@@ -599,11 +609,14 @@ extent_from_items <- function(items) {
 #' @export
 bands_from_terra <- function(terra_obj, calculate_statistics = FALSE, sample_size = 1000L) {
   if (!requireNamespace("terra", quietly = TRUE)) {
-    stop("Package 'terra' is required. Install with: install.packages('terra')")
+    cli::cli_abort(c(
+      "Package 'terra' is required.",
+      "i" = "Install with: install.packages('terra')"
+    ))
   }
 
   if (!inherits(terra_obj, "SpatRaster")) {
-    stop("'terra_obj' must be a SpatRaster object")
+    cli::cli_abort("'terra_obj' must be a SpatRaster object")
   }
 
   spatial_resolution <- mean(terra::res(terra_obj))
@@ -773,7 +786,7 @@ items_from_directory <- function(
   ...
 ) {
   if (!dir.exists(directory)) {
-    stop(sprintf("Directory not found: %s", directory))
+    cli::cli_abort("Directory not found: {directory}")
   }
 
   # Find matching files
@@ -785,23 +798,32 @@ items_from_directory <- function(
   )
 
   if (length(files) == 0) {
-    stop(sprintf(
-      "No files matching pattern '%s' found in %s",
-      pattern,
-      directory
-    ))
+    cli::cli_abort(
+      "No files matching pattern '{pattern}' found in {directory}"
+    )
   }
 
-  message(sprintf("Creating items for %d files...", length(files)))
 
   if (!requireNamespace("terra", quietly = TRUE)) {
-    stop("Package 'terra' is required. Install with: install.packages('terra')")
+    cli::cli_abort(c(
+      "Package 'terra' is required.",
+      "i" = "Install with: install.packages('terra')"
+    ))
   }
 
   # Create items
   items <- list()
+  failed <- character()
+
+  cli::cli_progress_bar(
+    "Creating items",
+    total = length(files),
+    .envir = environment()
+  )
 
   for (file in files) {
+    cli::cli_progress_update(.envir = environment())
+
     # Extract datetime if function provided
     datetime <- if (!is.null(datetime_from_filename)) {
       datetime_from_filename(basename(file))
@@ -819,19 +841,21 @@ items_from_directory <- function(
           ...
         )
         items[[length(items) + 1]] <- item
-        message(sprintf("  \u2713 Created item: %s", item@id))
       },
       error = function(e) {
-        warning(sprintf(
-          "  \u2717 Failed to create item for %s: %s",
-          basename(file),
-          e$message
-        ))
+        failed <<- c(failed, basename(file))
+        cli::cli_warn("Failed to create item for {basename(file)}: {e$message}")
       }
     )
   }
 
-  message(sprintf("Successfully created %d items", length(items)))
+  cli::cli_progress_done(.envir = environment())
+  cli::cli_alert_success(
+    "Created {length(items)} item{?s} from {length(files)} file{?s}"
+  )
+  if (length(failed) > 0) {
+    cli::cli_alert_warning("Skipped {length(failed)} file{?s}: {failed}")
+  }
 
   items
 }

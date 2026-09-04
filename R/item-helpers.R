@@ -127,7 +127,9 @@ add_item <- function(
 ) {
   # Validate catalog
   if (!inherits(catalog, "stac_catalog")) {
-    stop("'catalog' must be a stac_catalog or stac_collection object")
+    cli::cli_abort(
+      "'catalog' must be a stac_catalog or stac_collection object"
+    )
   }
 
   # Handle single item vs list of items
@@ -142,16 +144,17 @@ add_item <- function(
     items_list <- list(item)
     n_items <- 1
   } else {
-    stop("'item' must be a stac_item object or a list of stac_item objects")
+    cli::cli_abort(
+      "'item' must be a stac_item object or a list of stac_item objects"
+    )
   }
 
   # Validate href if provided
   if (!is.null(href)) {
     if (length(href) != n_items) {
-      stop(sprintf(
-        "'href' must be NULL or have length %d (same as number of items)",
-        n_items
-      ))
+      cli::cli_abort(
+        "'href' must be NULL or have length {n_items} (same as number of items)"
+      )
     }
   } else {
     # Auto-generate hrefs (each item lives in its own subdirectory)
@@ -322,11 +325,13 @@ find_link <- function(stac_object, rel) {
 #' @export
 remove_item <- function(catalog, item_id = NULL, href = NULL, all = FALSE) {
   if (!inherits(catalog, "stac_catalog")) {
-    stop("'catalog' must be a stac_catalog or stac_collection object")
+    cli::cli_abort(
+      "'catalog' must be a stac_catalog or stac_collection object"
+    )
   }
 
   if (!all && is.null(item_id) && is.null(href)) {
-    stop("Must specify 'item_id', 'href', or set 'all = TRUE'")
+    cli::cli_abort("Must specify 'item_id', 'href', or set 'all = TRUE'")
   }
 
   if (all) {
@@ -383,7 +388,9 @@ remove_item <- function(catalog, item_id = NULL, href = NULL, all = FALSE) {
 #' @export
 count_items <- function(catalog) {
   if (!inherits(catalog, "stac_catalog")) {
-    stop("'catalog' must be a stac_catalog or stac_collection object")
+    cli::cli_abort(
+      "'catalog' must be a stac_catalog or stac_collection object"
+    )
   }
 
   if (is.null(catalog@links) || length(catalog@links) == 0) {
@@ -428,7 +435,9 @@ count_items <- function(catalog) {
 #' @export
 get_item_links <- function(catalog, as_dataframe = FALSE) {
   if (!inherits(catalog, "stac_catalog")) {
-    stop("'catalog' must be a stac_catalog or stac_collection object")
+    cli::cli_abort(
+      "'catalog' must be a stac_catalog or stac_collection object"
+    )
   }
 
   if (is.null(catalog@links) || length(catalog@links) == 0) {

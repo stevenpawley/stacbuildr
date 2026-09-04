@@ -91,35 +91,43 @@ add_scientific_extension <- function(
   publications = NULL
 ) {
   if (!inherits(item, "stac_item")) {
-    stop("'item' must be a stac_item object")
+    cli::cli_abort("'item' must be a stac_item object")
   }
 
   if (is.null(doi) && is.null(citation) && is.null(publications)) {
-    stop("At least one of 'doi', 'citation', or 'publications' must be provided")
+    cli::cli_abort(
+      "At least one of 'doi', 'citation', or 'publications' must be provided"
+    )
   }
 
   if (!is.null(doi)) {
     if (!is.character(doi) || length(doi) != 1) {
-      stop("'doi' must be a single character string")
+      cli::cli_abort("'doi' must be a single character string")
     }
     if (grepl("^https?://", doi)) {
-      stop("'doi' must be a DOI name (e.g. '10.1000/xyz123'), not a URL")
+      cli::cli_abort(
+        "'doi' must be a DOI name (e.g. '10.1000/xyz123'), not a URL"
+      )
     }
   }
 
   if (!is.null(citation)) {
     if (!is.character(citation) || length(citation) != 1) {
-      stop("'citation' must be a single character string")
+      cli::cli_abort("'citation' must be a single character string")
     }
   }
 
   if (!is.null(publications)) {
     if (!is.list(publications) || length(publications) == 0) {
-      stop("'publications' must be a non-empty list of scientific_publication objects")
+      cli::cli_abort(
+        "'publications' must be a non-empty list of scientific_publication objects"
+      )
     }
     not_pub <- !vapply(publications, inherits, logical(1), "scientific_publication")
     if (any(not_pub)) {
-      stop("All elements of 'publications' must be scientific_publication objects")
+      cli::cli_abort(
+        "All elements of 'publications' must be scientific_publication objects"
+      )
     }
   }
 
@@ -195,21 +203,23 @@ add_scientific_extension <- function(
 #' @export
 scientific_publication <- function(doi = NULL, citation = NULL) {
   if (is.null(doi) && is.null(citation)) {
-    stop("At least one of 'doi' or 'citation' must be provided")
+    cli::cli_abort("At least one of 'doi' or 'citation' must be provided")
   }
 
   if (!is.null(doi)) {
     if (!is.character(doi) || length(doi) != 1) {
-      stop("'doi' must be a single character string")
+      cli::cli_abort("'doi' must be a single character string")
     }
     if (grepl("^https?://", doi)) {
-      stop("'doi' must be a DOI name (e.g. '10.1000/abc456'), not a URL")
+      cli::cli_abort(
+        "'doi' must be a DOI name (e.g. '10.1000/abc456'), not a URL"
+      )
     }
   }
 
   if (!is.null(citation)) {
     if (!is.character(citation) || length(citation) != 1) {
-      stop("'citation' must be a single character string")
+      cli::cli_abort("'citation' must be a single character string")
     }
   }
 

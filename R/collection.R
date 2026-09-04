@@ -254,11 +254,13 @@ stac_collection <- S7::new_class(
   ) {
     # "proprietary" was deprecated in STAC 1.1.0; guide users to "other"
     if (identical(license, "proprietary")) {
-      message(
-        "'proprietary' is deprecated as a license identifier in STAC 1.1.0. ",
-        "Use 'other' instead, and add a link with rel='license' pointing to ",
-        "the license document."
-      )
+      cli::cli_inform(c(
+        "'proprietary' is deprecated as a license identifier in STAC 1.1.0.",
+        "i" = paste(
+          "Use 'other' instead, and add a link with rel='license' pointing",
+          "to the license document."
+        )
+      ))
     }
 
     # Accept a plain list for backwards compatibility, converting to Extent
@@ -266,7 +268,7 @@ stac_collection <- S7::new_class(
       if (
         !is.list(extent) || !all(c("spatial", "temporal") %in% names(extent))
       ) {
-        stop(
+        cli::cli_abort(
           "'extent' must be an Extent object (from stac_extent()) or a list with 'spatial' and 'temporal' elements"
         )
       }
@@ -695,12 +697,14 @@ print.stac_summaries <- function(x, ...) {
 #' @export
 add_item_assets <- function(collection) {
   if (!inherits(collection, "stac_collection")) {
-    stop("'collection' must be a stac_collection object")
+    cli::cli_abort("'collection' must be a stac_collection object")
   }
 
   items <- attr(collection, "stac_items")
   if (is.null(items) || length(items) == 0) {
-    stop("Collection has no items - add items with add_item() before calling add_item_assets()")
+    cli::cli_abort(
+      "Collection has no items - add items with add_item() before calling add_item_assets()"
+    )
   }
 
   all_keys <- unique(unlist(lapply(items, function(item) names(item@assets))))

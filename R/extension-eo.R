@@ -175,19 +175,19 @@ add_eo_extension <- function(
   asset_key = NULL
 ) {
   if (!inherits(item, "stac_item")) {
-    stop("'item' must be a stac_item object")
+    cli::cli_abort("'item' must be a stac_item object")
   }
 
   # Validate percentages
   if (!is.null(cloud_cover)) {
     if (cloud_cover < 0 || cloud_cover > 100) {
-      stop("'cloud_cover' must be between 0 and 100")
+      cli::cli_abort("'cloud_cover' must be between 0 and 100")
     }
   }
 
   if (!is.null(snow_cover)) {
     if (snow_cover < 0 || snow_cover > 100) {
-      stop("'snow_cover' must be between 0 and 100")
+      cli::cli_abort("'snow_cover' must be between 0 and 100")
     }
   }
 
@@ -214,13 +214,13 @@ add_eo_extension <- function(
   # Add bands if provided
   if (!is.null(bands)) {
     if (!is.list(bands)) {
-      stop("'bands' must be a list of band objects")
+      cli::cli_abort("'bands' must be a list of band objects")
     }
 
     if (!is.null(asset_key)) {
       # Add to specific asset
       if (is.null(item@assets[[asset_key]])) {
-        stop(sprintf("Asset '%s' does not exist in item", asset_key))
+        cli::cli_abort("Asset '{asset_key}' does not exist in item")
       }
 
       item@assets[[asset_key]]$`eo:bands` <- bands
@@ -365,10 +365,9 @@ eo_band <- function(
     )
 
     if (!common_name %in% valid_common_names) {
-      warning(sprintf(
-        "'%s' is not a standard common_name. Standard names: %s",
-        common_name,
-        paste(valid_common_names, collapse = ", ")
+      cli::cli_warn(c(
+        "'{common_name}' is not a standard common_name.",
+        "i" = "Standard names: {paste(valid_common_names, collapse = ', ')}"
       ))
     }
 
