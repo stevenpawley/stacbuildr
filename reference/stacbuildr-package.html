@@ -50,6 +50,37 @@ scientific_publication()scientific extension
 
 
 
+Printing
+
+
+Catalogs, Collections and Items print a coloured summary. Fields that hold
+more than one value (assets, links, properties, children, items,
+extensions, providers, summaries) are shown as collapsed sections marked
+with a ▸ arrow, listing a count and a short preview. Expand them with
+the expand argument:
+print(item)                          # everything collapsed
+print(item, expand = TRUE)           # expand every section
+print(item, expand = c("assets"))    # expand only the assets
+
+Two options change the defaults:
+stacbuildr.print.expand - the default value of expand, e.g.
+options(stacbuildr.print.expand = TRUE) to always print in full.
+stacbuildr.print.hint - set to FALSE to suppress the footer that
+reports how many sections were collapsed.
+
+
+Extension metadata is shown wherever it is stored: item-level fields such
+as "sci:doi" or "eo:cloud_cover" appear in the properties section,
+asset-level fields such as "eo:bands" or "raster:bands" appear under
+the asset that carries them, and the declared schema URIs are listed in the
+extensions section by name and version. Arrays of objects are summarised
+by the name of each object, e.g. eo:bands [B4, B5].
+Colour and the box-drawing characters come from cli and are dropped
+automatically when the console does not support them (log files, knitr,
+R CMD check). Use options(cli.num_colors = 1) to turn colour off.
+
+
+
 Typical Workflow
 
 
@@ -139,6 +170,37 @@ scientific_publication()scientific extension
 
 
 
+
+
+
+Printing
+
+
+Catalogs, Collections and Items print a coloured summary. Fields that hold
+more than one value (assets, links, properties, children, items,
+extensions, providers, summaries) are shown as collapsed sections marked
+with a ▸ arrow, listing a count and a short preview. Expand them with
+the expand argument:
+print(item)                          # everything collapsed
+print(item, expand = TRUE)           # expand every section
+print(item, expand = c("assets"))    # expand only the assets
+
+Two options change the defaults:
+stacbuildr.print.expand - the default value of expand, e.g.
+options(stacbuildr.print.expand = TRUE) to always print in full.
+stacbuildr.print.hint - set to FALSE to suppress the footer that
+reports how many sections were collapsed.
+
+
+Extension metadata is shown wherever it is stored: item-level fields such
+as "sci:doi" or "eo:cloud_cover" appear in the properties section,
+asset-level fields such as "eo:bands" or "raster:bands" appear under
+the asset that carries them, and the declared schema URIs are listed in the
+extensions section by name and version. Arrays of objects are summarised
+by the name of each object, e.g. eo:bands [B4, B5].
+Colour and the box-drawing characters come from cli and are dropped
+automatically when the console does not support them (log files, knitr,
+R CMD check). Use options(cli.num_colors = 1) to turn colour off.
 
 
 
@@ -244,6 +306,33 @@ structures, and <strong>plain lists</strong> for lightweight sub-objects.</p><di
 objects but are not S7 classes themselves:</p><table class="table table"><tr><td>Constructor</td><td>Typically used in</td></tr><tr><td><code><a href="stac_asset.html">stac_asset()</a></code></td><td><code>item@assets</code></td></tr><tr><td><code><a href="raster_statistics.html">raster_statistics()</a></code></td><td><code>band@statistics</code></td></tr><tr><td><code><a href="raster_histogram.html">raster_histogram()</a></code></td><td><code>band@histogram</code></td></tr><tr><td><code><a href="eo_band.html">eo_band()</a></code></td><td>asset <code>"eo:bands"</code> field</td></tr><tr><td><code><a href="stac_provider.html">stac_provider()</a></code></td><td><code>collection@providers</code></td></tr><tr><td><code><a href="stac_extent.html">stac_extent()</a></code></td><td><code>collection@extent</code></td></tr><tr><td><code><a href="stac_summaries.html">stac_summaries()</a></code></td><td><code>collection@summaries</code></td></tr><tr><td><code><a href="classification_class.html">classification_class()</a></code></td><td>classification extension</td></tr><tr><td><code><a href="classification_bitfield.html">classification_bitfield()</a></code></td><td>classification extension</td></tr><tr><td><code><a href="scientific_publication.html">scientific_publication()</a></code></td><td>scientific extension</td></tr></table></div>
 
 
+</div>
+
+<div class="section">
+<h3 id="printing">Printing<a class="anchor" aria-label="anchor" href="#printing"></a></h3>
+
+
+<p>Catalogs, Collections and Items print a coloured summary. Fields that hold
+more than one value (assets, links, properties, children, items,
+extensions, providers, summaries) are shown as collapsed sections marked
+with a <code>▸</code> arrow, listing a count and a short preview. Expand them with
+the <code>expand</code> argument:</p>
+<p></p><div class="sourceCode r"><pre><code><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">item</span><span class="op">)</span>                          <span class="co"># everything collapsed</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">item</span>, expand <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>           <span class="co"># expand every section</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">item</span>, expand <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"assets"</span><span class="op">)</span><span class="op">)</span>    <span class="co"># expand only the assets</span></span></code></pre><p></p></div>
+<p>Two options change the defaults:</p><ul><li><p><code>stacbuildr.print.expand</code> - the default value of <code>expand</code>, e.g.
+<code>options(stacbuildr.print.expand = TRUE)</code> to always print in full.</p></li>
+<li><p><code>stacbuildr.print.hint</code> - set to <code>FALSE</code> to suppress the footer that
+reports how many sections were collapsed.</p></li>
+</ul><p>Extension metadata is shown wherever it is stored: item-level fields such
+as <code>"sci:doi"</code> or <code>"eo:cloud_cover"</code> appear in the <code>properties</code> section,
+asset-level fields such as <code>"eo:bands"</code> or <code>"raster:bands"</code> appear under
+the asset that carries them, and the declared schema URIs are listed in the
+<code>extensions</code> section by name and version. Arrays of objects are summarised
+by the name of each object, e.g. <code>eo:bands [B4, B5]</code>.</p>
+<p>Colour and the box-drawing characters come from <span class="pkg">cli</span> and are dropped
+automatically when the console does not support them (log files, knitr,
+<code>R CMD check</code>). Use <code>options(cli.num_colors = 1)</code> to turn colour off.</p>
 </div>
 
 <div class="section">

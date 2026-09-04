@@ -41,6 +41,38 @@ S7 objects but are not S7 classes themselves:
 | [`classification_bitfield()`](https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.md) | classification extension |
 | [`scientific_publication()`](https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.md) | scientific extension |
 
+### Printing
+
+Catalogs, Collections and Items print a coloured summary. Fields that
+hold more than one value (assets, links, properties, children, items,
+extensions, providers, summaries) are shown as collapsed sections marked
+with a `▸` arrow, listing a count and a short preview. Expand them with
+the `expand` argument:
+
+    print(item)                          # everything collapsed
+    print(item, expand = TRUE)           # expand every section
+    print(item, expand = c("assets"))    # expand only the assets
+
+Two options change the defaults:
+
+- `stacbuildr.print.expand` - the default value of `expand`, e.g.
+  `options(stacbuildr.print.expand = TRUE)` to always print in full.
+
+- `stacbuildr.print.hint` - set to `FALSE` to suppress the footer that
+  reports how many sections were collapsed.
+
+Extension metadata is shown wherever it is stored: item-level fields
+such as `"sci:doi"` or `"eo:cloud_cover"` appear in the `properties`
+section, asset-level fields such as `"eo:bands"` or `"raster:bands"`
+appear under the asset that carries them, and the declared schema URIs
+are listed in the `extensions` section by name and version. Arrays of
+objects are summarised by the name of each object, e.g.
+`eo:bands [B4, B5]`.
+
+Colour and the box-drawing characters come from cli and are dropped
+automatically when the console does not support them (log files, knitr,
+`R CMD check`). Use `options(cli.num_colors = 1)` to turn colour off.
+
 ### Typical Workflow
 
     library(stacbuildr)

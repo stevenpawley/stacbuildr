@@ -14,7 +14,7 @@ This vignette demonstrates how to build a STAC catalog with
 
 library(stacbuildr)
 library(terra)
-#> terra 1.9.34
+#> terra 1.9.46
 ```
 
 ## Create a synthetic DEM
@@ -62,14 +62,17 @@ item <- r |>
 
 item
 #> <STAC Item>
-#>   id          : dem-001
-#>   stac_version: 1.1.0
-#>   datetime    : 2026-07-26T15:52:22Z
-#>   geometry    : Polygon
-#>   bbox        : [-120.0000, 48.0000, -119.0000, 49.0000]
-#>   assets      : 1 [dem]
-#>   extensions  : 1
-#>   links       : 0
+#>   id           : dem-001
+#>   stac_version : 1.1.0
+#>   datetime     : 2026-09-04T11:57:15Z
+#>   geometry     : Polygon
+#>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
+#>   ▸ properties : 1 [raster:bands]
+#>   ▸ assets     : 1 [dem]
+#>   ▸ extensions : 1 [raster]
+#>     links      : 0
+#>   ℹ 3 collapsed sections - use print(x, expand = TRUE) to show
+#> 
 ```
 
 ## Create a Collection and Catalog
@@ -128,7 +131,7 @@ write_stac(
   catalog_type = "self-contained",
   overwrite = TRUE
 )
-#> STAC catalog written to: /tmp/RtmpKNy2rh/catalog
+#> STAC catalog written to: /tmp/RtmpWeQsGv/catalog
 ```
 
 The resulting directory structure looks like:
@@ -155,15 +158,18 @@ item_read <- read_stac(file.path(
 
 item_read
 #> <STAC Item>
-#>   id          : dem-001
-#>   collection  : terrain
-#>   stac_version: 1.1.0
-#>   datetime    : 2026-07-26T15:52:22Z
-#>   geometry    : Polygon
-#>   bbox        : [-120.0000, 48.0000, -119.0000, 49.0000]
-#>   assets      : 1 [dem]
-#>   extensions  : 1
-#>   links       : 4 [self, parent, collection, root]
+#>   id           : dem-001
+#>   collection   : terrain
+#>   stac_version : 1.1.0
+#>   datetime     : 2026-09-04T11:57:15Z
+#>   geometry     : Polygon
+#>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
+#>   ▸ properties : 1 [raster:bands]
+#>   ▸ assets     : 1 [dem]
+#>   ▸ extensions : 1 [raster]
+#>   ▸ links      : 4 [self, parent, collection, root]
+#>   ℹ 4 collapsed sections - use print(x, expand = TRUE) to show
+#> 
 ```
 
 ## Database-backed STAC API

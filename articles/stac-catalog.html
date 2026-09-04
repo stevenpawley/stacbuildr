@@ -80,7 +80,7 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/stevenpawley/stacbuildr" class="external-link">stacbuildr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; terra 1.9.34</span></span></code></pre></div>
+<span><span class="co">#&gt; terra 1.9.46</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="create-a-synthetic-dem">Create a synthetic DEM<a class="anchor" aria-label="anchor" href="#create-a-synthetic-dem"></a>
@@ -122,15 +122,18 @@ geometry from the <code>SpatRaster</code> object and returns a
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">item</span></span>
-<span><span class="co">#&gt; &lt;STAC Item&gt;</span></span>
-<span><span class="co">#&gt;   id          : dem-001</span></span>
-<span><span class="co">#&gt;   stac_version: 1.1.0</span></span>
-<span><span class="co">#&gt;   datetime    : 2026-07-26T15:52:22Z</span></span>
-<span><span class="co">#&gt;   geometry    : Polygon</span></span>
-<span><span class="co">#&gt;   bbox        : [-120.0000, 48.0000, -119.0000, 49.0000]</span></span>
-<span><span class="co">#&gt;   assets      : 1 [dem]</span></span>
-<span><span class="co">#&gt;   extensions  : 1</span></span>
-<span><span class="co">#&gt;   links       : 0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">&lt;STAC Item&gt;</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">id          </span> : <span style="color: #00BB00; font-weight: bold;">dem-001</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">stac_version</span> : <span style="color: #555555;">1.1.0</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2026-09-04T11:57:15Z</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">geometry    </span> : Polygon</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">bbox        </span> : [-120.0000, 48.0000, -119.0000, 49.0000]</span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">properties</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[raster:bands]</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">assets    </span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[dem]</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">extensions</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[raster]</span></span></span>
+<span><span class="co">#&gt;     <span style="color: #555555;">links     </span> : <span style="color: #BBBB00;">0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">  ℹ 3 collapsed sections - use print(x, expand = TRUE) to show</span></span></span>
+<span><span class="co"><span style="color: #555555;">#&gt; </span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="create-a-collection-and-catalog">Create a Collection and Catalog<a class="anchor" aria-label="anchor" href="#create-a-collection-and-catalog"></a>
@@ -189,7 +192,7 @@ we use <code>"self-contained"</code> here:</p>
 <span>  catalog_type <span class="op">=</span> <span class="st">"self-contained"</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; STAC catalog written to: /tmp/RtmpKNy2rh/catalog</span></span></code></pre></div>
+<span><span class="co">#&gt; STAC catalog written to: /tmp/RtmpWeQsGv/catalog</span></span></code></pre></div>
 <p>The resulting directory structure looks like:</p>
 <pre><code>catalog/
   catalog.json
@@ -209,16 +212,19 @@ we use <code>"self-contained"</code> here:</p>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">item_read</span></span>
-<span><span class="co">#&gt; &lt;STAC Item&gt;</span></span>
-<span><span class="co">#&gt;   id          : dem-001</span></span>
-<span><span class="co">#&gt;   collection  : terrain</span></span>
-<span><span class="co">#&gt;   stac_version: 1.1.0</span></span>
-<span><span class="co">#&gt;   datetime    : 2026-07-26T15:52:22Z</span></span>
-<span><span class="co">#&gt;   geometry    : Polygon</span></span>
-<span><span class="co">#&gt;   bbox        : [-120.0000, 48.0000, -119.0000, 49.0000]</span></span>
-<span><span class="co">#&gt;   assets      : 1 [dem]</span></span>
-<span><span class="co">#&gt;   extensions  : 1</span></span>
-<span><span class="co">#&gt;   links       : 4 [self, parent, collection, root]</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">&lt;STAC Item&gt;</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">id          </span> : <span style="color: #00BB00; font-weight: bold;">dem-001</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">collection  </span> : <span style="color: #BB00BB;">terrain</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">stac_version</span> : <span style="color: #555555;">1.1.0</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2026-09-04T11:57:15Z</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">geometry    </span> : Polygon</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">bbox        </span> : [-120.0000, 48.0000, -119.0000, 49.0000]</span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">properties</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[raster:bands]</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">assets    </span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[dem]</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">extensions</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[raster]</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">links     </span> : <span style="color: #BBBB00;">4</span> <span style="color: #555555;">[self, parent, collection, root]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">  ℹ 4 collapsed sections - use print(x, expand = TRUE) to show</span></span></span>
+<span><span class="co"><span style="color: #555555;">#&gt; </span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="database-backed-stac-api">Database-backed STAC API<a class="anchor" aria-label="anchor" href="#database-backed-stac-api"></a>
