@@ -31,7 +31,7 @@ test_that("cube_dimension allows vertical spatial dimension with only values", {
   dim <- cube_dimension(type = "spatial", axis = "z", values = c(0, 10, 20))
 
   expect_equal(dim$axis, "z")
-  expect_equal(dim$values, c(0, 10, 20))
+  expect_equal(dim$values, list(0, 10, 20))
 })
 
 test_that("cube_dimension errors on vertical spatial dimension without extent or values", {
@@ -76,7 +76,7 @@ test_that("cube_dimension creates an additional (custom) dimension", {
   dim <- cube_dimension(type = "bands", values = c("B02", "B03", "B04"))
 
   expect_equal(dim$type, "bands")
-  expect_equal(dim$values, c("B02", "B03", "B04"))
+  expect_equal(dim$values, list("B02", "B03", "B04"))
 })
 
 test_that("cube_dimension errors on additional dimension without extent or values", {
@@ -104,14 +104,14 @@ test_that("cube_variable creates a minimal data variable", {
   var <- cube_variable(type = "data", dimensions = c("x", "y", "time"))
 
   expect_equal(var$type, "data")
-  expect_equal(var$dimensions, c("x", "y", "time"))
+  expect_equal(var$dimensions, list("x", "y", "time"))
   expect_s3_class(var, "cube_variable")
 })
 
 test_that("cube_variable allows an empty dimensions vector", {
   var <- cube_variable(type = "auxiliary", dimensions = character(0))
 
-  expect_equal(var$dimensions, character(0))
+  expect_equal(var$dimensions, list())
 })
 
 test_that("cube_variable stores all optional fields", {

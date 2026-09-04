@@ -72,11 +72,8 @@ stac_asset <- function(href,
     asset$description <- description
   if (!is.null(type))
     asset$type <- type
-  # Store roles as a list so jsonlite always serialises to a JSON array,
-  # even when there is only a single role (auto_unbox would collapse a
-  # length-1 character vector to a scalar string).
   if (!is.null(roles))
-    asset$roles <- as.list(roles)
+    asset$roles <- as_json_array(roles)
 
   # Add extension fields. c() drops attributes, so the class has to be set
   # after the merge.
@@ -84,6 +81,8 @@ stac_asset <- function(href,
   if (length(extra_fields) > 0) {
     asset <- c(asset, extra_fields)
   }
+
+  asset <- normalize_common_arrays(asset)
 
   class(asset) <- c("stac_asset", "list")
   asset

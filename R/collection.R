@@ -329,7 +329,7 @@ S7::method(as.list, stac_collection) <- function(x, ...) {
     out$title <- x@title
   }
   if (!is.null(x@keywords) && length(x@keywords) > 0) {
-    out$keywords <- x@keywords
+    out$keywords <- as_json_array(x@keywords)
   }
   if (!is.null(x@providers) && length(x@providers) > 0) {
     out$providers <- x@providers
@@ -345,7 +345,7 @@ S7::method(as.list, stac_collection) <- function(x, ...) {
     out$assets <- x@assets
   }
   if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
-    out$conformsTo <- x@conformsTo
+    out$conformsTo <- as_json_array(x@conformsTo)
   }
   if (length(x@extra_fields) > 0) {
     out <- c(out, x@extra_fields)
@@ -550,7 +550,7 @@ stac_provider <- function(name, description = NULL, roles = NULL, url = NULL) {
     provider$description <- description
   }
   if (!is.null(roles)) {
-    provider$roles <- roles
+    provider$roles <- as_json_array(roles)
   }
   if (!is.null(url)) {
     provider$url <- url
@@ -616,6 +616,10 @@ print.stac_provider <- function(x, ...) {
 #' @export
 stac_summaries <- function(...) {
   summaries <- list(...)
+  # A summary is either a set of values (JSON array), a range object, or a
+  # JSON Schema. Only the first form is an atomic vector here, and it has to
+  # stay an array even when a single value was supplied.
+  summaries <- lapply(summaries, as_json_array)
   class(summaries) <- c("stac_summaries", "list")
   summaries
 }

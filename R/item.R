@@ -285,6 +285,8 @@ stac_item <- S7::new_class(
       props <- c(props, extra_props)
     }
 
+    props <- normalize_common_arrays(props)
+
     obj <- S7::new_object(
       S7::S7_object(),
       type = type,
