@@ -343,6 +343,10 @@ write_item <- function(item, file, overwrite = FALSE, pretty = TRUE) {
     dir.create(dir_path, recursive = TRUE)
   }
 
+  # The `collection` field and the collection link are co-dependent in the
+  # schema; drop or flag a half-specified pair before serialising.
+  item <- reconcile_item_collection(item)
+
   # Remove any stored attributes before writing
   item_clean <- strip_stored_objects(item)
 
@@ -669,6 +673,44 @@ update_item_links <- function(item, self_href, parent_href, root_href,
       href = root_href,
       type = "application/json"
     )
+  }
+
+  item
+}
+
+
+# Reconcile an Item's `collection` field with its `collection` link.
+#
+# The Item schema ties the two together: a link with rel = "collection"
+# requires the `collection` field, and with no such link the field is not
+# allowed at all. add_item() keeps the pair in step when the parent is a
+# Collection, but an item built by hand, or one carrying a `collection` id
+# that was added to a plain Catalog, can reach the writer with only one half
+# present. Both halves are checked here because every item is written through
+# write_item(), whether on its own or as part of a tree.
+#
+# @keywords internal
+reconcile_item_collection <- function(item) {
+  has_link <- any(vapply(
+    item@links,
+    function(link) identical(link$rel, "collection"),
+    logical(1)
+  ))
+  has_field <- !is.null(item@collection)
+
+  if (has_field && !has_link) {
+    cli::cli_warn(c(
+      "Item {.val {item@id}} sets {.field collection} to {.val {item@collection}} but has no {.val collection} link.",
+      "i" = "The Item schema does not allow the field without the link, so it has been dropped from the output.",
+      ">" = "Keep the reference by adding the link: {.code add_link(item, \"collection\", href)}."
+    ))
+    item@collection <- NULL
+  } else if (has_link && !has_field) {
+    cli::cli_warn(c(
+      "Item {.val {item@id}} has a {.val collection} link but no {.field collection} field.",
+      "i" = "The Item schema requires the field whenever the link is present, so the written item will not validate.",
+      ">" = "Set it with {.code stac_item(..., collection = <id>)}."
+    ))
   }
 
   item
