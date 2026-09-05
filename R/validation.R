@@ -475,16 +475,12 @@ validate_bbox <- function(bbox, prefix = "bbox") {
   if (!length(bbox) %in% c(4, 6)) {
     errors <- c(errors, paste0(prefix, " must have 4 or 6 elements"))
   } else if (length(bbox) == 4) {
-    if (bbox[1] > bbox[3]) {
-      errors <- c(errors, paste0(prefix, ": west must be <= east"))
-    }
+    # West may exceed east: that is how RFC 7946 section 5.2 represents a bbox
+    # crossing the antimeridian. Only latitude and elevation are ordered.
     if (bbox[2] > bbox[4]) {
       errors <- c(errors, paste0(prefix, ": south must be <= north"))
     }
   } else if (length(bbox) == 6) {
-    if (bbox[1] > bbox[4]) {
-      errors <- c(errors, paste0(prefix, ": west must be <= east"))
-    }
     if (bbox[2] > bbox[5]) {
       errors <- c(errors, paste0(prefix, ": south must be <= north"))
     }
@@ -885,16 +881,46 @@ stac_core_schema_url <- function(stac_object, stac_version) {
 # Returns a character vector of formatted error messages (empty when valid).
 #
 # @keywords internal
+
+# Muffle ajv's "unknown format" warnings while letting every other warning
+# through.
+#
+# The STAC schemas annotate URL-bearing fields (`href`, `providers[].url`, and
+# the `stac_extensions` entries) with the JSON Schema `iri` and `iri-reference`
+# formats.  ajv, which jsonvalidate runs under V8, implements the `uri` family
+# but not the internationalised `iri` variants, so it warns once per occurrence
+# and skips that assertion.  The warnings are emitted on every call, say nothing
+# about the object being validated, and drown out real ones, so they are
+# filtered here.
+#
+# The cost is that those fields are checked for type but not for shape: a
+# malformed URL in an `href` will not be caught by schema validation.  Every
+# other constraint in the schema is unaffected.
+#
+# @keywords internal
+suppress_unknown_format_warnings <- function(expr) {
+  withCallingHandlers(
+    expr,
+    warning = function(w) {
+      if (grepl("unknown format", conditionMessage(w), fixed = TRUE)) {
+        invokeRestart("muffleWarning")
+      }
+    }
+  )
+}
+
 run_schema_validation <- function(json, schema_url) {
   tryCatch({
     local_path <- bundle_schema_url(schema_url)
 
-    result <- jsonvalidate::json_validate(
-      json,
-      local_path,
-      verbose = TRUE,
-      greedy  = TRUE,
-      engine  = "ajv"
+    result <- suppress_unknown_format_warnings(
+      jsonvalidate::json_validate(
+        json,
+        local_path,
+        verbose = TRUE,
+        greedy  = TRUE,
+        engine  = "ajv"
+      )
     )
 
     if (isTRUE(result)) {

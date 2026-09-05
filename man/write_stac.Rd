@@ -20,13 +20,22 @@ or \code{stac_collection()}.}
 \item{path}{(character, required) Root directory path where the catalog should
 be written. Will be created if it doesn't exist.}
 
-\item{catalog_type}{(character, optional) Type of catalog to create. One of:
+\item{catalog_type}{(character, optional) Type of catalog to create. These
+correspond to the three link layouts defined in
+\href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links}{Use of links}
+in the STAC best-practices document, and to PySTAC's \code{CatalogType} values.
+One of:
 \itemize{
-\item \code{"self-contained"}: All links use relative paths within the catalog structure.
-Best for portability and publishing.
-\item \code{"relative"}: Links use relative paths but may reference external resources.
-\item \code{"absolute"}: All links use absolute URLs. Best for web-served catalogs.
-Default is \code{"self-contained"}.
+\item \code{"self-contained"}: Every structural link is relative and no object
+carries a \code{self} link. Portable — the tree can be moved or archived.
+\item \code{"relative"}: A self-contained catalog plus a single absolute \code{self} link
+on the root, identifying where the catalog is published. Requires
+\code{base_url}.
+\item \code{"absolute"}: All links and asset hrefs use absolute URLs built from
+\code{base_url}, and every object carries a \code{self} link. Best for web-served
+catalogs. Requires \code{base_url}.
+Default is \code{"self-contained"}. Note that no catalog type copies or moves
+asset files — see Details.
 }}
 
 \item{overwrite}{(logical, optional) If \code{TRUE}, overwrites existing files. If
@@ -35,9 +44,9 @@ Default is \code{"self-contained"}.
 \item{pretty}{(logical, optional) If \code{TRUE}, writes formatted JSON with
 indentation. If \code{FALSE}, writes compact JSON. Default is \code{TRUE}.}
 
-\item{base_url}{(character, optional) Base URL for absolute links when
-\code{catalog_type = "absolute"}. For example, \code{"https://example.com/stac"}.
-Required when using absolute catalog type.}
+\item{base_url}{(character, optional) Base URL identifying where the catalog
+is published, for example \code{"https://example.com/stac"}. Required when
+\code{catalog_type} is \code{"relative"} or \code{"absolute"}; ignored otherwise.}
 }
 \value{
 Invisibly returns the path where the catalog was written.
@@ -51,18 +60,56 @@ Children and items are automatically retrieved from the catalog's stored objects
 \details{
 \subsection{Catalog Types}{
 
+The three types match the link layouts defined in
+\href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links}{Use of links}
+in the STAC best-practices document, and map onto PySTAC's
+\code{CatalogType$SELF_CONTAINED}, \code{CatalogType$RELATIVE_PUBLISHED} and
+\code{CatalogType$ABSOLUTE_PUBLISHED}:\tabular{lll}{
+   \code{catalog_type} \tab STAC best practices \tab PySTAC \cr
+   \code{"self-contained"} \tab \href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs}{Self-contained Catalogs} \tab \code{SELF_CONTAINED} \cr
+   \code{"relative"} \tab \href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog}{Relative Published Catalog} \tab \code{RELATIVE_PUBLISHED} \cr
+   \code{"absolute"} \tab \href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog}{Absolute Published Catalog} \tab \code{ABSOLUTE_PUBLISHED} \cr
+}
+
+
 \strong{Self-Contained Catalogs:}
-All links use relative paths and all referenced resources are within the
-catalog directory structure. This is the most portable option and recommended
-for sharing or archiving catalogs.
+Links between catalog, collection and item files are written as relative
+paths. Because a \code{self} link must be absolute, self-contained catalogs carry
+no \code{self} link at all, and any \code{self} link already present on an object is
+dropped. Asset hrefs that are absolute local paths are rewritten relative to
+the directory holding the item JSON; hrefs that are already relative, or that
+are URLs (anything containing \verb{://}), are left unchanged. This is the
+portable layout: the written tree can be relocated without rewriting links.
 
 \strong{Relative Catalogs:}
-Links use relative paths but may reference resources outside the catalog tree.
-Useful when integrating with existing file structures.
+Identical to a self-contained catalog, except that the root catalog or
+collection carries one absolute \code{self} link built from \code{base_url}, recording
+where the catalog is published. No other object gets a \code{self} link. Use this
+when the catalog is published at a known location but should still be
+usable after being downloaded.
 
 \strong{Absolute Catalogs:}
-All links use absolute URLs. Required when the catalog will be served from a
-web server. Requires \code{base_url} to be specified.
+All links use absolute URLs and every object carries a \code{self} link. Required
+when the catalog will be served from a web server. Asset hrefs that are
+already URLs are left unchanged, and relative asset hrefs are resolved
+against the item's URL. An asset href that is an absolute local filesystem
+path has no URL equivalent, so it is left unchanged and a warning is raised.
+}
+
+\subsection{Assets Are Not Copied}{
+
+\code{write_stac()} writes JSON only. It never copies, moves, or rewrites asset
+files, so an asset stored outside \code{path} stays there and is referenced by a
+relative path that climbs out of the catalog directory, such as
+\code{../../../data/dem.tif}.
+
+This is narrower than a
+\href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-with-assets}{self-contained catalog with assets},
+where every referenced file lives inside the catalog directory so the whole
+tree can be archived or relocated as a unit. A catalog written here is
+\href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-metadata-only}{metadata only}
+unless you place the asset files under \code{path} yourself before calling
+\code{write_stac()}; only then is the written catalog portable in that sense.
 }
 
 \subsection{Directory Structure}{
@@ -125,6 +172,14 @@ catalog <- add_child(catalog, collection)
 # Write entire structure - children and items are automatically written!
 write_stac(catalog, "output/stac")
 
+# Write as a relative catalog, recording where it is published
+write_stac(
+  catalog,
+  "output/stac",
+  catalog_type = "relative",
+  base_url = "https://example.com/stac"
+)
+
 # Write as absolute catalog for web serving
 write_stac(
   catalog,
@@ -137,6 +192,11 @@ write_stac(
 write_stac(catalog, "output/stac", overwrite = TRUE)
 }
 
+}
+\references{
+STAC best practices, \href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links}{Use of links},
+which defines the self-contained, relative published and absolute published
+layouts. See \url{https://stacspec.org/} for the specification as a whole.
 }
 \seealso{
 \itemize{

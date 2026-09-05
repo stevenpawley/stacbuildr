@@ -319,9 +319,11 @@ cube_dimension <- function(
       cli::cli_abort("'bbox' is required when type = 'geometry'")
     }
 
-    if (!is.null(axes)) dim$axes <- axes
+    if (!is.null(axes)) dim$axes <- as_json_array(axes)
     dim$bbox <- bbox
-    if (!is.null(geometry_types)) dim$geometry_types <- geometry_types
+    if (!is.null(geometry_types)) {
+      dim$geometry_types <- as_json_array(geometry_types)
+    }
   } else if (type == "temporal") {
     if (is.null(extent) || length(extent) != 2) {
       cli::cli_abort("'extent' (length 2) is required when type = 'temporal'")
@@ -336,7 +338,7 @@ cube_dimension <- function(
   }
 
   if (!is.null(extent)) dim$extent <- extent
-  if (!is.null(values)) dim$values <- values
+  if (!is.null(values)) dim$values <- as_json_array(values)
   if (!is.null(step)) dim$step <- step
   if (!is.null(unit)) dim$unit <- unit
   if (!is.null(reference_system) && type %in% c("spatial", "geometry")) {
@@ -437,10 +439,10 @@ cube_variable <- function(
     )
   }
 
-  var <- list(dimensions = dimensions, type = type)
+  var <- list(dimensions = as_json_array(dimensions), type = type)
 
   if (!is.null(extent)) var$extent <- extent
-  if (!is.null(values)) var$values <- values
+  if (!is.null(values)) var$values <- as_json_array(values)
   if (!is.null(unit)) var$unit <- unit
   if (!is.null(nodata)) var$nodata <- nodata
   if (!is.null(data_type)) var$data_type <- data_type

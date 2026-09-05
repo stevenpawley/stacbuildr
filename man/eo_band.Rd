@@ -41,7 +41,10 @@ and radiometric calibration.}
 extensions like raster fields (\code{nodata}, \code{data_type}, \code{raster:scale}, etc.).}
 }
 \value{
-A list representing an EO band object.
+A list representing a band object with the EO extension's fields.
+The EO-specific fields are written with an \verb{eo:} prefix, as required by
+version 2.0.0 of the extension; \code{name} and \code{description} come from STAC
+Common Metadata and stay unprefixed.
 }
 \description{
 Creates a band object for use with the Electro-Optical (EO) Extension.
@@ -70,9 +73,11 @@ Wavelengths should be specified in micrometers. For example:
 
 \subsection{Combining with Raster Extension}{
 
-EO bands can be combined with raster metadata by adding raster fields via
-\code{...}. Common raster fields include \code{nodata}, \code{data_type},
-\code{"raster:scale"}, \code{"raster:offset"}, \code{"raster:spatial_resolution"}.
+Every band-level extension shares the one \code{bands} array, so a band object
+may hold raster metadata too. Add it via \code{...}, or describe the same bands
+with \code{\link[=add_raster_extension]{add_raster_extension()}} and let the fields be merged. Common raster
+fields are \code{nodata}, \code{data_type}, \code{"raster:scale"}, \code{"raster:offset"} and
+\code{"raster:spatial_resolution"}.
 }
 }
 \examples{

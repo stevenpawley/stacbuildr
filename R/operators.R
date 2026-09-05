@@ -5,3 +5,123 @@
   else
     a
 }
+
+
+# Mark a value as a JSON array.
+#
+# The writers serialise with jsonlite's auto_unbox = TRUE, which collapses a
+# length-1 atomic vector to a JSON scalar. That is right for the many STAC
+# fields that are single values, but wrong for the ones the spec types as
+# arrays: a collection with one keyword would emit "keywords": "dem" where the
+# schema demands ["dem"]. Wrapping in a list forces the array form regardless
+# of length, since auto_unbox never unboxes a list.
+#
+# NULL passes through so callers can use it on optional fields without
+# guarding, and a value that is already a list is left alone.
+#
+# @keywords internal
+as_json_array <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  if (is.list(x)) {
+    return(x)
+  }
+  as.list(x)
+}
+
+
+# STAC Common Metadata fields that the spec types as JSON arrays. These may
+# appear on Item properties and on Asset objects, so both normalise them
+# through as_json_array() to stop a single value collapsing to a scalar.
+# Taken from basics.json (keywords, roles), instrument.json (instruments),
+# provider.json (providers) and bands.json (bands) in the item spec.
+#
+# @keywords internal
+stac_common_array_fields <- c(
+  "keywords",
+  "roles",
+  "instruments",
+  "providers",
+  "bands"
+)
+
+# Coerce every known array-typed Common Metadata field in a named list.
+#
+# @keywords internal
+normalize_common_arrays <- function(x) {
+  for (field in intersect(names(x), stac_common_array_fields)) {
+    x[[field]] <- as_json_array(x[[field]])
+  }
+  x
+}
+
+
+# Attach band objects to an Item's properties or to one of its assets.
+#
+# STAC 1.1 replaced the per-extension `eo:bands` and `raster:bands` arrays with
+# a single common `bands` array, whose objects carry prefixed fields from every
+# extension that describes them. add_eo_extension() and add_raster_extension()
+# therefore write to the same place, so bands already present are merged with
+# the incoming ones field by field rather than overwritten. Merging only makes
+# sense when both arrays describe the same bands, so a list of a different
+# length replaces what was there.
+#
+# @keywords internal
+set_bands <- function(item, bands, asset_key = NULL) {
+  if (!is.null(asset_key)) {
+    if (is.null(item@assets[[asset_key]])) {
+      cli::cli_abort("Asset '{asset_key}' does not exist in item")
+    }
+    item@assets[[asset_key]]$bands <- merge_bands(
+      item@assets[[asset_key]]$bands,
+      bands
+    )
+  } else {
+    item@properties$bands <- merge_bands(item@properties$bands, bands)
+  }
+
+  item
+}
+
+# @keywords internal
+merge_bands <- function(existing, bands) {
+  bands <- lapply(bands, unclass)
+
+  if (is.null(existing) || length(existing) != length(bands)) {
+    return(bands)
+  }
+
+  Map(function(old, new) {
+    old <- unclass(old)
+    old[names(new)] <- new
+    old
+  }, existing, bands)
+}
+
+
+# Guard against two children or two items in the same catalog sharing an id.
+#
+# write_stac() derives each output path from the object's id, so a repeated id
+# means the second object overwrites the first file while both links survive,
+# leaving a catalog whose links point twice at a single file. Catching it where
+# the object is added keeps the error next to the mistake rather than
+# surfacing it as silent data loss at write time.
+#
+# @keywords internal
+check_duplicate_ids <- function(new_ids, existing_ids, what) {
+  clashes <- intersect(new_ids, existing_ids)
+  repeats <- unique(new_ids[duplicated(new_ids)])
+  duplicates <- unique(c(clashes, repeats))
+
+  if (length(duplicates) > 0) {
+    cli::cli_abort(c(
+      "Cannot add {what} with a duplicate id: {.val {duplicates}}.",
+      "i" = "write_stac() names each file after the id, so the second would
+             overwrite the first while both links remained.",
+      ">" = "Use a unique id, or drop the duplicate."
+    ))
+  }
+
+  invisible(NULL)
+}

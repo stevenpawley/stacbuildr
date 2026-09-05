@@ -148,17 +148,25 @@ item <- item |>
   add_eo_extension(bands = landsat_oli_bands(include_thermal = TRUE))
 ```
 
+Following v2.0.0 of the EO and Raster extensions, band objects are written to
+the `bands` array that STAC 1.1 shares between all band-level extensions, with
+each extension's own fields prefixed (`eo:common_name`, `raster:scale`). Both
+`add_*_extension()` functions write to the same array, so describing the same
+bands with each in turn merges their fields.
+
 #### Raster extension
 
 ```r
 item <- item |>
   add_raster_extension(
-    bands = raster_band(
+    bands = list(
+      raster_band(
         data_type = "uint16",
         nodata = 0,
         spatial_resolution = 10,
         scale = 0.0001
-      ),
+      )
+    ),
     asset_key = "visual"
   )
 ```
@@ -210,8 +218,16 @@ extent <- extent_from_items(items)
 ### Writing and reading
 
 ```r
-# Write the entire catalog hierarchy to disk as JSON files
+# Write the entire catalog hierarchy to disk as JSON files.
+# The default "self-contained" type uses relative links throughout, so the
+# tree stays portable.
 write_stac(catalog, path = "output/stac")
+
+# Write as a relative catalog: relative links, plus one absolute self link on
+# the root recording where the catalog is published
+write_stac(catalog, path = "output/stac",
+           catalog_type = "relative",
+           base_url = "https://example.com/stac")
 
 # Write as an absolute-URL catalog (for web hosting)
 write_stac(catalog, path = "output/stac",
@@ -226,6 +242,16 @@ write_item(item, file = "items/my-item.json")
 catalog <- read_stac("output/stac/catalog.json")
 collection <- read_stac("output/stac/collection/collection.json")
 ```
+
+The `catalog_type` values correspond one-to-one with the link layouts in
+[Use of links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links) in the STAC best-practices document, and with
+PySTAC's `CatalogType`:
+
+| `catalog_type` | STAC best practices | PySTAC |
+| --- | --- | --- |
+| `"self-contained"` | [Self-contained Catalogs](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs) | `SELF_CONTAINED` |
+| `"relative"` | [Relative Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog) | `RELATIVE_PUBLISHED` |
+| `"absolute"` | [Absolute Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog) | `ABSOLUTE_PUBLISHED` |
 
 The written directory structure follows STAC conventions:
 

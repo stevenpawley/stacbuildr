@@ -236,3 +236,15 @@ test_that("catalog with child catalogs matches pystac", {
   expect_equal(r_parent@type, "Catalog")
   expect_equal(r_child@type, "Catalog")
 })
+
+test_that("add_child rejects duplicate child ids", {
+  catalog <- stac_catalog(id = "root", description = "d")
+  child <- function(id) stac_catalog(id = id, description = "d")
+
+  expect_error(
+    add_child(add_child(catalog, child("x")), child("x")),
+    "duplicate id"
+  )
+
+  expect_no_error(add_child(add_child(catalog, child("x")), child("y")))
+})

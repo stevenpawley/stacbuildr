@@ -39,7 +39,7 @@
 #' | [stac_asset()] | `stac_asset` | `item@assets` |
 #' | [raster_statistics()] | `raster_statistics` | `band@statistics` |
 #' | [raster_histogram()] | `raster_histogram` | `band@histogram` |
-#' | [eo_band()] | `eo_band` | asset `"eo:bands"` field |
+#' | [eo_band()] | `eo_band` | asset `"bands"` field |
 #' | [stac_provider()] | `stac_provider` | `collection@providers` |
 #' | [stac_summaries()] | `stac_summaries` | `collection@summaries` |
 #' | [classification_class()] | `classification_class` | classification extension |
@@ -73,10 +73,10 @@
 #'
 #' Extension metadata is shown wherever it is stored: item-level fields such
 #' as `"sci:doi"` or `"eo:cloud_cover"` appear in the `properties` section,
-#' asset-level fields such as `"eo:bands"` or `"raster:bands"` appear under
-#' the asset that carries them, and the declared schema URIs are listed in the
-#' `extensions` section by name and version. Arrays of objects are summarised
-#' by the name of each object, e.g. `eo:bands [B4, B5]`.
+#' asset-level fields such as `"bands"` or `"classification:classes"` appear
+#' under the asset that carries them, and the declared schema URIs are listed
+#' in the `extensions` section by name and version. Arrays of objects are
+#' summarised by the name of each object, e.g. `bands [B4, B5]`.
 #'
 #' Colour and the box-drawing characters come from \pkg{cli} and are dropped
 #' automatically when the console does not support them (log files, knitr,

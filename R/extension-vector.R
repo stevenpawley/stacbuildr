@@ -165,7 +165,9 @@ add_vector_extension <- function(
   }
 
   fields <- list()
-  if (!is.null(geometry_types)) fields$`vector:geometry_types` <- geometry_types
+  if (!is.null(geometry_types)) {
+    fields$`vector:geometry_types` <- as_json_array(geometry_types)
+  }
   if (!is.null(mmu)) fields$`vector:mmu` <- mmu
   if (!is.null(mmw)) fields$`vector:mmw` <- mmw
   if (!is.null(reference_scale)) fields$`vector:reference_scale` <- reference_scale

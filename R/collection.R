@@ -59,7 +59,7 @@
 #'   recommended. Each property can be summarized as an array of unique values, a
 #'   range (with `minimum` and `maximum`), or a JSON Schema. Common properties to
 #'   summarize include `"datetime"`, `"platform"`, `"instruments"`, `"gsd"`,
-#'   `"eo:bands"`, etc. Use `stac_summaries()` helper to create this.
+#'   `"eo:cloud_cover"`, etc. Use `stac_summaries()` helper to create this.
 #' @param assets (list, optional) Dictionary of asset objects that can be downloaded
 #'   at the Collection level (not Item-specific assets). This is for assets that
 #'   apply to the entire collection, such as preview images or documentation.
@@ -171,10 +171,10 @@
 #'     platform = c("sentinel-2a", "sentinel-2b"),
 #'     instruments = c("msi"),
 #'     gsd = c(10, 20, 60),
-#'     `eo:bands` = list(
-#'       list(name = "B01", common_name = "coastal", center_wavelength = 0.443),
-#'       list(name = "B02", common_name = "blue", center_wavelength = 0.490),
-#'       list(name = "B03", common_name = "green", center_wavelength = 0.560)
+#'     bands = list(
+#'       list(name = "B01", `eo:common_name` = "coastal"),
+#'       list(name = "B02", `eo:common_name` = "blue"),
+#'       list(name = "B03", `eo:common_name` = "green")
 #'     )
 #'   )
 #' )
@@ -329,7 +329,7 @@ S7::method(as.list, stac_collection) <- function(x, ...) {
     out$title <- x@title
   }
   if (!is.null(x@keywords) && length(x@keywords) > 0) {
-    out$keywords <- x@keywords
+    out$keywords <- as_json_array(x@keywords)
   }
   if (!is.null(x@providers) && length(x@providers) > 0) {
     out$providers <- x@providers
@@ -345,7 +345,7 @@ S7::method(as.list, stac_collection) <- function(x, ...) {
     out$assets <- x@assets
   }
   if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
-    out$conformsTo <- x@conformsTo
+    out$conformsTo <- as_json_array(x@conformsTo)
   }
   if (length(x@extra_fields) > 0) {
     out <- c(out, x@extra_fields)
@@ -550,7 +550,7 @@ stac_provider <- function(name, description = NULL, roles = NULL, url = NULL) {
     provider$description <- description
   }
   if (!is.null(roles)) {
-    provider$roles <- roles
+    provider$roles <- as_json_array(roles)
   }
   if (!is.null(url)) {
     provider$url <- url
@@ -607,15 +607,19 @@ print.stac_provider <- function(x, ...) {
 #'   platform = c("landsat-8", "landsat-9"),
 #'   instruments = c("oli", "tirs"),
 #'   gsd = list(minimum = 15, maximum = 30),
-#'   `eo:bands` = list(
-#'     list(name = "B1", common_name = "coastal"),
-#'     list(name = "B2", common_name = "blue")
+#'   bands = list(
+#'     list(name = "B1", `eo:common_name` = "coastal"),
+#'     list(name = "B2", `eo:common_name` = "blue")
 #'   )
 #' )
 #'
 #' @export
 stac_summaries <- function(...) {
   summaries <- list(...)
+  # A summary is either a set of values (JSON array), a range object, or a
+  # JSON Schema. Only the first form is an atomic vector here, and it has to
+  # stay an array even when a single value was supplied.
+  summaries <- lapply(summaries, as_json_array)
   class(summaries) <- c("stac_summaries", "list")
   summaries
 }
@@ -652,8 +656,12 @@ print.stac_summaries <- function(x, ...) {
 #' Inspects the items already added to a collection and derives the
 #' `item_assets` field automatically, using the assets present on those items.
 #' For each unique asset key, the definition is taken from the first item that
-#' contains it (minus the `href` field, which is item-specific). The
-#' Item Assets extension URI is added to `stac_extensions` automatically.
+#' contains it (minus the `href` field, which is item-specific).
+#'
+#' `item_assets` is part of the Collection spec from STAC 1.1.0 onwards, so no
+#' extension is needed. For a collection declaring an earlier `stac_version`,
+#' the deprecated Item Assets extension URI is added to `stac_extensions`
+#' automatically.
 #'
 #' @param collection A `stac_collection` object with items added via
 #'   `add_item()`.
@@ -662,7 +670,10 @@ print.stac_summaries <- function(x, ...) {
 #'   extension added to `stac_extensions`.
 #'
 #' @references
-#' STAC Item Assets Definition Extension:
+#' STAC Collection Specification (`item_assets`):
+#' \url{https://github.com/radiantearth/stac-spec/tree/master/collection-spec}
+#'
+#' STAC Item Assets Definition Extension (deprecated, STAC 1.0 only):
 #' \url{https://stac-extensions.github.io/item-assets/v1.0.0/schema.json}
 #'
 #' @seealso
@@ -714,8 +725,8 @@ add_item_assets <- function(collection) {
       asset <- item@assets[[key]]
       if (!is.null(asset)) {
         asset <- asset[setdiff(names(asset), "href")]
-        if (!is.null(asset$`raster:bands`)) {
-          asset$`raster:bands` <- lapply(asset$`raster:bands`, function(band) {
+        if (!is.null(asset$bands)) {
+          asset$bands <- lapply(asset$bands, function(band) {
             band[setdiff(names(band), "statistics")]
           })
         }
@@ -729,10 +740,14 @@ add_item_assets <- function(collection) {
 
   collection@extra_fields$item_assets <- item_assets
 
-  ext_uri <- "https://stac-extensions.github.io/item-assets/v1.0.0/schema.json"
-  if (is.null(collection@stac_extensions) ||
-      !ext_uri %in% collection@stac_extensions) {
-    collection@stac_extensions <- c(collection@stac_extensions, ext_uri)
+  # `item_assets` moved into the Collection spec in STAC 1.1.0, which
+  # deprecated the extension. Only declare it for older collections.
+  if (utils::compareVersion(collection@stac_version, "1.1.0") < 0) {
+    ext_uri <- "https://stac-extensions.github.io/item-assets/v1.0.0/schema.json"
+    if (is.null(collection@stac_extensions) ||
+        !ext_uri %in% collection@stac_extensions) {
+      collection@stac_extensions <- c(collection@stac_extensions, ext_uri)
+    }
   }
 
   collection
