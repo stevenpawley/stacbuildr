@@ -27,6 +27,7 @@ reference:
     contents:
       - stac_asset
       - add_asset
+      - print.stac_asset
 
   - title: "Links"
     desc: "Build and manage the link graph between STAC objects."
@@ -51,6 +52,8 @@ reference:
       - stac_summaries
       - extent_from_items
       - add_item_assets
+      - print.stac_provider
+      - print.stac_summaries
 
   - title: "terra Integration"
     desc: >
@@ -80,6 +83,8 @@ reference:
       - raster_statistics
       - raster_histogram
       - raster_from_file
+      - print.raster_statistics
+      - print.raster_histogram
 
   - title: "EO Extension"
     desc: >
@@ -170,6 +175,7 @@ reference:
     contents:
       - validate_stac
       - validate_stac_schema
+      - print.stac_validation
 
   - title: "Database Backend"
     desc: >
