@@ -61,7 +61,7 @@ catalog_py <- pystac$Catalog(
   id = "environmental-data",
   description = "A collection of environmental data",
   title = "Environmental Data Catalog",
-  catalog_type = pystac$CatalogType$RELATIVE_PUBLISHED
+  catalog_type = pystac$CatalogType$SELF_CONTAINED
 )
 
 item_py <- pystac$Item(
@@ -80,13 +80,25 @@ catalog_py$add_item(item_py)
 
 ## Writing to disk and comparing
 
-Both libraries are asked to write a relative catalog. stacbuildr uses
-`catalog_type = "relative"` and PySTAC uses `CatalogType$RELATIVE_PUBLISHED`,
-which are equivalent.
+Both libraries are asked to write a self-contained catalog. stacbuildr's
+`catalog_type` values line up one-to-one with PySTAC's `CatalogType`, and both
+follow [Use of links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links) in the STAC best-practices document:
+
+| stacbuildr | PySTAC | STAC best practices |
+| --- | --- | --- |
+| `"self-contained"` | `SELF_CONTAINED` | [Self-contained Catalogs](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs) |
+| `"relative"` | `RELATIVE_PUBLISHED` | [Relative Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog) |
+| `"absolute"` | `ABSOLUTE_PUBLISHED` | [Absolute Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog) |
+
+We use the self-contained type here because these catalogs are written to a
+temporary directory rather than published anywhere. The other two types record
+a published location — stacbuildr takes it as `base_url`, while PySTAC derives
+it from the href passed to `normalize_hrefs()` — so they would not produce
+comparable output for a catalog that has no online home.
 
 ```{r}
 r_path <- file.path(tempdir(), "r-stac")
-write_stac(catalog, r_path, catalog_type = "relative", overwrite = TRUE)
+write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 py_path <- file.path(tempdir(), "py-stac")
@@ -165,7 +177,7 @@ item_py$add_asset("temperature", asset_py)
 Write the catalogs to disk again to include the asset and read the item JSON:
 
 ```{r}
-write_stac(catalog, r_path, catalog_type = "relative", overwrite = TRUE)
+write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 catalog_py$normalize_hrefs(py_path)

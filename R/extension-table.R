@@ -16,10 +16,11 @@
 #' @param storage_options (list, optional) Additional keywords needed to open
 #'   the dataset (e.g. for `fsspec`-style access). This is an asset-level
 #'   field, so `asset_key` must also be provided when supplying it.
-#' @param asset_key (character, optional) The asset to attach
-#'   `storage_options` to. Required when `storage_options` is provided.
-#'   `columns`, `primary_geometry`, and `row_count` are always written to
-#'   item properties, matching the Table Extension specification.
+#' @param asset_key (character, optional) If provided, adds the table fields
+#'   to a specific asset rather than to the item properties. Useful when an
+#'   item bundles several tabular assets with different schemas. Required when
+#'   `storage_options` is provided, since `table:storage_options` has no
+#'   item-level meaning.
 #'
 #' @details
 #' ## Extension Schema URI
@@ -27,10 +28,22 @@
 #' `https://stac-extensions.github.io/table/v1.2.0/schema.json`
 #'
 #' ## Field Placement
-#' `table:columns`, `table:primary_geometry`, and `table:row_count` are Item
-#' (and Collection) properties fields. `table:storage_options` is an
-#' asset-level field, so it is always attached to the asset identified by
-#' `asset_key`.
+#' `asset_key` routes every field it can, as in the other `add_*_extension()`
+#' functions: omit it and `table:columns`, `table:primary_geometry` and
+#' `table:row_count` are written to the item properties; supply it and they are
+#' written to that asset instead.
+#'
+#' Omitting `asset_key` gives the placement the Table Extension README
+#' describes, which lists those three under "Item Properties and Collection
+#' Fields". Item-level placement is the right default for the common case of an
+#' item wrapping a single table. Per-asset placement is useful when one item
+#' holds several tables; the extension's JSON schema validates table fields on
+#' assets and `item_assets` as well as on properties.
+#'
+#' `table:storage_options` is the exception. The README gives it its own "Asset
+#' Object fields" section, and it carries `fsspec`-style arguments for opening
+#' one particular file, so it is always written to the asset and `asset_key` is
+#' required whenever it is supplied.
 #'
 #' ## Column Object Fields
 #' Each entry in `columns` is created with `table_column()` and can include:
@@ -148,6 +161,15 @@ add_table_extension <- function(
     }
   }
 
+  if (!is.null(asset_key)) {
+    if (!is.character(asset_key) || length(asset_key) != 1) {
+      cli::cli_abort("'asset_key' must be a single character string")
+    }
+    if (is.null(item@assets[[asset_key]])) {
+      cli::cli_abort("Asset '{asset_key}' does not exist in item")
+    }
+  }
+
   # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/table/v1.2.0/schema.json"
 
@@ -159,26 +181,29 @@ add_table_extension <- function(
     item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
-  # table:columns, table:primary_geometry, table:row_count are always
-  # item properties fields per the Table Extension specification
-  if (!is.null(columns)) {
-    item@properties$`table:columns` <- columns
-  }
+  # table:columns, table:primary_geometry and table:row_count follow
+  # `asset_key`, as in the other add_*_extension() functions. Omitting it gives
+  # the item-level placement the Table Extension README describes.
+  fields <- list()
 
+  if (!is.null(columns)) fields$`table:columns` <- columns
   if (!is.null(primary_geometry)) {
-    item@properties$`table:primary_geometry` <- primary_geometry
+    fields$`table:primary_geometry` <- primary_geometry
   }
+  if (!is.null(row_count)) fields$`table:row_count` <- row_count
 
-  if (!is.null(row_count)) {
-    item@properties$`table:row_count` <- row_count
-  }
-
-  # table:storage_options is an asset-level field
-  if (!is.null(storage_options)) {
-    if (is.null(item@assets[[asset_key]])) {
-      cli::cli_abort("Asset '{asset_key}' does not exist in item")
+  if (is.null(asset_key)) {
+    for (field_name in names(fields)) {
+      item@properties[[field_name]] <- fields[[field_name]]
     }
+  } else {
+    for (field_name in names(fields)) {
+      item@assets[[asset_key]][[field_name]] <- fields[[field_name]]
+    }
+  }
 
+  # table:storage_options is always an asset-level field
+  if (!is.null(storage_options)) {
     item@assets[[asset_key]]$`table:storage_options` <- storage_options
   }
 

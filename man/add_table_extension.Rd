@@ -29,10 +29,11 @@ holds the primary geometry, for use by libraries such as geopandas or
 the dataset (e.g. for \code{fsspec}-style access). This is an asset-level
 field, so \code{asset_key} must also be provided when supplying it.}
 
-\item{asset_key}{(character, optional) The asset to attach
-\code{storage_options} to. Required when \code{storage_options} is provided.
-\code{columns}, \code{primary_geometry}, and \code{row_count} are always written to
-item properties, matching the Table Extension specification.}
+\item{asset_key}{(character, optional) If provided, adds the table fields
+to a specific asset rather than to the item properties. Useful when an
+item bundles several tabular assets with different schemas. Required when
+\code{storage_options} is provided, since \code{table:storage_options} has no
+item-level meaning.}
 }
 \value{
 The modified STAC Item with Table extension fields added.
@@ -52,10 +53,22 @@ The Table Extension v1.2.0 schema URI is:
 
 \subsection{Field Placement}{
 
-\code{table:columns}, \code{table:primary_geometry}, and \code{table:row_count} are Item
-(and Collection) properties fields. \code{table:storage_options} is an
-asset-level field, so it is always attached to the asset identified by
-\code{asset_key}.
+\code{asset_key} routes every field it can, as in the other \verb{add_*_extension()}
+functions: omit it and \code{table:columns}, \code{table:primary_geometry} and
+\code{table:row_count} are written to the item properties; supply it and they are
+written to that asset instead.
+
+Omitting \code{asset_key} gives the placement the Table Extension README
+describes, which lists those three under "Item Properties and Collection
+Fields". Item-level placement is the right default for the common case of an
+item wrapping a single table. Per-asset placement is useful when one item
+holds several tables; the extension's JSON schema validates table fields on
+assets and \code{item_assets} as well as on properties.
+
+\code{table:storage_options} is the exception. The README gives it its own "Asset
+Object fields" section, and it carries \code{fsspec}-style arguments for opening
+one particular file, so it is always written to the asset and \code{asset_key} is
+required whenever it is supplied.
 }
 
 \subsection{Column Object Fields}{

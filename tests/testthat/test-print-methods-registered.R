@@ -204,6 +204,6 @@ test_that("the eo_band class does not leak into JSON", {
     jsonlite::toJSON(as.list(item), auto_unbox = TRUE),
     simplifyVector = FALSE
   )
-  band <- json$assets$B4$`eo:bands`[[1]]
-  expect_named(band, c("name", "common_name"))
+  band <- json$assets$B4$bands[[1]]
+  expect_named(band, c("name", "eo:common_name"))
 })

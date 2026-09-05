@@ -108,7 +108,7 @@ render_object <- function(
     cli::cli_abort("'minmax_zoom' must be a numeric vector of length 2")
   }
 
-  render <- list(assets = assets)
+  render <- list(assets = as_json_array(assets))
 
   if (!is.null(title)) render$title <- title
   if (!is.null(rescale)) render$rescale <- rescale
@@ -119,7 +119,7 @@ render_object <- function(
   if (!is.null(resampling)) render$resampling <- resampling
   if (!is.null(expression)) render$expression <- expression
   if (!is.null(minmax_zoom)) render$minmax_zoom <- minmax_zoom
-  if (!is.null(bidx)) render$bidx <- bidx
+  if (!is.null(bidx)) render$bidx <- as_json_array(bidx)
 
   extra_fields <- list(...)
   if (length(extra_fields) > 0) {
@@ -231,13 +231,22 @@ add_render_extension <- function(item, renders) {
     item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
-  # Merge with existing renders, letting new keys overwrite existing ones
+  # Merge with existing renders, letting new keys overwrite existing ones.
+  # The replacement is one level deep: a render object named again is swapped
+  # out whole rather than merged field by field. modifyList() would recurse
+  # into it and, because fields such as `assets` are unnamed lists, silently
+  # keep the old value instead of replacing it.
+  merge_renders <- function(existing) {
+    existing[names(renders)] <- renders
+    existing
+  }
+
   if (inherits(item, "stac_item")) {
-    existing <- item@properties$renders %||% list()
-    item@properties$renders <- modifyList(existing, renders)
+    item@properties$renders <- merge_renders(item@properties$renders %||% list())
   } else {
-    existing <- item@extra_fields$renders %||% list()
-    item@extra_fields$renders <- modifyList(existing, renders)
+    item@extra_fields$renders <- merge_renders(
+      item@extra_fields$renders %||% list()
+    )
   }
 
   item

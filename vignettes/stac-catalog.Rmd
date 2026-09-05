@@ -129,20 +129,41 @@ print(catalog, expand = TRUE)
 ## Write a static catalog to disk
 
 `write_stac()` recursively writes the catalog, collection, and item JSON files.
-The `catalog_type` argument controls how links and asset hrefs are written:
+The `catalog_type` argument controls how links and asset hrefs are written. The
+three types correspond to the link layouts defined in
+[Use of links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links)
+in the STAC best-practices document, and to PySTAC's `SELF_CONTAINED`,
+`RELATIVE_PUBLISHED` and `ABSOLUTE_PUBLISHED`:
 
-- `"self-contained"` — all links and asset hrefs are relative paths within the
-  catalog directory. Most portable: zip and share or move the folder anywhere.
-  Use for sharing or archiving.
-- `"relative"` — links between catalog/collection/item files are relative, but
-  asset hrefs are left as-is (absolute local paths or external URLs). Use when
-  the catalog indexes large on-disk data you don't want to copy.
-- `"absolute"` — all links use full URLs built from `base_url`. Use when
-  publishing to a web server so remote clients can crawl the catalog over HTTP.
-  Assets should also be URLs (S3, HTTPS) in this case.
+- [`"self-contained"`](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs) — links between
+  catalog/collection/item files, and asset hrefs given as absolute local paths,
+  are rewritten relative to the file that contains them. No object gets a
+  `self` link, because a `self` link has to be absolute and that would tie the
+  catalog to one location. Use for sharing or archiving.
+- [`"relative"`](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog) — a self-contained catalog plus
+  a single absolute `self` link on the root, recording where the catalog is
+  published. Requires `base_url`. Use when the catalog is online but should
+  still work after being downloaded.
+- [`"absolute"`](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog) — all links use full URLs built
+  from `base_url`, and every object gets a `self` link. Use when publishing to a
+  web server so remote clients can crawl the catalog over HTTP. Asset hrefs that
+  are already URLs (S3, HTTPS) are kept; relative ones are resolved against the
+  item's URL.
 
-Since the DEM lives in `tempdir()` alongside the catalog, we use
-`"self-contained"` here:
+One thing to be aware of: `write_stac()` writes JSON and nothing else. It does
+not copy asset files into the catalog directory. Our DEM lives in `data_dir`,
+which is a sibling of the catalog rather than inside it, so the written item
+gets an href like `../../../data/dem.tif` — a valid relative path, but one that
+points outside the tree.
+
+That is narrower than a
+[self-contained catalog with assets](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-with-assets), where every
+referenced file sits inside the catalog directory so the folder can be zipped
+and moved as a unit — what we write here is
+[metadata only](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-metadata-only). If you need the former, copy
+the assets under `catalog_dir` yourself before calling `write_stac()`.
+
+We use `"self-contained"` here:
 
 ```{r}
 catalog_dir <- file.path(tempdir(), "catalog")

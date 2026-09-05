@@ -117,9 +117,367 @@ test_that("write_stac output is readable and valid according to pystac", {
     lapply(r_item_json$links, `[[`, "href"),
     vapply(r_item_json$links, `[[`, character(1), "rel")
   )
-  expect_equal(item_links[["self"]], paste0("./", item_id, ".json"))
+  # A self-contained catalog carries no self links, since they must be absolute
+  expect_false("self" %in% names(item_links))
   expect_equal(item_links[["parent"]], "../collection.json")
   expect_equal(item_links[["root"]], "../../catalog.json")
 
   unlink(r_dir, recursive = TRUE)
+})
+
+
+# Build a three-level catalog: root > mid > sub, with one item holding a
+# relative asset href, for exercising each catalog type.
+nested_test_catalog <- function() {
+  item <- stac_item(
+    id = "i1",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  )
+  item <- add_asset(
+    item,
+    key = "dem",
+    asset = stac_asset(href = "../../data/dem.tif", type = "image/tiff")
+  )
+
+  sub <- add_item(stac_catalog(id = "sub", description = "d"), item)
+  mid <- add_child(stac_catalog(id = "mid", description = "d"), sub)
+  add_child(stac_catalog(id = "root", description = "d"), mid)
+}
+
+link_hrefs <- function(file) {
+  json <- jsonlite::fromJSON(file, simplifyVector = FALSE)
+  setNames(
+    lapply(json$links, `[[`, "href"),
+    vapply(json$links, `[[`, character(1), "rel")
+  )
+}
+
+
+test_that("self-contained catalogs have no self links at any level", {
+  dir <- tempfile("self_contained_")
+  on.exit(unlink(dir, recursive = TRUE))
+
+  write_stac(nested_test_catalog(), dir, catalog_type = "self-contained")
+
+  root <- link_hrefs(file.path(dir, "catalog.json"))
+  sub <- link_hrefs(file.path(dir, "mid", "sub", "catalog.json"))
+  item <- link_hrefs(file.path(dir, "mid", "sub", "i1", "i1.json"))
+
+  expect_false("self" %in% names(root))
+  expect_false("self" %in% names(sub))
+  expect_false("self" %in% names(item))
+})
+
+
+test_that("relative catalogs carry one absolute self link on the root", {
+  dir <- tempfile("relative_")
+  on.exit(unlink(dir, recursive = TRUE))
+
+  write_stac(
+    nested_test_catalog(),
+    dir,
+    catalog_type = "relative",
+    base_url = "https://example.com/stac"
+  )
+
+  root <- link_hrefs(file.path(dir, "catalog.json"))
+  sub <- link_hrefs(file.path(dir, "mid", "sub", "catalog.json"))
+  item <- link_hrefs(file.path(dir, "mid", "sub", "i1", "i1.json"))
+
+  expect_equal(root[["self"]], "https://example.com/stac/catalog.json")
+  expect_false("self" %in% names(sub))
+  expect_false("self" %in% names(item))
+
+  # Every other link stays relative, as in a self-contained catalog
+  expect_equal(root[["root"]], "./catalog.json")
+  expect_equal(sub[["parent"]], "../catalog.json")
+})
+
+
+test_that("relative catalogs require base_url", {
+  expect_error(
+    write_stac(nested_test_catalog(), tempfile(), catalog_type = "relative"),
+    "base_url"
+  )
+})
+
+
+test_that("root links account for nesting depth", {
+  dir <- tempfile("depth_")
+  on.exit(unlink(dir, recursive = TRUE))
+
+  write_stac(nested_test_catalog(), dir)
+
+  mid <- link_hrefs(file.path(dir, "mid", "catalog.json"))
+  sub <- link_hrefs(file.path(dir, "mid", "sub", "catalog.json"))
+  item <- link_hrefs(file.path(dir, "mid", "sub", "i1", "i1.json"))
+
+  expect_equal(mid[["root"]], "../catalog.json")
+  expect_equal(sub[["root"]], "../../catalog.json")
+  expect_equal(item[["root"]], "../../../catalog.json")
+})
+
+
+test_that("absolute catalogs resolve relative asset hrefs against base_url", {
+  dir <- tempfile("absolute_")
+  on.exit(unlink(dir, recursive = TRUE))
+
+  write_stac(
+    nested_test_catalog(),
+    dir,
+    catalog_type = "absolute",
+    base_url = "https://example.com/stac"
+  )
+
+  item_file <- file.path(dir, "mid", "sub", "i1", "i1.json")
+  item <- link_hrefs(item_file)
+  assets <- jsonlite::fromJSON(item_file, simplifyVector = FALSE)$assets
+
+  expect_equal(item[["self"]], "https://example.com/stac/mid/sub/i1/i1.json")
+  expect_equal(item[["root"]], "https://example.com/stac/catalog.json")
+
+  # "../../data/dem.tif" resolved from the item's own URL
+  expect_equal(
+    assets$dem$href,
+    "https://example.com/stac/mid/data/dem.tif"
+  )
+})
+
+
+test_that("absolute catalogs leave URL asset hrefs alone", {
+  dir <- tempfile("absolute_url_")
+  on.exit(unlink(dir, recursive = TRUE))
+
+  item <- stac_item(
+    id = "i1",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  )
+  item <- add_asset(
+    item,
+    key = "dem",
+    asset = stac_asset(href = "s3://bucket/dem.tif", type = "image/tiff")
+  )
+  catalog <- add_item(stac_catalog(id = "root", description = "d"), item)
+
+  write_stac(
+    catalog,
+    dir,
+    catalog_type = "absolute",
+    base_url = "https://example.com/stac"
+  )
+
+  assets <- jsonlite::fromJSON(
+    file.path(dir, "i1", "i1.json"),
+    simplifyVector = FALSE
+  )$assets
+
+  expect_equal(assets$dem$href, "s3://bucket/dem.tif")
+})
+
+
+test_that("absolute catalogs warn about local asset paths", {
+  dir <- tempfile("absolute_local_")
+  on.exit(unlink(dir, recursive = TRUE))
+
+  item <- stac_item(
+    id = "i1",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  )
+  item <- add_asset(
+    item,
+    key = "dem",
+    asset = stac_asset(href = "/data/dem.tif", type = "image/tiff")
+  )
+  catalog <- add_item(stac_catalog(id = "root", description = "d"), item)
+
+  expect_warning(
+    write_stac(
+      catalog,
+      dir,
+      catalog_type = "absolute",
+      base_url = "https://example.com/stac"
+    ),
+    "cannot be made absolute"
+  )
+})
+
+
+test_that("url_join collapses relative segments", {
+  expect_equal(
+    url_join("https://example.com/stac/mid/sub/i1", "../../data/dem.tif"),
+    "https://example.com/stac/mid/data/dem.tif"
+  )
+  expect_equal(
+    url_join("https://example.com/stac/i1", "./dem.tif"),
+    "https://example.com/stac/i1/dem.tif"
+  )
+  expect_equal(
+    url_join("https://example.com", "dem.tif"),
+    "https://example.com/dem.tif"
+  )
+})
+
+test_that("write_item drops a collection field that has no collection link", {
+  item <- stac_item(
+    id = "orphan",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z",
+    collection = "somewhere-else"
+  )
+
+  file <- withr::local_tempfile(fileext = ".json")
+  expect_warning(write_item(item, file), "collection")
+
+  # The Item schema forbids the field unless a collection link is present
+  written <- jsonlite::fromJSON(file, simplifyVector = FALSE)
+  expect_null(written$collection)
+})
+
+test_that("write_item keeps a collection field paired with a collection link", {
+  item <- stac_item(
+    id = "paired",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z",
+    collection = "my-collection"
+  ) |>
+    add_link("collection", "../collection.json")
+
+  file <- withr::local_tempfile(fileext = ".json")
+  expect_no_warning(write_item(item, file))
+
+  written <- jsonlite::fromJSON(file, simplifyVector = FALSE)
+  expect_equal(written$collection, "my-collection")
+})
+
+test_that("write_item warns when a collection link has no collection field", {
+  item <- stac_item(
+    id = "linked",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  ) |>
+    add_link("collection", "../collection.json")
+
+  file <- withr::local_tempfile(fileext = ".json")
+  # The id cannot be inferred, so this one is reported rather than repaired
+  expect_warning(write_item(item, file), "collection")
+})
+
+test_that("write_stac drops a stale collection field under a plain catalog", {
+  item <- stac_item(
+    id = "stale",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z",
+    collection = "ghost"
+  )
+  catalog <- add_item(
+    stac_catalog(id = "root", description = "Plain catalog"),
+    item
+  )
+
+  path <- withr::local_tempdir()
+  expect_warning(write_stac(catalog, path, overwrite = TRUE), "collection")
+
+  written <- jsonlite::fromJSON(
+    file.path(path, "stale", "stale.json"),
+    simplifyVector = FALSE
+  )
+  expect_null(written$collection)
+  expect_false(any(vapply(
+    written$links, function(l) identical(l$rel, "collection"), logical(1)
+  )))
+})
+
+test_that("write_stac keeps the collection pair intact under a collection", {
+  item <- stac_item(
+    id = "kept",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  )
+  collection <- add_item(
+    stac_collection(
+      id = "colroot",
+      description = "d",
+      license = "MIT",
+      extent = stac_extent(
+        spatial_bbox = list(c(-1, -1, 1, 1)),
+        temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
+      )
+    ),
+    item
+  )
+
+  path <- withr::local_tempdir()
+  expect_no_warning(write_stac(collection, path, overwrite = TRUE))
+
+  written <- jsonlite::fromJSON(
+    file.path(path, "kept", "kept.json"),
+    simplifyVector = FALSE
+  )
+  expect_equal(written$collection, "colroot")
+  expect_true(any(vapply(
+    written$links, function(l) identical(l$rel, "collection"), logical(1)
+  )))
+})
+
+test_that("write_stac rejects ids that are not usable as directory names", {
+  make <- function(id) {
+    stac_item(
+      id = id,
+      geometry = list(type = "Point", coordinates = c(0, 0)),
+      bbox = c(0, 0, 0, 0),
+      datetime = "2020-01-01T00:00:00Z"
+    )
+  }
+  catalog <- function(item_id) {
+    add_item(stac_catalog(id = "root", description = "d"), make(item_id))
+  }
+
+  # A separator would silently nest directories; ".." would climb out of the
+  # catalog root and write over unrelated files
+  expect_error(
+    write_stac(catalog("a/b"), withr::local_tempdir(), overwrite = TRUE),
+    "path separator"
+  )
+  expect_error(
+    write_stac(catalog("../escape"), withr::local_tempdir(), overwrite = TRUE),
+    "path separator"
+  )
+  expect_error(
+    write_stac(catalog("."), withr::local_tempdir(), overwrite = TRUE),
+    "path separator"
+  )
+
+  child <- add_child(
+    stac_catalog(id = "root", description = "d"),
+    stac_catalog(id = "../evil", description = "d")
+  )
+  expect_error(
+    write_stac(child, withr::local_tempdir(), overwrite = TRUE),
+    "path separator"
+  )
+})
+
+test_that("write_stac allows ids with spaces and non-ASCII characters", {
+  item <- stac_item(
+    id = "my item",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  )
+  catalog <- add_item(stac_catalog(id = "root", description = "d"), item)
+
+  path <- withr::local_tempdir()
+  expect_no_error(write_stac(catalog, path, overwrite = TRUE))
+  expect_true(file.exists(file.path(path, "my item", "my item.json")))
 })

@@ -728,3 +728,58 @@ test_that("item with temporal range matches pystac", {
   expect_true(!is.null(r_item@properties$start_datetime))
   expect_true(!is.null(r_item@properties$end_datetime))
 })
+
+test_that("items with a datetime range keep a null datetime property", {
+  item <- stac_item(
+    id = "range-item",
+    geometry = list(type = "Point", coordinates = c(-104.5, 40.5)),
+    bbox = c(-104.5, 40.5, -104.5, 40.5),
+    start_datetime = "2023-06-15T00:00:00Z",
+    end_datetime = "2023-06-15T23:59:59Z"
+  )
+
+  # The STAC Item spec requires 'datetime' to be present even for a range,
+  # where it is null. Assigning NULL to a list element drops it in R, so the
+  # key has to survive both the object and the serialised JSON.
+  expect_true("datetime" %in% names(item@properties))
+  expect_null(item@properties$datetime)
+
+  json <- jsonlite::toJSON(
+    as.list(item),
+    auto_unbox = TRUE,
+    null = "null",
+    digits = 15
+  )
+  parsed <- jsonlite::fromJSON(json, simplifyVector = FALSE)
+
+  expect_true("datetime" %in% names(parsed$properties))
+  expect_null(parsed$properties$datetime)
+  expect_equal(parsed$properties$start_datetime, "2023-06-15T00:00:00Z")
+  expect_equal(parsed$properties$end_datetime, "2023-06-15T23:59:59Z")
+})
+
+test_that("add_item rejects duplicate item ids", {
+  make <- function(id) {
+    stac_item(
+      id = id,
+      geometry = list(type = "Point", coordinates = c(0, 0)),
+      bbox = c(0, 0, 0, 0),
+      datetime = "2020-01-01T00:00:00Z"
+    )
+  }
+  catalog <- stac_catalog(id = "root", description = "d")
+
+  # write_stac() names each file after the item id, so a repeat would
+  # overwrite the first file while leaving both item links in place
+  expect_error(
+    add_item(add_item(catalog, make("a")), make("a")),
+    "duplicate id"
+  )
+  expect_error(
+    add_item(catalog, list(make("a"), make("a"))),
+    "duplicate id"
+  )
+
+  expect_no_error(add_item(catalog, list(make("a"), make("b"))))
+  expect_no_error(add_item(add_item(catalog, make("a")), make("b")))
+})

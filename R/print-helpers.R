@@ -98,7 +98,7 @@ stac_fmt_value <- function(x, width = stac_avail(20L)) {
         sprintf("[%s]", paste(unlist(x), collapse = ", ")), width
       ))
     }
-    # Extension fields are usually arrays of objects (eo:bands,
+    # Extension fields are usually arrays of objects (bands,
     # classification:classes, table:columns, ...). Label them by the name of
     # each object where there is one, and by a count otherwise.
     labels <- stac_object_labels(x)
@@ -115,11 +115,11 @@ stac_fmt_value <- function(x, width = stac_avail(20L)) {
   stac_truncate(as.character(x), width)
 }
 
-# Label each element of an array of objects, e.g. the band names in
-# `eo:bands` or the class names in `classification:classes`. Returns NULL when
-# the elements carry no obvious label.
+# Label each element of an array of objects, e.g. the band names in `bands` or
+# the class names in `classification:classes`. Returns NULL when the elements
+# carry no obvious label.
 stac_object_labels <- function(x) {
-  for (field in c("name", "common_name", "value", "data_type")) {
+  for (field in c("name", "eo:common_name", "common_name", "value", "data_type")) {
     labels <- lapply(x, function(el) {
       if (is.list(el) || (!is.null(names(el)))) el[[field]] else NULL
     })
@@ -322,7 +322,7 @@ stac_asset_lines <- function(assets) {
     c(
       stac_entry(key, key_width, detail),
       stac_style_url(stac_truncate(asset$href %||% "", stac_avail(11L))),
-      # Extension fields attached to the asset (eo:bands, raster:bands,
+      # Extension fields attached to the asset (bands,
       # classification:classes, table:storage_options, ...)
       stac_field_lines(
         asset[!names(asset) %in% stac_asset_core_fields],

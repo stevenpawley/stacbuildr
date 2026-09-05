@@ -16,6 +16,25 @@ r_to_r_json <- function(item) {
   )
 }
 
+# stacbuildr follows eo v2.0.0 / raster v2.0.0, which replaced the per-extension
+# `eo:bands` and `raster:bands` arrays with the STAC 1.1 common `bands` array
+# and prefixed the extension's own band fields. pystac still writes the older
+# layout, so these helpers read bands out of whichever layout a document uses,
+# keeping the comparison about values rather than about spelling.
+bands_of <- function(x) {
+  x$bands %||% x$`eo:bands` %||% x$`raster:bands`
+}
+
+band_field <- function(band, name) {
+  band[[name]] %||%
+    band[[paste0("eo:", name)]] %||%
+    band[[paste0("raster:", name)]]
+}
+
+has_bands <- function(x) {
+  any(c("bands", "eo:bands", "raster:bands") %in% names(x))
+}
+
 make_r_item <- function() {
   stac_item(
     id = "ext-test",
@@ -35,7 +54,7 @@ make_r_asset <- function() {
 
 # EO Extension -------------------------------------------------------------
 
-test_that("add_eo_extension writes eo:bands to item properties matching pystac", {
+test_that("add_eo_extension writes bands to item properties matching pystac", {
   skip_if_not_installed("reticulate")
   reticulate::py_require("pystac")
 
@@ -62,26 +81,29 @@ py_eo_result = py_item.to_dict()
     add_eo_extension(bands = list(eo_band(name = "wv3", center_wavelength = 0.5)))
   r_json <- r_to_r_json(r_item)
 
-  # eo:bands in properties (not assets)
-  expect_true("eo:bands" %in% names(r_json$properties))
-  expect_true("eo:bands" %in% names(py_json$properties))
+  # bands in properties (not assets)
+  expect_true("bands" %in% names(r_json$properties))
+  expect_true(has_bands(py_json$properties))
 
   # Band count
-  expect_length(r_json$properties$`eo:bands`, length(py_json$properties$`eo:bands`))
+  expect_length(r_json$properties$bands, length(bands_of(py_json$properties)))
 
-  # Field names and values inside the band object
-  r_band <- r_json$properties$`eo:bands`[[1]]
-  py_band <- py_json$properties$`eo:bands`[[1]]
+  # Field values inside the band object
+  r_band <- bands_of(r_json$properties)[[1]]
+  py_band <- bands_of(py_json$properties)[[1]]
 
-  expect_equal(r_band$name,               py_band$name)
-  expect_equal(r_band$center_wavelength,  py_band$center_wavelength)
+  expect_equal(band_field(r_band, "name"), band_field(py_band, "name"))
+  expect_equal(
+    band_field(r_band, "center_wavelength"),
+    band_field(py_band, "center_wavelength")
+  )
 
   # Extension URI registered
   expect_true(any(grepl("stac-extensions.github.io/eo/", r_json$stac_extensions)))
   expect_true(any(grepl("stac-extensions.github.io/eo/", py_json$stac_extensions)))
 })
 
-test_that("add_eo_extension writes eo:bands to asset matching pystac", {
+test_that("add_eo_extension writes bands to asset matching pystac", {
   skip_if_not_installed("reticulate")
   reticulate::py_require("pystac")
 
@@ -128,27 +150,36 @@ py_asset_eo_result = py_item.to_dict()
     )
   r_json <- r_to_r_json(r_item)
 
-  # eo:bands on the asset, not item properties
-  expect_true("eo:bands" %in% names(r_json$assets$data))
-  expect_null(r_json$properties$`eo:bands`)
+  # bands on the asset, not item properties
+  expect_true("bands" %in% names(r_json$assets$data))
+  expect_null(r_json$properties$bands)
 
   # Band count matches
-  expect_length(r_json$assets$data$`eo:bands`, length(py_json$properties$`eo:bands`))
+  expect_length(
+    r_json$assets$data$bands,
+    length(bands_of(py_json$properties))
+  )
 
-  # Field names and values
-  for (i in seq_along(r_json$properties$`eo:bands`)) {
-    r_band <- r_json$assets$data$`eo:bands`[[i]]
-    py_band <- py_json$properties$`eo:bands`[[i]]
+  # Field values
+  for (i in seq_along(bands_of(py_json$properties))) {
+    r_band <- bands_of(r_json$assets$data)[[i]]
+    py_band <- bands_of(py_json$properties)[[i]]
 
-    expect_equal(r_band$name, py_band$name)
-    expect_equal(r_band$common_name, py_band$common_name)
-    expect_equal(r_band$center_wavelength, py_band$center_wavelength)
+    expect_equal(band_field(r_band, "name"), band_field(py_band, "name"))
+    expect_equal(
+      band_field(r_band, "common_name"),
+      band_field(py_band, "common_name")
+    )
+    expect_equal(
+      band_field(r_band, "center_wavelength"),
+      band_field(py_band, "center_wavelength")
+    )
   }
 })
 
 # Raster Extension ---------------------------------------------------------
 
-test_that("add_raster_extension places raster:bands on asset matching pystac", {
+test_that("add_raster_extension places bands on asset matching pystac", {
   skip_if_not_installed("reticulate")
   reticulate::py_require("pystac")
 
@@ -186,27 +217,28 @@ py_raster_result = py_item.to_dict()
     )
   r_json <- r_to_r_json(r_item)
 
-  # raster:bands on the asset (not item properties)
-  expect_true("raster:bands" %in% names(r_json$assets$test))
-  expect_true("raster:bands" %in% names(py_json$assets$test))
-  expect_null(r_json$properties$`raster:bands`)
+  # bands on the asset (not item properties)
+  expect_true("bands" %in% names(r_json$assets$test))
+  expect_true(has_bands(py_json$assets$test))
+  expect_null(r_json$properties$bands)
 
-  r_band <- r_json$assets$test$`raster:bands`[[1]]
-  py_band <- py_json$assets$test$`raster:bands`[[1]]
+  r_band <- bands_of(r_json$assets$test)[[1]]
+  py_band <- bands_of(py_json$assets$test)[[1]]
 
-  # Values match regardless of key prefix convention
-  # Note: stacbuildr uses raster: prefix inside raster:bands (e.g. raster:sampling),
-  # pystac omits the prefix (e.g. sampling). Values are compared directly.
-  expect_equal(r_band$nodata, py_band$nodata)
-  expect_equal(r_band$sampling, py_band$sampling)
-  expect_equal(r_band$spatial_resolution, py_band$spatial_resolution)
+  # Values match regardless of the layout each library writes
+  expect_equal(band_field(r_band, "nodata"), band_field(py_band, "nodata"))
+  expect_equal(band_field(r_band, "sampling"), band_field(py_band, "sampling"))
+  expect_equal(
+    band_field(r_band, "spatial_resolution"),
+    band_field(py_band, "spatial_resolution")
+  )
 
   # Extension URI registered
   expect_true(any(grepl("stac-extensions.github.io/raster/", r_json$stac_extensions)))
   expect_true(any(grepl("stac-extensions.github.io/raster/", py_json$stac_extensions)))
 })
 
-test_that("add_raster_extension places raster:bands on item properties matching pystac", {
+test_that("add_raster_extension places bands on the asset it was given", {
   skip_if_not_installed("reticulate")
   reticulate::py_require("pystac")
 
@@ -247,16 +279,18 @@ py_raster_props_result = py_item.to_dict()
     )
   r_json <- r_to_r_json(r_item)
 
-  # raster:bands in item properties
-  expect_true("raster:bands" %in% names(r_json$assets$test))
-  expect_true("raster:bands" %in% names(py_json$assets$test))
+  expect_true("bands" %in% names(r_json$assets$test))
+  expect_true(has_bands(py_json$assets$test))
 
-  r_band <- r_json$properties$`raster:bands`[[1]]
-  py_band <- py_json$properties$`raster:bands`[[1]]
+  r_band <- bands_of(r_json$assets$test)[[1]]
+  py_band <- bands_of(py_json$assets$test)[[1]]
 
-  expect_equal(r_band$nodata, py_band$nodata)
-  expect_equal(r_band$data_type, py_band$data_type)
-  expect_equal(r_band$spatial_resolution, py_band$spatial_resolution)
+  expect_equal(band_field(r_band, "nodata"), band_field(py_band, "nodata"))
+  expect_equal(band_field(r_band, "data_type"), band_field(py_band, "data_type"))
+  expect_equal(
+    band_field(r_band, "spatial_resolution"),
+    band_field(py_band, "spatial_resolution")
+  )
 })
 
 # Combined EO + Raster -----------------------------------------------------
@@ -315,22 +349,22 @@ py_combined_result = py_item.to_dict()
   expect_true(any(grepl("stac-extensions.github.io/raster/", py_json$stac_extensions)))
 
   # EO bands in item properties
-  expect_true("eo:bands" %in% names(r_json$properties))
-  expect_true("eo:bands" %in% names(py_json$properties))
+  expect_true("bands" %in% names(r_json$properties))
+  expect_true(has_bands(py_json$properties))
   expect_equal(
-    r_json$properties$`eo:bands`[[1]]$center_wavelength,
-    py_json$properties$`eo:bands`[[1]]$center_wavelength
+    band_field(bands_of(r_json$properties)[[1]], "center_wavelength"),
+    band_field(bands_of(py_json$properties)[[1]], "center_wavelength")
   )
 
   # Raster bands on the asset
-  expect_true("raster:bands" %in% names(r_json$assets$test))
-  expect_true("raster:bands" %in% names(py_json$assets$test))
+  expect_true("bands" %in% names(r_json$assets$test))
+  expect_true(has_bands(py_json$assets$test))
   expect_equal(
-    r_json$assets$test$`raster:bands`[[1]]$nodata,
-    py_json$assets$test$`raster:bands`[[1]]$nodata
+    band_field(bands_of(r_json$assets$test)[[1]], "nodata"),
+    band_field(bands_of(py_json$assets$test)[[1]], "nodata")
   )
 
-  # No cross-contamination
-  expect_null(r_json$properties$`raster:bands`)
-  expect_null(r_json$assets$test$`eo:bands`)
+  # The two calls target different places, so neither leaks into the other
+  expect_null(band_field(bands_of(r_json$properties)[[1]], "nodata"))
+  expect_null(band_field(bands_of(r_json$assets$test)[[1]], "center_wavelength"))
 })

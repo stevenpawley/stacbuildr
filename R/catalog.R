@@ -228,7 +228,7 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
     out$stac_extensions <- as.list(x@stac_extensions)
   }
   if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
-    out$conformsTo <- x@conformsTo
+    out$conformsTo <- as_json_array(x@conformsTo)
   }
   out$links <- x@links
   if (length(x@extra_fields) > 0) {
@@ -467,10 +467,16 @@ add_link <- function(catalog, rel, href, ...) {
 #' # Add child with automatic href generation
 #' parent <- add_child(parent, child)
 #'
-#' # Add child with custom href and title
+#' # Add another child with a custom href and title. Each child needs its own
+#' # id, since the id becomes its directory when the catalog is written.
+#' other <- stac_catalog(
+#'   id = "other-catalog",
+#'   description = "Another child catalog"
+#' )
+#'
 #' parent <- add_child(
 #'   parent,
-#'   child,
+#'   other,
 #'   href = "./children/custom-catalog.json",
 #'   title = "Custom Child"
 #' )
@@ -483,6 +489,12 @@ add_child <- function(catalog,
   if (!inherits(child, "stac_catalog")) {
     cli::cli_abort("'child' must be a stac_catalog or stac_collection object")
   }
+
+  check_duplicate_ids(
+    new_ids = child@id,
+    existing_ids = names(attr(catalog, "stac_children") %||% list()),
+    what = "a child"
+  )
 
   if (is.null(href)) {
     if (inherits(child, "stac_collection")) {

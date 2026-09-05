@@ -101,13 +101,15 @@ test_that("stac_extent errors when a bbox has wrong number of coordinates", {
   )
 })
 
-test_that("stac_extent errors when west > east", {
-  expect_error(
-    stac_extent(
-      spatial_bbox = list(c(10, -90, -10, 90)),
-      temporal_interval = list(list(NULL, NULL))
-    )
+test_that("stac_extent accepts west > east for an antimeridian bbox", {
+  # RFC 7946 section 5.2: a bbox crossing the antimeridian is represented with
+  # a west value greater than its east value, so this must not be rejected.
+  extent <- stac_extent(
+    spatial_bbox = list(c(10, -90, -10, 90)),
+    temporal_interval = list(list(NULL, NULL))
   )
+
+  expect_equal(extent@spatial@bbox[[1]], c(10, -90, -10, 90))
 })
 
 test_that("stac_extent errors when south > north", {

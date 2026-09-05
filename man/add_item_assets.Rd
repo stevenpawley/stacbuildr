@@ -18,8 +18,12 @@ extension added to \code{stac_extensions}.
 Inspects the items already added to a collection and derives the
 \code{item_assets} field automatically, using the assets present on those items.
 For each unique asset key, the definition is taken from the first item that
-contains it (minus the \code{href} field, which is item-specific). The
-Item Assets extension URI is added to \code{stac_extensions} automatically.
+contains it (minus the \code{href} field, which is item-specific).
+
+\code{item_assets} is part of the Collection spec from STAC 1.1.0 onwards, so no
+extension is needed. For a collection declaring an earlier \code{stac_version},
+the deprecated Item Assets extension URI is added to \code{stac_extensions}
+automatically.
 }
 \examples{
 \dontrun{
@@ -48,7 +52,10 @@ collection <- add_item_assets(collection)
 
 }
 \references{
-STAC Item Assets Definition Extension:
+STAC Collection Specification (\code{item_assets}):
+\url{https://github.com/radiantearth/stac-spec/tree/master/collection-spec}
+
+STAC Item Assets Definition Extension (deprecated, STAC 1.0 only):
 \url{https://stac-extensions.github.io/item-assets/v1.0.0/schema.json}
 }
 \seealso{

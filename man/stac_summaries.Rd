@@ -26,9 +26,9 @@ summaries <- stac_summaries(
   platform = c("landsat-8", "landsat-9"),
   instruments = c("oli", "tirs"),
   gsd = list(minimum = 15, maximum = 30),
-  `eo:bands` = list(
-    list(name = "B1", common_name = "coastal"),
-    list(name = "B2", common_name = "blue")
+  bands = list(
+    list(name = "B1", `eo:common_name` = "coastal"),
+    list(name = "B2", `eo:common_name` = "blue")
   )
 )
 

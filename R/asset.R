@@ -16,8 +16,8 @@
 #' @param roles (character vector, optional) Semantic roles of the asset. Common
 #'   values include: `"thumbnail"`, `"overview"`, `"data"`, `"metadata"`,
 #'   `"visual"`, `"composite"`.
-#' @param ... Additional fields for the asset. This allows for
-#'   extension-specific properties like `"eo:bands"`, `"raster:bands"`,
+#' @param ... Additional fields for the asset. This allows for common
+#'   metadata such as `"bands"` and extension-specific properties like
 #'   `"proj:shape"`, etc.
 #'
 #' @return A list representing a STAC asset object.
@@ -43,13 +43,13 @@
 #'   href = "./data/multispectral.tif",
 #'   type = "image/tiff; application=geotiff; profile=cloud-optimized",
 #'   roles = c("data"),
-#'   "eo:bands" = list(
-#'     list(name = "B1", common_name = "red", center_wavelength = 0.665),
-#'     list(name = "B2", common_name = "green", center_wavelength = 0.560),
-#'     list(name = "B3", common_name = "blue", center_wavelength = 0.490)
-#'   ),
-#'   "raster:bands" = list(
-#'     list(data_type = "uint16", scale = 0.0001, offset = 0)
+#'   bands = list(
+#'     list(name = "B1", "eo:common_name" = "red",
+#'          "eo:center_wavelength" = 0.665, data_type = "uint16"),
+#'     list(name = "B2", "eo:common_name" = "green",
+#'          "eo:center_wavelength" = 0.560, data_type = "uint16"),
+#'     list(name = "B3", "eo:common_name" = "blue",
+#'          "eo:center_wavelength" = 0.490, data_type = "uint16")
 #'   )
 #' )
 #'
@@ -72,11 +72,8 @@ stac_asset <- function(href,
     asset$description <- description
   if (!is.null(type))
     asset$type <- type
-  # Store roles as a list so jsonlite always serialises to a JSON array,
-  # even when there is only a single role (auto_unbox would collapse a
-  # length-1 character vector to a scalar string).
   if (!is.null(roles))
-    asset$roles <- as.list(roles)
+    asset$roles <- as_json_array(roles)
 
   # Add extension fields. c() drops attributes, so the class has to be set
   # after the merge.
@@ -84,6 +81,8 @@ stac_asset <- function(href,
   if (length(extra_fields) > 0) {
     asset <- c(asset, extra_fields)
   }
+
+  asset <- normalize_common_arrays(asset)
 
   class(asset) <- c("stac_asset", "list")
   asset

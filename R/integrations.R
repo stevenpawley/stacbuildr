@@ -240,8 +240,20 @@ item_from_sf <- function(
     cli::cli_abort("'sf_obj' must be an sf object")
   }
 
-  # Convert to WGS84 if necessary
-  if (sf::st_crs(sf_obj)$epsg != 4326) {
+  # Convert to WGS84 if necessary. Compare CRS objects rather than EPSG codes:
+  # st_crs(x)$epsg is NA for any CRS not given as an EPSG code, OGC:CRS84
+  # included even though it is WGS84 longitude/latitude, and NA != 4326 is NA,
+  # which is not a usable condition.
+  crs <- sf::st_crs(sf_obj)
+  if (is.na(crs)) {
+    cli::cli_abort(c(
+      "{.arg sf_obj} has no CRS.",
+      "i" = "STAC geometries are WGS84 longitude/latitude, so the CRS is
+             needed to check whether the coordinates must be transformed.",
+      ">" = "Set it with {.code sf::st_crs(sf_obj) <- <crs>}."
+    ))
+  }
+  if (crs != sf::st_crs(4326)) {
     sf_obj <- sf::st_transform(sf_obj, 4326)
   }
 
@@ -306,13 +318,22 @@ geometry_from_sf <- function(sf_obj) {
     ))
   }
 
-  # A STAC item has one geometry — union multiple features into one
-  if (nrow(sf_obj) > 1) {
-    sf_obj <- sf::st_sf(geometry = sf::st_union(sf_obj))
+  # Drop the attribute columns up front. sf_geojson(atomise = TRUE) only omits
+  # the Feature wrapper for an sf object that has no attributes; given one that
+  # does, it returns a whole Feature (properties included), which is not a
+  # valid STAC item geometry. Working from the sfc sidesteps that entirely.
+  geom <- sf::st_geometry(sf_obj)
+
+  if (length(geom) == 0) {
+    cli::cli_abort("'sf_obj' has no geometries")
   }
 
-  # atomise = TRUE returns the geometry JSON directly (no Feature wrapper)
-  geojson_str <- geojsonsf::sf_geojson(sf_obj, atomise = TRUE)
+  # A STAC item has one geometry — union multiple features into one
+  if (length(geom) > 1) {
+    geom <- sf::st_union(geom)
+  }
+
+  geojson_str <- geojsonsf::sfc_geojson(geom)
   jsonlite::fromJSON(geojson_str, simplifyVector = FALSE)
 }
 
@@ -350,7 +371,14 @@ bbox_from_sf <- function(sf_obj) {
 #'
 #' @keywords internal
 extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE) {
-  crs <- sf::st_crs(terra::crs(terra_obj))
+  # terra reports a missing CRS as "", which st_crs() rejects outright, so
+  # normalise it to an NA crs and let the check below report it properly.
+  crs_wkt <- terra::crs(terra_obj)
+  crs <- if (is.na(crs_wkt) || !nzchar(crs_wkt)) {
+    sf::st_crs(NA)
+  } else {
+    sf::st_crs(crs_wkt)
+  }
   bbox_sfc <- sf::st_as_sfc(
     sf::st_bbox(
       c(
@@ -364,8 +392,20 @@ extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE)
   )
   bbox_sf <- sf::st_as_sf(data.frame(geometry = bbox_sfc))
 
-  if (reproject_to_wgs84 && !isTRUE(crs$epsg == 4326L)) {
-    bbox_sf <- sf::st_transform(bbox_sf, 4326)
+  if (reproject_to_wgs84) {
+    if (is.na(crs)) {
+      cli::cli_abort(c(
+        "{.arg terra_obj} has no CRS.",
+        "i" = "STAC geometries are WGS84 longitude/latitude, so the CRS is
+               needed to transform the raster extent.",
+        ">" = "Set it with {.code terra::crs(terra_obj) <- <crs>}, or pass
+               {.code reproject_to_wgs84 = FALSE} if it is already
+               longitude/latitude."
+      ))
+    }
+    if (crs != sf::st_crs(4326)) {
+      bbox_sf <- sf::st_transform(bbox_sf, 4326)
+    }
   }
 
   list(
@@ -388,7 +428,7 @@ extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE)
 #' @keywords internal
 add_projection_metadata_terra <- function(item, terra_obj) {
   # Add projection extension to the item metadata `stac_extensions`
-  ext_uri <- "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
+  ext_uri <- "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
 
   if (is.null(item@stac_extensions)) {
     item@stac_extensions <- character(0)
@@ -398,10 +438,18 @@ add_projection_metadata_terra <- function(item, terra_obj) {
     item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
-  # Add the projection extension `proj:epsg` fields
+  # Add the projection extension `proj:code` field, which replaced the
+  # deprecated `proj:epsg` in v2.0.0 of the extension. It is an
+  # authority:code string, so codes from authorities other than EPSG (such as
+  # OGC:CRS84) are recorded as well.
   crs <- terra::crs(terra_obj, describe = TRUE)
-  if (!is.na(crs$code)) {
-    item@properties$`proj:epsg` <- as.integer(crs$code)
+  if (
+    !is.na(crs$authority) &&
+      !is.na(crs$code) &&
+      nzchar(crs$authority) &&
+      nzchar(crs$code)
+  ) {
+    item@properties$`proj:code` <- paste0(crs$authority, ":", crs$code)
   }
 
   item@properties$`proj:wkt2` <- terra::crs(terra_obj)

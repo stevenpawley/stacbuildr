@@ -119,6 +119,13 @@ test_that("add_table_extension errors when asset_key does not exist", {
   )
 })
 
+test_that("add_table_extension errors on a missing asset_key without storage_options", {
+  expect_error(
+    add_table_extension(make_item(), row_count = 10, asset_key = "missing"),
+    "does not exist in item"
+  )
+})
+
 test_that("add_table_extension adds schema URI to stac_extensions", {
   item <- add_table_extension(make_item(), row_count = 100)
 
@@ -183,8 +190,42 @@ test_that("add_table_extension can set all fields at once", {
     asset_key        = "data"
   )
 
+  # asset_key routes every field it can, as in the other extensions
+  expect_length(item@assets$data$`table:columns`, 1)
+  expect_equal(item@assets$data$`table:primary_geometry`, "geometry")
+  expect_equal(item@assets$data$`table:row_count`, 42)
+  expect_equal(item@assets$data$`table:storage_options`, list(anon = TRUE))
+
+  expect_null(item@properties$`table:columns`)
+  expect_null(item@properties$`table:primary_geometry`)
+  expect_null(item@properties$`table:row_count`)
+})
+
+test_that("add_table_extension routes columns to an asset when asset_key is given", {
+  cols <- list(
+    table_column(name = "geometry", type = "binary"),
+    table_column(name = "id", type = "int64")
+  )
+  item <- add_table_extension(
+    make_item_with_asset(),
+    columns = cols,
+    asset_key = "data"
+  )
+
+  expect_length(item@assets$data$`table:columns`, 2)
+  expect_null(item@properties$`table:columns`)
+})
+
+test_that("add_table_extension keeps item-level placement when asset_key is omitted", {
+  item <- add_table_extension(
+    make_item_with_asset(),
+    columns          = list(table_column(name = "geometry")),
+    primary_geometry = "geometry",
+    row_count        = 42
+  )
+
   expect_length(item@properties$`table:columns`, 1)
   expect_equal(item@properties$`table:primary_geometry`, "geometry")
   expect_equal(item@properties$`table:row_count`, 42)
-  expect_equal(item@assets$data$`table:storage_options`, list(anon = TRUE))
+  expect_null(item@assets$data$`table:columns`)
 })

@@ -265,12 +265,16 @@ stac_item <- S7::new_class(
       datetime <- NULL
     }
 
-    # Merge datetime into properties
+    # Merge datetime into properties. 'datetime' is always present: the STAC
+    # Item spec requires the field even for a date range, where it is null and
+    # start_datetime/end_datetime carry the range. Assigning NULL to a list
+    # element drops it in R, so use single-bracket assignment to store a
+    # literal null.
     props <- properties
     if (!is.null(datetime)) {
       props$datetime <- datetime
     } else {
-      props$datetime <- NULL
+      props["datetime"] <- list(NULL)
       props$start_datetime <- start_datetime
       props$end_datetime <- end_datetime
     }
@@ -280,6 +284,8 @@ stac_item <- S7::new_class(
     if (length(extra_props) > 0) {
       props <- c(props, extra_props)
     }
+
+    props <- normalize_common_arrays(props)
 
     obj <- S7::new_object(
       S7::S7_object(),

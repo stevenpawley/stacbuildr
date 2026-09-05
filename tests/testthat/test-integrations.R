@@ -71,13 +71,13 @@ test_that("item_from_terra adds raster extension with 6 band objects", {
     add_raster_bands = TRUE
   )
 
-  raster_ext <- "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
+  raster_ext <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
   expect_true(raster_ext %in% item@stac_extensions)
 
-  bands <- item@assets$data$`raster:bands`
+  bands <- item@assets$data$bands
   expect_length(bands, 6)
   expect_equal(bands[[1]]$data_type, "uint8")
-  expect_equal(bands[[1]]$spatial_resolution, 28.5)
+  expect_equal(bands[[1]]$`raster:spatial_resolution`, 28.5)
 })
 
 test_that("item_from_terra skips raster extension when add_raster_bands is FALSE", {
@@ -91,9 +91,9 @@ test_that("item_from_terra skips raster extension when add_raster_bands is FALSE
     add_raster_bands = FALSE
   )
 
-  raster_ext <- "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
+  raster_ext <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
   expect_false(raster_ext %in% item@stac_extensions)
-  expect_null(item@assets$data$`raster:bands`)
+  expect_null(item@assets$data$bands)
 })
 
 test_that("item_from_terra adds projection extension for non-WGS84 CRS", {
@@ -106,10 +106,10 @@ test_that("item_from_terra adds projection extension for non-WGS84 CRS", {
     datetime = "2023-06-15T10:30:00Z"
   )
 
-  proj_ext <- "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
+  proj_ext <- "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
   expect_true(proj_ext %in% item@stac_extensions)
 
-  expect_equal(item@properties$`proj:epsg`, 31985L)
+  expect_equal(item@properties$`proj:code`, "EPSG:31985")
   expect_false(is.null(item@properties$`proj:wkt2`))
   expect_equal(item@properties$`proj:shape`, c(352L, 349L)) # rows (y), cols (x)
   expect_length(item@properties$`proj:transform`, 6)
@@ -185,5 +185,52 @@ test_that("item_from_terra errors when both href and id are NULL", {
   expect_error(
     item_from_terra(r, datetime = "2023-06-15T10:30:00Z"),
     "'id' is required when 'href' is not provided"
+  )
+})
+
+test_that("item_from_terra records the CRS authority in proj:code", {
+  skip_if_not_installed("terra")
+
+  make <- function(crs) {
+    r <- terra::rast(
+      nrows = 4, ncols = 4, xmin = 0, xmax = 1, ymin = 0, ymax = 1, crs = crs
+    )
+    terra::values(r) <- 1
+    r
+  }
+
+  # OGC:CRS84 is WGS84 lon/lat and has no EPSG code; proj:code carries the
+  # authority alongside the code, so it is recorded as-is
+  item <- expect_no_warning(
+    item_from_terra(make("OGC:CRS84"), id = "crs84", datetime = "2020-01-01T00:00:00Z")
+  )
+  expect_equal(item@properties$`proj:code`, "OGC:CRS84")
+  expect_equal(item@bbox, c(0, 0, 1, 1), ignore_attr = TRUE)
+
+  # An EPSG code is recorded with its authority prefix
+  utm <- item_from_terra(make("EPSG:32633"), id = "utm", datetime = "2020-01-01T00:00:00Z")
+  expect_equal(utm@properties$`proj:code`, "EPSG:32633")
+})
+
+test_that("item_from_terra reports a missing CRS instead of failing in st_crs", {
+  skip_if_not_installed("terra")
+
+  r <- terra::rast(
+    nrows = 4, ncols = 4, xmin = 0, xmax = 1, ymin = 0, ymax = 1, crs = ""
+  )
+  terra::values(r) <- 1
+
+  # terra reports a missing CRS as "", which st_crs() rejects as "invalid crs"
+  expect_error(
+    item_from_terra(r, id = "none", datetime = "2020-01-01T00:00:00Z"),
+    "no CRS"
+  )
+
+  # reproject_to_wgs84 = FALSE is the escape hatch for lon/lat with no CRS set
+  expect_no_error(
+    item_from_terra(
+      r, id = "none", datetime = "2020-01-01T00:00:00Z",
+      reproject_to_wgs84 = FALSE
+    )
   )
 })

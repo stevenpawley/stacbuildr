@@ -3,7 +3,7 @@
 test_that("render_object creates a minimal render object", {
   render <- render_object(assets = c("B4", "B3", "B2"))
 
-  expect_equal(render$assets, c("B4", "B3", "B2"))
+  expect_equal(render$assets, list("B4", "B3", "B2"))
   expect_s3_class(render, "render_object")
 })
 
@@ -33,7 +33,7 @@ test_that("render_object stores all optional fields", {
   expect_equal(render$resampling, "average")
   expect_equal(render$expression, "(B5-B4)/(B5+B4)")
   expect_equal(render$minmax_zoom, c(0, 18))
-  expect_equal(render$bidx, c(1, 2))
+  expect_equal(render$bidx, list(1, 2))
 })
 
 test_that("render_object stores extra fields via ...", {
@@ -176,7 +176,7 @@ test_that("add_render_extension writes renders to item properties", {
     ))
 
   expect_length(item@properties$renders, 1)
-  expect_equal(item@properties$renders$rgb$assets, c("B4", "B3", "B2"))
+  expect_equal(item@properties$renders$rgb$assets, list("B4", "B3", "B2"))
 })
 
 test_that("add_render_extension writes renders to collection extra_fields", {
@@ -186,7 +186,7 @@ test_that("add_render_extension writes renders to collection extra_fields", {
     ))
 
   expect_length(collection@extra_fields$renders, 1)
-  expect_equal(collection@extra_fields$renders$rgb$assets, c("B4", "B3", "B2"))
+  expect_equal(collection@extra_fields$renders$rgb$assets, list("B4", "B3", "B2"))
 })
 
 test_that("add_render_extension merges and overwrites render objects", {
@@ -200,6 +200,6 @@ test_that("add_render_extension merges and overwrites render objects", {
     ))
 
   expect_length(item@properties$renders, 2)
-  expect_equal(item@properties$renders$rgb$assets, c("B4", "B3", "B2"))
-  expect_equal(item@properties$renders$ndvi$assets, c("B5", "B4"))
+  expect_equal(item@properties$renders$rgb$assets, list("B4", "B3", "B2"))
+  expect_equal(item@properties$renders$ndvi$assets, list("B5", "B4"))
 })

@@ -6,10 +6,10 @@
 #' and time. It could consist of multiple spectral bands in any part of the
 #' electromagnetic spectrum.
 #'
-#' EO bands are stored in the `eo:bands` field in item properties or asset
-#' metadata, matching the convention used by pystac and most deployed STAC
-#' tooling. Although STAC 1.1.0 introduced a unified `bands` field, the
-#' `eo:bands` field remains the standard used in practice.
+#' Bands are stored in the common `bands` field in item properties or asset
+#' metadata. EO extension v2.0.0 removed the older `eo:bands` field in favour
+#' of the unified `bands` array introduced by STAC 1.1.0, where the
+#' EO-specific band fields carry an `eo:` prefix.
 #'
 #' @param item A STAC Item object created with `stac_item()`.
 #' @param bands (list, optional) A list of band objects created with `eo_band()`.
@@ -28,17 +28,23 @@
 #'
 #' @details
 #' ## Extension Schema URI
-#' The EO Extension v1.1.0 schema URI is:
-#' `https://stac-extensions.github.io/eo/v1.1.0/schema.json`
+#' The EO Extension v2.0.0 schema URI is:
+#' `https://stac-extensions.github.io/eo/v2.0.0/schema.json`
 #'
 #' ## Band Object Fields
-#' All fields inside `eo:bands` use no prefix (matching pystac convention):
+#' Inside `bands`, the general fields come from STAC Common Metadata and the
+#' EO-specific ones carry an `eo:` prefix:
 #' * `name`: Name of the band (e.g., "B01", "B02", "B1", "B5")
 #' * `description`: Description of the band
-#' * `common_name`: Common name of the band (e.g., "red", "green", "blue", "nir")
-#' * `center_wavelength`: Center wavelength in micrometers
-#' * `full_width_half_max`: Full width at half maximum (FWHM) in micrometers
-#' * `solar_illumination`: Solar illumination at the band's wavelength
+#' * `eo:common_name`: Common name of the band (e.g., "red", "green", "blue", "nir")
+#' * `eo:center_wavelength`: Center wavelength in micrometers
+#' * `eo:full_width_half_max`: Full width at half maximum (FWHM) in micrometers
+#' * `eo:solar_illumination`: Solar illumination at the band's wavelength
+#'
+#' Because `bands` is shared with the other band-level extensions,
+#' `add_raster_extension()` can describe the same bands: passing a list of the
+#' same length merges its fields into the bands already present rather than
+#' replacing them.
 #'
 #' ## Common Band Names
 #' The EO extension defines standard common names for typical spectral bands:
@@ -58,8 +64,8 @@
 #'
 #' ## Wavelength Units
 #' For example, if we were given a band described as (0.4um - 0.5um) the
-#' eo:center_wavelength would be 0.45um and the eo:full_width_half_max would be
-#' 0.1um.
+#' `eo:center_wavelength` would be 0.45um and the `eo:full_width_half_max`
+#' would be 0.1um.
 #'
 #' ## Recommended Companion Extensions
 #' The EO extension is often used with:
@@ -155,16 +161,14 @@
 #'   description = "Red band (0.64-0.67)"
 #' )
 #'
-#' # Add raster properties to the same band
-#' combined_band$nodata <- 0
-#' combined_band$data_type <- "uint16"
-#' combined_band$`raster:spatial_resolution` <- 30
-#' combined_band$`raster:scale` <- 0.0001
-#' combined_band$`raster:offset` <- 0
-#'
+#' # Describe the same band with the Raster extension; both extensions write
+#' # to `bands`, so the raster fields are merged into the EO band object
 #' item <- item |>
-#'   add_eo_extension(bands = combined_band) |>
-#'   add_raster_extension(bands = combined_band)
+#'   add_eo_extension(bands = list(combined_band)) |>
+#'   add_raster_extension(
+#'     bands = list(raster_band(nodata = 0, data_type = "uint16",
+#'                              spatial_resolution = 30, scale = 0.0001))
+#'   )
 #'
 #' @export
 add_eo_extension <- function(
@@ -192,7 +196,7 @@ add_eo_extension <- function(
   }
 
   # Add extension to stac_extensions if not already present
-  ext_uri <- "https://stac-extensions.github.io/eo/v1.1.0/schema.json"
+  ext_uri <- "https://stac-extensions.github.io/eo/v2.0.0/schema.json"
 
   if (is.null(item@stac_extensions)) {
     item@stac_extensions <- character(0)
@@ -217,17 +221,7 @@ add_eo_extension <- function(
       cli::cli_abort("'bands' must be a list of band objects")
     }
 
-    if (!is.null(asset_key)) {
-      # Add to specific asset
-      if (is.null(item@assets[[asset_key]])) {
-        cli::cli_abort("Asset '{asset_key}' does not exist in item")
-      }
-
-      item@assets[[asset_key]]$`eo:bands` <- bands
-    } else {
-      # Add to item properties
-      item@properties$`eo:bands` <- bands
-    }
+    item <- set_bands(item, bands, asset_key = asset_key)
   }
 
   item
@@ -260,7 +254,10 @@ add_eo_extension <- function(
 #' @param ... Additional fields for the band object. Can include fields from other
 #'   extensions like raster fields (`nodata`, `data_type`, `raster:scale`, etc.).
 #'
-#' @return A list representing an EO band object.
+#' @return A list representing a band object with the EO extension's fields.
+#'   The EO-specific fields are written with an `eo:` prefix, as required by
+#'   version 2.0.0 of the extension; `name` and `description` come from STAC
+#'   Common Metadata and stay unprefixed.
 #'
 #' @details
 #' ## Common Names
@@ -277,9 +274,11 @@ add_eo_extension <- function(
 #' * NIR: ~0.86 (860 nm)
 #'
 #' ## Combining with Raster Extension
-#' EO bands can be combined with raster metadata by adding raster fields via
-#' `...`. Common raster fields include `nodata`, `data_type`,
-#' `"raster:scale"`, `"raster:offset"`, `"raster:spatial_resolution"`.
+#' Every band-level extension shares the one `bands` array, so a band object
+#' may hold raster metadata too. Add it via `...`, or describe the same bands
+#' with [add_raster_extension()] and let the fields be merged. Common raster
+#' fields are `nodata`, `data_type`, `"raster:scale"`, `"raster:offset"` and
+#' `"raster:spatial_resolution"`.
 #'
 #' @examples
 #' # Simple band with common name
@@ -371,20 +370,20 @@ eo_band <- function(
       ))
     }
 
-    band$common_name <- common_name
+    band$`eo:common_name` <- common_name
   }
 
-  # EO-specific fields (no prefix inside eo:bands, per pystac convention)
+  # EO-specific fields carry the `eo:` prefix in v2.0.0 of the extension
   if (!is.null(center_wavelength)) {
-    band$center_wavelength <- center_wavelength
+    band$`eo:center_wavelength` <- center_wavelength
   }
 
   if (!is.null(full_width_half_max)) {
-    band$full_width_half_max <- full_width_half_max
+    band$`eo:full_width_half_max` <- full_width_half_max
   }
 
   if (!is.null(solar_illumination)) {
-    band$solar_illumination <- solar_illumination
+    band$`eo:solar_illumination` <- solar_illumination
   }
 
   # Add any extra fields (e.g., from raster extension). c() drops attributes,
@@ -866,11 +865,11 @@ print.eo_band <- function(x, ...) {
   stac_print_list_fields(
     x,
     units = c(
-      center_wavelength = "micrometres",
-      full_width_half_max = "micrometres",
+      "eo:center_wavelength" = "micrometres",
+      "eo:full_width_half_max" = "micrometres",
       "raster:spatial_resolution" = "m"
     ),
-    styles = list(name = stac_style_id, common_name = stac_style_key)
+    styles = list(name = stac_style_id, "eo:common_name" = stac_style_key)
   )
   invisible(x)
 }
