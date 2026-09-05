@@ -195,6 +195,19 @@ reference:
       - write_item
       - read_stac
 
+  - title: "Working with Catalogs as Data"
+    desc: >
+      Coerce Catalogs, Collections and Items into the shapes R works in. A
+      catalog answers `length()` with its item count and subsets to its Items;
+      `as.data.frame()` gives one row per Item and `st_as_sf()` the same table
+      with footprints attached. The `sf` accessors work on an Item directly.
+    contents:
+      - length.stac_catalog
+      - as.data.frame.stac_catalog
+      - st_as_sf.stac_catalog
+      - stac_item_sf_accessors
+      - sub-.stac_catalog
+
   - title: "Validation"
     desc: >
       Validate STAC objects against the specification. `validate_stac()` applies

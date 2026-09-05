@@ -53,6 +53,26 @@ is new, and breaking changes are still expected between commits.
   `sentinel2_msi_bands()`, `worldview3_bands()`, `skysat_bands()` and
   `planetscope_bands()`.
 
+## Working with catalogs as data
+
+* Catalogs and Collections now answer the generics an R user reaches for.
+  `length()` returns the item count, and `[` and `[[` pull Items out by
+  position or by `id`. Previously `length()` returned `1` for any catalog, a
+  wrong answer rather than an error, and S7 objects could not be subset at all.
+
+* `as.data.frame()` returns one row per Item — `id`, `collection`, `datetime`,
+  then a column for every property. Items need not share properties; a field
+  missing from an Item is `NA`. Properties holding vectors or objects
+  (`proj:transform`, `bands`) become list columns.
+
+* `sf::st_as_sf()` returns that same table with the Item footprints attached as
+  a geometry column, in EPSG:4326. Both take `resolve = TRUE` to follow `item`
+  links for a catalog read back with `read_stac()`, and warn rather than
+  returning a silently empty table when Items are linked but not in memory.
+
+* `sf::st_geometry()`, `sf::st_bbox()` and `sf::st_crs()` work on a
+  `stac_item` directly, since an Item is a GeoJSON Feature.
+
 ## Integrations
 
 * `item_from_lidr()` and `items_from_lascatalog()` create Items from LAS/LAZ
