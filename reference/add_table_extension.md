@@ -50,10 +50,11 @@ add_table_extension(
 
 - asset_key:
 
-  (character, optional) The asset to attach `storage_options` to.
-  Required when `storage_options` is provided. `columns`,
-  `primary_geometry`, and `row_count` are always written to item
-  properties, matching the Table Extension specification.
+  (character, optional) If provided, adds the table fields to a specific
+  asset rather than to the item properties. Useful when an item bundles
+  several tabular assets with different schemas. Required when
+  `storage_options` is provided, since `table:storage_options` has no
+  item-level meaning.
 
 ## Value
 
@@ -68,10 +69,22 @@ The Table Extension v1.2.0 schema URI is:
 
 ### Field Placement
 
-`table:columns`, `table:primary_geometry`, and `table:row_count` are
-Item (and Collection) properties fields. `table:storage_options` is an
-asset-level field, so it is always attached to the asset identified by
-`asset_key`.
+`asset_key` routes every field it can, as in the other
+`add_*_extension()` functions: omit it and `table:columns`,
+`table:primary_geometry` and `table:row_count` are written to the item
+properties; supply it and they are written to that asset instead.
+
+Omitting `asset_key` gives the placement the Table Extension README
+describes, which lists those three under "Item Properties and Collection
+Fields". Item-level placement is the right default for the common case
+of an item wrapping a single table. Per-asset placement is useful when
+one item holds several tables; the extension's JSON schema validates
+table fields on assets and `item_assets` as well as on properties.
+
+`table:storage_options` is the exception. The README gives it its own
+"Asset Object fields" section, and it carries `fsspec`-style arguments
+for opening one particular file, so it is always written to the asset
+and `asset_key` is required whenever it is supplied.
 
 ### Column Object Fields
 

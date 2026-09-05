@@ -51,7 +51,7 @@ catalog_py <- pystac$Catalog(
   id = "environmental-data",
   description = "A collection of environmental data",
   title = "Environmental Data Catalog",
-  catalog_type = pystac$CatalogType$RELATIVE_PUBLISHED
+  catalog_type = pystac$CatalogType$SELF_CONTAINED
 )
 
 item_py <- pystac$Item(
@@ -71,15 +71,30 @@ catalog_py$add_item(item_py)
 
 ### Writing to disk and comparing
 
-Both libraries are asked to write a relative catalog. stacbuildr uses
-`catalog_type = "relative"` and PySTAC uses
-`CatalogType$RELATIVE_PUBLISHED`, which are equivalent.
+Both libraries are asked to write a self-contained catalog. stacbuildr’s
+`catalog_type` values line up one-to-one with PySTAC’s `CatalogType`,
+and both follow [Use of
+links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links)
+in the STAC best-practices document:
+
+| stacbuildr | PySTAC | STAC best practices |
+|----|----|----|
+| `"self-contained"` | `SELF_CONTAINED` | [Self-contained Catalogs](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs) |
+| `"relative"` | `RELATIVE_PUBLISHED` | [Relative Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog) |
+| `"absolute"` | `ABSOLUTE_PUBLISHED` | [Absolute Published Catalog](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog) |
+
+We use the self-contained type here because these catalogs are written
+to a temporary directory rather than published anywhere. The other two
+types record a published location — stacbuildr takes it as `base_url`,
+while PySTAC derives it from the href passed to `normalize_hrefs()` — so
+they would not produce comparable output for a catalog that has no
+online home.
 
 ``` r
 
 r_path <- file.path(tempdir(), "r-stac")
-write_stac(catalog, r_path, catalog_type = "relative", overwrite = TRUE)
-#> STAC catalog written to: /tmp/RtmpxsRHDF/r-stac
+write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
+#> ✔ STAC catalog written to /tmp/RtmpaZLiy4/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 py_path <- file.path(tempdir(), "py-stac")
@@ -102,11 +117,6 @@ jsonlite::toJSON(catalog_rjson, pretty = TRUE, auto_unbox = TRUE)
 #>   "description": "A collection of environmental data",
 #>   "title": "Environmental Data Catalog",
 #>   "links": [
-#>     {
-#>       "rel": "self",
-#>       "href": "./catalog.json",
-#>       "type": "application/json"
-#>     },
 #>     {
 #>       "rel": "root",
 #>       "href": "./catalog.json",
@@ -140,11 +150,6 @@ jsonlite::toJSON(catalog_pyjson, pretty = TRUE, auto_unbox = TRUE)
 #>       "rel": "item",
 #>       "href": "./temperature/temperature.json",
 #>       "type": "application/geo+json"
-#>     },
-#>     {
-#>       "rel": "self",
-#>       "href": "/tmp/RtmpxsRHDF/py-stac/catalog.json",
-#>       "type": "application/json"
 #>     }
 #>   ],
 #>   "title": "Environmental Data Catalog"
@@ -174,11 +179,6 @@ jsonlite::toJSON(r_item, pretty = TRUE, auto_unbox = TRUE)
 #>     "datetime": "2023-07-06T08:00:00Z"
 #>   },
 #>   "links": [
-#>     {
-#>       "rel": "self",
-#>       "href": "./temperature.json",
-#>       "type": "application/geo+json"
-#>     },
 #>     {
 #>       "rel": "parent",
 #>       "href": "../catalog.json",
@@ -294,8 +294,8 @@ JSON:
 
 ``` r
 
-write_stac(catalog, r_path, catalog_type = "relative", overwrite = TRUE)
-#> STAC catalog written to: /tmp/RtmpxsRHDF/r-stac
+write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
+#> ✔ STAC catalog written to /tmp/RtmpaZLiy4/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 catalog_py$normalize_hrefs(py_path)
@@ -328,11 +328,6 @@ jsonlite::toJSON(r_item, pretty = TRUE, auto_unbox = TRUE)
 #>     "datetime": "2023-07-06T08:00:00Z"
 #>   },
 #>   "links": [
-#>     {
-#>       "rel": "self",
-#>       "href": "./temperature.json",
-#>       "type": "application/geo+json"
-#>     },
 #>     {
 #>       "rel": "parent",
 #>       "href": "../catalog.json",

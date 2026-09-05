@@ -5,8 +5,10 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/articles/index.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/articles/pystac.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/articles/stac-catalog.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/articles/stac-extensions.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/authors.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/index.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/absolutize_asset_hrefs.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_asset.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_child.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_classification_extension.html</loc></url>
@@ -60,8 +62,14 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.cube_dimension.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.cube_variable.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.eo_band.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.raster_histogram.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.raster_statistics.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.render_object.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.scientific_publication.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.stac_asset.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.stac_provider.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.stac_summaries.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.stac_validation.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/print.table_column.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/raster_band.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/raster_from_file.html</loc></url>
@@ -99,6 +107,7 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_sf.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/update_catalog_links.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/update_item_links.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/url_join.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/validate_assets.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/validate_bbox.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/validate_catalog.html</loc></url>

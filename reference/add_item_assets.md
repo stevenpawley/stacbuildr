@@ -4,8 +4,11 @@ Inspects the items already added to a collection and derives the
 `item_assets` field automatically, using the assets present on those
 items. For each unique asset key, the definition is taken from the first
 item that contains it (minus the `href` field, which is item-specific).
-The Item Assets extension URI is added to `stac_extensions`
-automatically.
+
+`item_assets` is part of the Collection spec from STAC 1.1.0 onwards, so
+no extension is needed. For a collection declaring an earlier
+`stac_version`, the deprecated Item Assets extension URI is added to
+`stac_extensions` automatically.
 
 ## Usage
 
@@ -27,7 +30,10 @@ extension added to `stac_extensions`.
 
 ## References
 
-STAC Item Assets Definition Extension:
+STAC Collection Specification (`item_assets`):
+<https://github.com/radiantearth/stac-spec/tree/master/collection-spec>
+
+STAC Item Assets Definition Extension (deprecated, STAC 1.0 only):
 <https://stac-extensions.github.io/item-assets/v1.0.0/schema.json>
 
 ## See also

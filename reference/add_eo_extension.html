@@ -3,17 +3,17 @@
 considered to be data that represents a snapshot of the Earth for a single date
 and time. It could consist of multiple spectral bands in any part of the
 electromagnetic spectrum.
-EO bands are stored in the eo:bands field in item properties or asset
-metadata, matching the convention used by pystac and most deployed STAC
-tooling. Although STAC 1.1.0 introduced a unified bands field, the
-eo:bands field remains the standard used in practice."><meta property="og:description" content="Adds the Electro-Optical (EO) Extension to a STAC Item. EO data is
+Bands are stored in the common bands field in item properties or asset
+metadata. EO extension v2.0.0 removed the older eo:bands field in favour
+of the unified bands array introduced by STAC 1.1.0, where the
+EO-specific band fields carry an eo: prefix."><meta property="og:description" content="Adds the Electro-Optical (EO) Extension to a STAC Item. EO data is
 considered to be data that represents a snapshot of the Earth for a single date
 and time. It could consist of multiple spectral bands in any part of the
 electromagnetic spectrum.
-EO bands are stored in the eo:bands field in item properties or asset
-metadata, matching the convention used by pystac and most deployed STAC
-tooling. Although STAC 1.1.0 introduced a unified bands field, the
-eo:bands field remains the standard used in practice."></head><body>
+Bands are stored in the common bands field in item properties or asset
+metadata. EO extension v2.0.0 removed the older eo:bands field in favour
+of the unified bands array introduced by STAC 1.1.0, where the
+EO-specific band fields carry an eo: prefix."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -33,6 +33,7 @@ eo:bands field remains the standard used in practice."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/stac-catalog.html">Building a STAC Catalog</a></li>
+    <li><a class="dropdown-item" href="../articles/stac-extensions.html">Describing Data with STAC Extensions</a></li>
     <li><a class="dropdown-item" href="../articles/pystac.html">Comparison with PySTAC</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -56,10 +57,10 @@ eo:bands field remains the standard used in practice."></head><body>
 considered to be data that represents a snapshot of the Earth for a single date
 and time. It could consist of multiple spectral bands in any part of the
 electromagnetic spectrum.</p>
-<p>EO bands are stored in the <code>eo:bands</code> field in item properties or asset
-metadata, matching the convention used by pystac and most deployed STAC
-tooling. Although STAC 1.1.0 introduced a unified <code>bands</code> field, the
-<code>eo:bands</code> field remains the standard used in practice.</p>
+<p>Bands are stored in the common <code>bands</code> field in item properties or asset
+metadata. EO extension v2.0.0 removed the older <code>eo:bands</code> field in favour
+of the unified <code>bands</code> array introduced by STAC 1.1.0, where the
+EO-specific band fields carry an <code>eo:</code> prefix.</p>
     </div>
 
     <div class="section level2">
@@ -117,21 +118,26 @@ typically apply to the entire scene.</p></dd>
 <h3 id="extension-schema-uri">Extension Schema URI<a class="anchor" aria-label="anchor" href="#extension-schema-uri"></a></h3>
 
 
-<p>The EO Extension v1.1.0 schema URI is:
-<code>https://stac-extensions.github.io/eo/v1.1.0/schema.json</code></p>
+<p>The EO Extension v2.0.0 schema URI is:
+<code>https://stac-extensions.github.io/eo/v2.0.0/schema.json</code></p>
 </div>
 
 <div class="section">
 <h3 id="band-object-fields">Band Object Fields<a class="anchor" aria-label="anchor" href="#band-object-fields"></a></h3>
 
 
-<p>All fields inside <code>eo:bands</code> use no prefix (matching pystac convention):</p><ul><li><p><code>name</code>: Name of the band (e.g., "B01", "B02", "B1", "B5")</p></li>
+<p>Inside <code>bands</code>, the general fields come from STAC Common Metadata and the
+EO-specific ones carry an <code>eo:</code> prefix:</p><ul><li><p><code>name</code>: Name of the band (e.g., "B01", "B02", "B1", "B5")</p></li>
 <li><p><code>description</code>: Description of the band</p></li>
-<li><p><code>common_name</code>: Common name of the band (e.g., "red", "green", "blue", "nir")</p></li>
-<li><p><code>center_wavelength</code>: Center wavelength in micrometers</p></li>
-<li><p><code>full_width_half_max</code>: Full width at half maximum (FWHM) in micrometers</p></li>
-<li><p><code>solar_illumination</code>: Solar illumination at the band's wavelength</p></li>
-</ul></div>
+<li><p><code>eo:common_name</code>: Common name of the band (e.g., "red", "green", "blue", "nir")</p></li>
+<li><p><code>eo:center_wavelength</code>: Center wavelength in micrometers</p></li>
+<li><p><code>eo:full_width_half_max</code>: Full width at half maximum (FWHM) in micrometers</p></li>
+<li><p><code>eo:solar_illumination</code>: Solar illumination at the band's wavelength</p></li>
+</ul><p>Because <code>bands</code> is shared with the other band-level extensions,
+<code><a href="add_raster_extension.html">add_raster_extension()</a></code> can describe the same bands: passing a list of the
+same length merges its fields into the bands already present rather than
+replacing them.</p>
+</div>
 
 <div class="section">
 <h3 id="common-band-names">Common Band Names<a class="anchor" aria-label="anchor" href="#common-band-names"></a></h3>
@@ -161,8 +167,8 @@ coverages usually apply to all assets.</p>
 
 
 <p>For example, if we were given a band described as (0.4um - 0.5um) the
-eo:center_wavelength would be 0.45um and the eo:full_width_half_max would be
-0.1um.</p>
+<code>eo:center_wavelength</code> would be 0.45um and the <code>eo:full_width_half_max</code>
+would be 0.1um.</p>
 </div>
 
 <div class="section">
@@ -267,16 +273,14 @@ eo:center_wavelength would be 0.45um and the eo:full_width_half_max would be
 <span class="r-in"><span>  description <span class="op">=</span> <span class="st">"Red band (0.64-0.67)"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Add raster properties to the same band</span></span></span>
-<span class="r-in"><span><span class="va">combined_band</span><span class="op">$</span><span class="va">nodata</span> <span class="op">&lt;-</span> <span class="fl">0</span></span></span>
-<span class="r-in"><span><span class="va">combined_band</span><span class="op">$</span><span class="va">data_type</span> <span class="op">&lt;-</span> <span class="st">"uint16"</span></span></span>
-<span class="r-in"><span><span class="va">combined_band</span><span class="op">$</span><span class="va">`raster:spatial_resolution`</span> <span class="op">&lt;-</span> <span class="fl">30</span></span></span>
-<span class="r-in"><span><span class="va">combined_band</span><span class="op">$</span><span class="va">`raster:scale`</span> <span class="op">&lt;-</span> <span class="fl">0.0001</span></span></span>
-<span class="r-in"><span><span class="va">combined_band</span><span class="op">$</span><span class="va">`raster:offset`</span> <span class="op">&lt;-</span> <span class="fl">0</span></span></span>
-<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Describe the same band with the Raster extension; both extensions write</span></span></span>
+<span class="r-in"><span><span class="co"># to `bands`, so the raster fields are merged into the EO band object</span></span></span>
 <span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">add_eo_extension</span><span class="op">(</span>bands <span class="op">=</span> <span class="va">combined_band</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="add_raster_extension.html">add_raster_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="va">combined_band</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">add_eo_extension</span><span class="op">(</span>bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">combined_band</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="add_raster_extension.html">add_raster_extension</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="raster_band.html">raster_band</a></span><span class="op">(</span>nodata <span class="op">=</span> <span class="fl">0</span>, data_type <span class="op">=</span> <span class="st">"uint16"</span>,</span></span>
+<span class="r-in"><span>                             spatial_resolution <span class="op">=</span> <span class="fl">30</span>, scale <span class="op">=</span> <span class="fl">0.0001</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

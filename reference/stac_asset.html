@@ -23,6 +23,7 @@ documents, thumbnails)."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/stac-catalog.html">Building a STAC Catalog</a></li>
+    <li><a class="dropdown-item" href="../articles/stac-extensions.html">Describing Data with STAC Extensions</a></li>
     <li><a class="dropdown-item" href="../articles/pystac.html">Comparison with PySTAC</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -90,8 +91,8 @@ values include: <code>"thumbnail"</code>, <code>"overview"</code>, <code>"data"<
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional fields for the asset. This allows for
-extension-specific properties like <code>"eo:bands"</code>, <code>"raster:bands"</code>,
+<dd><p>Additional fields for the asset. This allows for common
+metadata such as <code>"bands"</code> and extension-specific properties like
 <code>"proj:shape"</code>, etc.</p></dd>
 
 </dl></div>
@@ -122,13 +123,13 @@ extension-specific properties like <code>"eo:bands"</code>, <code>"raster:bands"
 <span class="r-in"><span>  href <span class="op">=</span> <span class="st">"./data/multispectral.tif"</span>,</span></span>
 <span class="r-in"><span>  type <span class="op">=</span> <span class="st">"image/tiff; application=geotiff; profile=cloud-optimized"</span>,</span></span>
 <span class="r-in"><span>  roles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  <span class="st">"eo:bands"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B1"</span>, common_name <span class="op">=</span> <span class="st">"red"</span>, center_wavelength <span class="op">=</span> <span class="fl">0.665</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B2"</span>, common_name <span class="op">=</span> <span class="st">"green"</span>, center_wavelength <span class="op">=</span> <span class="fl">0.560</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B3"</span>, common_name <span class="op">=</span> <span class="st">"blue"</span>, center_wavelength <span class="op">=</span> <span class="fl">0.490</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span>,</span></span>
-<span class="r-in"><span>  <span class="st">"raster:bands"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>data_type <span class="op">=</span> <span class="st">"uint16"</span>, scale <span class="op">=</span> <span class="fl">0.0001</span>, offset <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B1"</span>, <span class="st">"eo:common_name"</span> <span class="op">=</span> <span class="st">"red"</span>,</span></span>
+<span class="r-in"><span>         <span class="st">"eo:center_wavelength"</span> <span class="op">=</span> <span class="fl">0.665</span>, data_type <span class="op">=</span> <span class="st">"uint16"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B2"</span>, <span class="st">"eo:common_name"</span> <span class="op">=</span> <span class="st">"green"</span>,</span></span>
+<span class="r-in"><span>         <span class="st">"eo:center_wavelength"</span> <span class="op">=</span> <span class="fl">0.560</span>, data_type <span class="op">=</span> <span class="st">"uint16"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B3"</span>, <span class="st">"eo:common_name"</span> <span class="op">=</span> <span class="st">"blue"</span>,</span></span>
+<span class="r-in"><span>         <span class="st">"eo:center_wavelength"</span> <span class="op">=</span> <span class="fl">0.490</span>, data_type <span class="op">=</span> <span class="st">"uint16"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

@@ -36,6 +36,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/stac-catalog.html">Building a STAC Catalog</a></li>
+    <li><a class="dropdown-item" href="articles/stac-extensions.html">Describing Data with STAC Extensions</a></li>
     <li><a class="dropdown-item" href="articles/pystac.html">Comparison with PySTAC</a></li>
   </ul>
 </li>
@@ -215,6 +216,7 @@
 <span></span>
 <span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/add_eo_extension.html">add_eo_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="fu"><a href="reference/landsat_oli_bands.html">landsat_oli_bands</a></span><span class="op">(</span>include_thermal <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Following v2.0.0 of the EO and Raster extensions, band objects are written to the <code>bands</code> array that STAC 1.1 shares between all band-level extensions, with each extension’s own fields prefixed (<code>eo:common_name</code>, <code>raster:scale</code>). Both <code>add_*_extension()</code> functions write to the same array, so describing the same bands with each in turn merges their fields.</p>
 </div>
 <div class="section level4">
 <h4 id="raster-extension">Raster extension<a class="anchor" aria-label="anchor" href="#raster-extension"></a>
@@ -222,12 +224,14 @@
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/add_raster_extension.html">add_raster_extension</a></span><span class="op">(</span></span>
-<span>    bands <span class="op">=</span> <span class="fu"><a href="reference/raster_band.html">raster_band</a></span><span class="op">(</span></span>
+<span>    bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="reference/raster_band.html">raster_band</a></span><span class="op">(</span></span>
 <span>        data_type <span class="op">=</span> <span class="st">"uint16"</span>,</span>
 <span>        nodata <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>        spatial_resolution <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>        scale <span class="op">=</span> <span class="fl">0.0001</span></span>
-<span>      <span class="op">)</span>,</span>
+<span>      <span class="op">)</span></span>
+<span>    <span class="op">)</span>,</span>
 <span>    asset_key <span class="op">=</span> <span class="st">"visual"</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 </div>
@@ -280,8 +284,16 @@
 <h3 id="writing-and-reading">Writing and reading<a class="anchor" aria-label="anchor" href="#writing-and-reading"></a>
 </h3>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Write the entire catalog hierarchy to disk as JSON files</span></span>
+<code class="sourceCode R"><span><span class="co"># Write the entire catalog hierarchy to disk as JSON files.</span></span>
+<span><span class="co"># The default "self-contained" type uses relative links throughout, so the</span></span>
+<span><span class="co"># tree stays portable.</span></span>
 <span><span class="fu"><a href="reference/write_stac.html">write_stac</a></span><span class="op">(</span><span class="va">catalog</span>, path <span class="op">=</span> <span class="st">"output/stac"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Write as a relative catalog: relative links, plus one absolute self link on</span></span>
+<span><span class="co"># the root recording where the catalog is published</span></span>
+<span><span class="fu"><a href="reference/write_stac.html">write_stac</a></span><span class="op">(</span><span class="va">catalog</span>, path <span class="op">=</span> <span class="st">"output/stac"</span>,</span>
+<span>           catalog_type <span class="op">=</span> <span class="st">"relative"</span>,</span>
+<span>           base_url <span class="op">=</span> <span class="st">"https://example.com/stac"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Write as an absolute-URL catalog (for web hosting)</span></span>
 <span><span class="fu"><a href="reference/write_stac.html">write_stac</a></span><span class="op">(</span><span class="va">catalog</span>, path <span class="op">=</span> <span class="st">"output/stac"</span>,</span>
@@ -295,6 +307,36 @@
 <span><span class="co"># Read back from disk</span></span>
 <span><span class="va">catalog</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_stac.html">read_stac</a></span><span class="op">(</span><span class="st">"output/stac/catalog.json"</span><span class="op">)</span></span>
 <span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_stac.html">read_stac</a></span><span class="op">(</span><span class="st">"output/stac/collection/collection.json"</span><span class="op">)</span></span></code></pre></div>
+<p>The <code>catalog_type</code> values correspond one-to-one with the link layouts in <a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links" class="external-link">Use of links</a> in the STAC best-practices document, and with PySTAC’s <code>CatalogType</code>:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th><code>catalog_type</code></th>
+<th>STAC best practices</th>
+<th>PySTAC</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>"self-contained"</code></td>
+<td><a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs" class="external-link">Self-contained Catalogs</a></td>
+<td><code>SELF_CONTAINED</code></td>
+</tr>
+<tr>
+<td><code>"relative"</code></td>
+<td><a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog" class="external-link">Relative Published Catalog</a></td>
+<td><code>RELATIVE_PUBLISHED</code></td>
+</tr>
+<tr>
+<td><code>"absolute"</code></td>
+<td><a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog" class="external-link">Absolute Published Catalog</a></td>
+<td><code>ABSOLUTE_PUBLISHED</code></td>
+</tr>
+</tbody>
+</table>
 <p>The written directory structure follows STAC conventions:</p>
 <pre><code><span><span class="va">output</span><span class="op">/</span><span class="va">stac</span><span class="op">/</span></span>
 <span>  <span class="va">catalog.json</span></span>

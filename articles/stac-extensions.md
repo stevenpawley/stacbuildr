@@ -1,0 +1,855 @@
+# Describing Data with STAC Extensions
+
+The core STAC Item spec is deliberately small: an id, a geometry, a
+datetime, and a bag of assets. Everything that makes a dataset
+*interpretable* — which band is red, what the nodata value is, what
+pixel value 3 means, how to draw it on a map — lives in **extensions**.
+
+An extension is two things:
+
+1.  A schema URI added to the Item’s `stac_extensions` array, which
+    tells clients and validators which vocabulary is in play.
+2.  A set of prefixed fields (`eo:cloud_cover`, `raster:scale`,
+    `classification:classes`, …) placed either in the Item’s
+    `properties`, on an individual asset, or — for anything describing a
+    single band — inside the `bands` array shared by every band-level
+    extension.
+
+`stacbuildr` gives each supported extension an `add_*_extension()`
+function that handles both halves. You never edit `stac_extensions` by
+hand.
+
+This vignette covers the extensions the package supports, when to reach
+for each, and the recurring decision of item-level versus asset-level
+placement.
+
+## Setup
+
+``` r
+
+library(stacbuildr)
+```
+
+We will build up a single Landsat-like scene, adding one extension at a
+time.
+
+``` r
+
+item <- stac_item(
+  id = "LC09_L2SP_044033_20230615",
+  geometry = list(
+    type = "Polygon",
+    coordinates = list(list(
+      c(-122.5, 39.5), c(-120.5, 39.5), c(-120.5, 40.5),
+      c(-122.5, 40.5), c(-122.5, 39.5)
+    ))
+  ),
+  bbox = c(-122.5, 39.5, -120.5, 40.5),
+  datetime = "2023-06-15T18:45:37Z",
+  properties = list(
+    platform = "landsat-9",
+    instruments = c("oli", "tirs")
+  )
+)
+
+item <- item |>
+  add_asset(
+    key = "red",
+    href = "https://example.com/LC09_B4.tif",
+    type = "image/tiff; application=geotiff; profile=cloud-optimized",
+    roles = c("data")
+  ) |>
+  add_asset(
+    key = "nir",
+    href = "https://example.com/LC09_B5.tif",
+    type = "image/tiff; application=geotiff; profile=cloud-optimized",
+    roles = c("data")
+  )
+```
+
+## Item-level or asset-level?
+
+Nearly every `add_*_extension()` function takes an `asset_key` argument,
+and the choice it controls matters more than it first appears.
+
+- **Omit `asset_key`** and the fields land in `item@properties`. This
+  says the metadata describes the whole scene.
+- **Pass `asset_key`** and the fields land on that asset. This says the
+  metadata describes only that file.
+
+The rule of thumb: if the value would differ between two assets in the
+same item, it belongs on the asset. Band descriptions, data types,
+nodata values and resolutions are per-file, so they go on assets.
+Scene-wide facts — cloud cover, the DOI of the paper describing the
+dataset — go on the item.
+
+Passing an `asset_key` that does not exist is an error, so add assets
+before extensions:
+
+``` r
+
+add_eo_extension(
+  item,
+  bands = list(eo_band(name = "B6", common_name = "swir16")),
+  asset_key = "swir"
+)
+#> Error in `set_bands()`:
+#> ! Asset 'swir' does not exist in item
+```
+
+One field resists this choice: `table:storage_options` describes how to
+*open a particular file*, so it only ever makes sense on an asset.
+[`add_table_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_table_extension.md)
+requires an `asset_key` when you supply it.
+
+## Electro-Optical (EO)
+
+The [EO extension](https://github.com/stac-extensions/eo) describes the
+spectral properties of imagery: what wavelength each band samples, and
+how much of the scene was obscured by cloud or snow.
+
+[`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md)
+builds one band;
+[`add_eo_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_eo_extension.md)
+attaches a list of them along with the optional scene-level
+`cloud_cover` and `snow_cover` percentages (both validated to 0–100).
+
+``` r
+
+item <- item |>
+  add_eo_extension(cloud_cover = 12.5, snow_cover = 0) |>
+  add_eo_extension(
+    bands = list(
+      eo_band(
+        name = "B4",
+        common_name = "red",
+        center_wavelength = 0.655,
+        full_width_half_max = 0.037
+      )
+    ),
+    asset_key = "red"
+  ) |>
+  add_eo_extension(
+    bands = list(
+      eo_band(
+        name = "B5",
+        common_name = "nir",
+        center_wavelength = 0.865,
+        full_width_half_max = 0.028
+      )
+    ),
+    asset_key = "nir"
+  )
+
+item@properties$`eo:cloud_cover`
+#> [1] 12.5
+item@assets$red$bands
+#> [[1]]
+#> [[1]]$name
+#> [1] "B4"
+#> 
+#> [[1]]$`eo:common_name`
+#> [1] "red"
+#> 
+#> [[1]]$`eo:center_wavelength`
+#> [1] 0.655
+#> 
+#> [[1]]$`eo:full_width_half_max`
+#> [1] 0.037
+```
+
+Note the pattern above: calling
+[`add_eo_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_eo_extension.md)
+several times is fine. The schema URI is only added once, and each call
+writes to a different place.
+
+Bands land in the asset’s `bands` array, not in an `eo:bands` array.
+Version 2.0.0 of the extension dropped `eo:bands` in favour of the
+single `bands` array STAC 1.1 defines for every band-level extension,
+and moved its own fields behind an `eo:` prefix — hence `eo:common_name`
+rather than `common_name` in the output. The
+[`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md)
+arguments keep their short names.
+
+`common_name` is checked against the STAC common band names
+(`"coastal"`, `"blue"`, `"green"`, `"red"`, `"rededge"`, `"nir"`,
+`"swir16"`, `"lwir11"`, and so on). It is what lets a client ask for
+“the red band” without knowing that Landsat calls it B4 and Sentinel-2
+calls it B04.
+
+### Sensor presets
+
+Typing out band definitions for a well-known sensor is tedious and easy
+to get wrong, so the package ships presets:
+
+``` r
+
+bands <- landsat_oli_bands()
+length(bands)
+#> [1] 9
+bands[[4]][c("name", "eo:common_name", "eo:center_wavelength")]
+#> $name
+#> [1] "B4"
+#> 
+#> $`eo:common_name`
+#> [1] "red"
+#> 
+#> $`eo:center_wavelength`
+#> [1] 0.655
+```
+
+The others are
+[`sentinel2_msi_bands()`](https://stevenpawley.github.io/stacbuildr/reference/sentinel2_msi_bands.md),
+[`worldview3_bands()`](https://stevenpawley.github.io/stacbuildr/reference/worldview3_bands.md),
+[`skysat_bands()`](https://stevenpawley.github.io/stacbuildr/reference/skysat_bands.md)
+and
+[`planetscope_bands()`](https://stevenpawley.github.io/stacbuildr/reference/planetscope_bands.md).
+[`landsat_oli_bands()`](https://stevenpawley.github.io/stacbuildr/reference/landsat_oli_bands.md)
+takes `include_thermal = TRUE` to append the TIRS bands.
+
+## Raster
+
+Where EO describes the *physics* of a band, the [Raster
+extension](https://github.com/stac-extensions/raster) describes the
+*pixels*: data type, nodata value, ground sample distance, and the
+scale/offset needed to turn stored integers into physical units.
+
+[`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md)
+is an S7 object rather than a plain list, so typos in `data_type` are
+caught as they are written.
+
+``` r
+
+red_band <- raster_band(
+  nodata = 0,
+  data_type = "uint16",
+  spatial_resolution = 30,
+  scale = 0.0000275,
+  offset = -0.2,
+  unit = "reflectance",
+  statistics = raster_statistics(
+    minimum = 1,
+    maximum = 65455,
+    mean = 9821,
+    stddev = 3110,
+    valid_percent = 98.7
+  )
+)
+
+item <- add_raster_extension(item, bands = list(red_band), asset_key = "red")
+
+item@assets$red$bands[[1]]$`raster:scale`
+#> [1] 2.75e-05
+```
+
+Raster v2.0.0 made the same move as EO: the band objects go in the
+shared `bands` array, `nodata`, `data_type`, `unit` and `statistics`
+stay unprefixed as STAC Common Metadata, and the extension’s own fields
+gain a `raster:` prefix on the way out. The
+[`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md)
+arguments are unchanged.
+
+[`raster_statistics()`](https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.md)
+and
+[`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md)
+build the optional `statistics` and `histogram` sub-objects. Statistics
+are worth including: they let a client pick sensible display limits
+without reading the file.
+
+### Deriving bands from a file
+
+Rather than transcribing metadata that GDAL already knows,
+[`raster_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/raster_from_file.md)
+reads it straight off the raster. With `calculate_statistics = TRUE` it
+also samples the file to populate the statistics block.
+
+``` r
+
+tif <- system.file("ex/elev.tif", package = "terra")
+
+if (requireNamespace("terra", quietly = TRUE) && nzchar(tif)) {
+  bands <- raster_from_file(tif, calculate_statistics = TRUE)
+  str(bands[[1]], max.level = 1)
+}
+#> <stacbuildr::raster_band>
+#>  @ nodata            : num(0) 
+#>  @ data_type         : chr "int16"
+#>  @ unit              : chr(0) 
+#>  @ statistics        :List of 5
+#>  .. - attr(*, "class")= chr [1:2] "raster_statistics" "list"
+#>  @ sampling          : chr(0) 
+#>  @ bits_per_sample   : int(0) 
+#>  @ spatial_resolution: num 0.00833
+#>  @ scale             : num 1
+#>  @ offset            : num 0
+#>  @ histogram         : NULL
+#>  @ extra_fields      : list()
+```
+
+[`raster_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/raster_from_file.md)
+already returns a *list* of bands, one per layer. Pass it straight
+through — wrapping it again in
+[`list()`](https://rdrr.io/r/base/list.html) is the most common mistake
+here, and the function raises a specific error when it detects the
+double-wrapping.
+
+``` r
+
+add_raster_extension(item, bands = list(raster_from_file(tif)))
+#> Error in `add_raster_extension()`:
+#> ! 'bands' appears to be double-wrapped.
+#> ℹ Use bands = raster_from_file(...), not bands = list(raster_from_file(...)).
+```
+
+[`bands_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/bands_from_terra.md)
+does the same job for a `SpatRaster` you already have in memory.
+
+### EO and Raster together
+
+The two extensions describe the same bands from different angles, and
+since both now write to the one `bands` array, a single band object
+carries both vocabularies. Common fields (`name`, `description`,
+`nodata`, `data_type`) are unprefixed; extension-specific ones are
+prefixed.
+
+Describe the bands with each extension in turn and the fields are
+merged, band by band, so long as both calls pass the same number of
+bands:
+
+``` r
+
+combined_item <- item |>
+  add_eo_extension(
+    bands = list(eo_band(name = "B4", common_name = "red",
+                         center_wavelength = 0.655)),
+    asset_key = "red"
+  ) |>
+  add_raster_extension(
+    bands = list(raster_band(nodata = 0, data_type = "uint16",
+                             spatial_resolution = 30, scale = 0.0000275)),
+    asset_key = "red"
+  )
+
+names(combined_item@assets$red$bands[[1]])
+#>  [1] "name"                      "eo:common_name"           
+#>  [3] "eo:center_wavelength"      "eo:full_width_half_max"   
+#>  [5] "nodata"                    "data_type"                
+#>  [7] "unit"                      "statistics"               
+#>  [9] "raster:spatial_resolution" "raster:scale"             
+#> [11] "raster:offset"
+```
+
+A list of a different length is taken to describe different bands and
+replaces what was there, so build one band per band. The other route is
+to write a single band object yourself, passing the raster fields to
+[`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md)
+through `...`:
+
+``` r
+
+combined <- eo_band(
+  name = "B4",
+  common_name = "red",
+  center_wavelength = 0.655,
+  nodata = 0,
+  data_type = "uint16",
+  "raster:spatial_resolution" = 30,
+  "raster:scale" = 0.0000275
+)
+
+names(combined)
+#> [1] "name"                      "eo:common_name"           
+#> [3] "eo:center_wavelength"      "nodata"                   
+#> [5] "data_type"                 "raster:spatial_resolution"
+#> [7] "raster:scale"
+```
+
+## Classification
+
+The [Classification
+extension](https://github.com/stac-extensions/classification) gives
+meaning to the integer values in a thematic raster. It has two mutually
+exclusive modes, and
+[`add_classification_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_classification_extension.md)
+errors if you supply both.
+
+**Classes** map a pixel value to a name — land cover maps, crop type
+layers:
+
+``` r
+
+lc_item <- stac_item(
+  id = "nlcd-2021",
+  geometry = list(
+    type = "Polygon",
+    coordinates = list(list(
+      c(-122.5, 39.5), c(-120.5, 39.5), c(-120.5, 40.5),
+      c(-122.5, 40.5), c(-122.5, 39.5)
+    ))
+  ),
+  bbox = c(-122.5, 39.5, -120.5, 40.5),
+  datetime = "2021-01-01T00:00:00Z"
+) |>
+  add_asset(
+    key = "landcover",
+    href = "https://example.com/nlcd-2021.tif",
+    type = "image/tiff; application=geotiff",
+    roles = c("data")
+  )
+
+classes <- list(
+  classification_class(value = 0, name = "nodata", nodata = TRUE),
+  classification_class(value = 11, name = "open-water",
+                       title = "Open Water", color_hint = "466B9F"),
+  classification_class(value = 42, name = "evergreen-forest",
+                       title = "Evergreen Forest", color_hint = "1C5F2C"),
+  classification_class(value = 82, name = "cultivated-crops",
+                       title = "Cultivated Crops", color_hint = "AB6C28")
+)
+
+lc_item <- add_classification_extension(
+  lc_item,
+  classes = classes,
+  asset_key = "landcover"
+)
+```
+
+Two constraints catch mistakes early: `name` must be a slug (letters,
+digits, hyphens, underscores — no spaces, which is why the titles above
+carry the human-readable form), and `color_hint` must be exactly six
+upper-case hex digits with no leading `#`.
+
+``` r
+
+classification_class(value = 11, name = "open water")
+#> Error in `classification_class()`:
+#> ! 'name' must consist only of letters, numbers, hyphens, and underscores
+```
+
+**Bitfields** describe QA bands where several flags are packed into one
+integer. Each
+[`classification_bitfield()`](https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.md)
+names a bit range by `offset` and `length` and carries its own classes:
+
+``` r
+
+qa_item <- add_classification_extension(
+  lc_item,
+  bitfields = list(
+    classification_bitfield(
+      offset = 0, length = 1, name = "fill",
+      description = "Image or fill data",
+      classes = list(
+        classification_class(value = 0, name = "not-fill"),
+        classification_class(value = 1, name = "fill")
+      )
+    ),
+    classification_bitfield(
+      offset = 3, length = 1, name = "cloud",
+      description = "Cloud detected",
+      classes = list(
+        classification_class(value = 0, name = "not-cloud"),
+        classification_class(value = 1, name = "cloud")
+      )
+    )
+  )
+)
+
+vapply(qa_item@properties$`classification:bitfields`, `[[`, character(1), "name")
+#> [1] "fill"  "cloud"
+```
+
+## Render
+
+The [Render extension](https://github.com/stac-extensions/render)
+records how a dataset is *meant* to be displayed — which assets to
+combine, how to stretch them, which colormap to use. Dynamic tilers such
+as titiler read these directly, so a viewer can produce the intended
+visualization without anyone hardcoding parameters.
+
+`renders` is a **named** list; the names become the keys under `renders`
+and are what a client shows in a layer picker.
+
+``` r
+
+item <- add_render_extension(
+  item,
+  renders = list(
+    natural_color = render_object(
+      assets = c("red", "nir"),
+      title = "Natural Color",
+      rescale = list(c(0, 10000), c(0, 10000)),
+      resampling = "bilinear"
+    ),
+    ndvi = render_object(
+      assets = c("nir", "red"),
+      title = "NDVI",
+      expression = "(nir-red)/(nir+red)",
+      rescale = list(c(-1, 1)),
+      colormap_name = "ylgn",
+      minmax_zoom = c(6, 14)
+    )
+  )
+)
+
+names(item@properties$renders)
+#> [1] "natural_color" "ndvi"
+```
+
+`rescale` is a list of two-element numeric vectors, one per band being
+stretched — a flat `c(0, 10000)` is rejected. Render is the one
+extension here that also accepts a
+[`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md),
+which is usually where it belongs: the display recipe rarely varies
+scene to scene.
+
+``` r
+
+collection <- stac_collection(
+  id = "landsat-c2-l2",
+  description = "Landsat Collection 2 Level-2 surface reflectance",
+  license = "CC0-1.0",
+  extent = stac_extent(
+    spatial_bbox = list(c(-180, -90, 180, 90)),
+    temporal_interval = list(list("2013-02-11T00:00:00Z", NULL))
+  )
+) |>
+  add_render_extension(renders = list(
+    natural_color = render_object(
+      assets = c("red", "nir"),
+      title = "Natural Color",
+      rescale = list(c(0, 10000), c(0, 10000))
+    )
+  ))
+```
+
+## Scientific citation
+
+The [Scientific
+extension](https://github.com/stac-extensions/scientific) records how a
+dataset should be cited, and which publications describe it. Fields go
+in the item properties — there is no `asset_key`, since a citation
+applies to the dataset as a whole.
+
+``` r
+
+item <- add_scientific_extension(
+  item,
+  doi = "10.5066/P9OGBGM6",
+  citation = "U.S. Geological Survey (2023). Landsat 9 Collection 2 Level-2.",
+  publications = list(
+    scientific_publication(
+      doi = "10.1016/j.rse.2020.111968",
+      citation = "Masek, J. et al. (2020). Landsat 9: Empowering open science."
+    )
+  )
+)
+
+item@properties$`sci:doi`
+#> [1] "10.5066/P9OGBGM6"
+```
+
+`doi` must be a bare DOI name, not a URL — clients build the resolver
+link themselves:
+
+``` r
+
+add_scientific_extension(item, doi = "https://doi.org/10.5066/P9OGBGM6")
+#> Error in `add_scientific_extension()`:
+#> ! 'doi' must be a DOI name (e.g. '10.1000/xyz123'), not a URL
+```
+
+## Table
+
+The [Table extension](https://github.com/stac-extensions/table)
+describes tabular assets — GeoParquet, CSV, Arrow — so a client knows
+the schema before downloading. Columns are built with
+[`table_column()`](https://stevenpawley.github.io/stacbuildr/reference/table_column.md);
+`primary_geometry` names the geometry column, and `storage_options`
+carries the arguments a reader needs to open the file.
+
+`asset_key` behaves as it does elsewhere: omit it and the columns
+describe the item, supply it and they describe that one asset. The
+default — omitting it — places `table:columns`, `table:primary_geometry`
+and `table:row_count` under “Item Properties and Collection Fields”.
+That is the right choice for the common case of an item wrapping a
+single table, so the example below omits it for those fields.
+
+`storage_options` is the exception, and the one field `asset_key` is
+mandatory for. The README gives it its own “Asset Object fields”
+section: it holds fsspec-style arguments for opening one specific file,
+so it has no meaning at item level.
+
+``` r
+
+parcels <- stac_item(
+  id = "parcels-2023",
+  geometry = list(
+    type = "Polygon",
+    coordinates = list(list(
+      c(-122.5, 39.5), c(-120.5, 39.5), c(-120.5, 40.5),
+      c(-122.5, 40.5), c(-122.5, 39.5)
+    ))
+  ),
+  bbox = c(-122.5, 39.5, -120.5, 40.5),
+  datetime = "2023-01-01T00:00:00Z"
+) |>
+  add_asset(
+    key = "data",
+    href = "https://example.com/parcels.parquet",
+    type = "application/x-parquet",
+    roles = c("data")
+  ) |>
+  add_table_extension(
+    columns = list(
+      table_column(name = "geometry", type = "binary",
+                   description = "Parcel boundary (WKB)"),
+      table_column(name = "parcel_id", type = "int64"),
+      table_column(name = "area_ha", type = "double"),
+      table_column(name = "zoning", type = "string")
+    ),
+    primary_geometry = "geometry",
+    row_count = 148302
+  ) |>
+  add_table_extension(
+    storage_options = list(account_name = "parcelsdata"),
+    asset_key = "data"
+  )
+
+vapply(parcels@properties$`table:columns`, `[[`, character(1), "name")
+#> [1] "geometry"  "parcel_id" "area_ha"   "zoning"
+names(parcels@assets$data$`table:storage_options`)
+#> [1] "account_name"
+```
+
+When one item bundles several tables with different schemas, pass
+`asset_key` and each asset carries its own column list:
+
+``` r
+
+multi <- stac_item(
+  id = "census-2021",
+  geometry = list(type = "Point", coordinates = c(-121.5, 40)),
+  bbox = c(-121.5, 40, -121.5, 40),
+  datetime = "2021-01-01T00:00:00Z"
+) |>
+  add_asset(key = "households", href = "https://example.com/hh.parquet",
+            type = "application/x-parquet") |>
+  add_asset(key = "persons", href = "https://example.com/persons.parquet",
+            type = "application/x-parquet") |>
+  add_table_extension(
+    columns = list(table_column(name = "household_id", type = "int64"),
+                   table_column(name = "tenure", type = "string")),
+    row_count = 24500,
+    asset_key = "households"
+  ) |>
+  add_table_extension(
+    columns = list(table_column(name = "person_id", type = "int64"),
+                   table_column(name = "age", type = "int32")),
+    row_count = 61200,
+    asset_key = "persons"
+  )
+
+vapply(multi@assets$persons$`table:columns`, `[[`, character(1), "name")
+#> [1] "person_id" "age"
+```
+
+One caveat on how much the spec backs any of this. The item/asset split
+is stated only in the README’s field tables; the extension’s JSON schema
+reuses a single permissive `fields` definition for properties, assets
+and `item_assets` alike, so a validator will not object wherever you put
+the columns — and it does not mention `table:storage_options` at all.
+Table is a *Pilot*-maturity extension. Treat the placement above as the
+documented convention rather than something a schema check enforces.
+
+## Vector
+
+The [Vector extension](https://github.com/stac-extensions/vector)
+records the cartographic properties of a vector dataset: which geometry
+types it contains, the minimum mapping unit and width used when it was
+generalized, and the scale it was digitized for. These tell a user
+whether the data is fit for their purpose — a layer captured at 1:50,000
+should not be used for parcel-level work.
+
+``` r
+
+parcels <- add_vector_extension(
+  parcels,
+  geometry_types = c("Polygon", "MultiPolygon"),
+  mmu = 100,
+  mmw = 5,
+  reference_scale = 50000
+)
+
+parcels@properties[c("vector:geometry_types", "vector:reference_scale")]
+#> $`vector:geometry_types`
+#> $`vector:geometry_types`[[1]]
+#> [1] "Polygon"
+#> 
+#> $`vector:geometry_types`[[2]]
+#> [1] "MultiPolygon"
+#> 
+#> 
+#> $`vector:reference_scale`
+#> [1] 50000
+```
+
+`geometry_types` is checked against the seven GeoJSON geometry type
+names, so lower-case or pluralized spellings fail rather than reaching a
+validator later.
+
+Table and Vector are complementary and frequently appear together: Table
+describes the columns, Vector describes the geometry.
+
+## Datacube
+
+The [Datacube extension](https://github.com/stac-extensions/datacube)
+describes multidimensional arrays — NetCDF, Zarr, HDF — where the
+interesting structure is the axes rather than the bands. It has two
+halves: `dimensions` names the axes, and `variables` says which arrays
+exist over them.
+
+Both are **named** lists, and the names in a variable’s `dimensions`
+argument must refer to dimensions you defined.
+
+``` r
+
+cube <- stac_item(
+  id = "era5-2023-06",
+  geometry = list(
+    type = "Polygon",
+    coordinates = list(list(
+      c(-180, -90), c(180, -90), c(180, 90), c(-180, 90), c(-180, -90)
+    ))
+  ),
+  bbox = c(-180, -90, 180, 90),
+  datetime = "2023-06-01T00:00:00Z"
+) |>
+  add_datacube_extension(
+    dimensions = list(
+      lon = cube_dimension(
+        type = "spatial", axis = "x",
+        extent = c(-180, 180), step = 0.25,
+        reference_system = 4326
+      ),
+      lat = cube_dimension(
+        type = "spatial", axis = "y",
+        extent = c(-90, 90), step = 0.25,
+        reference_system = 4326
+      ),
+      time = cube_dimension(
+        type = "temporal",
+        extent = c("2023-06-01T00:00:00Z", "2023-06-30T23:00:00Z"),
+        step = "PT1H"
+      ),
+      level = cube_dimension(
+        type = "vertical",
+        values = c(1000, 850, 500, 250),
+        unit = "hPa"
+      )
+    ),
+    variables = list(
+      temperature = cube_variable(
+        type = "data",
+        dimensions = c("lon", "lat", "time", "level"),
+        unit = "K",
+        data_type = "float32",
+        description = "Air temperature"
+      ),
+      land_mask = cube_variable(
+        type = "auxiliary",
+        dimensions = c("lon", "lat"),
+        data_type = "uint8"
+      )
+    )
+  )
+
+names(cube@properties$`cube:dimensions`)
+#> [1] "lon"   "lat"   "time"  "level"
+```
+
+A few points that are easy to get wrong:
+
+- `type = "spatial"` requires an `axis` of `"x"`, `"y"` or `"z"`, and
+  horizontal axes require a two-element `extent`.
+- Use `extent` for a continuous range and `values` for an enumerated set
+  — the pressure levels above are enumerated because they are not evenly
+  spaced.
+- `step` is a number for numeric axes and an ISO 8601 duration for
+  temporal ones (`"PT1H"` is one hour). Set it to `NULL` for irregular
+  spacing.
+- Variables are `"data"` (the payload) or `"auxiliary"` (supporting
+  arrays such as masks or coordinate lookups).
+
+## Projection
+
+Projection is the one extension with no `add_*` function, because it is
+applied for you.
+[`item_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_terra.md)
+and
+[`items_from_directory()`](https://stevenpawley.github.io/stacbuildr/reference/items_from_directory.md)
+add the schema URI and populate `proj:code`, `proj:wkt2`, `proj:shape`,
+`proj:bbox` and `proj:transform` from the raster whenever its CRS is not
+WGS84. An item already in EPSG:4326 needs none of it — the geometry and
+bbox say everything.
+
+## Checking the result
+
+Two levels of checking are available.
+[`validate_stac()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac.md)
+runs the package’s own structural rules and needs no extra dependencies:
+
+``` r
+
+result <- validate_stac(item)
+result$valid
+#> [1] TRUE
+```
+
+[`validate_stac_schema()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac_schema.md)
+goes further, fetching the official JSON schemas and validating the
+serialized item against the core spec *and* against every schema listed
+in `stac_extensions`. It requires the `jsonvalidate` package and network
+access, which is why it is not run here:
+
+``` r
+
+validate_stac_schema(item, validate_extensions = TRUE)
+```
+
+The second form is worth running once over a representative item before
+publishing a catalog. Temper your expectations of it, though: extension
+schemas vary a great deal in how much they actually constrain. Some pin
+down field types and placement precisely; others — Table above among
+them — define one permissive set of fields reused at every level, and
+will happily accept a document the prose spec would call wrong. A clean
+schema check means nothing contradicts the schema, not that the metadata
+is correct.
+
+There is a gap in the core schemas too. STAC annotates its URL-bearing
+fields — `href`, `providers[].url`, and the `stac_extensions` entries —
+with the JSON Schema `iri` and `iri-reference` formats. The `ajv`
+validator underneath `jsonvalidate` implements the `uri` family but not
+the internationalised `iri` variants, so it skips those assertions: the
+fields are checked for type but not for shape, and a malformed URL will
+pass. `ajv` warns once per occurrence when it does this; `stacbuildr`
+filters those particular warnings out, since they say nothing about the
+object being validated, and lets every other warning through.
+
+Here is the finished set of extensions on our scene:
+
+``` r
+
+item@stac_extensions
+#> [1] "https://stac-extensions.github.io/eo/v2.0.0/schema.json"        
+#> [2] "https://stac-extensions.github.io/raster/v2.0.0/schema.json"    
+#> [3] "https://stac-extensions.github.io/render/v2.0.0/schema.json"    
+#> [4] "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
+```
+
+## Where to go next
+
+See
+[`vignette("stac-catalog")`](https://stevenpawley.github.io/stacbuildr/articles/stac-catalog.md)
+for assembling items into a catalog, writing it to disk, and serving it
+through a STAC API.

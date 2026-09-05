@@ -25,6 +25,7 @@ to include links back to the parent ("parent", "collection", and "root").'></hea
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/stac-catalog.html">Building a STAC Catalog</a></li>
+    <li><a class="dropdown-item" href="../articles/stac-extensions.html">Describing Data with STAC Extensions</a></li>
     <li><a class="dropdown-item" href="../articles/pystac.html">Comparison with PySTAC</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -174,41 +175,45 @@ Item must have the following fields:</p><ul><li><p><code>type</code>: "Feature"<
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Create an item</span></span></span>
-<span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="stac_item.html">stac_item</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  id <span class="op">=</span> <span class="st">"LC08_L1TP_001001_20200101_20200101_01_T1"</span>,</span></span>
-<span class="r-in"><span>  geometry <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    type <span class="op">=</span> <span class="st">"Polygon"</span>,</span></span>
-<span class="r-in"><span>    coordinates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">180</span>, <span class="op">-</span><span class="fl">90</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">180</span>, <span class="op">-</span><span class="fl">90</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">180</span>, <span class="fl">90</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">180</span>, <span class="fl">90</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">180</span>, <span class="op">-</span><span class="fl">90</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span>,</span></span>
-<span class="r-in"><span>  bbox <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">180</span>, <span class="op">-</span><span class="fl">90</span>, <span class="fl">180</span>, <span class="fl">90</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  datetime <span class="op">=</span> <span class="st">"2020-01-01T00:00:00Z"</span>,</span></span>
-<span class="r-in"><span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Create an item. Every id in a catalog must be unique, so this helper</span></span></span>
+<span class="r-in"><span><span class="co"># varies it per scene.</span></span></span>
+<span class="r-in"><span><span class="va">make_item</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">id</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="stac_item.html">stac_item</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    id <span class="op">=</span> <span class="va">id</span>,</span></span>
+<span class="r-in"><span>    geometry <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      type <span class="op">=</span> <span class="st">"Polygon"</span>,</span></span>
+<span class="r-in"><span>      coordinates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">180</span>, <span class="op">-</span><span class="fl">90</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">180</span>, <span class="op">-</span><span class="fl">90</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">180</span>, <span class="fl">90</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">180</span>, <span class="fl">90</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">180</span>, <span class="op">-</span><span class="fl">90</span><span class="op">)</span></span></span>
+<span class="r-in"><span>      <span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    bbox <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">180</span>, <span class="op">-</span><span class="fl">90</span>, <span class="fl">180</span>, <span class="fl">90</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    datetime <span class="op">=</span> <span class="st">"2020-01-01T00:00:00Z"</span>,</span></span>
+<span class="r-in"><span>    properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Add the item to the collection (simple)</span></span></span>
-<span class="r-in"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu">add_item</span><span class="op">(</span><span class="va">collection</span>, <span class="va">item</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Add a single item to the collection</span></span></span>
+<span class="r-in"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu">add_item</span><span class="op">(</span><span class="va">collection</span>, <span class="fu">make_item</span><span class="op">(</span><span class="st">"LC08_20200101"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Add the item with parent links</span></span></span>
+<span class="r-in"><span><span class="co"># Add an item with parent links</span></span></span>
 <span class="r-in"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu">add_item</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">collection</span>,</span></span>
-<span class="r-in"><span>  <span class="va">item</span>,</span></span>
+<span class="r-in"><span>  <span class="fu">make_item</span><span class="op">(</span><span class="st">"LC08_20200102"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  add_parent_links <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  parent_href <span class="op">=</span> <span class="st">"./collection.json"</span>,</span></span>
 <span class="r-in"><span>  root_href <span class="op">=</span> <span class="st">"../catalog.json"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Add multiple items</span></span></span>
-<span class="r-in"><span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">item</span>, <span class="va">item</span>, <span class="va">item</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Add multiple items at once</span></span></span>
+<span class="r-in"><span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"LC08_20200103"</span>, <span class="st">"LC08_20200104"</span><span class="op">)</span>, <span class="va">make_item</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu">add_item</span><span class="op">(</span><span class="va">collection</span>, <span class="va">items</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add multiple items with custom hrefs</span></span></span>
+<span class="r-in"><span><span class="va">more_items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"LC08_20200105"</span>, <span class="st">"LC08_20200106"</span><span class="op">)</span>, <span class="va">make_item</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu">add_item</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">collection</span>,</span></span>
-<span class="r-in"><span>  <span class="va">items</span>,</span></span>
-<span class="r-in"><span>  href <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"./2020/item1.json"</span>, <span class="st">"./2020/item2.json"</span>, <span class="st">"./2020/item3.json"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">more_items</span>,</span></span>
+<span class="r-in"><span>  href <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"./2020/item5.json"</span>, <span class="st">"./2020/item6.json"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

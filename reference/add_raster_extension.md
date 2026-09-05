@@ -40,13 +40,14 @@ The modified STAC Item with raster extension fields added.
 
 ### Extension Schema URI
 
-The Raster Extension v1.1.0 schema URI is:
-`https://stac-extensions.github.io/raster/v1.1.0/schema.json`
+The Raster Extension v2.0.0 schema URI is:
+`https://stac-extensions.github.io/raster/v2.0.0/schema.json`
 
 ### Band Object Fields
 
-Each band can contain both common metadata fields and raster-specific
-fields:
+Version 2.0.0 removed the older `raster:bands` field in favour of the
+unified `bands` array introduced by STAC 1.1.0. Each band holds both
+common metadata fields and raster-specific ones:
 
 **Common Metadata:**
 
@@ -58,17 +59,29 @@ fields:
 
 - `statistics`: Object with min, max, mean, stddev, valid_percent
 
-- `raster`: Pixel sampling method ("area" or "point")
+**Raster-specific (prefixed):**
 
-- `raster`: Actual number of bits used per sample
+- `raster:sampling`: Pixel sampling method ("area" or "point")
 
-- `raster`: Average spatial resolution in meters
+- `raster:bits_per_sample`: Actual number of bits used per sample
 
-- `raster`: Multiplicative scaling factor to convert DN to values
+- `raster:spatial_resolution`: Average spatial resolution in meters
 
-- `raster`: Additive offset to convert DN to values
+- `raster:scale`: Multiplicative scaling factor to convert DN to values
 
-- `raster`: Histogram distribution of pixel values
+- `raster:offset`: Additive offset to convert DN to values
+
+- `raster:histogram`: Histogram distribution of pixel values
+
+The arguments of
+[`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md)
+keep their unprefixed names; the prefix is applied when the band is
+written out.
+
+Because `bands` is shared with the other band-level extensions,
+[`add_eo_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_eo_extension.md)
+can describe the same bands: passing a list of the same length merges
+its fields into the bands already present rather than replacing them.
 
 ### Scale and Offset
 

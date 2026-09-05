@@ -34,6 +34,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/stac-catalog.html">Building a STAC Catalog</a></li>
+    <li><a class="dropdown-item" href="../articles/stac-extensions.html">Describing Data with STAC Extensions</a></li>
     <li><a class="dropdown-item" href="../articles/pystac.html">Comparison with PySTAC</a></li>
   </ul>
 </li>
@@ -113,7 +114,7 @@ JSON.</p>
 <span>  id <span class="op">=</span> <span class="st">"environmental-data"</span>,</span>
 <span>  description <span class="op">=</span> <span class="st">"A collection of environmental data"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Environmental Data Catalog"</span>,</span>
-<span>  catalog_type <span class="op">=</span> <span class="va">pystac</span><span class="op">$</span><span class="va">CatalogType</span><span class="op">$</span><span class="va">RELATIVE_PUBLISHED</span></span>
+<span>  catalog_type <span class="op">=</span> <span class="va">pystac</span><span class="op">$</span><span class="va">CatalogType</span><span class="op">$</span><span class="va">SELF_CONTAINED</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">item_py</span> <span class="op">&lt;-</span> <span class="va">pystac</span><span class="op">$</span><span class="fu">Item</span><span class="op">(</span></span>
@@ -134,13 +135,52 @@ JSON.</p>
 <div class="section level3">
 <h3 id="writing-to-disk-and-comparing">Writing to disk and comparing<a class="anchor" aria-label="anchor" href="#writing-to-disk-and-comparing"></a>
 </h3>
-<p>Both libraries are asked to write a relative catalog. stacbuildr uses
-<code>catalog_type = "relative"</code> and PySTAC uses
-<code>CatalogType$RELATIVE_PUBLISHED</code>, which are equivalent.</p>
+<p>Both libraries are asked to write a self-contained catalog.
+stacbuildr’s <code>catalog_type</code> values line up one-to-one with
+PySTAC’s <code>CatalogType</code>, and both follow <a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links" class="external-link">Use
+of links</a> in the STAC best-practices document:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>stacbuildr</th>
+<th>PySTAC</th>
+<th>STAC best practices</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>"self-contained"</code></td>
+<td><code>SELF_CONTAINED</code></td>
+<td><a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs" class="external-link">Self-contained
+Catalogs</a></td>
+</tr>
+<tr class="even">
+<td><code>"relative"</code></td>
+<td><code>RELATIVE_PUBLISHED</code></td>
+<td><a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog" class="external-link">Relative
+Published Catalog</a></td>
+</tr>
+<tr class="odd">
+<td><code>"absolute"</code></td>
+<td><code>ABSOLUTE_PUBLISHED</code></td>
+<td><a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog" class="external-link">Absolute
+Published Catalog</a></td>
+</tr>
+</tbody>
+</table>
+<p>We use the self-contained type here because these catalogs are
+written to a temporary directory rather than published anywhere. The
+other two types record a published location — stacbuildr takes it as
+<code>base_url</code>, while PySTAC derives it from the href passed to
+<code>normalize_hrefs()</code> — so they would not produce comparable
+output for a catalog that has no online home.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">r_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"r-stac"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/write_stac.html">write_stac</a></span><span class="op">(</span><span class="va">catalog</span>, <span class="va">r_path</span>, catalog_type <span class="op">=</span> <span class="st">"relative"</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; STAC catalog written to: /tmp/RtmpxsRHDF/r-stac</span></span>
+<span><span class="fu"><a href="../reference/write_stac.html">write_stac</a></span><span class="op">(</span><span class="va">catalog</span>, <span class="va">r_path</span>, catalog_type <span class="op">=</span> <span class="st">"self-contained"</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> STAC catalog written to <span style="color: #0000BB;">/tmp/RtmpaZLiy4/r-stac</span></span></span>
 <span><span class="va">catalog_rjson</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/read_json.html" class="external-link">read_json</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">r_path</span>, <span class="st">"catalog.json"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">py_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"py-stac"</span><span class="op">)</span></span>
@@ -161,11 +201,6 @@ JSON.</p>
 <span><span class="co">#&gt;   "description": "A collection of environmental data",</span></span>
 <span><span class="co">#&gt;   "title": "Environmental Data Catalog",</span></span>
 <span><span class="co">#&gt;   "links": [</span></span>
-<span><span class="co">#&gt;     {</span></span>
-<span><span class="co">#&gt;       "rel": "self",</span></span>
-<span><span class="co">#&gt;       "href": "./catalog.json",</span></span>
-<span><span class="co">#&gt;       "type": "application/json"</span></span>
-<span><span class="co">#&gt;     },</span></span>
 <span><span class="co">#&gt;     {</span></span>
 <span><span class="co">#&gt;       "rel": "root",</span></span>
 <span><span class="co">#&gt;       "href": "./catalog.json",</span></span>
@@ -199,11 +234,6 @@ JSON.</p>
 <span><span class="co">#&gt;       "rel": "item",</span></span>
 <span><span class="co">#&gt;       "href": "./temperature/temperature.json",</span></span>
 <span><span class="co">#&gt;       "type": "application/geo+json"</span></span>
-<span><span class="co">#&gt;     },</span></span>
-<span><span class="co">#&gt;     {</span></span>
-<span><span class="co">#&gt;       "rel": "self",</span></span>
-<span><span class="co">#&gt;       "href": "/tmp/RtmpxsRHDF/py-stac/catalog.json",</span></span>
-<span><span class="co">#&gt;       "type": "application/json"</span></span>
 <span><span class="co">#&gt;     }</span></span>
 <span><span class="co">#&gt;   ],</span></span>
 <span><span class="co">#&gt;   "title": "Environmental Data Catalog"</span></span>
@@ -232,11 +262,6 @@ JSON.</p>
 <span><span class="co">#&gt;     "datetime": "2023-07-06T08:00:00Z"</span></span>
 <span><span class="co">#&gt;   },</span></span>
 <span><span class="co">#&gt;   "links": [</span></span>
-<span><span class="co">#&gt;     {</span></span>
-<span><span class="co">#&gt;       "rel": "self",</span></span>
-<span><span class="co">#&gt;       "href": "./temperature.json",</span></span>
-<span><span class="co">#&gt;       "type": "application/geo+json"</span></span>
-<span><span class="co">#&gt;     },</span></span>
 <span><span class="co">#&gt;     {</span></span>
 <span><span class="co">#&gt;       "rel": "parent",</span></span>
 <span><span class="co">#&gt;       "href": "../catalog.json",</span></span>
@@ -344,8 +369,8 @@ values.</p>
 <p>Write the catalogs to disk again to include the asset and read the
 item JSON:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/write_stac.html">write_stac</a></span><span class="op">(</span><span class="va">catalog</span>, <span class="va">r_path</span>, catalog_type <span class="op">=</span> <span class="st">"relative"</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; STAC catalog written to: /tmp/RtmpxsRHDF/r-stac</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/write_stac.html">write_stac</a></span><span class="op">(</span><span class="va">catalog</span>, <span class="va">r_path</span>, catalog_type <span class="op">=</span> <span class="st">"self-contained"</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> STAC catalog written to <span style="color: #0000BB;">/tmp/RtmpaZLiy4/r-stac</span></span></span>
 <span><span class="va">catalog_rjson</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/read_json.html" class="external-link">read_json</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">r_path</span>, <span class="st">"catalog.json"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">catalog_py</span><span class="op">$</span><span class="fu">normalize_hrefs</span><span class="op">(</span><span class="va">py_path</span><span class="op">)</span></span>
@@ -374,11 +399,6 @@ item JSON:</p>
 <span><span class="co">#&gt;     "datetime": "2023-07-06T08:00:00Z"</span></span>
 <span><span class="co">#&gt;   },</span></span>
 <span><span class="co">#&gt;   "links": [</span></span>
-<span><span class="co">#&gt;     {</span></span>
-<span><span class="co">#&gt;       "rel": "self",</span></span>
-<span><span class="co">#&gt;       "href": "./temperature.json",</span></span>
-<span><span class="co">#&gt;       "type": "application/geo+json"</span></span>
-<span><span class="co">#&gt;     },</span></span>
 <span><span class="co">#&gt;     {</span></span>
 <span><span class="co">#&gt;       "rel": "parent",</span></span>
 <span><span class="co">#&gt;       "href": "../catalog.json",</span></span>

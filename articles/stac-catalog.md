@@ -20,8 +20,14 @@ library(terra)
 ## Create a synthetic DEM
 
 For this example we create a small synthetic Digital Elevation Model and
-write it to a temporary file. In practice, replace `tif_path` with the
-path to your own raster file.
+write it to a temporary file as a Cloud Optimized GeoTIFF. In practice,
+replace `tif_path` with the path to your own raster file.
+
+`filetype = "COG"` selects GDAL’s COG driver, which writes a tiled,
+internally-ordered GeoTIFF that clients can read over HTTP range
+requests without downloading the whole file. This example raster is only
+10×10, so it fits in a single block and GDAL builds no overview levels —
+a real dataset large enough to need them gets those automatically.
 
 ``` r
 
@@ -31,10 +37,33 @@ dem <- terra::rast(nrows = 10, ncols = 10, xmin = -120, xmax = -119,
 terra::values(dem) <- runif(terra::ncell(dem), 100, 3000)
 names(dem) <- "elevation"
 
-tif_path <- file.path(tempdir(), "dem.tif")
-terra::writeRaster(dem, tif_path, overwrite = TRUE)
+data_dir <- file.path(tempdir(), "data")
+dir.create(data_dir, showWarnings = FALSE)
+
+tif_path <- file.path(data_dir, "dem.tif")
+terra::writeRaster(
+  dem,
+  tif_path,
+  filetype = "COG",
+  gdal = c("COMPRESS=DEFLATE", "BLOCKSIZE=256"),
+  overwrite = TRUE
+)
 
 r <- terra::rast(tif_path)
+```
+
+GDAL records the COG layout in the file’s structural metadata, which is
+what justifies the `profile=cloud-optimized` media type used on the
+asset below:
+
+``` r
+
+grepl(
+  "LAYOUT=COG",
+  sf::gdal_utils("info", source = tif_path, quiet = TRUE),
+  fixed = TRUE
+)
+#> [1] TRUE
 ```
 
 ## Create a STAC Item from the raster
@@ -56,7 +85,7 @@ item <- r |>
     href = tif_path,
     title = "Digital Elevation Model",
     description = "Synthetic DEM for demonstration",
-    type = "image/tiff; application=geotiff",
+    type = "image/tiff; application=geotiff; profile=cloud-optimized",
     roles = "data"
   )
 
@@ -64,10 +93,10 @@ item
 #> <STAC Item>
 #>   id           : dem-001
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-09-04T11:57:15Z
+#>   datetime     : 2026-09-05T02:14:23Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
-#>   ▸ properties : 1 [raster:bands]
+#>   ▸ properties : 1 [bands]
 #>   ▸ assets     : 1 [dem]
 #>   ▸ extensions : 1 [raster]
 #>     links      : 0
@@ -90,6 +119,20 @@ collection <- stac_collection(
   )
 )
 
+collection
+#> <STAC Collection>
+#>   id           : terrain
+#>   title        : Terrain Collection
+#>   stac_version : 1.1.0
+#>   description  : Terrain datasets
+#>   license      : CC-BY-4.0
+#>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
+#>   datetime     : 2020-01-01T00:00:00Z / ..
+#>     links      : 0
+```
+
+``` r
+
 catalog <- stac_catalog(
   id = "my-catalog",
   description = "Example STAC catalog",
@@ -98,28 +141,66 @@ catalog <- stac_catalog(
 
 collection <- add_item(collection, item)
 catalog <- add_child(catalog, collection)
+
+print(catalog, expand = TRUE)
+#> <STAC Catalog>
+#>   id           : my-catalog
+#>   title        : My Catalog
+#>   stac_version : 1.1.0
+#>   description  : Example STAC catalog
+#>   ▾ links      : 1
+#>       └─ child      ./terrain/collection.json
+#>   ▾ children   : 1
+#>       └─ terrain Collection Terrain Collection
 ```
 
 ## Write a static catalog to disk
 
 [`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
 recursively writes the catalog, collection, and item JSON files. The
-`catalog_type` argument controls how links and asset hrefs are written:
+`catalog_type` argument controls how links and asset hrefs are written.
+The three types correspond to the link layouts defined in [Use of
+links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links)
+in the STAC best-practices document, and to PySTAC’s `SELF_CONTAINED`,
+`RELATIVE_PUBLISHED` and `ABSOLUTE_PUBLISHED`:
 
-- `"self-contained"` — all links and asset hrefs are relative paths
-  within the catalog directory. Most portable: zip and share or move the
-  folder anywhere. Use for sharing or archiving.
-- `"relative"` — links between catalog/collection/item files are
-  relative, but asset hrefs are left as-is (absolute local paths or
-  external URLs). Use when the catalog indexes large on-disk data you
-  don’t want to copy.
-- `"absolute"` — all links use full URLs built from `base_url`. Use when
-  publishing to a web server so remote clients can crawl the catalog
-  over HTTP. Assets should also be URLs (S3, HTTPS) in this case.
+- [`"self-contained"`](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs)
+  — links between catalog/collection/item files, and asset hrefs given
+  as absolute local paths, are rewritten relative to the file that
+  contains them. No object gets a `self` link, because a `self` link has
+  to be absolute and that would tie the catalog to one location. Use for
+  sharing or archiving.
+- [`"relative"`](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog)
+  — a self-contained catalog plus a single absolute `self` link on the
+  root, recording where the catalog is published. Requires `base_url`.
+  Use when the catalog is online but should still work after being
+  downloaded.
+- [`"absolute"`](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog)
+  — all links use full URLs built from `base_url`, and every object gets
+  a `self` link. Use when publishing to a web server so remote clients
+  can crawl the catalog over HTTP. Asset hrefs that are already URLs
+  (S3, HTTPS) are kept; relative ones are resolved against the item’s
+  URL.
 
-Since the DEM lives in
-[`tempdir()`](https://rdrr.io/r/base/tempfile.html) alongside the
-catalog, we use `"self-contained"` here:
+One thing to be aware of:
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+writes JSON and nothing else. It does not copy asset files into the
+catalog directory. Our DEM lives in `data_dir`, which is a sibling of
+the catalog rather than inside it, so the written item gets an href like
+`../../../data/dem.tif` — a valid relative path, but one that points
+outside the tree.
+
+That is narrower than a [self-contained catalog with
+assets](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-with-assets),
+where every referenced file sits inside the catalog directory so the
+folder can be zipped and moved as a unit — what we write here is
+[metadata
+only](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-metadata-only).
+If you need the former, copy the assets under `catalog_dir` yourself
+before calling
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md).
+
+We use `"self-contained"` here:
 
 ``` r
 
@@ -131,7 +212,7 @@ write_stac(
   catalog_type = "self-contained",
   overwrite = TRUE
 )
-#> STAC catalog written to: /tmp/RtmpWeQsGv/catalog
+#> ✔ STAC catalog written to /tmp/RtmpjLAua7/catalog
 ```
 
 The resulting directory structure looks like:
@@ -161,13 +242,13 @@ item_read
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-09-04T11:57:15Z
+#>   datetime     : 2026-09-05T02:14:23Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
-#>   ▸ properties : 1 [raster:bands]
+#>   ▸ properties : 1 [bands]
 #>   ▸ assets     : 1 [dem]
 #>   ▸ extensions : 1 [raster]
-#>   ▸ links      : 4 [self, parent, collection, root]
+#>   ▸ links      : 3 [parent, collection, root]
 #>   ℹ 4 collapsed sections - use print(x, expand = TRUE) to show
 #> 
 ```
@@ -180,9 +261,49 @@ for reference but are not evaluated when the vignette is built.
 
 ### Set up the database
 
+[`stac_db_setup()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_setup.md)
+creates tables and indexes inside an existing database; it cannot create
+the database itself, because PostgreSQL only accepts `CREATE DATABASE`
+from a connection to a *different* database. Create it once up front,
+either from the shell:
+
+``` sh
+createdb stac
+```
+
+or from R, by connecting to the default `postgres` maintenance database:
+
 ``` r
 
 library(DBI)
+
+admin <- dbConnect(
+  RPostgres::Postgres(),
+  host = "localhost",
+  port = 5432,
+  dbname = "postgres",
+  user = Sys.getenv("PG_USER"),
+  password = Sys.getenv("PG_PASSWORD")
+)
+
+if (nrow(dbGetQuery(
+  admin,
+  "SELECT 1 FROM pg_database WHERE datname = 'stac'"
+)) == 0) {
+  dbExecute(admin, "CREATE DATABASE stac")
+}
+
+dbDisconnect(admin)
+```
+
+The role also needs permission to run `CREATE EXTENSION postgis`, which
+[`stac_db_setup()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_setup.md)
+issues on first use. A superuser connection, or a database created from
+the `template_postgis` template, satisfies this.
+
+Now connect to the `stac` database and create the schema:
+
+``` r
 
 con <- dbConnect(
   RPostgres::Postgres(),
@@ -196,7 +317,80 @@ con <- dbConnect(
 stac_db_setup(con)
 ```
 
+### Serve the asset over HTTP
+
+The item built above has `href = tif_path`, a local filesystem path.
+That works for the static catalog, where
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+rewrites the href to a path relative to the item JSON and a local reader
+resolves it on disk. It does **not** work for the API: a client such as
+QGIS resolves a non-URL href against the API base URL, producing a
+nonsense address like `http://127.0.0.1:3485/var/folders/.../dem.tif`,
+and the request 404s.
+
+The STAC API serves JSON only — it never serves asset bytes. So assets
+must already be fetchable over HTTP from somewhere else. For local
+development, run a static file server rooted at `data_dir`, the
+directory the DEM was written to. Print the exact command and paste it
+into a terminal, leaving it running:
+
+``` r
+
+cat(sprintf('npx http-server "%s" -p 8000 --cors\n', data_dir))
+#> npx http-server "/tmp/RtmpjLAua7/data" -p 8000 --cors
+```
+
+`npx serve "<data_dir>" -l 8000 --cors` works equally well.
+
+Three details are easy to get wrong here:
+
+- **Serve `data_dir`, not `$TMPDIR`.** R creates a per-session
+  `Rtmp<XXXXXX>` directory beneath `$TMPDIR`, so a server rooted at
+  `$TMPDIR` leaves the raster one path segment deeper than the href
+  says, and every request 404s.
+- **Use a server that honours `Range`.** GDAL reads remote rasters
+  through `/vsicurl/`, which issues HTTP range requests to fetch only
+  the tiles and overviews it needs. Python’s built-in `http.server`
+  ignores `Range` — it answers `200` with the full body and advertises
+  no `Accept-Ranges` — forcing the whole file over the wire on every
+  read, which is ruinous for a cloud-optimized GeoTIFF. Both `npx`
+  servers above return `206 Partial Content` correctly.
+- **Keep the R session alive.** R deletes
+  [`tempdir()`](https://rdrr.io/r/base/tempfile.html) on exit, taking
+  the raster with it and leaving the stored hrefs pointing at nothing.
+  For anything beyond this walkthrough, put assets in a persistent
+  directory.
+
+`--cors` is what lets browser-based clients such as STAC Browser read
+the assets; QGIS does not need it, but it costs nothing.
+
+Then replace the asset with one pointing at that server. Re-using the
+same key overwrites the existing asset:
+
+``` r
+
+item <- add_asset(
+  item,
+  key = "dem",
+  href = paste0("http://127.0.0.1:8000/", basename(tif_path)),
+  title = "Digital Elevation Model",
+  description = "Synthetic DEM for demonstration",
+  type = "image/tiff; application=geotiff; profile=cloud-optimized",
+  roles = "data"
+)
+```
+
+Confirm the URL resolves before inserting — `curl -I <href>` should
+return `200 OK`. In production, use blob storage URLs (S3, Azure Blob,
+GCS) so clients fetch assets directly without going through the API or a
+local file server.
+
 ### Insert a collection and item
+
+Insert *after* fixing the href:
+[`stac_db_insert_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_insert_item.md)
+stores the item as-is, so an href inserted wrong stays wrong until you
+re-insert.
 
 ``` r
 
@@ -211,31 +405,6 @@ stac_db_insert_item(con, item)
 [`stac_api_router()`](https://stevenpawley.github.io/stacbuildr/reference/stac_api_router.md)
 returns a plumber router pre-wired with all STAC endpoints. For local
 development, pass `require_auth = FALSE` to skip authentication.
-
-Asset hrefs should be HTTP-accessible URLs when serving via the API. For
-local development, run a file server alongside the API so that GDAL/QGIS
-can fetch assets over HTTP, then set the asset `href` to
-`http://127.0.0.1:<port>/...`.
-
-Two lightweight options (run in a terminal from your data directory):
-
-``` sh
-# Python (built-in, no install required)
-python3 -m http.server 8000 --directory ~/Data
-
-# Ruby (built-in on macOS)
-ruby -run -e httpd ~/Data -p 8000
-```
-
-The asset href would then be, for example:
-
-``` r
-
-href = "http://127.0.0.1:8000/terrain/alos.tif"
-```
-
-In production, use blob storage URLs (S3, Azure Blob, GCS) so clients
-can fetch assets directly without going through the API.
 
 ``` r
 

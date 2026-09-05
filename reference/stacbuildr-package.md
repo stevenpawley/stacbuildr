@@ -11,8 +11,8 @@ structures, and **plain lists** for lightweight sub-objects.
 
 #### S7 Classes (use `@` to access properties)
 
-The primary STAC document types and `raster_band` are S7 objects. Use
-the `@` operator to read or modify their properties:
+The primary STAC document types, `raster_band` and the extent objects
+are S7 objects. Use the `@` operator to read or modify their properties:
 
 |  |  |  |
 |----|----|----|
@@ -21,25 +21,35 @@ the `@` operator to read or modify their properties:
 | [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md) | `stac_catalog` | `catalog@title` |
 | [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md) | `stac_collection` | `collection@description` |
 | [`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md) | `raster_band` | `band@data_type`, `band@scale` |
+| [`stac_extent()`](https://stevenpawley.github.io/stacbuildr/reference/stac_extent.md) | `Extent` | `extent@spatial`, `extent@temporal` |
 
-#### Plain Lists (use `$` to access fields)
+Note that `stac_collection` extends `stac_catalog`, so a Collection
+satisfies `inherits(x, "stac_catalog")` as well.
 
-Helper constructors return ordinary R lists. These are embedded inside
-S7 objects but are not S7 classes themselves:
+#### Classed Lists (use `$` to access fields)
 
-|  |  |
-|----|----|
-| Constructor | Typically used in |
-| [`stac_asset()`](https://stevenpawley.github.io/stacbuildr/reference/stac_asset.md) | `item@assets` |
-| [`raster_statistics()`](https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.md) | `band@statistics` |
-| [`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md) | `band@histogram` |
-| [`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md) | asset `"eo:bands"` field |
-| [`stac_provider()`](https://stevenpawley.github.io/stacbuildr/reference/stac_provider.md) | `collection@providers` |
-| [`stac_extent()`](https://stevenpawley.github.io/stacbuildr/reference/stac_extent.md) | `collection@extent` |
-| [`stac_summaries()`](https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.md) | `collection@summaries` |
-| [`classification_class()`](https://stevenpawley.github.io/stacbuildr/reference/classification_class.md) | classification extension |
-| [`classification_bitfield()`](https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.md) | classification extension |
-| [`scientific_publication()`](https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.md) | scientific extension |
+The remaining constructors return ordinary R lists carrying an S3 class.
+They are embedded inside S7 objects but are not S7 classes themselves.
+The class exists so that each object prints as itself; fields are
+reached with `$` as for any list, and the class is dropped on
+serialisation so it never reaches the written JSON.
+
+|  |  |  |
+|----|----|----|
+| Constructor | Class | Typically used in |
+| [`stac_asset()`](https://stevenpawley.github.io/stacbuildr/reference/stac_asset.md) | `stac_asset` | `item@assets` |
+| [`raster_statistics()`](https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.md) | `raster_statistics` | `band@statistics` |
+| [`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md) | `raster_histogram` | `band@histogram` |
+| [`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md) | `eo_band` | asset `"bands"` field |
+| [`stac_provider()`](https://stevenpawley.github.io/stacbuildr/reference/stac_provider.md) | `stac_provider` | `collection@providers` |
+| [`stac_summaries()`](https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.md) | `stac_summaries` | `collection@summaries` |
+| [`classification_class()`](https://stevenpawley.github.io/stacbuildr/reference/classification_class.md) | `classification_class` | classification extension |
+| [`classification_bitfield()`](https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.md) | `classification_bitfield` | classification extension |
+| [`scientific_publication()`](https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.md) | `scientific_publication` | scientific extension |
+| [`table_column()`](https://stevenpawley.github.io/stacbuildr/reference/table_column.md) | `table_column` | table extension |
+| [`render_object()`](https://stevenpawley.github.io/stacbuildr/reference/render_object.md) | `render_object` | render extension |
+| [`cube_dimension()`](https://stevenpawley.github.io/stacbuildr/reference/cube_dimension.md) | `cube_dimension` | datacube extension |
+| [`cube_variable()`](https://stevenpawley.github.io/stacbuildr/reference/cube_variable.md) | `cube_variable` | datacube extension |
 
 ### Printing
 
@@ -63,11 +73,11 @@ Two options change the defaults:
 
 Extension metadata is shown wherever it is stored: item-level fields
 such as `"sci:doi"` or `"eo:cloud_cover"` appear in the `properties`
-section, asset-level fields such as `"eo:bands"` or `"raster:bands"`
-appear under the asset that carries them, and the declared schema URIs
-are listed in the `extensions` section by name and version. Arrays of
-objects are summarised by the name of each object, e.g.
-`eo:bands [B4, B5]`.
+section, asset-level fields such as `"bands"` or
+`"classification:classes"` appear under the asset that carries them, and
+the declared schema URIs are listed in the `extensions` section by name
+and version. Arrays of objects are summarised by the name of each
+object, e.g. `bands [B4, B5]`.
 
 Colour and the box-drawing characters come from cli and are dropped
 automatically when the console does not support them (log files, knitr,

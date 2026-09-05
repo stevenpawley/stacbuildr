@@ -25,6 +25,8 @@ Create and attach data assets to STAC Items and Collections.
   : Create a STAC Asset
 - [`add_asset()`](https://stevenpawley.github.io/stacbuildr/reference/add_asset.md)
   : Add an Asset to a STAC Item
+- [`print(`*`<stac_asset>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.stac_asset.md)
+  : Print method for STAC assets
 
 ## Links
 
@@ -67,6 +69,10 @@ Helper constructors for Collection fields.
   : Create Collection Extent from Multiple Items
 - [`add_item_assets()`](https://stevenpawley.github.io/stacbuildr/reference/add_item_assets.md)
   : Add Item Asset Definitions to a Collection
+- [`print(`*`<stac_provider>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.stac_provider.md)
+  : Print method for STAC providers
+- [`print(`*`<stac_summaries>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.stac_summaries.md)
+  : Print method for STAC summaries
 
 ## terra Integration
 
@@ -112,6 +118,10 @@ objects.
   : Create Raster Histogram Object
 - [`raster_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/raster_from_file.md)
   : Extract Raster Band Metadata from a File
+- [`print(`*`<raster_statistics>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.raster_statistics.md)
+  : Print method for raster statistics
+- [`print(`*`<raster_histogram>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.raster_histogram.md)
+  : Print method for raster histograms
 
 ## EO Extension
 
@@ -240,6 +250,8 @@ package).
   : Validate a STAC Object
 - [`validate_stac_schema()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac_schema.md)
   : Validate a STAC Object Against the Official JSON Schema
+- [`print(`*`<stac_validation>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.stac_validation.md)
+  : Print method for STAC validation results
 
 ## Database Backend
 

@@ -48,8 +48,9 @@ stac_asset(
 
 - ...:
 
-  Additional fields for the asset. This allows for extension-specific
-  properties like `"eo:bands"`, `"raster:bands"`, `"proj:shape"`, etc.
+  Additional fields for the asset. This allows for common metadata such
+  as `"bands"` and extension-specific properties like `"proj:shape"`,
+  etc.
 
 ## Value
 
@@ -78,13 +79,13 @@ asset <- stac_asset(
   href = "./data/multispectral.tif",
   type = "image/tiff; application=geotiff; profile=cloud-optimized",
   roles = c("data"),
-  "eo:bands" = list(
-    list(name = "B1", common_name = "red", center_wavelength = 0.665),
-    list(name = "B2", common_name = "green", center_wavelength = 0.560),
-    list(name = "B3", common_name = "blue", center_wavelength = 0.490)
-  ),
-  "raster:bands" = list(
-    list(data_type = "uint16", scale = 0.0001, offset = 0)
+  bands = list(
+    list(name = "B1", "eo:common_name" = "red",
+         "eo:center_wavelength" = 0.665, data_type = "uint16"),
+    list(name = "B2", "eo:common_name" = "green",
+         "eo:center_wavelength" = 0.560, data_type = "uint16"),
+    list(name = "B3", "eo:common_name" = "blue",
+         "eo:center_wavelength" = 0.490, data_type = "uint16")
   )
 )
 ```

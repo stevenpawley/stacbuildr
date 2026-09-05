@@ -129,7 +129,7 @@ stac_collection(
   Strongly recommended. Each property can be summarized as an array of
   unique values, a range (with `minimum` and `maximum`), or a JSON
   Schema. Common properties to summarize include `"datetime"`,
-  `"platform"`, `"instruments"`, `"gsd"`, `"eo:bands"`, etc. Use
+  `"platform"`, `"instruments"`, `"gsd"`, `"eo:cloud_cover"`, etc. Use
   [`stac_summaries()`](https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.md)
   helper to create this.
 
@@ -297,14 +297,16 @@ collection <- stac_collection(
     platform = c("sentinel-2a", "sentinel-2b"),
     instruments = c("msi"),
     gsd = c(10, 20, 60),
-    `eo:bands` = list(
-      list(name = "B01", common_name = "coastal", center_wavelength = 0.443),
-      list(name = "B02", common_name = "blue", center_wavelength = 0.490),
-      list(name = "B03", common_name = "green", center_wavelength = 0.560)
+    bands = list(
+      list(name = "B01", `eo:common_name` = "coastal"),
+      list(name = "B02", `eo:common_name` = "blue"),
+      list(name = "B03", `eo:common_name` = "green")
     )
   )
 )
-#> 'proprietary' is deprecated as a license identifier in STAC 1.1.0. Use 'other' instead, and add a link with rel='license' pointing to the license document.
+#> 'proprietary' is deprecated as a license identifier in STAC 1.1.0.
+#> ℹ Use 'other' instead, and add a link with rel='license' pointing to the
+#>   license document.
 
 # Add links
 collection <- collection |>
@@ -359,11 +361,20 @@ cat(collection_json)
 #>     }
 #>   },
 #>   "title": "Sentinel-2 Level-2A",
-#>   "keywords": ["sentinel", "esa", "msi", "copernicus", "earth observation"],
+#>   "keywords": [
+#>     "sentinel",
+#>     "esa",
+#>     "msi",
+#>     "copernicus",
+#>     "earth observation"
+#>   ],
 #>   "providers": [
 #>     {
 #>       "name": "ESA",
-#>       "roles": ["producer", "licensor"],
+#>       "roles": [
+#>         "producer",
+#>         "licensor"
+#>       ],
 #>       "url": "https://earth.esa.int/web/guest/home"
 #>     }
 #>   ],
@@ -389,21 +400,18 @@ cat(collection_json)
 #>     "platform": ["sentinel-2a", "sentinel-2b"],
 #>     "instruments": "msi",
 #>     "gsd": [10, 20, 60],
-#>     "eo:bands": [
+#>     "bands": [
 #>       {
 #>         "name": "B01",
-#>         "common_name": "coastal",
-#>         "center_wavelength": 0.443
+#>         "eo:common_name": "coastal"
 #>       },
 #>       {
 #>         "name": "B02",
-#>         "common_name": "blue",
-#>         "center_wavelength": 0.49
+#>         "eo:common_name": "blue"
 #>       },
 #>       {
 #>         "name": "B03",
-#>         "common_name": "green",
-#>         "center_wavelength": 0.56
+#>         "eo:common_name": "green"
 #>       }
 #>     ]
 #>   }

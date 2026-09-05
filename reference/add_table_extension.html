@@ -25,6 +25,7 @@ present, which column holds the primary geometry, and the number of rows."></hea
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/stac-catalog.html">Building a STAC Catalog</a></li>
+    <li><a class="dropdown-item" href="../articles/stac-extensions.html">Describing Data with STAC Extensions</a></li>
     <li><a class="dropdown-item" href="../articles/pystac.html">Comparison with PySTAC</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -92,10 +93,11 @@ field, so <code>asset_key</code> must also be provided when supplying it.</p></d
 
 
 <dt id="arg-asset-key">asset_key<a class="anchor" aria-label="anchor" href="#arg-asset-key"></a></dt>
-<dd><p>(character, optional) The asset to attach
-<code>storage_options</code> to. Required when <code>storage_options</code> is provided.
-<code>columns</code>, <code>primary_geometry</code>, and <code>row_count</code> are always written to
-item properties, matching the Table Extension specification.</p></dd>
+<dd><p>(character, optional) If provided, adds the table fields
+to a specific asset rather than to the item properties. Useful when an
+item bundles several tabular assets with different schemas. Required when
+<code>storage_options</code> is provided, since <code>table:storage_options</code> has no
+item-level meaning.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -117,10 +119,20 @@ item properties, matching the Table Extension specification.</p></dd>
 <h3 id="field-placement">Field Placement<a class="anchor" aria-label="anchor" href="#field-placement"></a></h3>
 
 
-<p><code>table:columns</code>, <code>table:primary_geometry</code>, and <code>table:row_count</code> are Item
-(and Collection) properties fields. <code>table:storage_options</code> is an
-asset-level field, so it is always attached to the asset identified by
-<code>asset_key</code>.</p>
+<p><code>asset_key</code> routes every field it can, as in the other <code>add_*_extension()</code>
+functions: omit it and <code>table:columns</code>, <code>table:primary_geometry</code> and
+<code>table:row_count</code> are written to the item properties; supply it and they are
+written to that asset instead.</p>
+<p>Omitting <code>asset_key</code> gives the placement the Table Extension README
+describes, which lists those three under "Item Properties and Collection
+Fields". Item-level placement is the right default for the common case of an
+item wrapping a single table. Per-asset placement is useful when one item
+holds several tables; the extension's JSON schema validates table fields on
+assets and <code>item_assets</code> as well as on properties.</p>
+<p><code>table:storage_options</code> is the exception. The README gives it its own "Asset
+Object fields" section, and it carries <code>fsspec</code>-style arguments for opening
+one particular file, so it is always written to the asset and <code>asset_key</code> is
+required whenever it is supplied.</p>
 </div>
 
 <div class="section">

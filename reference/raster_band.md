@@ -1,7 +1,7 @@
 # Creates a band object for use with the Raster Extension. Describes the characteristics of a single raster band including data type, nodata values, scale/offset transforms, and statistics.
 
-`raster_band()` is an S7 object that is used to construct a
-`raster:bands` STAC metadata entry
+`raster_band()` is an S7 object that is used to construct an entry in
+the `bands` array, carrying the Raster extension's fields
 
 ## Usage
 

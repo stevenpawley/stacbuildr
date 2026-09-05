@@ -66,10 +66,16 @@ child <- stac_catalog(
 # Add child with automatic href generation
 parent <- add_child(parent, child)
 
-# Add child with custom href and title
+# Add another child with a custom href and title. Each child needs its own
+# id, since the id becomes its directory when the catalog is written.
+other <- stac_catalog(
+  id = "other-catalog",
+  description = "Another child catalog"
+)
+
 parent <- add_child(
   parent,
-  child,
+  other,
   href = "./children/custom-catalog.json",
   title = "Custom Child"
 )

@@ -4,7 +4,8 @@ pkgdown_sha: ~
 articles:
   pystac: pystac.html
   stac-catalog: stac-catalog.html
-last_built: 2026-09-04T11:56Z
+  stac-extensions: stac-extensions.html
+last_built: 2026-09-05T02:13Z
 urls:
   reference: https://stevenpawley.github.io/stacbuildr/reference
   article: https://stevenpawley.github.io/stacbuildr/articles

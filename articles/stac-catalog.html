@@ -34,6 +34,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/stac-catalog.html">Building a STAC Catalog</a></li>
+    <li><a class="dropdown-item" href="../articles/stac-extensions.html">Describing Data with STAC Extensions</a></li>
     <li><a class="dropdown-item" href="../articles/pystac.html">Comparison with PySTAC</a></li>
   </ul>
 </li>
@@ -86,8 +87,15 @@
 <h2 id="create-a-synthetic-dem">Create a synthetic DEM<a class="anchor" aria-label="anchor" href="#create-a-synthetic-dem"></a>
 </h2>
 <p>For this example we create a small synthetic Digital Elevation Model
-and write it to a temporary file. In practice, replace
-<code>tif_path</code> with the path to your own raster file.</p>
+and write it to a temporary file as a Cloud Optimized GeoTIFF. In
+practice, replace <code>tif_path</code> with the path to your own raster
+file.</p>
+<p><code>filetype = "COG"</code> selects GDAL’s COG driver, which writes
+a tiled, internally-ordered GeoTIFF that clients can read over HTTP
+range requests without downloading the whole file. This example raster
+is only 10×10, so it fits in a single block and GDAL builds no overview
+levels — a real dataset large enough to need them gets those
+automatically.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">dem</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span>nrows <span class="op">=</span> <span class="fl">10</span>, ncols <span class="op">=</span> <span class="fl">10</span>, xmin <span class="op">=</span> <span class="op">-</span><span class="fl">120</span>, xmax <span class="op">=</span> <span class="op">-</span><span class="fl">119</span>,</span>
@@ -95,10 +103,29 @@ and write it to a temporary file. In practice, replace
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">dem</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">ncell</a></span><span class="op">(</span><span class="va">dem</span><span class="op">)</span>, <span class="fl">100</span>, <span class="fl">3000</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dem</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"elevation"</span></span>
 <span></span>
-<span><span class="va">tif_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"dem.tif"</span><span class="op">)</span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/writeRaster.html" class="external-link">writeRaster</a></span><span class="op">(</span><span class="va">dem</span>, <span class="va">tif_path</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">data_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"data"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">data_dir</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tif_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">"dem.tif"</span><span class="op">)</span></span>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/writeRaster.html" class="external-link">writeRaster</a></span><span class="op">(</span></span>
+<span>  <span class="va">dem</span>,</span>
+<span>  <span class="va">tif_path</span>,</span>
+<span>  filetype <span class="op">=</span> <span class="st">"COG"</span>,</span>
+<span>  gdal <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"COMPRESS=DEFLATE"</span>, <span class="st">"BLOCKSIZE=256"</span><span class="op">)</span>,</span>
+<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">tif_path</span><span class="op">)</span></span></code></pre></div>
+<p>GDAL records the COG layout in the file’s structural metadata, which
+is what justifies the <code>profile=cloud-optimized</code> media type
+used on the asset below:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span></span>
+<span>  <span class="st">"LAYOUT=COG"</span>,</span>
+<span>  <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/gdal_utils.html" class="external-link">gdal_utils</a></span><span class="op">(</span><span class="st">"info"</span>, source <span class="op">=</span> <span class="va">tif_path</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  fixed <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="create-a-stac-item-from-the-raster">Create a STAC Item from the raster<a class="anchor" aria-label="anchor" href="#create-a-stac-item-from-the-raster"></a>
@@ -106,7 +133,7 @@ and write it to a temporary file. In practice, replace
 <p><code><a href="../reference/item_from_terra.html">item_from_terra()</a></code> extracts the spatial extent, CRS, and
 geometry from the <code>SpatRaster</code> object and returns a
 <code>stac_item</code>. We then attach the raster file as an asset.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">r</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/item_from_terra.html">item_from_terra</a></span><span class="op">(</span></span>
 <span>    id <span class="op">=</span> <span class="st">"dem-001"</span>,</span>
@@ -117,7 +144,7 @@ geometry from the <code>SpatRaster</code> object and returns a
 <span>    href <span class="op">=</span> <span class="va">tif_path</span>,</span>
 <span>    title <span class="op">=</span> <span class="st">"Digital Elevation Model"</span>,</span>
 <span>    description <span class="op">=</span> <span class="st">"Synthetic DEM for demonstration"</span>,</span>
-<span>    type <span class="op">=</span> <span class="st">"image/tiff; application=geotiff"</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">"image/tiff; application=geotiff; profile=cloud-optimized"</span>,</span>
 <span>    roles <span class="op">=</span> <span class="st">"data"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
@@ -125,10 +152,10 @@ geometry from the <code>SpatRaster</code> object and returns a
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">&lt;STAC Item&gt;</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">id          </span> : <span style="color: #00BB00; font-weight: bold;">dem-001</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">stac_version</span> : <span style="color: #555555;">1.1.0</span></span></span>
-<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2026-09-04T11:57:15Z</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2026-09-05T02:14:23Z</span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">geometry    </span> : Polygon</span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">bbox        </span> : [-120.0000, 48.0000, -119.0000, 49.0000]</span></span>
-<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">properties</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[raster:bands]</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">properties</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[bands]</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">assets    </span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[dem]</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">extensions</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[raster]</span></span></span>
 <span><span class="co">#&gt;     <span style="color: #555555;">links     </span> : <span style="color: #BBBB00;">0</span></span></span>
@@ -138,7 +165,7 @@ geometry from the <code>SpatRaster</code> object and returns a
 <div class="section level2">
 <h2 id="create-a-collection-and-catalog">Create a Collection and Catalog<a class="anchor" aria-label="anchor" href="#create-a-collection-and-catalog"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stac_collection.html">stac_collection</a></span><span class="op">(</span></span>
 <span>  id <span class="op">=</span> <span class="st">"terrain"</span>,</span>
 <span>  description <span class="op">=</span> <span class="st">"Terrain datasets"</span>,</span>
@@ -150,40 +177,84 @@ geometry from the <code>SpatRaster</code> object and returns a
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">catalog</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stac_catalog.html">stac_catalog</a></span><span class="op">(</span></span>
+<span><span class="va">collection</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">&lt;STAC Collection&gt;</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">id          </span> : <span style="color: #00BB00; font-weight: bold;">terrain</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">title       </span> : Terrain Collection</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">stac_version</span> : <span style="color: #555555;">1.1.0</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">description </span> : Terrain datasets</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">license     </span> : <span style="color: #BB00BB;">CC-BY-4.0</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">bbox        </span> : [-120.0000, 48.0000, -119.0000, 49.0000]</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2020-01-01T00:00:00Z / ..</span></span>
+<span><span class="co">#&gt;     <span style="color: #555555;">links     </span> : <span style="color: #BBBB00;">0</span></span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">catalog</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stac_catalog.html">stac_catalog</a></span><span class="op">(</span></span>
 <span>  id <span class="op">=</span> <span class="st">"my-catalog"</span>,</span>
 <span>  description <span class="op">=</span> <span class="st">"Example STAC catalog"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"My Catalog"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_item.html">add_item</a></span><span class="op">(</span><span class="va">collection</span>, <span class="va">item</span><span class="op">)</span></span>
-<span><span class="va">catalog</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_child.html">add_child</a></span><span class="op">(</span><span class="va">catalog</span>, <span class="va">collection</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">catalog</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_child.html">add_child</a></span><span class="op">(</span><span class="va">catalog</span>, <span class="va">collection</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">catalog</span>, expand <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">&lt;STAC Catalog&gt;</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">id          </span> : <span style="color: #00BB00; font-weight: bold;">my-catalog</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">title       </span> : My Catalog</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">stac_version</span> : <span style="color: #555555;">1.1.0</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">description </span> : Example STAC catalog</span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▾</span> <span style="color: #555555;">links     </span> : <span style="color: #BBBB00;">1</span></span></span>
+<span><span class="co">#&gt;       <span style="color: #555555;">└─</span> <span style="color: #BB00BB;">child     </span> <span style="color: #0000BB;">./terrain/collection.json</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▾</span> <span style="color: #555555;">children  </span> : <span style="color: #BBBB00;">1</span></span></span>
+<span><span class="co">#&gt;       <span style="color: #555555;">└─</span> <span style="color: #00BB00; font-weight: bold;">terrain</span> <span style="color: #555555;">Collection Terrain Collection</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="write-a-static-catalog-to-disk">Write a static catalog to disk<a class="anchor" aria-label="anchor" href="#write-a-static-catalog-to-disk"></a>
 </h2>
 <p><code><a href="../reference/write_stac.html">write_stac()</a></code> recursively writes the catalog, collection,
 and item JSON files. The <code>catalog_type</code> argument controls how
-links and asset hrefs are written:</p>
+links and asset hrefs are written. The three types correspond to the
+link layouts defined in <a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links" class="external-link">Use
+of links</a> in the STAC best-practices document, and to PySTAC’s
+<code>SELF_CONTAINED</code>, <code>RELATIVE_PUBLISHED</code> and
+<code>ABSOLUTE_PUBLISHED</code>:</p>
 <ul>
 <li>
-<code>"self-contained"</code> — all links and asset hrefs are
-relative paths within the catalog directory. Most portable: zip and
-share or move the folder anywhere. Use for sharing or archiving.</li>
+<a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-catalogs" class="external-link"><code>"self-contained"</code></a>
+— links between catalog/collection/item files, and asset hrefs given as
+absolute local paths, are rewritten relative to the file that contains
+them. No object gets a <code>self</code> link, because a
+<code>self</code> link has to be absolute and that would tie the catalog
+to one location. Use for sharing or archiving.</li>
 <li>
-<code>"relative"</code> — links between catalog/collection/item
-files are relative, but asset hrefs are left as-is (absolute local paths
-or external URLs). Use when the catalog indexes large on-disk data you
-don’t want to copy.</li>
+<a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#relative-published-catalog" class="external-link"><code>"relative"</code></a>
+— a self-contained catalog plus a single absolute <code>self</code> link
+on the root, recording where the catalog is published. Requires
+<code>base_url</code>. Use when the catalog is online but should still
+work after being downloaded.</li>
 <li>
-<code>"absolute"</code> — all links use full URLs built from
-<code>base_url</code>. Use when publishing to a web server so remote
-clients can crawl the catalog over HTTP. Assets should also be URLs (S3,
-HTTPS) in this case.</li>
+<a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#absolute-published-catalog" class="external-link"><code>"absolute"</code></a>
+— all links use full URLs built from <code>base_url</code>, and every
+object gets a <code>self</code> link. Use when publishing to a web
+server so remote clients can crawl the catalog over HTTP. Asset hrefs
+that are already URLs (S3, HTTPS) are kept; relative ones are resolved
+against the item’s URL.</li>
 </ul>
-<p>Since the DEM lives in <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code> alongside the catalog,
-we use <code>"self-contained"</code> here:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>One thing to be aware of: <code><a href="../reference/write_stac.html">write_stac()</a></code> writes JSON and
+nothing else. It does not copy asset files into the catalog directory.
+Our DEM lives in <code>data_dir</code>, which is a sibling of the
+catalog rather than inside it, so the written item gets an href like
+<code>../../../data/dem.tif</code> — a valid relative path, but one that
+points outside the tree.</p>
+<p>That is narrower than a <a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-with-assets" class="external-link">self-contained
+catalog with assets</a>, where every referenced file sits inside the
+catalog directory so the folder can be zipped and moved as a unit — what
+we write here is <a href="https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#self-contained-metadata-only" class="external-link">metadata
+only</a>. If you need the former, copy the assets under
+<code>catalog_dir</code> yourself before calling
+<code><a href="../reference/write_stac.html">write_stac()</a></code>.</p>
+<p>We use <code>"self-contained"</code> here:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">catalog_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"catalog"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/write_stac.html">write_stac</a></span><span class="op">(</span></span>
@@ -192,7 +263,7 @@ we use <code>"self-contained"</code> here:</p>
 <span>  catalog_type <span class="op">=</span> <span class="st">"self-contained"</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; STAC catalog written to: /tmp/RtmpWeQsGv/catalog</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> STAC catalog written to <span style="color: #0000BB;">/tmp/RtmpjLAua7/catalog</span></span></span></code></pre></div>
 <p>The resulting directory structure looks like:</p>
 <pre><code>catalog/
   catalog.json
@@ -201,7 +272,7 @@ we use <code>"self-contained"</code> here:</p>
     dem-001/
       dem-001.json</code></pre>
 <p>We can read it back:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cat_read</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_stac.html">read_stac</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">catalog_dir</span>, <span class="st">"catalog.json"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">coll_read</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_stac.html">read_stac</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">catalog_dir</span>, <span class="st">"terrain"</span>, <span class="st">"collection.json"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">item_read</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_stac.html">read_stac</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span>
@@ -216,13 +287,13 @@ we use <code>"self-contained"</code> here:</p>
 <span><span class="co">#&gt;   <span style="color: #555555;">id          </span> : <span style="color: #00BB00; font-weight: bold;">dem-001</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">collection  </span> : <span style="color: #BB00BB;">terrain</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">stac_version</span> : <span style="color: #555555;">1.1.0</span></span></span>
-<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2026-09-04T11:57:15Z</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2026-09-05T02:14:23Z</span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">geometry    </span> : Polygon</span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">bbox        </span> : [-120.0000, 48.0000, -119.0000, 49.0000]</span></span>
-<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">properties</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[raster:bands]</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">properties</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[bands]</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">assets    </span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[dem]</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">extensions</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[raster]</span></span></span>
-<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">links     </span> : <span style="color: #BBBB00;">4</span> <span style="color: #555555;">[self, parent, collection, root]</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">links     </span> : <span style="color: #BBBB00;">3</span> <span style="color: #555555;">[parent, collection, root]</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">  ℹ 4 collapsed sections - use print(x, expand = TRUE) to show</span></span></span>
 <span><span class="co"><span style="color: #555555;">#&gt; </span></span></span></code></pre></div>
 </div>
@@ -235,10 +306,43 @@ for reference but are not evaluated when the vignette is built.</p>
 <div class="section level3">
 <h3 id="set-up-the-database">Set up the database<a class="anchor" aria-label="anchor" href="#set-up-the-database"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/stac_db_setup.html">stac_db_setup()</a></code> creates tables and indexes inside an
+existing database; it cannot create the database itself, because
+PostgreSQL only accepts <code>CREATE DATABASE</code> from a connection
+to a <em>different</em> database. Create it once up front, either from
+the shell:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">createdb</span> stac</span></code></pre></div>
+<p>or from R, by connecting to the default <code>postgres</code>
+maintenance database:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span></span>
+<span><span class="va">admin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span></span>
+<span>  <span class="fu">RPostgres</span><span class="fu">::</span><span class="fu"><a href="https://rpostgres.r-dbi.org/reference/Postgres.html" class="external-link">Postgres</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  host <span class="op">=</span> <span class="st">"localhost"</span>,</span>
+<span>  port <span class="op">=</span> <span class="fl">5432</span>,</span>
+<span>  dbname <span class="op">=</span> <span class="st">"postgres"</span>,</span>
+<span>  user <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PG_USER"</span><span class="op">)</span>,</span>
+<span>  password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PG_PASSWORD"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span></span>
+<span>  <span class="va">admin</span>,</span>
+<span>  <span class="st">"SELECT 1 FROM pg_database WHERE datname = 'stac'"</span></span>
+<span><span class="op">)</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">admin</span>, <span class="st">"CREATE DATABASE stac"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">admin</span><span class="op">)</span></span></code></pre></div>
+<p>The role also needs permission to run
+<code>CREATE EXTENSION postgis</code>, which
+<code><a href="../reference/stac_db_setup.html">stac_db_setup()</a></code> issues on first use. A superuser
+connection, or a database created from the <code>template_postgis</code>
+template, satisfies this.</p>
+<p>Now connect to the <code>stac</code> database and create the
+schema:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span></span>
 <span>  <span class="fu">RPostgres</span><span class="fu">::</span><span class="fu"><a href="https://rpostgres.r-dbi.org/reference/Postgres.html" class="external-link">Postgres</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  host <span class="op">=</span> <span class="st">"localhost"</span>,</span>
 <span>  port <span class="op">=</span> <span class="fl">5432</span>,</span>
@@ -250,9 +354,78 @@ for reference but are not evaluated when the vignette is built.</p>
 <span><span class="fu"><a href="../reference/stac_db_setup.html">stac_db_setup</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
+<h3 id="serve-the-asset-over-http">Serve the asset over HTTP<a class="anchor" aria-label="anchor" href="#serve-the-asset-over-http"></a>
+</h3>
+<p>The item built above has <code>href = tif_path</code>, a local
+filesystem path. That works for the static catalog, where
+<code><a href="../reference/write_stac.html">write_stac()</a></code> rewrites the href to a path relative to the
+item JSON and a local reader resolves it on disk. It does
+<strong>not</strong> work for the API: a client such as QGIS resolves a
+non-URL href against the API base URL, producing a nonsense address like
+<code>http://127.0.0.1:3485/var/folders/.../dem.tif</code>, and the
+request 404s.</p>
+<p>The STAC API serves JSON only — it never serves asset bytes. So
+assets must already be fetchable over HTTP from somewhere else. For
+local development, run a static file server rooted at
+<code>data_dir</code>, the directory the DEM was written to. Print the
+exact command and paste it into a terminal, leaving it running:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'npx http-server "%s" -p 8000 --cors\n'</span>, <span class="va">data_dir</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; npx http-server "/tmp/RtmpjLAua7/data" -p 8000 --cors</span></span></code></pre></div>
+<p><code>npx serve "&lt;data_dir&gt;" -l 8000 --cors</code> works
+equally well.</p>
+<p>Three details are easy to get wrong here:</p>
+<ul>
+<li>
+<strong>Serve <code>data_dir</code>, not
+<code>$TMPDIR</code>.</strong> R creates a per-session
+<code>Rtmp&lt;XXXXXX&gt;</code> directory beneath <code>$TMPDIR</code>,
+so a server rooted at <code>$TMPDIR</code> leaves the raster one path
+segment deeper than the href says, and every request 404s.</li>
+<li>
+<strong>Use a server that honours <code>Range</code>.</strong> GDAL
+reads remote rasters through <code>/vsicurl/</code>, which issues HTTP
+range requests to fetch only the tiles and overviews it needs. Python’s
+built-in <code>http.server</code> ignores <code>Range</code> — it
+answers <code>200</code> with the full body and advertises no
+<code>Accept-Ranges</code> — forcing the whole file over the wire on
+every read, which is ruinous for a cloud-optimized GeoTIFF. Both
+<code>npx</code> servers above return <code>206 Partial Content</code>
+correctly.</li>
+<li>
+<strong>Keep the R session alive.</strong> R deletes
+<code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code> on exit, taking the raster with it and leaving
+the stored hrefs pointing at nothing. For anything beyond this
+walkthrough, put assets in a persistent directory.</li>
+</ul>
+<p><code>--cors</code> is what lets browser-based clients such as STAC
+Browser read the assets; QGIS does not need it, but it costs
+nothing.</p>
+<p>Then replace the asset with one pointing at that server. Re-using the
+same key overwrites the existing asset:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_asset.html">add_asset</a></span><span class="op">(</span></span>
+<span>  <span class="va">item</span>,</span>
+<span>  key <span class="op">=</span> <span class="st">"dem"</span>,</span>
+<span>  href <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"http://127.0.0.1:8000/"</span>, <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">tif_path</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Digital Elevation Model"</span>,</span>
+<span>  description <span class="op">=</span> <span class="st">"Synthetic DEM for demonstration"</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"image/tiff; application=geotiff; profile=cloud-optimized"</span>,</span>
+<span>  roles <span class="op">=</span> <span class="st">"data"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Confirm the URL resolves before inserting —
+<code>curl -I &lt;href&gt;</code> should return <code>200 OK</code>. In
+production, use blob storage URLs (S3, Azure Blob, GCS) so clients fetch
+assets directly without going through the API or a local file
+server.</p>
+</div>
+<div class="section level3">
 <h3 id="insert-a-collection-and-item">Insert a collection and item<a class="anchor" aria-label="anchor" href="#insert-a-collection-and-item"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p>Insert <em>after</em> fixing the href:
+<code><a href="../reference/stac_db_insert_item.html">stac_db_insert_item()</a></code> stores the item as-is, so an href
+inserted wrong stays wrong until you re-insert.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/stac_db_insert_collection.html">stac_db_insert_collection</a></span><span class="op">(</span><span class="va">con</span>, <span class="va">collection</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">item</span><span class="op">@</span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="st">"terrain"</span></span>
@@ -264,23 +437,7 @@ for reference but are not evaluated when the vignette is built.</p>
 <p><code><a href="../reference/stac_api_router.html">stac_api_router()</a></code> returns a plumber router pre-wired
 with all STAC endpoints. For local development, pass
 <code>require_auth = FALSE</code> to skip authentication.</p>
-<p>Asset hrefs should be HTTP-accessible URLs when serving via the API.
-For local development, run a file server alongside the API so that
-GDAL/QGIS can fetch assets over HTTP, then set the asset
-<code>href</code> to <code>http://127.0.0.1:&lt;port&gt;/...</code>.</p>
-<p>Two lightweight options (run in a terminal from your data
-directory):</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Python (built-in, no install required)</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="ex">python3</span> <span class="at">-m</span> http.server 8000 <span class="at">--directory</span> ~/Data</span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co"># Ruby (built-in on macOS)</span></span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="ex">ruby</span> <span class="at">-run</span> <span class="at">-e</span> httpd ~/Data <span class="at">-p</span> 8000</span></code></pre></div>
-<p>The asset href would then be, for example:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">href</span> <span class="op">=</span> <span class="st">"http://127.0.0.1:8000/terrain/alos.tif"</span></span></code></pre></div>
-<p>In production, use blob storage URLs (S3, Azure Blob, GCS) so clients
-can fetch assets directly without going through the API.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.rplumber.io" class="external-link">plumber</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">pr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stac_api_router.html">stac_api_router</a></span><span class="op">(</span></span>
@@ -299,7 +456,7 @@ replace the single DBI connection with a connection pool from the
 them out to simultaneous requests without contention. Store credentials
 in environment variables rather than hardcoding them — Posit Connect
 lets you set these per-deployment under the Vars tab.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rstudio/pool" class="external-link">pool</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.rplumber.io" class="external-link">plumber</a></span><span class="op">)</span></span>
 <span></span>

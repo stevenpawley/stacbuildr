@@ -6,7 +6,7 @@ Print method for classification_bitfield objects
 
 ``` r
 # S3 method for class 'classification_bitfield'
-print(x, ...)
+print(x, ..., expand = NULL)
 ```
 
 ## Arguments
@@ -18,3 +18,13 @@ print(x, ...)
 - ...:
 
   Additional arguments (ignored)
+
+- expand:
+
+  Controls the collapsible `classes` section. `TRUE` expands it, `FALSE`
+  (the default) collapses it, or give the section name `"classes"`.
+  Defaults to the `stacbuildr.print.expand` option.
+
+## Value
+
+`x`, invisibly.

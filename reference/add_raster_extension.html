@@ -25,6 +25,7 @@ transforms, and statistics."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/stac-catalog.html">Building a STAC Catalog</a></li>
+    <li><a class="dropdown-item" href="../articles/stac-extensions.html">Describing Data with STAC Extensions</a></li>
     <li><a class="dropdown-item" href="../articles/pystac.html">Comparison with PySTAC</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -86,26 +87,34 @@ assets have different band structures.</p></dd>
 <h3 id="extension-schema-uri">Extension Schema URI<a class="anchor" aria-label="anchor" href="#extension-schema-uri"></a></h3>
 
 
-<p>The Raster Extension v1.1.0 schema URI is:
-<code>https://stac-extensions.github.io/raster/v1.1.0/schema.json</code></p>
+<p>The Raster Extension v2.0.0 schema URI is:
+<code>https://stac-extensions.github.io/raster/v2.0.0/schema.json</code></p>
 </div>
 
 <div class="section">
 <h3 id="band-object-fields">Band Object Fields<a class="anchor" aria-label="anchor" href="#band-object-fields"></a></h3>
 
 
-<p>Each band can contain both common metadata fields and raster-specific fields:</p>
+<p>Version 2.0.0 removed the older <code>raster:bands</code> field in favour of the
+unified <code>bands</code> array introduced by STAC 1.1.0. Each band holds both common
+metadata fields and raster-specific ones:</p>
 <p><strong>Common Metadata:</strong></p><ul><li><p><code>nodata</code>: Pixel values to be interpreted as nodata</p></li>
 <li><p><code>data_type</code>: Data type of the band (e.g., "uint8", "int16", "float32")</p></li>
 <li><p><code>unit</code>: Unit of measurement for pixel values</p></li>
 <li><p><code>statistics</code>: Object with min, max, mean, stddev, valid_percent</p></li>
-<li><p><code>raster</code>: Pixel sampling method ("area" or "point")</p></li>
-<li><p><code>raster</code>: Actual number of bits used per sample</p></li>
-<li><p><code>raster</code>: Average spatial resolution in meters</p></li>
-<li><p><code>raster</code>: Multiplicative scaling factor to convert DN to values</p></li>
-<li><p><code>raster</code>: Additive offset to convert DN to values</p></li>
-<li><p><code>raster</code>: Histogram distribution of pixel values</p></li>
-</ul></div>
+</ul><p><strong>Raster-specific (prefixed):</strong></p><ul><li><p><code>raster:sampling</code>: Pixel sampling method ("area" or "point")</p></li>
+<li><p><code>raster:bits_per_sample</code>: Actual number of bits used per sample</p></li>
+<li><p><code>raster:spatial_resolution</code>: Average spatial resolution in meters</p></li>
+<li><p><code>raster:scale</code>: Multiplicative scaling factor to convert DN to values</p></li>
+<li><p><code>raster:offset</code>: Additive offset to convert DN to values</p></li>
+<li><p><code>raster:histogram</code>: Histogram distribution of pixel values</p></li>
+</ul><p>The arguments of <code><a href="raster_band.html">raster_band()</a></code> keep their unprefixed names; the prefix is
+applied when the band is written out.</p>
+<p>Because <code>bands</code> is shared with the other band-level extensions,
+<code><a href="add_eo_extension.html">add_eo_extension()</a></code> can describe the same bands: passing a list of the same
+length merges its fields into the bands already present rather than
+replacing them.</p>
+</div>
 
 <div class="section">
 <h3 id="scale-and-offset">Scale and Offset<a class="anchor" aria-label="anchor" href="#scale-and-offset"></a></h3>

@@ -63,7 +63,10 @@ eo_band(
 
 ## Value
 
-A list representing an EO band object.
+A list representing a band object with the EO extension's fields. The
+EO-specific fields are written with an `eo:` prefix, as required by
+version 2.0.0 of the extension; `name` and `description` come from STAC
+Common Metadata and stay unprefixed.
 
 ## Details
 
@@ -88,9 +91,13 @@ Wavelengths should be specified in micrometers. For example:
 
 ### Combining with Raster Extension
 
-EO bands can be combined with raster metadata by adding raster fields
-via `...`. Common raster fields include `nodata`, `data_type`,
-`"raster:scale"`, `"raster:offset"`, `"raster:spatial_resolution"`.
+Every band-level extension shares the one `bands` array, so a band
+object may hold raster metadata too. Add it via `...`, or describe the
+same bands with
+[`add_raster_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_raster_extension.md)
+and let the fields be merged. Common raster fields are `nodata`,
+`data_type`, `"raster:scale"`, `"raster:offset"` and
+`"raster:spatial_resolution"`.
 
 ## Examples
 

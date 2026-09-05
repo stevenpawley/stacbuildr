@@ -16,6 +16,8 @@ write_catalog_recursive(
   pretty,
   is_root = FALSE,
   parent_href = NULL,
-  root_href = NULL
+  root_href = NULL,
+  depth = 0L,
+  root_file = NULL
 )
 ```
