@@ -39,6 +39,9 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
+          # lidR and its dependency rlas were archived on CRAN; they are
+          # maintained on the r-lidar r-universe
+          extra-repositories: https://r-lidar.r-universe.dev
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
