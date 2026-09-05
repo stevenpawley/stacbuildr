@@ -1,9 +1,18 @@
 Package: stacbuildr
-Title: An R package to Create Spatio-Temporal Asset Catalogs (STAC)
+Title: Create SpatioTemporal Asset Catalogs
 Version: 0.0.0.9000
 Authors@R: 
     person("Steven", "Pawley", , "dr.stevenpawley@gmail.com", role = c("aut", "cre"))
-Description: The stacbuildr package provides functions to generate STAC catalogs.
+Description: Builds geospatial metadata catalogs that conform to the
+    SpatioTemporal Asset Catalog ('STAC') specification version 1.1.0, an open
+    standard for describing geospatial assets so that they can be indexed,
+    searched and shared <https://stacspec.org/>. Catalogs, Collections and
+    Items are represented as 'S7' classes and serialised to 'STAC' JSON, with
+    support for the electro-optical, raster, projection, classification, point
+    cloud, datacube, table, vector, render and scientific citation extensions.
+    Items can be created directly from 'terra' rasters, 'sf' vector data and
+    'lidR' point clouds, and catalogs can be validated against the published
+    'STAC' JSON schemas.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
