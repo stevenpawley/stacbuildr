@@ -144,12 +144,12 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
     cli::cli_abort("'bands' must be a list of band objects")
   }
 
-  # Detect double-wrapping: raster_from_file() returns a list, so
-  # list(raster_from_file(...)) produces list(list(band, ...))
+  # Detect double-wrapping: band_from_file() returns a list, so
+  # list(band_from_file(...)) produces list(list(band, ...))
   if (length(bands) == 1 && is.list(bands[[1]]) && !S7::S7_inherits(bands[[1]], raster_band)) {
     cli::cli_abort(c(
       "'bands' appears to be double-wrapped.",
-      "i" = "Use bands = raster_from_file(...), not bands = list(raster_from_file(...))."
+      "i" = "Use bands = band_from_file(...), not bands = list(band_from_file(...))."
     ))
   }
 
@@ -553,8 +553,7 @@ print.raster_histogram <- function(x, ...) {
 }
 
 
-# raster_from_file ----
-# TODO rename to band_from_file
+# band_from_file ----
 
 #' Extract Raster Band Metadata from a File
 #'
@@ -576,10 +575,10 @@ print.raster_histogram <- function(x, ...) {
 #' @examples
 #' \dontrun{
 #' # Extract basic metadata
-#' bands <- raster_from_file("path/to/image.tif")
+#' bands <- band_from_file("path/to/image.tif")
 #'
 #' # Extract metadata with statistics
-#' bands <- raster_from_file(
+#' bands <- band_from_file(
 #'   "path/to/image.tif",
 #'   calculate_statistics = TRUE
 #' )
@@ -591,7 +590,7 @@ print.raster_histogram <- function(x, ...) {
 #' }
 #'
 #' @export
-raster_from_file <- function(file,
+band_from_file <- function(file,
                              calculate_statistics = FALSE,
                              sample_size = 1000L) {
   if (!requireNamespace("terra", quietly = TRUE)) {

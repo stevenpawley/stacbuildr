@@ -204,7 +204,7 @@ item <- item_from_terra(
 )
 
 # Or read raster band metadata separately and attach to an existing item
-bands <- raster_from_file("path/to/image.tif", calculate_statistics = TRUE)
+bands <- band_from_file("path/to/image.tif", calculate_statistics = TRUE)
 item <- item |>
   add_asset("data", href = "path/to/image.tif",
             type = "image/tiff; application=geotiff; profile=cloud-optimized",
@@ -351,7 +351,7 @@ a `plumber` router.
 | `sf` | Vector geometry handling |
 | `geojsonsf` | sf ↔ GeoJSON conversion |
 
-Optional: `terra` (raster integration — `item_from_terra`, `raster_from_file`, `preview_from_terra`), `lidR` (point-cloud integration — `item_from_lidr`, `items_from_lascatalog`), `jsonvalidate` (schema validation)
+Optional: `terra` (raster integration — `item_from_terra`, `band_from_file`, `preview_from_terra`), `lidR` (point-cloud integration — `item_from_lidr`, `items_from_lascatalog`), `jsonvalidate` (schema validation)
 
 ## References
 
