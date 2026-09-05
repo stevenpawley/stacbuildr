@@ -225,7 +225,10 @@ item <- item_from_sf(
 )
 
 # Batch-create items from a directory of rasters
-items <- items_from_directory("path/to/rasters", pattern = "\\.tif$")
+files <- list.files("path/to/rasters", pattern = "\\.tif$", full.names = TRUE)
+items <- lapply(files, function(f) {
+  item_from_terra(terra::rast(f), id = tools::file_path_sans_ext(basename(f)))
+})
 
 # Calculate a collection extent from a list of items automatically
 extent <- extent_from_items(items)
