@@ -62,7 +62,6 @@ reference:
     contents:
       - item_from_terra
       - bands_from_terra
-      - items_from_directory
       - preview_from_terra
 
   - title: "sf Integration"

@@ -762,11 +762,11 @@ whatever projection the data is stored in. The Projection extension carries the
 native CRS alongside it, so a client can locate a pixel or read a window without
 opening the file.
 
-Most of the time it is applied for you. `item_from_terra()` and
-`items_from_directory()` populate `proj:code`, `proj:wkt2`, `proj:shape`,
-`proj:bbox` and `proj:transform` from the raster whenever its CRS is not WGS84;
-`item_from_lidr()` does the same for a point cloud, where `proj:bbox` is
-three-dimensional because the LAS header carries Z bounds as well.
+Most of the time it is applied for you. `item_from_terra()` populates
+`proj:code`, `proj:wkt2`, `proj:shape`, `proj:bbox` and `proj:transform` from
+the raster whenever its CRS is not WGS84; `item_from_lidr()` does the same for a
+point cloud, where `proj:bbox` is three-dimensional because the LAS header
+carries Z bounds as well.
 
 `add_projection_extension()` does it by hand, for an item built from something
 other than a raster or point cloud:
