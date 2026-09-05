@@ -292,6 +292,36 @@ result$warnings # character vector of warnings for missing recommended fields
 validate_stac(item, strict = TRUE)
 ```
 
+### Working with a catalog as data
+
+A Catalog or Collection behaves as the container of Items it is:
+
+```r
+length(collection)        # number of items
+collection[["scene-1"]]   # one item, by id
+collection[1:5]           # a list of items
+
+# One row per item: id, collection, datetime, then every property as a column
+as.data.frame(collection)
+
+# The same table with the item footprints attached, in EPSG:4326
+scenes <- sf::st_as_sf(collection)
+scenes[scenes$`eo:cloud_cover` < 20, ]
+plot(sf::st_geometry(scenes))
+```
+
+Items missing a property get `NA` for it, and properties that hold vectors or
+objects (`proj:transform`, `bands`) become list columns. For a catalog read back
+from disk with `read_stac()`, pass `resolve = TRUE` to follow the item links.
+
+An Item is a GeoJSON Feature, so the `sf` accessors work on one directly:
+
+```r
+sf::st_geometry(item)   # the footprint as an sfc
+sf::st_bbox(item)       # its bounding box
+sf::st_crs(item)        # EPSG:4326 -- native CRS is in proj:code
+```
+
 ### Inspecting catalog contents
 
 ```r

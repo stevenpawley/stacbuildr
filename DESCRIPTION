@@ -61,6 +61,7 @@ Collate:
     'thumbnail.R'
     'validation.R'
     'write.R'
+    'coercion.R'
     'zzz.R'
 URL: https://github.com/stevenpawley/stacbuildr, https://stevenpawley.github.io/stacbuildr/
 BugReports: https://github.com/stevenpawley/stacbuildr/issues
