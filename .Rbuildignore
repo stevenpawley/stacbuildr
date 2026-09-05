@@ -12,3 +12,4 @@
 ^\.claude$
 scratch.*
 stacbuildr.Rproj
+^tests/testthat/_problems$
