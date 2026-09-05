@@ -73,6 +73,15 @@ reference:
       - bbox_from_sf
       - thumbnail_from_sf
 
+  - title: "lidR Integration"
+    desc: >
+      Create STAC Items from LAS/LAZ point clouds and `lidR` catalogues,
+      deriving point cloud and projection metadata from the file header.
+    contents:
+      - item_from_lidr
+      - items_from_lascatalog
+      - schemas_from_lidr
+
   - title: "Raster Extension"
     desc: >
       Add the STAC Raster Extension to Items and build per-band metadata
@@ -135,6 +144,18 @@ reference:
       vector data.
     contents:
       - add_vector_extension
+
+  - title: "Point Cloud Extension"
+    desc: >
+      Add the STAC Point Cloud Extension to Items, describing point count,
+      phenomenology, per-dimension schemas, density, and per-channel
+      statistics of point cloud datasets.
+    contents:
+      - add_pointcloud_extension
+      - pc_schema
+      - pc_statistic
+      - print.pc_schema
+      - print.pc_statistic
 
   - title: "Datacube Extension"
     desc: >

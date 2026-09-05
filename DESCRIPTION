@@ -18,6 +18,7 @@ Imports:
     stats
 Suggests:
     terra,
+    lidR,
     testthat (>= 3.0.0),
     curl,
     withr,
@@ -53,7 +54,9 @@ Collate:
     'extension-table.R'
     'extension-vector.R'
     'extension-datacube.R'
+    'extension-pointcloud.R'
     'integrations.R'
+    'integrations-lidr.R'
     'thumbnail.R'
     'validation.R'
     'write.R'
