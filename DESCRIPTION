@@ -25,16 +25,7 @@ Suggests:
     knitr,
     rmarkdown,
     reticulate,
-    jsonvalidate,
-    DBI,
-    RPostgres,
-    plumber,
-    httr2,
-    AzureStor,
-    AzureAuth,
-    pool,
-    googleCloudStorageR,
-    paws.storage
+    jsonvalidate
 Config/testthat/edition: 3
 Collate:
     'operators.R'
@@ -60,10 +51,6 @@ Collate:
     'thumbnail.R'
     'validation.R'
     'write.R'
-    'api-db.R'
-    'api-plumber-helper.R'
-    'api-plumber.R'
-    'api-signers.R'
     'zzz.R'
 URL: https://github.com/stevenpawley/stacbuildr, https://stevenpawley.github.io/stacbuildr/
 BugReports: https://github.com/stevenpawley/stacbuildr/issues
