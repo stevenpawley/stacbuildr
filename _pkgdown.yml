@@ -35,7 +35,6 @@ reference:
       - add_link
       - add_self_link
       - add_root_link
-      - add_parent_link
       - add_child
       - add_item
       - get_children
@@ -69,7 +68,6 @@ reference:
     contents:
       - item_from_sf
       - geometry_from_sf
-      - bbox_from_sf
       - thumbnail_from_sf
 
   - title: "lidR Integration"

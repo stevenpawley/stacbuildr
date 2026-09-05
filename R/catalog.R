@@ -79,7 +79,7 @@ property_description <- S7::new_property(
 #' * `item`: URL to a STAC Item
 #'
 #' Use the helper functions `add_self_link()`, `add_root_link()`,
-#' `add_parent_link()`, `add_child()`, and `add_item()` to manage links after
+#' `add_child()`, and `add_item()` to manage links after
 #' creating the catalog. A `self` link and a `root` link are strongly
 #' recommended. Non-root Catalogs should include a `parent` link.
 #'
@@ -333,7 +333,7 @@ S7::method(print, stac_catalog) <- function(x, ..., expand = NULL) {
 #'
 #' @seealso
 #' * [add_link()] for adding links to STAC objects
-#' * [add_self_link()], [add_root_link()], [add_parent_link()] for convenience functions
+#' * [add_self_link()], [add_root_link()] for convenience functions
 #'
 #' @references
 #' STAC Link Object specification:
@@ -395,7 +395,6 @@ stac_link <- function(rel,
 #' @seealso
 #' * [add_self_link()] for adding a self link
 #' * [add_root_link()] for adding a root link
-#' * [add_parent_link()] for adding a parent link
 #' * [add_child()] for adding a child catalog or collection
 #'
 #' @examples
@@ -538,7 +537,6 @@ add_child <- function(catalog,
 #'
 #' @seealso
 #' * [add_root_link()] for adding a root link
-#' * [add_parent_link()] for adding a parent link
 #' * [add_link()] for adding arbitrary links
 #'
 #' @examples
@@ -574,7 +572,6 @@ add_self_link <- function(catalog, href) {
 #'
 #' @seealso
 #' * [add_self_link()] for adding a self link
-#' * [add_parent_link()] for adding a parent link
 #' * [add_link()] for adding arbitrary links
 #'
 #' @examples
@@ -613,15 +610,7 @@ add_root_link <- function(catalog, href) {
 #' * [add_root_link()] for adding a root link
 #' * [add_link()] for adding arbitrary links
 #'
-#' @examples
-#' catalog <- stac_catalog(
-#'   id = "child-catalog",
-#'   description = "A child catalog"
-#' )
-#'
-#' catalog <- add_parent_link(catalog, "../parent/catalog.json")
-#'
-#' @export
+#' @keywords internal
 add_parent_link <- function(catalog, href) {
   catalog <- add_link(catalog,
                       rel = "parent",

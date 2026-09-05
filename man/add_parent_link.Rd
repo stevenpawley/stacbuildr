@@ -20,15 +20,6 @@ Adds a parent link to a STAC Catalog, Collection, or Item. A parent link
 provides the URL to the parent catalog or collection in the STAC hierarchy.
 Non-root catalogs should include a parent link.
 }
-\examples{
-catalog <- stac_catalog(
-  id = "child-catalog",
-  description = "A child catalog"
-)
-
-catalog <- add_parent_link(catalog, "../parent/catalog.json")
-
-}
 \seealso{
 \itemize{
 \item \code{\link[=add_self_link]{add_self_link()}} for adding a self link
@@ -36,3 +27,4 @@ catalog <- add_parent_link(catalog, "../parent/catalog.json")
 \item \code{\link[=add_link]{add_link()}} for adding arbitrary links
 }
 }
+\keyword{internal}

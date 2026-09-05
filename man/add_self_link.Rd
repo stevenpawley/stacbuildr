@@ -31,7 +31,6 @@ catalog <- add_self_link(catalog, "https://example.com/catalog.json")
 \seealso{
 \itemize{
 \item \code{\link[=add_root_link]{add_root_link()}} for adding a root link
-\item \code{\link[=add_parent_link]{add_parent_link()}} for adding a parent link
 \item \code{\link[=add_link]{add_link()}} for adding arbitrary links
 }
 }
