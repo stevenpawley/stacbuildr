@@ -418,7 +418,8 @@ extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE)
 #' Add Projection Extension Metadata from a Terra SpatRaster
 #'
 #' @description
-#' Adds projection extension metadata to a STAC Item for rasters not in WGS84.
+#' Reads the CRS and grid geometry from a `SpatRaster` and hands them to
+#' [add_projection_extension()].
 #'
 #' @param item A STAC Item object.
 #' @param terra_obj A `SpatRaster` object.
@@ -427,49 +428,49 @@ extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE)
 #'
 #' @keywords internal
 add_projection_metadata_terra <- function(item, terra_obj) {
-  # Add projection extension to the item metadata `stac_extensions`
-  ext_uri <- "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
-
-  if (is.null(item@stac_extensions)) {
-    item@stac_extensions <- character(0)
-  }
-
-  if (!ext_uri %in% item@stac_extensions) {
-    item@stac_extensions <- c(item@stac_extensions, ext_uri)
-  }
-
-  # Add the projection extension `proj:code` field, which replaced the
-  # deprecated `proj:epsg` in v2.0.0 of the extension. It is an
-  # authority:code string, so codes from authorities other than EPSG (such as
-  # OGC:CRS84) are recorded as well.
-  crs <- terra::crs(terra_obj, describe = TRUE)
+  # proj:code is an authority:code string, so codes from authorities other than
+  # EPSG (such as OGC:CRS84) are recorded as well. It is left out when terra
+  # cannot name an authority for the CRS, which is normal for a raster carrying
+  # only a WKT definition.
+  described <- terra::crs(terra_obj, describe = TRUE)
+  code <- NULL
   if (
-    !is.na(crs$authority) &&
-      !is.na(crs$code) &&
-      nzchar(crs$authority) &&
-      nzchar(crs$code)
+    !is.na(described$authority) &&
+      !is.na(described$code) &&
+      nzchar(described$authority) &&
+      nzchar(described$code)
   ) {
-    item@properties$`proj:code` <- paste0(crs$authority, ":", crs$code)
+    code <- paste0(described$authority, ":", described$code)
   }
 
-  item@properties$`proj:wkt2` <- terra::crs(terra_obj)
-  item@properties$`proj:shape` <- c(
-    terra::nrow(terra_obj),
-    terra::ncol(terra_obj)
-  )
-  item@properties$`proj:bbox` <- as.vector(terra::ext(terra_obj))[c(1,3,2,4)]
+  # terra returns "" for a raster with no CRS set. There is then no projection
+  # to record, so the extension is left off rather than declared with empty
+  # fields.
+  wkt2 <- terra::crs(terra_obj)
+  if (!nzchar(wkt2)) {
+    wkt2 <- NULL
+  }
+  if (is.null(code) && is.null(wkt2)) {
+    return(item)
+  }
 
-  # add affine transform parameters  
-  item@properties$`proj:transform` <- c(
-    terra::xres(terra_obj),     # xscale
-    0,                          # row rotation
-    terra::ext(terra_obj)$xmin, # top-left x
-    0,                          # column rotation
-    -terra::yres(terra_obj),    # pixel height (negative for north up)
-    terra::ext(terra_obj)$ymax  # top-left-y
-  )
+  ext <- terra::ext(terra_obj)
 
-  item
+  add_projection_extension(
+    item,
+    code = code,
+    wkt2 = wkt2,
+    bbox = as.vector(ext)[c(1, 3, 2, 4)],
+    shape = c(terra::nrow(terra_obj), terra::ncol(terra_obj)),
+    transform = c(
+      terra::xres(terra_obj),  # xscale
+      0,                       # row rotation
+      ext$xmin,                # top-left x
+      0,                       # column rotation
+      -terra::yres(terra_obj), # pixel height (negative for north up)
+      ext$ymax                 # top-left y
+    )
+  )
 }
 
 

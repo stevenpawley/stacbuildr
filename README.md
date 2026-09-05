@@ -171,6 +171,22 @@ item <- item |>
   )
 ```
 
+#### Projection extension
+
+```r
+item <- item |>
+  add_projection_extension(
+    code = "EPSG:32612",                             # AUTHORITY:CODE, not a bare number
+    shape = c(5558, 9559),                           # rows, columns
+    transform = c(30, 0, 712710, 0, -30, 5654790),   # affine pixel -> CRS
+    bbox = c(712710, 5487090, 999480, 5654790)       # in the native CRS
+  )
+```
+
+`item_from_terra()` and `item_from_lidr()` add these fields for you; call this
+directly when building an item by hand. Pass `asset_key` to place the fields on
+one asset, for items whose assets differ in resolution.
+
 ### Integrations with spatial R packages
 
 ```r

@@ -364,35 +364,36 @@ datetime_from_lidr <- function(header) {
 
 
 # Projection extension fields in the file's own CRS, alongside the WGS84
-# geometry that STAC itself requires.
+# geometry that STAC itself requires. proj:bbox is 3D here: a point cloud has a
+# meaningful Z range, which the extension records as
+# (xmin, ymin, zmin, xmax, ymax, zmax).
 add_projection_metadata_lidr <- function(item, header, crs) {
   if (is.na(crs)) {
     return(item)
   }
 
-  ext_uri <- "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
-
-  if (is.null(item@stac_extensions)) {
-    item@stac_extensions <- character(0)
+  code <- if (!is.null(crs$epsg) && !is.na(crs$epsg)) {
+    paste0("EPSG:", crs$epsg)
   }
-  if (!ext_uri %in% item@stac_extensions) {
-    item@stac_extensions <- c(item@stac_extensions, ext_uri)
+  wkt2 <- if (!is.null(crs$wkt) && !is.na(crs$wkt) && nzchar(crs$wkt)) {
+    crs$wkt
   }
 
-  if (!is.null(crs$epsg) && !is.na(crs$epsg)) {
-    item@properties$`proj:code` <- paste0("EPSG:", crs$epsg)
-  }
-  if (!is.null(crs$wkt) && !is.na(crs$wkt)) {
-    item@properties$`proj:wkt2` <- crs$wkt
+  if (is.null(code) && is.null(wkt2)) {
+    return(item)
   }
 
   phb <- header@PHB
-  item@properties$`proj:bbox` <- c(
-    phb[["Min X"]], phb[["Min Y"]], phb[["Min Z"]],
-    phb[["Max X"]], phb[["Max Y"]], phb[["Max Z"]]
-  )
 
-  item
+  add_projection_extension(
+    item,
+    code = code,
+    wkt2 = wkt2,
+    bbox = c(
+      phb[["Min X"]], phb[["Min Y"]], phb[["Min Z"]],
+      phb[["Max X"]], phb[["Max Y"]], phb[["Max Z"]]
+    )
+  )
 }
 
 
