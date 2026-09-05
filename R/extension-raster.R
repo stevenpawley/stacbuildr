@@ -18,23 +18,35 @@
 #'
 #' @details
 #' ## Extension Schema URI
-#' The Raster Extension v1.1.0 schema URI is:
-#' `https://stac-extensions.github.io/raster/v1.1.0/schema.json`
+#' The Raster Extension v2.0.0 schema URI is:
+#' `https://stac-extensions.github.io/raster/v2.0.0/schema.json`
 #'
 #' ## Band Object Fields
-#' Each band can contain both common metadata fields and raster-specific fields:
+#' Version 2.0.0 removed the older `raster:bands` field in favour of the
+#' unified `bands` array introduced by STAC 1.1.0. Each band holds both common
+#' metadata fields and raster-specific ones:
 #'
 #' **Common Metadata:**
 #' * `nodata`: Pixel values to be interpreted as nodata
 #' * `data_type`: Data type of the band (e.g., "uint8", "int16", "float32")
 #' * `unit`: Unit of measurement for pixel values
 #' * `statistics`: Object with min, max, mean, stddev, valid_percent
-#' * `raster`: Pixel sampling method ("area" or "point")
-#' * `raster`: Actual number of bits used per sample
-#' * `raster`: Average spatial resolution in meters
-#' * `raster`: Multiplicative scaling factor to convert DN to values
-#' * `raster`: Additive offset to convert DN to values
-#' * `raster`: Histogram distribution of pixel values
+#'
+#' **Raster-specific (prefixed):**
+#' * `raster:sampling`: Pixel sampling method ("area" or "point")
+#' * `raster:bits_per_sample`: Actual number of bits used per sample
+#' * `raster:spatial_resolution`: Average spatial resolution in meters
+#' * `raster:scale`: Multiplicative scaling factor to convert DN to values
+#' * `raster:offset`: Additive offset to convert DN to values
+#' * `raster:histogram`: Histogram distribution of pixel values
+#'
+#' The arguments of [raster_band()] keep their unprefixed names; the prefix is
+#' applied when the band is written out.
+#'
+#' Because `bands` is shared with the other band-level extensions,
+#' [add_eo_extension()] can describe the same bands: passing a list of the same
+#' length merges its fields into the bands already present rather than
+#' replacing them.
 #'
 #' ## Scale and Offset
 #' In remote sensing, raster data often stores raw Digital Numbers (DN) that
@@ -142,7 +154,7 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
   }
 
   # Add extension to stac_extensions if not already present
-  ext_uri <- "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
+  ext_uri <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
 
   if (is.null(item@stac_extensions)) {
     item@stac_extensions <- character(0)
@@ -157,20 +169,7 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
     if (S7::S7_inherits(b, raster_band)) as.list(b) else b
   })
 
-  # Add bands to asset or item properties
-  if (!is.null(asset_key)) {
-    # Add to specific asset
-    if (is.null(item@assets[[asset_key]])) {
-      cli::cli_abort("Asset '{asset_key}' does not exist in item")
-    }
-
-    item@assets[[asset_key]]$`raster:bands` <- bands
-  } else {
-    # Add to item properties
-    item@properties$`raster:bands` <- bands
-  }
-
-  item
+  set_bands(item, bands, asset_key = asset_key)
 }
 
 # raster_band ----
@@ -180,8 +179,8 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
 #' scale/offset transforms, and statistics.
 #'
 #' @description
-#' `raster_band()` is an S7 object that is used to construct a `raster:bands`
-#' STAC metadata entry
+#' `raster_band()` is an S7 object that is used to construct an entry in the
+#' `bands` array, carrying the Raster extension's fields
 #'
 #' @param nodata (numeric or NULL, optional) Pixel value(s) that should be
 #'   interpreted as "no data". Can be a single value or vector of values. Common
@@ -319,23 +318,26 @@ S7::method(as.list, raster_band) <- function(x, ...) {
   if (!is.null(x@statistics) && length(x@statistics) > 0)
     y$statistics <- x@statistics
 
+  # nodata, data_type, unit and statistics are STAC Common Metadata and keep
+  # their bare names; everything below is raster-specific and, since v2.0.0 of
+  # the extension, is written with a `raster:` prefix.
   if (length(x@sampling) > 0)
-    y$sampling <- x@sampling
+    y$`raster:sampling` <- x@sampling
 
   if (length(x@bits_per_sample) > 0)
-    y$bits_per_sample <- x@bits_per_sample
+    y$`raster:bits_per_sample` <- x@bits_per_sample
 
   if (length(x@spatial_resolution) > 0)
-    y$spatial_resolution <- x@spatial_resolution
+    y$`raster:spatial_resolution` <- x@spatial_resolution
 
   if (length(x@scale) > 0)
-    y$scale <- x@scale
+    y$`raster:scale` <- x@scale
 
   if (length(x@offset) > 0)
-    y$offset <- x@offset
+    y$`raster:offset` <- x@offset
 
   if (!is.null(x@histogram) && length(x@histogram) > 0)
-    y$histogram <- x@histogram
+    y$`raster:histogram` <- x@histogram
 
   if (length(x@extra_fields) > 0)
     y <- c(y, x@extra_fields)

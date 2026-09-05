@@ -66,6 +66,6 @@ other extensions like \code{"common_name"}, \code{"center_wavelength"}.}
 An S7 class representing a raster band object.
 }
 \description{
-\code{raster_band()} is an S7 object that is used to construct a \code{raster:bands}
-STAC metadata entry
+\code{raster_band()} is an S7 object that is used to construct an entry in the
+\code{bands} array, carrying the Raster extension's fields
 }

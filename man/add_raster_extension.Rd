@@ -29,13 +29,15 @@ transforms, and statistics.
 \details{
 \subsection{Extension Schema URI}{
 
-The Raster Extension v1.1.0 schema URI is:
-\verb{https://stac-extensions.github.io/raster/v1.1.0/schema.json}
+The Raster Extension v2.0.0 schema URI is:
+\verb{https://stac-extensions.github.io/raster/v2.0.0/schema.json}
 }
 
 \subsection{Band Object Fields}{
 
-Each band can contain both common metadata fields and raster-specific fields:
+Version 2.0.0 removed the older \code{raster:bands} field in favour of the
+unified \code{bands} array introduced by STAC 1.1.0. Each band holds both common
+metadata fields and raster-specific ones:
 
 \strong{Common Metadata:}
 \itemize{
@@ -43,13 +45,25 @@ Each band can contain both common metadata fields and raster-specific fields:
 \item \code{data_type}: Data type of the band (e.g., "uint8", "int16", "float32")
 \item \code{unit}: Unit of measurement for pixel values
 \item \code{statistics}: Object with min, max, mean, stddev, valid_percent
-\item \code{raster}: Pixel sampling method ("area" or "point")
-\item \code{raster}: Actual number of bits used per sample
-\item \code{raster}: Average spatial resolution in meters
-\item \code{raster}: Multiplicative scaling factor to convert DN to values
-\item \code{raster}: Additive offset to convert DN to values
-\item \code{raster}: Histogram distribution of pixel values
 }
+
+\strong{Raster-specific (prefixed):}
+\itemize{
+\item \code{raster:sampling}: Pixel sampling method ("area" or "point")
+\item \code{raster:bits_per_sample}: Actual number of bits used per sample
+\item \code{raster:spatial_resolution}: Average spatial resolution in meters
+\item \code{raster:scale}: Multiplicative scaling factor to convert DN to values
+\item \code{raster:offset}: Additive offset to convert DN to values
+\item \code{raster:histogram}: Histogram distribution of pixel values
+}
+
+The arguments of \code{\link[=raster_band]{raster_band()}} keep their unprefixed names; the prefix is
+applied when the band is written out.
+
+Because \code{bands} is shared with the other band-level extensions,
+\code{\link[=add_eo_extension]{add_eo_extension()}} can describe the same bands: passing a list of the same
+length merges its fields into the bands already present rather than
+replacing them.
 }
 
 \subsection{Scale and Offset}{

@@ -53,12 +53,12 @@ test_that("add_raster_extension adds schema URI to stac_extensions", {
     )
 
   expect_true(
-    "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
+    "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
     %in% item@stac_extensions
   )
 })
 
-test_that("add_raster_extension writes raster:bands to item properties", {
+test_that("add_raster_extension writes bands to item properties", {
   bands <- list(
     raster_band(data_type = "uint16", nodata = 0),
     raster_band(data_type = "uint16", nodata = 0)
@@ -66,17 +66,17 @@ test_that("add_raster_extension writes raster:bands to item properties", {
   item <- make_item() |>
     add_raster_extension(bands = bands)
 
-  expect_length(item@properties$`raster:bands`, 2L)
-  expect_equal(item@properties$`raster:bands`[[1]]$data_type, "uint16")
+  expect_length(item@properties$bands, 2L)
+  expect_equal(item@properties$bands[[1]]$data_type, "uint16")
 })
 
-test_that("add_raster_extension writes raster:bands to a named asset", {
+test_that("add_raster_extension writes bands to a named asset", {
   bands <- list(raster_band(data_type = "uint16"))
   item  <- make_item() |>
     add_raster_extension(bands = bands, asset_key = "B4")
 
-  expect_length(item@assets$B4$`raster:bands`, 1L)
-  expect_null(item@properties$`raster:bands`)
+  expect_length(item@assets$B4$bands, 1L)
+  expect_null(item@properties$bands)
 })
 
 test_that("add_raster_extension errors on missing asset_key", {
@@ -115,8 +115,8 @@ test_that("raster:scale survives write/read round-trip precision", {
 
   restored <- read_stac(path)
 
-  expect_equal(restored@properties$`raster:bands`[[1]]$scale, 2.75e-5)
-  expect_equal(restored@properties$`raster:bands`[[1]]$offset, -0.2)
+  expect_equal(restored@properties$bands[[1]]$`raster:scale`, 2.75e-5)
+  expect_equal(restored@properties$bands[[1]]$`raster:offset`, -0.2)
 })
 
 test_that("raster:scale is not rounded to zero in raw JSON output", {
@@ -132,12 +132,12 @@ test_that("raster:scale is not rounded to zero in raw JSON output", {
   raw_json <- paste(readLines(path, warn = FALSE), collapse = "\n")
 
   # Must not appear as 0 or 0.0
-  expect_no_match(raw_json, '"scale":\\s*0[,\\s]', perl = TRUE)
+  expect_no_match(raw_json, '"raster:scale":\\s*0[,\\s]', perl = TRUE)
   # Must contain the actual value
-  expect_match(raw_json, '"scale"', fixed = TRUE)
+  expect_match(raw_json, '"raster:scale"', fixed = TRUE)
 
   parsed <- jsonlite::fromJSON(raw_json, simplifyVector = FALSE)
-  scale_val <- parsed$properties$`raster:bands`[[1]]$scale
+  scale_val <- parsed$properties$bands[[1]]$`raster:scale`
   expect_gt(scale_val, 0)
   expect_equal(scale_val, 2.75e-5)
 })
@@ -155,8 +155,8 @@ test_that("very small raster:offset survives write/read with full precision", {
   write_item(item, path)
 
   restored <- read_stac(path)
-  expect_equal(restored@properties$`raster:bands`[[1]]$scale, 1e-8)
-  expect_equal(restored@properties$`raster:bands`[[1]]$offset, -1e-6)
+  expect_equal(restored@properties$bands[[1]]$`raster:scale`, 1e-8)
+  expect_equal(restored@properties$bands[[1]]$`raster:offset`, -1e-6)
 })
 
 test_that("raster:scale precision holds when bands are on an asset, not item", {
@@ -171,5 +171,5 @@ test_that("raster:scale precision holds when bands are on an asset, not item", {
   write_item(item, path)
 
   restored <- read_stac(path)
-  expect_equal(restored@assets$B4$`raster:bands`[[1]]$scale, 2.75e-5)
+  expect_equal(restored@assets$B4$bands[[1]]$`raster:scale`, 2.75e-5)
 })

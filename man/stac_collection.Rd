@@ -89,7 +89,7 @@ range of values for properties found in the Items of this Collection. Strongly
 recommended. Each property can be summarized as an array of unique values, a
 range (with \code{minimum} and \code{maximum}), or a JSON Schema. Common properties to
 summarize include \code{"datetime"}, \code{"platform"}, \code{"instruments"}, \code{"gsd"},
-\code{"eo:bands"}, etc. Use \code{stac_summaries()} helper to create this.}
+\code{"eo:cloud_cover"}, etc. Use \code{stac_summaries()} helper to create this.}
 
 \item{assets}{(list, optional) Dictionary of asset objects that can be downloaded
 at the Collection level (not Item-specific assets). This is for assets that
@@ -215,10 +215,10 @@ collection <- stac_collection(
     platform = c("sentinel-2a", "sentinel-2b"),
     instruments = c("msi"),
     gsd = c(10, 20, 60),
-    `eo:bands` = list(
-      list(name = "B01", common_name = "coastal", center_wavelength = 0.443),
-      list(name = "B02", common_name = "blue", center_wavelength = 0.490),
-      list(name = "B03", common_name = "green", center_wavelength = 0.560)
+    bands = list(
+      list(name = "B01", `eo:common_name` = "coastal"),
+      list(name = "B02", `eo:common_name` = "blue"),
+      list(name = "B03", `eo:common_name` = "green")
     )
   )
 )

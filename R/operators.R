@@ -57,6 +57,49 @@ normalize_common_arrays <- function(x) {
 }
 
 
+# Attach band objects to an Item's properties or to one of its assets.
+#
+# STAC 1.1 replaced the per-extension `eo:bands` and `raster:bands` arrays with
+# a single common `bands` array, whose objects carry prefixed fields from every
+# extension that describes them. add_eo_extension() and add_raster_extension()
+# therefore write to the same place, so bands already present are merged with
+# the incoming ones field by field rather than overwritten. Merging only makes
+# sense when both arrays describe the same bands, so a list of a different
+# length replaces what was there.
+#
+# @keywords internal
+set_bands <- function(item, bands, asset_key = NULL) {
+  if (!is.null(asset_key)) {
+    if (is.null(item@assets[[asset_key]])) {
+      cli::cli_abort("Asset '{asset_key}' does not exist in item")
+    }
+    item@assets[[asset_key]]$bands <- merge_bands(
+      item@assets[[asset_key]]$bands,
+      bands
+    )
+  } else {
+    item@properties$bands <- merge_bands(item@properties$bands, bands)
+  }
+
+  item
+}
+
+# @keywords internal
+merge_bands <- function(existing, bands) {
+  bands <- lapply(bands, unclass)
+
+  if (is.null(existing) || length(existing) != length(bands)) {
+    return(bands)
+  }
+
+  Map(function(old, new) {
+    old <- unclass(old)
+    old[names(new)] <- new
+    old
+  }, existing, bands)
+}
+
+
 # Guard against two children or two items in the same catalog sharing an id.
 #
 # write_stac() derives each output path from the object's id, so a repeated id

@@ -23,8 +23,10 @@ An extension is two things:
 
 1. A schema URI added to the Item's `stac_extensions` array, which tells clients
    and validators which vocabulary is in play.
-2. A set of prefixed fields (`eo:bands`, `raster:bands`, `classification:classes`,
-   …) placed either in the Item's `properties` or on an individual asset.
+2. A set of prefixed fields (`eo:cloud_cover`, `raster:scale`,
+   `classification:classes`, …) placed either in the Item's `properties`, on an
+   individual asset, or — for anything describing a single band — inside the
+   `bands` array shared by every band-level extension.
 
 `stacbuildr` gives each supported extension an `add_*_extension()` function that
 handles both halves. You never edit `stac_extensions` by hand.
@@ -140,11 +142,17 @@ item <- item |>
   )
 
 item@properties$`eo:cloud_cover`
-item@assets$red$`eo:bands`
+item@assets$red$bands
 ```
 
 Note the pattern above: calling `add_eo_extension()` several times is fine. The
 schema URI is only added once, and each call writes to a different place.
+
+Bands land in the asset's `bands` array, not in an `eo:bands` array. Version
+2.0.0 of the extension dropped `eo:bands` in favour of the single `bands` array
+STAC 1.1 defines for every band-level extension, and moved its own fields
+behind an `eo:` prefix — hence `eo:common_name` rather than `common_name` in
+the output. The `eo_band()` arguments keep their short names.
 
 `common_name` is checked against the STAC common band names (`"coastal"`,
 `"blue"`, `"green"`, `"red"`, `"rededge"`, `"nir"`, `"swir16"`, `"lwir11"`,
@@ -159,7 +167,7 @@ wrong, so the package ships presets:
 ```{r}
 bands <- landsat_oli_bands()
 length(bands)
-bands[[4]][c("name", "common_name", "center_wavelength")]
+bands[[4]][c("name", "eo:common_name", "eo:center_wavelength")]
 ```
 
 The others are `sentinel2_msi_bands()`, `worldview3_bands()`, `skysat_bands()`
@@ -195,8 +203,13 @@ red_band <- raster_band(
 
 item <- add_raster_extension(item, bands = list(red_band), asset_key = "red")
 
-item@assets$red$`raster:bands`[[1]]$scale
+item@assets$red$bands[[1]]$`raster:scale`
 ```
+
+Raster v2.0.0 made the same move as EO: the band objects go in the shared
+`bands` array, `nodata`, `data_type`, `unit` and `statistics` stay unprefixed as
+STAC Common Metadata, and the extension's own fields gain a `raster:` prefix on
+the way out. The `raster_band()` arguments are unchanged.
 
 `raster_statistics()` and `raster_histogram()` build the optional `statistics`
 and `histogram` sub-objects. Statistics are worth including: they let a client
@@ -231,10 +244,33 @@ memory.
 
 ### EO and Raster together
 
-The two extensions describe the same bands from different angles, and a single
-band object can carry both vocabularies. Common fields (`name`, `description`,
-`nodata`, `data_type`) are unprefixed; extension-specific ones are prefixed. Build
-the band with `eo_band()` and pass the raster fields through `...`:
+The two extensions describe the same bands from different angles, and since
+both now write to the one `bands` array, a single band object carries both
+vocabularies. Common fields (`name`, `description`, `nodata`, `data_type`) are
+unprefixed; extension-specific ones are prefixed.
+
+Describe the bands with each extension in turn and the fields are merged, band
+by band, so long as both calls pass the same number of bands:
+
+```{r}
+combined_item <- item |>
+  add_eo_extension(
+    bands = list(eo_band(name = "B4", common_name = "red",
+                         center_wavelength = 0.655)),
+    asset_key = "red"
+  ) |>
+  add_raster_extension(
+    bands = list(raster_band(nodata = 0, data_type = "uint16",
+                             spatial_resolution = 30, scale = 0.0000275)),
+    asset_key = "red"
+  )
+
+names(combined_item@assets$red$bands[[1]])
+```
+
+A list of a different length is taken to describe different bands and replaces
+what was there, so build one band per band. The other route is to write a single
+band object yourself, passing the raster fields to `eo_band()` through `...`:
 
 ```{r}
 combined <- eo_band(

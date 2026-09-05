@@ -41,29 +41,35 @@ considered to be data that represents a snapshot of the Earth for a single date
 and time. It could consist of multiple spectral bands in any part of the
 electromagnetic spectrum.
 
-EO bands are stored in the \code{eo:bands} field in item properties or asset
-metadata, matching the convention used by pystac and most deployed STAC
-tooling. Although STAC 1.1.0 introduced a unified \code{bands} field, the
-\code{eo:bands} field remains the standard used in practice.
+Bands are stored in the common \code{bands} field in item properties or asset
+metadata. EO extension v2.0.0 removed the older \code{eo:bands} field in favour
+of the unified \code{bands} array introduced by STAC 1.1.0, where the
+EO-specific band fields carry an \verb{eo:} prefix.
 }
 \details{
 \subsection{Extension Schema URI}{
 
-The EO Extension v1.1.0 schema URI is:
-\verb{https://stac-extensions.github.io/eo/v1.1.0/schema.json}
+The EO Extension v2.0.0 schema URI is:
+\verb{https://stac-extensions.github.io/eo/v2.0.0/schema.json}
 }
 
 \subsection{Band Object Fields}{
 
-All fields inside \code{eo:bands} use no prefix (matching pystac convention):
+Inside \code{bands}, the general fields come from STAC Common Metadata and the
+EO-specific ones carry an \verb{eo:} prefix:
 \itemize{
 \item \code{name}: Name of the band (e.g., "B01", "B02", "B1", "B5")
 \item \code{description}: Description of the band
-\item \code{common_name}: Common name of the band (e.g., "red", "green", "blue", "nir")
-\item \code{center_wavelength}: Center wavelength in micrometers
-\item \code{full_width_half_max}: Full width at half maximum (FWHM) in micrometers
-\item \code{solar_illumination}: Solar illumination at the band's wavelength
+\item \code{eo:common_name}: Common name of the band (e.g., "red", "green", "blue", "nir")
+\item \code{eo:center_wavelength}: Center wavelength in micrometers
+\item \code{eo:full_width_half_max}: Full width at half maximum (FWHM) in micrometers
+\item \code{eo:solar_illumination}: Solar illumination at the band's wavelength
 }
+
+Because \code{bands} is shared with the other band-level extensions,
+\code{add_raster_extension()} can describe the same bands: passing a list of the
+same length merges its fields into the bands already present rather than
+replacing them.
 }
 
 \subsection{Common Band Names}{
@@ -91,8 +97,8 @@ coverages usually apply to all assets.
 \subsection{Wavelength Units}{
 
 For example, if we were given a band described as (0.4um - 0.5um) the
-eo:center_wavelength would be 0.45um and the eo:full_width_half_max would be
-0.1um.
+\code{eo:center_wavelength} would be 0.45um and the \code{eo:full_width_half_max}
+would be 0.1um.
 }
 
 \subsection{Recommended Companion Extensions}{
@@ -182,16 +188,14 @@ combined_band <- eo_band(
   description = "Red band (0.64-0.67)"
 )
 
-# Add raster properties to the same band
-combined_band$nodata <- 0
-combined_band$data_type <- "uint16"
-combined_band$`raster:spatial_resolution` <- 30
-combined_band$`raster:scale` <- 0.0001
-combined_band$`raster:offset` <- 0
-
+# Describe the same band with the Raster extension; both extensions write
+# to `bands`, so the raster fields are merged into the EO band object
 item <- item |>
-  add_eo_extension(bands = combined_band) |>
-  add_raster_extension(bands = combined_band)
+  add_eo_extension(bands = list(combined_band)) |>
+  add_raster_extension(
+    bands = list(raster_band(nodata = 0, data_type = "uint16",
+                             spatial_resolution = 30, scale = 0.0001))
+  )
 
 }
 \references{
