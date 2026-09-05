@@ -88,7 +88,7 @@ reference:
       - raster_band
       - raster_statistics
       - raster_histogram
-      - raster_from_file
+      - band_from_file
       - print.raster_statistics
       - print.raster_histogram
 

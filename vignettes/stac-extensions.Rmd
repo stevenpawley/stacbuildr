@@ -218,7 +218,7 @@ pick sensible display limits without reading the file.
 ### Deriving bands from a file
 
 Rather than transcribing metadata that GDAL already knows,
-`raster_from_file()` reads it straight off the raster. With
+`band_from_file()` reads it straight off the raster. With
 `calculate_statistics = TRUE` it also samples the file to populate the
 statistics block.
 
@@ -226,17 +226,17 @@ statistics block.
 tif <- system.file("ex/elev.tif", package = "terra")
 
 if (requireNamespace("terra", quietly = TRUE) && nzchar(tif)) {
-  bands <- raster_from_file(tif, calculate_statistics = TRUE)
+  bands <- band_from_file(tif, calculate_statistics = TRUE)
   str(bands[[1]], max.level = 1)
 }
 ```
 
-`raster_from_file()` already returns a *list* of bands, one per layer. Pass it
+`band_from_file()` already returns a *list* of bands, one per layer. Pass it
 straight through — wrapping it again in `list()` is the most common mistake here,
 and the function raises a specific error when it detects the double-wrapping.
 
 ```{r, error = TRUE}
-add_raster_extension(item, bands = list(raster_from_file(tif)))
+add_raster_extension(item, bands = list(band_from_file(tif)))
 ```
 
 `bands_from_terra()` does the same job for a `SpatRaster` you already have in
