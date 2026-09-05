@@ -10,3 +10,5 @@ inst/doc
 
 /.quarto/
 tests/testthat/_problems/
+.python-version
+.venv/
