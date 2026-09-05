@@ -148,17 +148,25 @@ item <- item |>
   add_eo_extension(bands = landsat_oli_bands(include_thermal = TRUE))
 ```
 
+Following v2.0.0 of the EO and Raster extensions, band objects are written to
+the `bands` array that STAC 1.1 shares between all band-level extensions, with
+each extension's own fields prefixed (`eo:common_name`, `raster:scale`). Both
+`add_*_extension()` functions write to the same array, so describing the same
+bands with each in turn merges their fields.
+
 #### Raster extension
 
 ```r
 item <- item |>
   add_raster_extension(
-    bands = raster_band(
+    bands = list(
+      raster_band(
         data_type = "uint16",
         nodata = 0,
         spatial_resolution = 10,
         scale = 0.0001
-      ),
+      )
+    ),
     asset_key = "visual"
   )
 ```

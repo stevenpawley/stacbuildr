@@ -140,7 +140,7 @@ test_that("extensions print as name and version", {
   expect_true(any(grepl("> extensions : 1 [eo]", out, fixed = TRUE)))
 
   out <- capture.output(print(item, expand = "extensions"))
-  expect_true(any(grepl("eo v1.1.0", out, fixed = TRUE)))
+  expect_true(any(grepl("eo v2.0.0", out, fixed = TRUE)))
 })
 
 test_that("an unrecognised extension URI is printed in full", {
@@ -175,19 +175,30 @@ test_that("asset-level extension fields print under their asset", {
     ),
     asset_key = "B4"
   )
+  # both extensions describe the same two bands, so their fields merge into
+  # the one `bands` array
   item <- add_raster_extension(
     item,
-    bands = list(raster_band(data_type = "uint16", nodata = 0)),
+    bands = list(
+      raster_band(data_type = "uint16", nodata = 0),
+      raster_band(data_type = "uint16", nodata = 0)
+    ),
     asset_key = "B4"
+  )
+
+  # the two extensions describe the same bands, so their fields merged
+  expect_named(
+    item@assets$B4$bands[[1]],
+    c("name", "eo:common_name", "nodata", "data_type", "raster:scale",
+      "raster:offset")
   )
 
   out <- capture.output(print(item, expand = "assets"))
   # arrays of objects are labelled by the name of each object
-  expect_true(any(grepl("eo:bands     [B4, B5]", out, fixed = TRUE)))
-  expect_true(any(grepl("raster:bands [uint16]", out, fixed = TRUE)))
+  expect_true(any(grepl("bands +\\[B4, B5\\]", out)))
   # ... and stay hidden while the section is collapsed
   out <- capture.output(print(item))
-  expect_false(any(grepl("eo:bands", out, fixed = TRUE)))
+  expect_false(any(grepl("bands +\\[B4, B5\\]", out)))
 })
 
 test_that("unlabelled arrays of objects fall back to a count", {

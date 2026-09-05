@@ -307,11 +307,11 @@ test_that("item matches stac-spec example extended-item.json", {
   expect_equal(sort_fields(actual$links), sort_fields(expected$links))
   expect_equal(sort_fields(actual$properties), sort_fields(expected$properties))
 
-  # add_eo_extension adds its own URI (v1.1.0); the fixture uses v2.0.0.
-  # Assert the EO extension is present and the remaining 4 extensions match.
-  expect_true(any(grepl("stac-extensions.github.io/eo/", actual$stac_extensions)))
-  non_eo <- function(exts) sort(unlist(exts[!grepl("stac-extensions.github.io/eo/", exts)]))
-  expect_equal(non_eo(actual$stac_extensions), non_eo(expected$stac_extensions))
+  # add_eo_extension appends the EO URI, so the full set should now match
+  expect_equal(
+    sort(unlist(actual$stac_extensions)),
+    sort(unlist(expected$stac_extensions))
+  )
 
   expect_equal(sort_fields(actual$assets), sort_fields(expected$assets))
 })

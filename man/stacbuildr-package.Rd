@@ -41,7 +41,7 @@ reaches the written JSON.\tabular{lll}{
    \code{\link[=stac_asset]{stac_asset()}} \tab \code{stac_asset} \tab \code{item@assets} \cr
    \code{\link[=raster_statistics]{raster_statistics()}} \tab \code{raster_statistics} \tab \code{band@statistics} \cr
    \code{\link[=raster_histogram]{raster_histogram()}} \tab \code{raster_histogram} \tab \code{band@histogram} \cr
-   \code{\link[=eo_band]{eo_band()}} \tab \code{eo_band} \tab asset \code{"eo:bands"} field \cr
+   \code{\link[=eo_band]{eo_band()}} \tab \code{eo_band} \tab asset \code{"bands"} field \cr
    \code{\link[=stac_provider]{stac_provider()}} \tab \code{stac_provider} \tab \code{collection@providers} \cr
    \code{\link[=stac_summaries]{stac_summaries()}} \tab \code{stac_summaries} \tab \code{collection@summaries} \cr
    \code{\link[=classification_class]{classification_class()}} \tab \code{classification_class} \tab classification extension \cr
@@ -80,10 +80,10 @@ reports how many sections were collapsed.
 
 Extension metadata is shown wherever it is stored: item-level fields such
 as \code{"sci:doi"} or \code{"eo:cloud_cover"} appear in the \code{properties} section,
-asset-level fields such as \code{"eo:bands"} or \code{"raster:bands"} appear under
-the asset that carries them, and the declared schema URIs are listed in the
-\code{extensions} section by name and version. Arrays of objects are summarised
-by the name of each object, e.g. \code{eo:bands [B4, B5]}.
+asset-level fields such as \code{"bands"} or \code{"classification:classes"} appear
+under the asset that carries them, and the declared schema URIs are listed
+in the \code{extensions} section by name and version. Arrays of objects are
+summarised by the name of each object, e.g. \code{bands [B4, B5]}.
 
 Colour and the box-drawing characters come from \pkg{cli} and are dropped
 automatically when the console does not support them (log files, knitr,

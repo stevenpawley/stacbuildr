@@ -71,13 +71,13 @@ test_that("item_from_terra adds raster extension with 6 band objects", {
     add_raster_bands = TRUE
   )
 
-  raster_ext <- "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
+  raster_ext <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
   expect_true(raster_ext %in% item@stac_extensions)
 
-  bands <- item@assets$data$`raster:bands`
+  bands <- item@assets$data$bands
   expect_length(bands, 6)
   expect_equal(bands[[1]]$data_type, "uint8")
-  expect_equal(bands[[1]]$spatial_resolution, 28.5)
+  expect_equal(bands[[1]]$`raster:spatial_resolution`, 28.5)
 })
 
 test_that("item_from_terra skips raster extension when add_raster_bands is FALSE", {
@@ -91,9 +91,9 @@ test_that("item_from_terra skips raster extension when add_raster_bands is FALSE
     add_raster_bands = FALSE
   )
 
-  raster_ext <- "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
+  raster_ext <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
   expect_false(raster_ext %in% item@stac_extensions)
-  expect_null(item@assets$data$`raster:bands`)
+  expect_null(item@assets$data$bands)
 })
 
 test_that("item_from_terra adds projection extension for non-WGS84 CRS", {
