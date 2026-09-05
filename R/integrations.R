@@ -428,7 +428,7 @@ extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE)
 #' @keywords internal
 add_projection_metadata_terra <- function(item, terra_obj) {
   # Add projection extension to the item metadata `stac_extensions`
-  ext_uri <- "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
+  ext_uri <- "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
 
   if (is.null(item@stac_extensions)) {
     item@stac_extensions <- character(0)
@@ -438,16 +438,18 @@ add_projection_metadata_terra <- function(item, terra_obj) {
     item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
-  # Add the projection extension `proj:epsg` field. Only an EPSG authority
-  # code belongs here: terra also reports codes from other authorities, such
-  # as OGC:CRS84, which are not integers and would coerce to NA with a warning.
+  # Add the projection extension `proj:code` field, which replaced the
+  # deprecated `proj:epsg` in v2.0.0 of the extension. It is an
+  # authority:code string, so codes from authorities other than EPSG (such as
+  # OGC:CRS84) are recorded as well.
   crs <- terra::crs(terra_obj, describe = TRUE)
   if (
-    !is.na(crs$code) &&
-      isTRUE(crs$authority == "EPSG") &&
-      grepl("^[0-9]+$", crs$code)
+    !is.na(crs$authority) &&
+      !is.na(crs$code) &&
+      nzchar(crs$authority) &&
+      nzchar(crs$code)
   ) {
-    item@properties$`proj:epsg` <- as.integer(crs$code)
+    item@properties$`proj:code` <- paste0(crs$authority, ":", crs$code)
   }
 
   item@properties$`proj:wkt2` <- terra::crs(terra_obj)

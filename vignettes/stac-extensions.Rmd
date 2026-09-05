@@ -624,7 +624,7 @@ A few points that are easy to get wrong:
 
 Projection is the one extension with no `add_*` function, because it is applied
 for you. `item_from_terra()` and `items_from_directory()` add the schema URI and
-populate `proj:epsg`, `proj:wkt2`, `proj:shape`, `proj:bbox` and
+populate `proj:code`, `proj:wkt2`, `proj:shape`, `proj:bbox` and
 `proj:transform` from the raster whenever its CRS is not WGS84. An item already
 in EPSG:4326 needs none of it — the geometry and bbox say everything.
 
