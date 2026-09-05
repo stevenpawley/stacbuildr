@@ -349,9 +349,8 @@ remove_item <- function(catalog, item_id = NULL, href = NULL, all = FALSE) {
   }
 
   if (all) {
-    # Remove all item links
     catalog@links <- Filter(function(link) link$rel != "item", catalog@links)
-    return(catalog)
+    return(drop_stored_items(catalog, keep = character(0)))
   }
 
   # Build a filter function
@@ -377,7 +376,43 @@ remove_item <- function(catalog, item_id = NULL, href = NULL, all = FALSE) {
     TRUE
   }
 
+  removed <- vapply(
+    Filter(function(l) !should_keep(l), catalog@links),
+    stac_id_from_link,
+    character(1)
+  )
+
   catalog@links <- Filter(should_keep, catalog@links)
+
+  stored <- attr(catalog, "stac_items") %||% list()
+  keep <- setdiff(vapply(stored, function(it) it@id, character(1)), removed)
+  drop_stored_items(catalog, keep = keep)
+}
+
+# The id an item link points at, taken from the href the same way should_keep()
+# matches on it.
+#
+# @keywords internal
+stac_id_from_link <- function(link) {
+  sub("\\.json$", "", basename(link$href))
+}
+
+# Keep only the stored Items whose ids are in `keep`.
+#
+# remove_item() drops item links, but write_stac() rebuilds those links from
+# the items held in the "stac_items" attribute. Dropping the link alone would
+# therefore be undone on write, leaving the removed item both linked and
+# written to disk, so the stored copy has to go with it.
+#
+# @keywords internal
+drop_stored_items <- function(catalog, keep) {
+  stored <- attr(catalog, "stac_items")
+  if (is.null(stored)) {
+    return(catalog)
+  }
+
+  ids <- vapply(stored, function(it) it@id, character(1))
+  attr(catalog, "stac_items") <- stored[ids %in% keep]
   catalog
 }
 
