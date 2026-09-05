@@ -100,7 +100,7 @@ types include:
 }
 
 Use the helper functions \code{add_self_link()}, \code{add_root_link()},
-\code{add_parent_link()}, \code{add_child()}, and \code{add_item()} to manage links after
+\code{add_child()}, and \code{add_item()} to manage links after
 creating the catalog. A \code{self} link and a \code{root} link are strongly
 recommended. Non-root Catalogs should include a \code{parent} link.
 }

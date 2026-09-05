@@ -58,7 +58,7 @@ STAC Link Object specification:
 \seealso{
 \itemize{
 \item \code{\link[=add_link]{add_link()}} for adding links to STAC objects
-\item \code{\link[=add_self_link]{add_self_link()}}, \code{\link[=add_root_link]{add_root_link()}}, \code{\link[=add_parent_link]{add_parent_link()}} for convenience functions
+\item \code{\link[=add_self_link]{add_self_link()}}, \code{\link[=add_root_link]{add_root_link()}} for convenience functions
 }
 }
 \keyword{internal}

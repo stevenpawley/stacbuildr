@@ -15,3 +15,4 @@ A numeric vector of length 4: c(west, south, east, north).
 \description{
 Calculates a bounding box from an sf object in the format required by STAC.
 }
+\keyword{internal}

@@ -347,7 +347,7 @@ geometry_from_sf <- function(sf_obj) {
 #'
 #' @return A numeric vector of length 4: c(west, south, east, north).
 #'
-#' @export
+#' @keywords internal
 bbox_from_sf <- function(sf_obj) {
   if (!requireNamespace("sf", quietly = TRUE)) {
     cli::cli_abort("Package 'sf' is required")

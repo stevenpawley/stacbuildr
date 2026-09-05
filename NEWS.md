@@ -80,8 +80,8 @@ is new, and breaking changes are still expected between commits.
   extension fields from the public header block alone.
 
 * `item_from_terra()`, `raster_from_file()` and `preview_from_terra()` build
-  Items from rasters, and `item_from_sf()`, `geometry_from_sf()`,
-  `bbox_from_sf()` and `thumbnail_from_sf()` from vector data.
+  Items from rasters, and `item_from_sf()`, `geometry_from_sf()` and
+  `thumbnail_from_sf()` from vector data.
 
 ## Writing and validation
 
