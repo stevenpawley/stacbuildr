@@ -102,6 +102,12 @@ is new, and breaking changes are still expected between commits.
 
 ## Bug fixes
 
+* `remove_item()` now drops the Item itself, not just its link. `write_stac()`
+  rebuilds item links from the Items a catalog holds, so removing the link
+  alone was undone on write: the removed Item was written to disk and relinked.
+  It also left `length()` and `count_items()` disagreeing with `get_items()`,
+  `as.data.frame()` and `[[`.
+
 * Bounding boxes that cross the antimeridian are accepted rather than rejected
   as invalid.
 

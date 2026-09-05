@@ -234,3 +234,52 @@ test_that("item_from_terra reports a missing CRS instead of failing in st_crs", 
     )
   )
 })
+
+test_that("raster_from_file reads bands straight from a path", {
+  bands <- raster_from_file(tif)
+
+  # Same result as going through terra explicitly
+  expect_equal(bands, bands_from_terra(terra::rast(tif)))
+  expect_length(bands, 6)
+  expect_equal(bands[[1]]@data_type, "uint8")
+  expect_equal(bands[[1]]@spatial_resolution, 28.5)
+})
+
+test_that("raster_from_file calculates statistics when asked", {
+  bands <- raster_from_file(tif, calculate_statistics = TRUE)
+
+  expect_length(bands, 6)
+  for (band in bands) {
+    expect_true(length(band@statistics) > 0)
+    expect_true(band@statistics$minimum <= band@statistics$maximum)
+  }
+})
+
+test_that("raster_from_file passes sample_size through to the statistics", {
+  # A sample cannot report a wider range than the full pass over the raster
+  full <- raster_from_file(tif, calculate_statistics = TRUE)
+  sampled <- raster_from_file(tif, calculate_statistics = TRUE, sample_size = 50L)
+
+  expect_length(sampled, 6)
+  expect_true(sampled[[1]]@statistics$minimum >= full[[1]]@statistics$minimum)
+  expect_true(sampled[[1]]@statistics$maximum <= full[[1]]@statistics$maximum)
+})
+
+test_that("raster_from_file errors on a file that does not exist", {
+  expect_error(raster_from_file(test_path("testdata", "no-such-file.tif")))
+})
+
+test_that("raster_from_file output attaches to an item as raster bands", {
+  item <- stac_item(
+    id = "L7",
+    geometry = list(type = "Point", coordinates = c(-45, -23)),
+    bbox = c(-45, -23, -45, -23),
+    datetime = "2023-06-15T10:30:00Z"
+  )
+  item <- add_asset(item, key = "data", href = tif, type = "image/tiff")
+  item <- add_raster_extension(item, bands = raster_from_file(tif), asset_key = "data")
+
+  expect_length(item@assets$data$bands, 6)
+  expect_equal(item@assets$data$bands[[1]]$data_type, "uint8")
+  expect_true(any(grepl("raster/v2.0.0", item@stac_extensions)))
+})
