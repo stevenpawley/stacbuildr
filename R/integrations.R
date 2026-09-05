@@ -521,6 +521,8 @@ get_media_type <- function(file) {
     "png" = "image/png",
     "jpg" = "image/jpeg",
     "jpeg" = "image/jpeg",
+    "las" = "application/vnd.las",
+    "laz" = "application/vnd.laszip",
     "application/octet-stream" # Default
   )
 
@@ -528,7 +530,30 @@ get_media_type <- function(file) {
     base_type <- paste0(base_type, "; profile=cloud-optimized")
   }
 
+  # Of the point cloud types only COPC is listed in the STAC best practices;
+  # the LAS and LAZ types above follow the convention it was derived from.
+  if (is_copc(file)) {
+    base_type <- "application/vnd.laszip+copc"
+  }
+
   base_type
+}
+
+
+#' Check whether a file is a Cloud Optimized Point Cloud
+#'
+#' @description
+#' Recognises the `.copc.laz` naming convention that COPC files use. Unlike
+#' [is_cog()] this is a name check rather than a structural one, so it works
+#' for remote URLs as well as local files.
+#'
+#' @param file File path or URL.
+#'
+#' @return Logical scalar.
+#'
+#' @keywords internal
+is_copc <- function(file) {
+  grepl("\\.copc\\.laz$", basename(file), ignore.case = TRUE)
 }
 
 

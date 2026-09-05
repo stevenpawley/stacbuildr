@@ -188,6 +188,23 @@ test_that("each extension validates against its own schema", {
     test_item(),
     dimensions = list(b = cube_dimension("bands", values = "B1"))
   ))
+
+  expect_valid_stac(add_pointcloud_extension(
+    test_item(),
+    count = 81590,
+    type = "lidar",
+    density = 1.5356,
+    schemas = list(pc_schema("X", size = 8, type = "floating")),
+    statistics = list(pc_statistic("X", position = 0, minimum = 0, maximum = 1))
+  ))
+
+  # pc:count is typed as an integer, so a count past R's integer range must not
+  # pick up a decimal point on the way out
+  expect_valid_stac(add_pointcloud_extension(
+    test_item(),
+    count = 5e9,
+    type = "lidar"
+  ))
 })
 
 test_that("a collection with item_assets validates", {
