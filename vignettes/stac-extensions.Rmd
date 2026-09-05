@@ -757,13 +757,49 @@ format, and the one worth reaching for if the data will be read over HTTP.
 
 ## Projection
 
-Projection is the one extension with no `add_*` function, because it is applied
-for you. `item_from_terra()` and `items_from_directory()` add the schema URI and
-populate `proj:code`, `proj:wkt2`, `proj:shape`, `proj:bbox` and
-`proj:transform` from the raster whenever its CRS is not WGS84. `item_from_lidr()`
-does the same for a point cloud, where `proj:bbox` is three-dimensional because
-the LAS header carries Z bounds as well. An item already in EPSG:4326 needs none
-of it — the geometry and bbox say everything.
+STAC requires an Item's `geometry` and `bbox` to be WGS84 longitude/latitude
+whatever projection the data is stored in. The Projection extension carries the
+native CRS alongside it, so a client can locate a pixel or read a window without
+opening the file.
+
+Most of the time it is applied for you. `item_from_terra()` and
+`items_from_directory()` populate `proj:code`, `proj:wkt2`, `proj:shape`,
+`proj:bbox` and `proj:transform` from the raster whenever its CRS is not WGS84;
+`item_from_lidr()` does the same for a point cloud, where `proj:bbox` is
+three-dimensional because the LAS header carries Z bounds as well.
+
+`add_projection_extension()` does it by hand, for an item built from something
+other than a raster or point cloud:
+
+```{r}
+proj_item <- stac_item(
+  id = "utm-scene",
+  geometry = list(type = "Point", coordinates = c(-113.5, 51.0)),
+  bbox = c(-113.5, 51.0, -113.5, 51.0),
+  datetime = "2024-06-01T00:00:00Z"
+) |>
+  add_projection_extension(
+    code = "EPSG:32612",
+    shape = c(5558, 9559),
+    transform = c(30, 0, 712710, 0, -30, 5654790),
+    bbox = c(712710, 5487090, 999480, 5654790)
+  )
+
+proj_item@properties[c("proj:code", "proj:shape")]
+```
+
+`proj:code` is an `AUTHORITY:CODE` string — it replaced the bare-integer
+`proj:epsg` in v2.0.0 of the extension, so `"32612"` on its own is rejected and
+`"EPSG:32612"` is required. That also lets authorities other than EPSG be
+recorded, such as `"OGC:CRS84"`.
+
+Like the other extensions, `asset_key` moves the fields onto a single asset.
+This is what a Sentinel-2 scene needs: its 10 m, 20 m and 60 m bands share a
+CRS but differ in `proj:shape` and `proj:transform`, so the CRS goes on the item
+and the grid on each asset.
+
+An item already in EPSG:4326 needs none of this — the geometry and bbox say
+everything.
 
 ## Checking the result
 

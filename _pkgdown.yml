@@ -145,6 +145,14 @@ reference:
     contents:
       - add_vector_extension
 
+  - title: "Projection Extension"
+    desc: >
+      Add the STAC Projection Extension to Items, recording the native CRS,
+      grid shape and affine transform alongside the WGS84 geometry that STAC
+      itself requires.
+    contents:
+      - add_projection_extension
+
   - title: "Point Cloud Extension"
     desc: >
       Add the STAC Point Cloud Extension to Items, describing point count,

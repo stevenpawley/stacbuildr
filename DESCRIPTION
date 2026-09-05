@@ -46,6 +46,7 @@ Collate:
     'extension-vector.R'
     'extension-datacube.R'
     'extension-pointcloud.R'
+    'extension-projection.R'
     'integrations.R'
     'integrations-lidr.R'
     'thumbnail.R'

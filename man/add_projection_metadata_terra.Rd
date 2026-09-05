@@ -15,6 +15,7 @@ add_projection_metadata_terra(item, terra_obj)
 The modified STAC Item.
 }
 \description{
-Adds projection extension metadata to a STAC Item for rasters not in WGS84.
+Reads the CRS and grid geometry from a \code{SpatRaster} and hands them to
+\code{\link[=add_projection_extension]{add_projection_extension()}}.
 }
 \keyword{internal}
