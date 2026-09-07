@@ -203,7 +203,7 @@ reference:
       - as.data.frame.stac_catalog
       - st_as_sf.stac_catalog
       - stac_item_sf_accessors
-      - sub-.stac_catalog
+      - "`[.stac_catalog`"
 
   - title: "Validation"
     desc: >
