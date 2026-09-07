@@ -38,8 +38,6 @@ Build and manage the link graph between STAC objects.
   : Add a self link to a STAC catalog
 - [`add_root_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_root_link.md)
   : Add a root link to a STAC catalog
-- [`add_parent_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_parent_link.md)
-  : Add a parent link to a STAC catalog
 - [`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md)
   : Add a child catalog or collection
 - [`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
@@ -83,8 +81,6 @@ objects, and extract band metadata.
   : Create a STAC Item from a Terra SpatRaster Object
 - [`bands_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/bands_from_terra.md)
   : Extract Raster Band Metadata from a Terra SpatRaster
-- [`items_from_directory()`](https://stevenpawley.github.io/stacbuildr/reference/items_from_directory.md)
-  : Batch Create Items from Raster Files
 - [`preview_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/preview_from_terra.md)
   : Generate a Thumbnail PNG from a Terra SpatRaster Object
 
@@ -96,10 +92,20 @@ Create STAC Items and thumbnails from `sf` vector objects.
   : Create a STAC Item from an sf Object
 - [`geometry_from_sf()`](https://stevenpawley.github.io/stacbuildr/reference/geometry_from_sf.md)
   : Convert sf Geometry to GeoJSON
-- [`bbox_from_sf()`](https://stevenpawley.github.io/stacbuildr/reference/bbox_from_sf.md)
-  : Calculate Bounding Box from sf Object
 - [`thumbnail_from_sf()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_sf.md)
   : Generate a Thumbnail PNG from an sf Object
+
+## lidR Integration
+
+Create STAC Items from LAS/LAZ point clouds and `lidR` catalogues,
+deriving point cloud and projection metadata from the file header.
+
+- [`item_from_lidr()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_lidr.md)
+  : Create a STAC Item from a LAS/LAZ Point Cloud
+- [`items_from_lascatalog()`](https://stevenpawley.github.io/stacbuildr/reference/items_from_lascatalog.md)
+  : Create STAC Items from a LAScatalog
+- [`schemas_from_lidr()`](https://stevenpawley.github.io/stacbuildr/reference/schemas_from_lidr.md)
+  : Build Point Cloud Schema Objects from a LAS Header
 
 ## Raster Extension
 
@@ -116,7 +122,7 @@ objects.
   : Create Raster Statistics Object
 - [`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md)
   : Create Raster Histogram Object
-- [`raster_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/raster_from_file.md)
+- [`band_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/band_from_file.md)
   : Extract Raster Band Metadata from a File
 - [`print(`*`<raster_statistics>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.raster_statistics.md)
   : Print method for raster statistics
@@ -193,6 +199,32 @@ vector data.
 - [`add_vector_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_vector_extension.md)
   : Add Vector Extension to a STAC Item
 
+## Projection Extension
+
+Add the STAC Projection Extension to Items, recording the native CRS,
+grid shape and affine transform alongside the WGS84 geometry that STAC
+itself requires.
+
+- [`add_projection_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_projection_extension.md)
+  : Add the Projection Extension to a STAC Item
+
+## Point Cloud Extension
+
+Add the STAC Point Cloud Extension to Items, describing point count,
+phenomenology, per-dimension schemas, density, and per-channel
+statistics of point cloud datasets.
+
+- [`add_pointcloud_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_pointcloud_extension.md)
+  : Add the Point Cloud Extension to a STAC Item
+- [`pc_schema()`](https://stevenpawley.github.io/stacbuildr/reference/pc_schema.md)
+  : Create a Point Cloud Schema Object
+- [`pc_statistic()`](https://stevenpawley.github.io/stacbuildr/reference/pc_statistic.md)
+  : Create a Point Cloud Statistics Object
+- [`print(`*`<pc_schema>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.pc_schema.md)
+  : Print method for pc_schema objects
+- [`print(`*`<pc_statistic>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.pc_statistic.md)
+  : Print method for pc_statistic objects
+
 ## Datacube Extension
 
 Add the STAC Datacube Extension to Items, describing N-dimensional data
@@ -236,6 +268,33 @@ Serialise STAC objects to JSON on disk and read them back.
 - [`read_stac()`](https://stevenpawley.github.io/stacbuildr/reference/read_stac.md)
   : Read a STAC Catalog from Disk
 
+## Working with Catalogs as Data
+
+Coerce Catalogs, Collections and Items into the shapes R works in. A
+catalog answers [`length()`](https://rdrr.io/r/base/length.html) with
+its item count and subsets to its Items;
+[`as.data.frame()`](https://rspatial.github.io/terra/reference/as.data.frame.html)
+gives one row per Item and
+[`st_as_sf()`](https://r-spatial.github.io/sf/reference/st_as_sf.html)
+the same table with footprints attached. The `sf` accessors work on an
+Item directly.
+
+- [`length(`*`<stac_catalog>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/length.stac_catalog.md)
+  : Number of Items in a STAC Catalog or Collection
+- [`as.data.frame(`*`<stac_catalog>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.md)
+  [`as.data.frame(`*`<stac_item>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.md)
+  : Coerce a STAC Catalog, Collection or Item to a Data Frame
+- [`st_as_sf(`*`<stac_catalog>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/st_as_sf.stac_catalog.md)
+  [`st_as_sf(`*`<stac_item>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/st_as_sf.stac_catalog.md)
+  : Coerce a STAC Catalog, Collection or Item to an sf Object
+- [`st_geometry(`*`<stac_item>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
+  [`st_bbox(`*`<stac_item>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
+  [`st_crs(`*`<stac_item>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
+  : sf Accessors for a STAC Item
+- [`` `[`( ``*`<stac_catalog>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/sub-.stac_catalog.md)
+  [`` `[[`( ``*`<stac_catalog>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/sub-.stac_catalog.md)
+  : Extract Items from a STAC Catalog or Collection
+
 ## Validation
 
 Validate STAC objects against the specification.
@@ -252,35 +311,3 @@ package).
   : Validate a STAC Object Against the Official JSON Schema
 - [`print(`*`<stac_validation>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.stac_validation.md)
   : Print method for STAC validation results
-
-## Database Backend
-
-Set up and manage a PostgreSQL/PostGIS database backing store for STAC
-Collections and Items.
-
-- [`stac_db_setup()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_setup.md)
-  : Create the STAC database schema
-- [`stac_db_insert_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_insert_collection.md)
-  : Insert or update a STAC Collection in the database
-- [`stac_db_insert_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_insert_item.md)
-  : Insert or update a STAC Item in the database
-- [`stac_db_delete_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_delete_collection.md)
-  : Delete a STAC Collection and all its items from the database
-- [`stac_db_delete_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_db_delete_item.md)
-  : Delete a STAC Item from the database
-
-## STAC API Server
-
-Serve a STAC API 1.0 compliant HTTP API via `plumber`, backed by the
-PostgreSQL database. Includes asset signing helpers for Azure Blob
-Storage.
-
-- [`stac_api_router()`](https://stevenpawley.github.io/stacbuildr/reference/stac_api_router.md)
-  : Create a plumber router serving a minimal STAC API
-- [`sign_azure_ad()`](https://stevenpawley.github.io/stacbuildr/reference/sign_azure_ad.md)
-  : Sign an Azure Blob Storage href using Azure AD authentication.
-- [`sign_aws_s3()`](https://stevenpawley.github.io/stacbuildr/reference/sign_aws_s3.md)
-  : Sign an AWS S3 href using a presigned URL.
-- [`sign_gcp()`](https://stevenpawley.github.io/stacbuildr/reference/sign_gcp.md)
-  : Sign a Google Cloud Storage href using Application Default
-  Credentials.

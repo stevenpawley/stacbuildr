@@ -35,14 +35,3 @@ The modified catalog object with the parent link added.
 
 - [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
   for adding arbitrary links
-
-## Examples
-
-``` r
-catalog <- stac_catalog(
-  id = "child-catalog",
-  description = "A child catalog"
-)
-
-catalog <- add_parent_link(catalog, "../parent/catalog.json")
-```

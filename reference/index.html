@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">stacbuildr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,6 +22,7 @@
     <li><a class="dropdown-item" href="../articles/stac-extensions.html">Describing Data with STAC Extensions</a></li>
     <li><a class="dropdown-item" href="../articles/pystac.html">Comparison with PySTAC</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/stevenpawley/stacbuildr/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -142,13 +143,6 @@
 
         </dt>
         <dd>Add a root link to a STAC catalog</dd>
-
-        <dt>
-
-          <code><a href="add_parent_link.html">add_parent_link()</a></code>
-
-        </dt>
-        <dd>Add a parent link to a STAC catalog</dd>
 
         <dt>
 
@@ -282,13 +276,6 @@
 
         <dt>
 
-          <code><a href="items_from_directory.html">items_from_directory()</a></code>
-
-        </dt>
-        <dd>Batch Create Items from Raster Files</dd>
-
-        <dt>
-
           <code><a href="preview_from_terra.html">preview_from_terra()</a></code>
 
         </dt>
@@ -319,17 +306,40 @@
 
         <dt>
 
-          <code><a href="bbox_from_sf.html">bbox_from_sf()</a></code>
-
-        </dt>
-        <dd>Calculate Bounding Box from sf Object</dd>
-
-        <dt>
-
           <code><a href="thumbnail_from_sf.html">thumbnail_from_sf()</a></code>
 
         </dt>
         <dd>Generate a Thumbnail PNG from an sf Object</dd>
+      </dl></div><div class="section level2">
+      <h2 id="lidr-integration">lidR Integration<a class="anchor" aria-label="anchor" href="#lidr-integration"></a></h2>
+
+      <div class="section-desc"><p>Create STAC Items from LAS/LAZ point clouds and <code>lidR</code> catalogues, deriving point cloud and projection metadata from the file header.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="item_from_lidr.html">item_from_lidr()</a></code>
+
+        </dt>
+        <dd>Create a STAC Item from a LAS/LAZ Point Cloud</dd>
+
+        <dt>
+
+          <code><a href="items_from_lascatalog.html">items_from_lascatalog()</a></code>
+
+        </dt>
+        <dd>Create STAC Items from a LAScatalog</dd>
+
+        <dt>
+
+          <code><a href="schemas_from_lidr.html">schemas_from_lidr()</a></code>
+
+        </dt>
+        <dd>Build Point Cloud Schema Objects from a LAS Header</dd>
       </dl></div><div class="section level2">
       <h2 id="raster-extension">Raster Extension<a class="anchor" aria-label="anchor" href="#raster-extension"></a></h2>
 
@@ -370,7 +380,7 @@
 
         <dt>
 
-          <code><a href="raster_from_file.html">raster_from_file()</a></code>
+          <code><a href="band_from_file.html">band_from_file()</a></code>
 
         </dt>
         <dd>Extract Raster Band Metadata from a File</dd>
@@ -574,6 +584,66 @@
         </dt>
         <dd>Add Vector Extension to a STAC Item</dd>
       </dl></div><div class="section level2">
+      <h2 id="projection-extension">Projection Extension<a class="anchor" aria-label="anchor" href="#projection-extension"></a></h2>
+
+      <div class="section-desc"><p>Add the STAC Projection Extension to Items, recording the native CRS, grid shape and affine transform alongside the WGS84 geometry that STAC itself requires.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="add_projection_extension.html">add_projection_extension()</a></code>
+
+        </dt>
+        <dd>Add the Projection Extension to a STAC Item</dd>
+      </dl></div><div class="section level2">
+      <h2 id="point-cloud-extension">Point Cloud Extension<a class="anchor" aria-label="anchor" href="#point-cloud-extension"></a></h2>
+
+      <div class="section-desc"><p>Add the STAC Point Cloud Extension to Items, describing point count, phenomenology, per-dimension schemas, density, and per-channel statistics of point cloud datasets.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="add_pointcloud_extension.html">add_pointcloud_extension()</a></code>
+
+        </dt>
+        <dd>Add the Point Cloud Extension to a STAC Item</dd>
+
+        <dt>
+
+          <code><a href="pc_schema.html">pc_schema()</a></code>
+
+        </dt>
+        <dd>Create a Point Cloud Schema Object</dd>
+
+        <dt>
+
+          <code><a href="pc_statistic.html">pc_statistic()</a></code>
+
+        </dt>
+        <dd>Create a Point Cloud Statistics Object</dd>
+
+        <dt>
+
+          <code><a href="print.pc_schema.html">print(<i>&lt;pc_schema&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for pc_schema objects</dd>
+
+        <dt>
+
+          <code><a href="print.pc_statistic.html">print(<i>&lt;pc_statistic&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for pc_statistic objects</dd>
+      </dl></div><div class="section level2">
       <h2 id="datacube-extension">Datacube Extension<a class="anchor" aria-label="anchor" href="#datacube-extension"></a></h2>
 
       <div class="section-desc"><p>Add the STAC Datacube Extension to Items, describing N-dimensional data cube dimensions (spatial, temporal, geometry, or additional) and variables.</p></div>
@@ -685,6 +755,50 @@
         </dt>
         <dd>Read a STAC Catalog from Disk</dd>
       </dl></div><div class="section level2">
+      <h2 id="working-with-catalogs-as-data">Working with Catalogs as Data<a class="anchor" aria-label="anchor" href="#working-with-catalogs-as-data"></a></h2>
+
+      <div class="section-desc"><p>Coerce Catalogs, Collections and Items into the shapes R works in. A catalog answers <code><a href="https://rdrr.io/r/base/length.html" class="external-link">length()</a></code> with its item count and subsets to its Items; <code><a href="https://rspatial.github.io/terra/reference/as.data.frame.html" class="external-link">as.data.frame()</a></code> gives one row per Item and <code><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf()</a></code> the same table with footprints attached. The <code>sf</code> accessors work on an Item directly.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="length.stac_catalog.html">length(<i>&lt;stac_catalog&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Number of Items in a STAC Catalog or Collection</dd>
+
+        <dt>
+
+          <code><a href="as.data.frame.stac_catalog.html">as.data.frame(<i>&lt;stac_catalog&gt;</i>)</a></code> <code><a href="as.data.frame.stac_catalog.html">as.data.frame(<i>&lt;stac_item&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Coerce a STAC Catalog, Collection or Item to a Data Frame</dd>
+
+        <dt>
+
+          <code><a href="st_as_sf.stac_catalog.html">st_as_sf(<i>&lt;stac_catalog&gt;</i>)</a></code> <code><a href="st_as_sf.stac_catalog.html">st_as_sf(<i>&lt;stac_item&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Coerce a STAC Catalog, Collection or Item to an sf Object</dd>
+
+        <dt>
+
+          <code><a href="stac_item_sf_accessors.html">st_geometry(<i>&lt;stac_item&gt;</i>)</a></code> <code><a href="stac_item_sf_accessors.html">st_bbox(<i>&lt;stac_item&gt;</i>)</a></code> <code><a href="stac_item_sf_accessors.html">st_crs(<i>&lt;stac_item&gt;</i>)</a></code>
+
+        </dt>
+        <dd>sf Accessors for a STAC Item</dd>
+
+        <dt>
+
+          <code><a href="sub-.stac_catalog.html">`[`(<i>&lt;stac_catalog&gt;</i>)</a></code> <code><a href="sub-.stac_catalog.html">`[[`(<i>&lt;stac_catalog&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Extract Items from a STAC Catalog or Collection</dd>
+      </dl></div><div class="section level2">
       <h2 id="validation">Validation<a class="anchor" aria-label="anchor" href="#validation"></a></h2>
 
       <div class="section-desc"><p>Validate STAC objects against the specification. <code><a href="../reference/validate_stac.html">validate_stac()</a></code> applies fast, offline structural checks. <code><a href="../reference/validate_stac_schema.html">validate_stac_schema()</a></code> validates against the official JSON Schemas hosted at <code>schemas.stacspec.org</code> (requires network access and the <code>jsonvalidate</code> package).</p></div>
@@ -714,87 +828,6 @@
 
         </dt>
         <dd>Print method for STAC validation results</dd>
-      </dl></div><div class="section level2">
-      <h2 id="database-backend">Database Backend<a class="anchor" aria-label="anchor" href="#database-backend"></a></h2>
-
-      <div class="section-desc"><p>Set up and manage a PostgreSQL/PostGIS database backing store for STAC Collections and Items.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="stac_db_setup.html">stac_db_setup()</a></code>
-
-        </dt>
-        <dd>Create the STAC database schema</dd>
-
-        <dt>
-
-          <code><a href="stac_db_insert_collection.html">stac_db_insert_collection()</a></code>
-
-        </dt>
-        <dd>Insert or update a STAC Collection in the database</dd>
-
-        <dt>
-
-          <code><a href="stac_db_insert_item.html">stac_db_insert_item()</a></code>
-
-        </dt>
-        <dd>Insert or update a STAC Item in the database</dd>
-
-        <dt>
-
-          <code><a href="stac_db_delete_collection.html">stac_db_delete_collection()</a></code>
-
-        </dt>
-        <dd>Delete a STAC Collection and all its items from the database</dd>
-
-        <dt>
-
-          <code><a href="stac_db_delete_item.html">stac_db_delete_item()</a></code>
-
-        </dt>
-        <dd>Delete a STAC Item from the database</dd>
-      </dl></div><div class="section level2">
-      <h2 id="stac-api-server">STAC API Server<a class="anchor" aria-label="anchor" href="#stac-api-server"></a></h2>
-
-      <div class="section-desc"><p>Serve a STAC API 1.0 compliant HTTP API via <code>plumber</code>, backed by the PostgreSQL database. Includes asset signing helpers for Azure Blob Storage.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="stac_api_router.html">stac_api_router()</a></code>
-
-        </dt>
-        <dd>Create a plumber router serving a minimal STAC API</dd>
-
-        <dt>
-
-          <code><a href="sign_azure_ad.html">sign_azure_ad()</a></code>
-
-        </dt>
-        <dd>Sign an Azure Blob Storage href using Azure AD authentication.</dd>
-
-        <dt>
-
-          <code><a href="sign_aws_s3.html">sign_aws_s3()</a></code>
-
-        </dt>
-        <dd>Sign an AWS S3 href using a presigned URL.</dd>
-
-        <dt>
-
-          <code><a href="sign_gcp.html">sign_gcp()</a></code>
-
-        </dt>
-        <dd>Sign a Google Cloud Storage href using Application Default Credentials.</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

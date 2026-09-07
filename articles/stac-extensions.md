@@ -259,7 +259,7 @@ without reading the file.
 ### Deriving bands from a file
 
 Rather than transcribing metadata that GDAL already knows,
-[`raster_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/raster_from_file.md)
+[`band_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/band_from_file.md)
 reads it straight off the raster. With `calculate_statistics = TRUE` it
 also samples the file to populate the statistics block.
 
@@ -268,7 +268,7 @@ also samples the file to populate the statistics block.
 tif <- system.file("ex/elev.tif", package = "terra")
 
 if (requireNamespace("terra", quietly = TRUE) && nzchar(tif)) {
-  bands <- raster_from_file(tif, calculate_statistics = TRUE)
+  bands <- band_from_file(tif, calculate_statistics = TRUE)
   str(bands[[1]], max.level = 1)
 }
 #> <stacbuildr::raster_band>
@@ -286,7 +286,7 @@ if (requireNamespace("terra", quietly = TRUE) && nzchar(tif)) {
 #>  @ extra_fields      : list()
 ```
 
-[`raster_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/raster_from_file.md)
+[`band_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/band_from_file.md)
 already returns a *list* of bands, one per layer. Pass it straight
 through — wrapping it again in
 [`list()`](https://rdrr.io/r/base/list.html) is the most common mistake
@@ -295,10 +295,10 @@ double-wrapping.
 
 ``` r
 
-add_raster_extension(item, bands = list(raster_from_file(tif)))
+add_raster_extension(item, bands = list(band_from_file(tif)))
 #> Error in `add_raster_extension()`:
 #> ! 'bands' appears to be double-wrapped.
-#> ℹ Use bands = raster_from_file(...), not bands = list(raster_from_file(...)).
+#> ℹ Use bands = band_from_file(...), not bands = list(band_from_file(...)).
 ```
 
 [`bands_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/bands_from_terra.md)
@@ -781,17 +781,195 @@ A few points that are easy to get wrong:
 - Variables are `"data"` (the payload) or `"auxiliary"` (supporting
   arrays such as masks or coordinate lookups).
 
+## Point Cloud
+
+The [Point Cloud
+extension](https://github.com/stac-extensions/pointcloud) describes
+datasets of discrete points — LiDAR most often, but also radar, sonar,
+and point clouds matched from overlapping imagery. Two fields are
+required, `pc:count` and `pc:type`, and three more are optional:
+`pc:density`, `pc:schemas` (the dimensions each point carries) and
+`pc:statistics` (per-channel summaries).
+
+``` r
+
+cloud <- stac_item(
+  id = "als-tile-042",
+  geometry = list(
+    type = "Polygon",
+    coordinates = list(list(
+      c(-78.644, 45.289), c(-78.641, 45.289),
+      c(-78.641, 45.291), c(-78.644, 45.291), c(-78.644, 45.289)
+    ))
+  ),
+  bbox = c(-78.644, 45.289, -78.641, 45.291),
+  datetime = "2023-06-15T00:00:00Z"
+)
+
+cloud <- add_pointcloud_extension(
+  cloud,
+  count   = 81590,
+  type    = "lidar",
+  density = 1.54,
+  schemas = list(
+    pc_schema("X", size = 8, type = "floating"),
+    pc_schema("Y", size = 8, type = "floating"),
+    pc_schema("Z", size = 8, type = "floating"),
+    pc_schema("Intensity", size = 2, type = "unsigned")
+  ),
+  statistics = list(
+    pc_statistic("Z", position = 2, minimum = 0, maximum = 29.97)
+  )
+)
+
+cloud@properties[c("pc:count", "pc:type", "pc:density")]
+#> $`pc:count`
+#> [1] 81590
+#> 
+#> $`pc:type`
+#> [1] "lidar"
+#> 
+#> $`pc:density`
+#> [1] 1.54
+```
+
+Two details are worth knowing before you write these by hand.
+
+`pc:type` is **not** an enumeration, unlike most controlled STAC fields.
+The specification suggests `"lidar"`, `"eopc"`, `"radar"`, `"sonar"` and
+`"other"`, but its schema accepts any non-empty string. So an
+unrecognised value warns and is kept, rather than failing the way an
+invalid `vector:geometry_types` would:
+
+``` r
+
+photogrammetric <- add_pointcloud_extension(
+  cloud, count = 100, type = "structure-from-motion"
+)
+#> Warning: 'type' is "structure-from-motion", which is not one of the suggested values.
+#> ℹ The specification suggests "lidar", "eopc", "radar", "sonar", and "other",
+#>   but does not restrict pc:type to them, so this value is kept.
+```
+
+Sizes in `pc:schemas` are in **whole bytes**, which the LAS format does
+not oblige. `ReturnNumber`, `NumberOfReturns`, `ScanDirectionFlag` and
+the classification flags are bit-packed into shared bytes in the file
+itself. The convention, set by PDAL and followed here, is to describe
+each as the unpacked one-byte dimension a reader materialises — the file
+layout is not what the field is for.
+
+### From a LAS or LAZ file
+
+[`item_from_lidr()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_lidr.md)
+fills all of this in from a point cloud’s header, via the
+[lidR](https://r-lidar.github.io/lidRbook/) package. Everything above
+comes out of the public header block, so no points are read and the cost
+does not grow with the size of the file:
+
+``` r
+
+f <- system.file("extdata", "Megaplot.laz", package = "lidR")
+
+tile <- item_from_lidr(f, datetime = "2023-06-15T00:00:00Z")
+
+tile@properties[c("pc:count", "pc:density", "proj:code")]
+#> $`pc:count`
+#> [1] 81590
+#> 
+#> $`pc:density`
+#> [1] 1.535576
+#> 
+#> $`proj:code`
+#> [1] "EPSG:26917"
+```
+
+The dimension schema is derived from the file’s point data record format
+and from any Extra Bytes record it declares:
+
+``` r
+
+vapply(tile@properties$`pc:schemas`, function(s) s$name, character(1))
+#>  [1] "X"                 "Y"                 "Z"                
+#>  [4] "Intensity"         "ReturnNumber"      "NumberOfReturns"  
+#>  [7] "ScanDirectionFlag" "EdgeOfFlightLine"  "Classification"   
+#> [10] "ScanAngleRank"     "UserData"          "PointSourceId"    
+#> [13] "GpsTime"
+```
+
+Statistics are the one thing the header cannot fully supply. It carries
+the X, Y and Z bounds, so those channels get `minimum`, `maximum` and
+`count` for free; averages, standard deviations and any other channel
+need a full read, which `calculate_statistics = TRUE` opts into.
+
+For a tiled collection,
+[`items_from_lascatalog()`](https://stevenpawley.github.io/stacbuildr/reference/items_from_lascatalog.md)
+takes a `lidR` `LAScatalog` (or a directory, or a vector of paths) and
+returns one item per file, skipping any tile it cannot read rather than
+abandoning the run. Pass the result to
+[`extent_from_items()`](https://stevenpawley.github.io/stacbuildr/reference/extent_from_items.md)
+to derive the collection extent.
+
+A note on media types:
+[`get_media_type()`](https://stevenpawley.github.io/stacbuildr/reference/get_media_type.md)
+recognises `.las` and `.laz`, and maps the `.copc.laz` convention to
+`application/vnd.laszip+copc`. Only the COPC type is listed in the STAC
+best practices — it is the cloud-optimized point cloud format, and the
+one worth reaching for if the data will be read over HTTP.
+
 ## Projection
 
-Projection is the one extension with no `add_*` function, because it is
-applied for you.
+STAC requires an Item’s `geometry` and `bbox` to be WGS84
+longitude/latitude whatever projection the data is stored in. The
+Projection extension carries the native CRS alongside it, so a client
+can locate a pixel or read a window without opening the file.
+
+Most of the time it is applied for you.
 [`item_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_terra.md)
-and
-[`items_from_directory()`](https://stevenpawley.github.io/stacbuildr/reference/items_from_directory.md)
-add the schema URI and populate `proj:code`, `proj:wkt2`, `proj:shape`,
-`proj:bbox` and `proj:transform` from the raster whenever its CRS is not
-WGS84. An item already in EPSG:4326 needs none of it — the geometry and
-bbox say everything.
+populates `proj:code`, `proj:wkt2`, `proj:shape`, `proj:bbox` and
+`proj:transform` from the raster whenever its CRS is not WGS84;
+[`item_from_lidr()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_lidr.md)
+does the same for a point cloud, where `proj:bbox` is three-dimensional
+because the LAS header carries Z bounds as well.
+
+[`add_projection_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_projection_extension.md)
+does it by hand, for an item built from something other than a raster or
+point cloud:
+
+``` r
+
+proj_item <- stac_item(
+  id = "utm-scene",
+  geometry = list(type = "Point", coordinates = c(-113.5, 51.0)),
+  bbox = c(-113.5, 51.0, -113.5, 51.0),
+  datetime = "2024-06-01T00:00:00Z"
+) |>
+  add_projection_extension(
+    code = "EPSG:32612",
+    shape = c(5558, 9559),
+    transform = c(30, 0, 712710, 0, -30, 5654790),
+    bbox = c(712710, 5487090, 999480, 5654790)
+  )
+
+proj_item@properties[c("proj:code", "proj:shape")]
+#> $`proj:code`
+#> [1] "EPSG:32612"
+#> 
+#> $`proj:shape`
+#> [1] 5558 9559
+```
+
+`proj:code` is an `AUTHORITY:CODE` string — it replaced the bare-integer
+`proj:epsg` in v2.0.0 of the extension, so `"32612"` on its own is
+rejected and `"EPSG:32612"` is required. That also lets authorities
+other than EPSG be recorded, such as `"OGC:CRS84"`.
+
+Like the other extensions, `asset_key` moves the fields onto a single
+asset. This is what a Sentinel-2 scene needs: its 10 m, 20 m and 60 m
+bands share a CRS but differ in `proj:shape` and `proj:transform`, so
+the CRS goes on the item and the grid on each asset.
+
+An item already in EPSG:4326 needs none of this — the geometry and bbox
+say everything.
 
 ## Checking the result
 

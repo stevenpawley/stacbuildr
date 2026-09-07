@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">stacbuildr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,7 @@
     <li><a class="dropdown-item" href="../articles/pystac.html">Comparison with PySTAC</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -152,7 +153,7 @@ geometry from the <code>SpatRaster</code> object and returns a
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">&lt;STAC Item&gt;</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">id          </span> : <span style="color: #00BB00; font-weight: bold;">dem-001</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">stac_version</span> : <span style="color: #555555;">1.1.0</span></span></span>
-<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2026-09-05T02:14:23Z</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2026-09-07T19:13:19Z</span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">geometry    </span> : Polygon</span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">bbox        </span> : [-120.0000, 48.0000, -119.0000, 49.0000]</span></span>
 <span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">properties</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[bands]</span></span></span>
@@ -263,7 +264,7 @@ only</a>. If you need the former, copy the assets under
 <span>  catalog_type <span class="op">=</span> <span class="st">"self-contained"</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> STAC catalog written to <span style="color: #0000BB;">/tmp/RtmpjLAua7/catalog</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> STAC catalog written to <span style="color: #0000BB;">/tmp/RtmpwmAXVG/catalog</span></span></span></code></pre></div>
 <p>The resulting directory structure looks like:</p>
 <pre><code>catalog/
   catalog.json
@@ -287,7 +288,7 @@ only</a>. If you need the former, copy the assets under
 <span><span class="co">#&gt;   <span style="color: #555555;">id          </span> : <span style="color: #00BB00; font-weight: bold;">dem-001</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">collection  </span> : <span style="color: #BB00BB;">terrain</span></span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">stac_version</span> : <span style="color: #555555;">1.1.0</span></span></span>
-<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2026-09-05T02:14:23Z</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">datetime    </span> : 2026-09-07T19:13:19Z</span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">geometry    </span> : Polygon</span></span>
 <span><span class="co">#&gt;   <span style="color: #555555;">bbox        </span> : [-120.0000, 48.0000, -119.0000, 49.0000]</span></span>
 <span><span class="co">#&gt;   <span style="color: #0000BB;">▸</span> <span style="color: #555555;">properties</span> : <span style="color: #BBBB00;">1</span> <span style="color: #555555;">[bands]</span></span></span>
@@ -298,185 +299,14 @@ only</a>. If you need the former, copy the assets under
 <span><span class="co"><span style="color: #555555;">#&gt; </span></span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="database-backed-stac-api">Database-backed STAC API<a class="anchor" aria-label="anchor" href="#database-backed-stac-api"></a>
+<h2 id="serving-the-catalog-as-a-stac-api">Serving the catalog as a STAC API<a class="anchor" aria-label="anchor" href="#serving-the-catalog-as-a-stac-api"></a>
 </h2>
-<p>The following sections require a running PostgreSQL database and
-(optionally) a Posit Connect server to deploy the API. They are shown
-for reference but are not evaluated when the vignette is built.</p>
-<div class="section level3">
-<h3 id="set-up-the-database">Set up the database<a class="anchor" aria-label="anchor" href="#set-up-the-database"></a>
-</h3>
-<p><code><a href="../reference/stac_db_setup.html">stac_db_setup()</a></code> creates tables and indexes inside an
-existing database; it cannot create the database itself, because
-PostgreSQL only accepts <code>CREATE DATABASE</code> from a connection
-to a <em>different</em> database. Create it once up front, either from
-the shell:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">createdb</span> stac</span></code></pre></div>
-<p>or from R, by connecting to the default <code>postgres</code>
-maintenance database:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">admin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span></span>
-<span>  <span class="fu">RPostgres</span><span class="fu">::</span><span class="fu"><a href="https://rpostgres.r-dbi.org/reference/Postgres.html" class="external-link">Postgres</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  host <span class="op">=</span> <span class="st">"localhost"</span>,</span>
-<span>  port <span class="op">=</span> <span class="fl">5432</span>,</span>
-<span>  dbname <span class="op">=</span> <span class="st">"postgres"</span>,</span>
-<span>  user <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PG_USER"</span><span class="op">)</span>,</span>
-<span>  password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PG_PASSWORD"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span></span>
-<span>  <span class="va">admin</span>,</span>
-<span>  <span class="st">"SELECT 1 FROM pg_database WHERE datname = 'stac'"</span></span>
-<span><span class="op">)</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">admin</span>, <span class="st">"CREATE DATABASE stac"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">admin</span><span class="op">)</span></span></code></pre></div>
-<p>The role also needs permission to run
-<code>CREATE EXTENSION postgis</code>, which
-<code><a href="../reference/stac_db_setup.html">stac_db_setup()</a></code> issues on first use. A superuser
-connection, or a database created from the <code>template_postgis</code>
-template, satisfies this.</p>
-<p>Now connect to the <code>stac</code> database and create the
-schema:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span></span>
-<span>  <span class="fu">RPostgres</span><span class="fu">::</span><span class="fu"><a href="https://rpostgres.r-dbi.org/reference/Postgres.html" class="external-link">Postgres</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  host <span class="op">=</span> <span class="st">"localhost"</span>,</span>
-<span>  port <span class="op">=</span> <span class="fl">5432</span>,</span>
-<span>  dbname <span class="op">=</span> <span class="st">"stac"</span>,</span>
-<span>  user <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PG_USER"</span><span class="op">)</span>,</span>
-<span>  password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PG_PASSWORD"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/stac_db_setup.html">stac_db_setup</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="serve-the-asset-over-http">Serve the asset over HTTP<a class="anchor" aria-label="anchor" href="#serve-the-asset-over-http"></a>
-</h3>
-<p>The item built above has <code>href = tif_path</code>, a local
-filesystem path. That works for the static catalog, where
-<code><a href="../reference/write_stac.html">write_stac()</a></code> rewrites the href to a path relative to the
-item JSON and a local reader resolves it on disk. It does
-<strong>not</strong> work for the API: a client such as QGIS resolves a
-non-URL href against the API base URL, producing a nonsense address like
-<code>http://127.0.0.1:3485/var/folders/.../dem.tif</code>, and the
-request 404s.</p>
-<p>The STAC API serves JSON only — it never serves asset bytes. So
-assets must already be fetchable over HTTP from somewhere else. For
-local development, run a static file server rooted at
-<code>data_dir</code>, the directory the DEM was written to. Print the
-exact command and paste it into a terminal, leaving it running:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'npx http-server "%s" -p 8000 --cors\n'</span>, <span class="va">data_dir</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; npx http-server "/tmp/RtmpjLAua7/data" -p 8000 --cors</span></span></code></pre></div>
-<p><code>npx serve "&lt;data_dir&gt;" -l 8000 --cors</code> works
-equally well.</p>
-<p>Three details are easy to get wrong here:</p>
-<ul>
-<li>
-<strong>Serve <code>data_dir</code>, not
-<code>$TMPDIR</code>.</strong> R creates a per-session
-<code>Rtmp&lt;XXXXXX&gt;</code> directory beneath <code>$TMPDIR</code>,
-so a server rooted at <code>$TMPDIR</code> leaves the raster one path
-segment deeper than the href says, and every request 404s.</li>
-<li>
-<strong>Use a server that honours <code>Range</code>.</strong> GDAL
-reads remote rasters through <code>/vsicurl/</code>, which issues HTTP
-range requests to fetch only the tiles and overviews it needs. Python’s
-built-in <code>http.server</code> ignores <code>Range</code> — it
-answers <code>200</code> with the full body and advertises no
-<code>Accept-Ranges</code> — forcing the whole file over the wire on
-every read, which is ruinous for a cloud-optimized GeoTIFF. Both
-<code>npx</code> servers above return <code>206 Partial Content</code>
-correctly.</li>
-<li>
-<strong>Keep the R session alive.</strong> R deletes
-<code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code> on exit, taking the raster with it and leaving
-the stored hrefs pointing at nothing. For anything beyond this
-walkthrough, put assets in a persistent directory.</li>
-</ul>
-<p><code>--cors</code> is what lets browser-based clients such as STAC
-Browser read the assets; QGIS does not need it, but it costs
-nothing.</p>
-<p>Then replace the asset with one pointing at that server. Re-using the
-same key overwrites the existing asset:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_asset.html">add_asset</a></span><span class="op">(</span></span>
-<span>  <span class="va">item</span>,</span>
-<span>  key <span class="op">=</span> <span class="st">"dem"</span>,</span>
-<span>  href <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"http://127.0.0.1:8000/"</span>, <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">tif_path</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  title <span class="op">=</span> <span class="st">"Digital Elevation Model"</span>,</span>
-<span>  description <span class="op">=</span> <span class="st">"Synthetic DEM for demonstration"</span>,</span>
-<span>  type <span class="op">=</span> <span class="st">"image/tiff; application=geotiff; profile=cloud-optimized"</span>,</span>
-<span>  roles <span class="op">=</span> <span class="st">"data"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Confirm the URL resolves before inserting —
-<code>curl -I &lt;href&gt;</code> should return <code>200 OK</code>. In
-production, use blob storage URLs (S3, Azure Blob, GCS) so clients fetch
-assets directly without going through the API or a local file
-server.</p>
-</div>
-<div class="section level3">
-<h3 id="insert-a-collection-and-item">Insert a collection and item<a class="anchor" aria-label="anchor" href="#insert-a-collection-and-item"></a>
-</h3>
-<p>Insert <em>after</em> fixing the href:
-<code><a href="../reference/stac_db_insert_item.html">stac_db_insert_item()</a></code> stores the item as-is, so an href
-inserted wrong stays wrong until you re-insert.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/stac_db_insert_collection.html">stac_db_insert_collection</a></span><span class="op">(</span><span class="va">con</span>, <span class="va">collection</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">item</span><span class="op">@</span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="st">"terrain"</span></span>
-<span><span class="fu"><a href="../reference/stac_db_insert_item.html">stac_db_insert_item</a></span><span class="op">(</span><span class="va">con</span>, <span class="va">item</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="run-the-stac-api-locally">Run the STAC API locally<a class="anchor" aria-label="anchor" href="#run-the-stac-api-locally"></a>
-</h3>
-<p><code><a href="../reference/stac_api_router.html">stac_api_router()</a></code> returns a plumber router pre-wired
-with all STAC endpoints. For local development, pass
-<code>require_auth = FALSE</code> to skip authentication.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.rplumber.io" class="external-link">plumber</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">pr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stac_api_router.html">stac_api_router</a></span><span class="op">(</span></span>
-<span>  <span class="va">con</span>,</span>
-<span>  base_url <span class="op">=</span> <span class="st">"http://127.0.0.1:3485"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://www.rplumber.io/reference/pr_run.html" class="external-link">pr_run</a></span><span class="op">(</span><span class="va">pr</span>, port <span class="op">=</span> <span class="fl">3485</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="deploying-to-posit-connect">Deploying to Posit Connect<a class="anchor" aria-label="anchor" href="#deploying-to-posit-connect"></a>
-</h3>
-<p>When deploying to Posit Connect with multiple concurrent users,
-replace the single DBI connection with a connection pool from the
-<code>pool</code> package. A pool manages multiple connections and hands
-them out to simultaneous requests without contention. Store credentials
-in environment variables rather than hardcoding them — Posit Connect
-lets you set these per-deployment under the Vars tab.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rstudio/pool" class="external-link">pool</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.rplumber.io" class="external-link">plumber</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">pool</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://rstudio.github.io/pool/reference/dbPool.html" class="external-link">dbPool</a></span><span class="op">(</span></span>
-<span>  <span class="fu">RPostgres</span><span class="fu">::</span><span class="fu"><a href="https://rpostgres.r-dbi.org/reference/Postgres.html" class="external-link">Postgres</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  host <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PG_HOST"</span><span class="op">)</span>,</span>
-<span>  dbname <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PG_DBNAME"</span><span class="op">)</span>,</span>
-<span>  user <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PG_USER"</span><span class="op">)</span>,</span>
-<span>  password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PG_PASSWORD"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">onStop</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fu"><a href="http://rstudio.github.io/pool/reference/Pool-class.html" class="external-link">poolClose</a></span><span class="op">(</span><span class="va">pool</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">pr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stac_api_router.html">stac_api_router</a></span><span class="op">(</span></span>
-<span>  <span class="va">pool</span>,</span>
-<span>  base_url <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"STAC_BASE_URL"</span><span class="op">)</span> <span class="co"># e.g. "https://connect.example.com/stac"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://www.rplumber.io/reference/pr_run.html" class="external-link">pr_run</a></span><span class="op">(</span><span class="va">pr</span><span class="op">)</span></span></code></pre></div>
-</div>
+<p>A static catalog on disk is enough for many uses, but a searchable
+STAC API needs a database behind it. That is the job of the companion
+package <a href="https://github.com/stevenpawley/stacserver" class="external-link">stacserver</a>, which
+ingests the collections and items built here into PostgreSQL/PostGIS and
+serves them through a <code>plumber</code> router. See its “Serving a
+STAC API” vignette.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

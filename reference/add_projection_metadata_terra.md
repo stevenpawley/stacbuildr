@@ -1,7 +1,7 @@
 # Add Projection Extension Metadata from a Terra SpatRaster
 
-Adds projection extension metadata to a STAC Item for rasters not in
-WGS84.
+Reads the CRS and grid geometry from a `SpatRaster` and hands them to
+[`add_projection_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_projection_extension.md).
 
 ## Usage
 

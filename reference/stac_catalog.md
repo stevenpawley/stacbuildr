@@ -128,7 +128,6 @@ relation types include:
 Use the helper functions
 [`add_self_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_self_link.md),
 [`add_root_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_root_link.md),
-[`add_parent_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_parent_link.md),
 [`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md),
 and
 [`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)

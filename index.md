@@ -179,6 +179,26 @@ item <- item |>
   )
 ```
 
+#### Projection extension
+
+``` r
+
+item <- item |>
+  add_projection_extension(
+    code = "EPSG:32612",                             # AUTHORITY:CODE, not a bare number
+    shape = c(5558, 9559),                           # rows, columns
+    transform = c(30, 0, 712710, 0, -30, 5654790),   # affine pixel -> CRS
+    bbox = c(712710, 5487090, 999480, 5654790)       # in the native CRS
+  )
+```
+
+[`item_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_terra.md)
+and
+[`item_from_lidr()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_lidr.md)
+add these fields for you; call this directly when building an item by
+hand. Pass `asset_key` to place the fields on one asset, for items whose
+assets differ in resolution.
+
 ### Integrations with spatial R packages
 
 ``` r
@@ -197,7 +217,7 @@ item <- item_from_terra(
 )
 
 # Or read raster band metadata separately and attach to an existing item
-bands <- raster_from_file("path/to/image.tif", calculate_statistics = TRUE)
+bands <- band_from_file("path/to/image.tif", calculate_statistics = TRUE)
 item <- item |>
   add_asset("data", href = "path/to/image.tif",
             type = "image/tiff; application=geotiff; profile=cloud-optimized",
@@ -218,7 +238,10 @@ item <- item_from_sf(
 )
 
 # Batch-create items from a directory of rasters
-items <- items_from_directory("path/to/rasters", pattern = "\\.tif$")
+files <- list.files("path/to/rasters", pattern = "\\.tif$", full.names = TRUE)
+items <- lapply(files, function(f) {
+  item_from_terra(terra::rast(f), id = tools::file_path_sans_ext(basename(f)))
+})
 
 # Calculate a collection extent from a list of items automatically
 extent <- extent_from_items(items)
@@ -286,6 +309,41 @@ result$warnings # character vector of warnings for missing recommended fields
 validate_stac(item, strict = TRUE)
 ```
 
+### Working with a catalog as data
+
+A Catalog or Collection behaves as the container of Items it is:
+
+``` r
+
+length(collection)        # number of items
+collection[["scene-1"]]   # one item, by id
+collection[1:5]           # a list of items
+
+# One row per item: id, collection, datetime, then every property as a column
+as.data.frame(collection)
+
+# The same table with the item footprints attached, in EPSG:4326
+scenes <- sf::st_as_sf(collection)
+scenes[scenes$`eo:cloud_cover` < 20, ]
+plot(sf::st_geometry(scenes))
+```
+
+Items missing a property get `NA` for it, and properties that hold
+vectors or objects (`proj:transform`, `bands`) become list columns. For
+a catalog read back from disk with
+[`read_stac()`](https://stevenpawley.github.io/stacbuildr/reference/read_stac.md),
+pass `resolve = TRUE` to follow the item links.
+
+An Item is a GeoJSON Feature, so the `sf` accessors work on one
+directly:
+
+``` r
+
+sf::st_geometry(item)   # the footprint as an sfc
+sf::st_bbox(item)       # its bounding box
+sf::st_crs(item)        # EPSG:4326 -- native CRS is in proj:code
+```
+
 ### Inspecting catalog contents
 
 ``` r
@@ -298,168 +356,12 @@ get_children(catalog)                            # named list of child catalogs
 
 ## Serving a STAC API
 
-stacbuildr can serve a live [STAC
-API](https://github.com/radiantearth/stac-api-spec) backed by a
-PostgreSQL database (with PostGIS). The API follows the OGC API –
-Features and STAC API 1.0 specifications.
-
-### Prerequisites
-
-``` r
-
-install.packages(c("DBI", "RPostgres", "plumber", "httr2"))
-```
-
-A PostgreSQL database with the PostGIS extension must be reachable.
-
-### Set up the database
-
-``` r
-library(stacbuildr)
-library(DBI)
-
-con <- dbConnect(
-  RPostgres::Postgres()
-  host     = "localhost",
-  dbname   = "stac",
-  user     = "myuser",
-  password = "mypassword"
-)
-
-# Create tables and indexes (idempotent — safe to run on every startup)
-stac_db_setup(con)
-```
-
-### Ingest collections and items
-
-``` r
-
-# Insert a collection
-stac_db_insert_collection(con, collection)
-
-# Items must reference their collection before ingestion
-item@collection <- "sentinel-2-l2a"
-stac_db_insert_item(con, item)
-
-# Items with extension metadata are stored as-is in JSONB —
-# no schema changes are needed for new extensions
-item_with_extensions <- item |>
-  add_eo_extension(bands = sentinel2_msi_bands(), cloud_cover = 4.1) |>
-  add_scientific_extension(doi = "10.1000/xyz123")
-
-item_with_extensions@collection <- "sentinel-2-l2a"
-stac_db_insert_item(con, item_with_extensions)
-```
-
-### Launch the API
-
-``` r
-
-router <- stac_api_router(
-  con,
-  base_url    = "http://localhost:8000",
-  title       = "My STAC API",
-  description = "Sentinel-2 imagery archive"
-)
-
-plumber::pr_run(router, port = 8000)
-```
-
-The router exposes these endpoints:
-
-| Method | Path | Description |
-|----|----|----|
-| GET | `/` | Landing page |
-| GET | `/conformance` | Conformance classes |
-| GET | `/collections` | All collections |
-| GET | `/collections/{collectionId}` | Single collection |
-| GET | `/collections/{collectionId}/items` | Paged items |
-| GET | `/collections/{collectionId}/items/{itemId}` | Single item |
-| GET | `/search` | Cross-collection search |
-| POST | `/search` | Search with JSON body |
-
-**Search parameters:** `bbox`, `datetime`, `collections`, `ids`,
-`limit`, `offset`. The POST `/search` endpoint additionally accepts a
-`properties` object for filtering on any item property, including
-extension fields:
-
-``` json
-{
-  "bbox": [-106, 39, -104, 41],
-  "datetime": "2023-01-01T00:00:00Z/2023-12-31T23:59:59Z",
-  "collections": ["sentinel-2-l2a"],
-  "limit": 20,
-  "properties": {
-    "eo:cloud_cover": 4.1,
-    "sci:doi": "10.1000/xyz123"
-  }
-}
-```
-
-### Authentication
-
-The API requires an `Authorization: Key <api-key>` header on every
-request (the same convention used by Posit Connect for programmatic API
-access). Key validation is resolved in this order:
-
-1.  **`CONNECT_SERVER` env var set** — the key is validated live against
-    Posit Connect’s user API. This env var is always set automatically
-    when the content is deployed on Connect.
-2.  **`STAC_API_KEY` env var set** — the key is compared to that static
-    value. Useful for local development.
-3.  **Neither set** — any correctly-formatted header is accepted. Use
-    only when Connect is enforcing authentication at the infrastructure
-    level.
-
-To disable authentication during development:
-
-``` r
-
-router <- stac_api_router(con, require_auth = FALSE)
-```
-
-### Deploying to Posit Connect
-
-The API can be deployed to [Posit
-Connect](https://posit.co/products/enterprise/connect/) using the
-standard plumber deployment workflow. Create an entrypoint file
-(e.g. `plumber.R`) in your project:
-
-``` r
-
-# plumber.R
-library(stacbuildr)
-library(DBI)
-
-con <- dbConnect(
-  RPostgres::Postgres(),
-  host     = Sys.getenv("DB_HOST"),
-  dbname   = Sys.getenv("DB_NAME"),
-  user     = Sys.getenv("DB_USER"),
-  password = Sys.getenv("DB_PASSWORD")
-)
-
-stac_db_setup(con)
-
-stac_api_router(
-  con,
-  base_url = Sys.getenv("CONNECT_CONTENT_URL")
-)
-```
-
-Then publish and set database credentials as environment variables in
-the Connect dashboard. In the content’s **Access** settings, set access
-to **“All authenticated Posit Connect users”** (or a specific group) —
-Connect will then validate API keys before requests reach the plumber
-process, and the `CONNECT_SERVER` variable will be injected
-automatically.
-
-Callers authenticate using their personal Connect API key:
-
-``` bash
-curl -H "Authorization: Key <connect-api-key>" \
-     https://connect.example.com/content/<id>/collections
-```
+Serving these catalogs as a live [STAC
+API](https://github.com/radiantearth/stac-api-spec) is handled by the
+companion package
+[stacserver](https://github.com/stevenpawley/stacserver), which ingests
+stacbuildr objects into a PostgreSQL/PostGIS database and exposes them
+through a `plumber` router.
 
 ## Dependencies
 
@@ -471,8 +373,9 @@ curl -H "Authorization: Key <connect-api-key>" \
 | `geojsonsf` | sf ↔︎ GeoJSON conversion      |
 
 Optional: `terra` (raster integration — `item_from_terra`,
-`raster_from_file`, `preview_from_terra`), `DBI` + `RPostgres` +
-`plumber` + `httr2` (serving the STAC API)
+`band_from_file`, `preview_from_terra`), `lidR` (point-cloud integration
+— `item_from_lidr`, `items_from_lascatalog`), `jsonvalidate` (schema
+validation)
 
 ## References
 

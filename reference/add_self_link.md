@@ -29,9 +29,6 @@ The modified catalog object with the self link added.
 - [`add_root_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_root_link.md)
   for adding a root link
 
-- [`add_parent_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_parent_link.md)
-  for adding a parent link
-
 - [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
   for adding arbitrary links
 
