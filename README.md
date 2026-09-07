@@ -3,7 +3,6 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/stevenpawley/stacbuildr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/stevenpawley/stacbuildr/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![CRAN status](https://www.r-pkg.org/badges/version/stacbuildr)](https://CRAN.R-project.org/package=stacbuildr)
 [![R-universe version](https://stevenpawley.r-universe.dev/stacbuildr/badges/version)](https://stevenpawley.r-universe.dev/stacbuildr)
 <!-- badges: end -->
 
