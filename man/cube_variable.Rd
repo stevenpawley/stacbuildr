@@ -46,7 +46,7 @@ representation.}
 \item{...}{Additional fields for the variable object.}
 }
 \value{
-A named list of class \code{"cube_variable"}.
+A \code{cube_variable} S7 object. Access fields with \code{@}.
 }
 \description{
 Creates a variable object for use with the Datacube Extension. Describes

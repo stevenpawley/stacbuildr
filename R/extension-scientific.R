@@ -123,7 +123,9 @@ add_scientific_extension <- function(
         "'publications' must be a non-empty list of scientific_publication objects"
       )
     }
-    not_pub <- !vapply(publications, inherits, logical(1), "scientific_publication")
+    not_pub <- !vapply(
+      publications, S7::S7_inherits, logical(1), scientific_publication
+    )
     if (any(not_pub)) {
       cli::cli_abort(
         "All elements of 'publications' must be scientific_publication objects"
@@ -186,7 +188,7 @@ add_scientific_extension <- function(
 #'   information to uniquely identify the publication. At least one of `doi` or
 #'   `citation` must be provided.
 #'
-#' @return A named list of class `"scientific_publication"`.
+#' @return A `scientific_publication` S7 object. Access fields with `@`.
 #'
 #' @examples
 #' # Publication with both DOI and citation
@@ -227,8 +229,29 @@ scientific_publication <- function(doi = NULL, citation = NULL) {
   if (!is.null(doi))      pub$doi      <- doi
   if (!is.null(citation)) pub$citation <- citation
 
-  class(pub) <- c("scientific_publication", "list")
   pub
+}
+
+.scientific_publication_fields <- scientific_publication
+
+scientific_publication <- S7::new_class(
+  "scientific_publication",
+  properties = list(
+    doi = S7::new_union(S7::class_character, NULL),
+    citation = S7::new_union(S7::class_character, NULL)
+  ),
+  constructor = function(doi = NULL, citation = NULL) {
+    fields <- .scientific_publication_fields(doi, citation)
+    S7::new_object(S7::S7_object(), doi = fields$doi, citation = fields$citation)
+  },
+  validator = function(self) {
+    if (is.null(self@doi) && is.null(self@citation))
+      "at least one of 'doi' or 'citation' must be provided"
+  }
+)
+
+S7::method(as.list, scientific_publication) <- function(x, ...) {
+  compact_nulls(list(doi = x@doi, citation = x@citation))
 }
 
 
@@ -237,9 +260,12 @@ scientific_publication <- function(doi = NULL, citation = NULL) {
 #' @param x A scientific_publication object.
 #' @param ... Additional arguments (ignored).
 #'
-#' @export
-print.scientific_publication <- function(x, ...) {
+#' @noRd
+S7::method(print, scientific_publication) <- function(x, ...) {
   stac_print_header("Scientific Publication")
-  stac_print_list_fields(x, styles = list(doi = stac_style_id))
+  stac_print_list_fields(
+    compact_nulls(list(doi = x@doi, citation = x@citation)),
+    styles = list(doi = stac_style_id)
+  )
   invisible(x)
 }

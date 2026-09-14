@@ -387,10 +387,10 @@ S7::method(as.list, stac_item) <- function(x, ...) {
     stac_version = x@stac_version,
     id = x@id,
     geometry = x@geometry,
-    properties = x@properties,
+    properties = stac_json_value(x@properties),
     links = x@links,
     # Ensure assets serializes as {} not [] when empty
-    assets = if (length(x@assets) == 0) setNames(list(), character(0)) else lapply(x@assets, as.list)
+    assets = if (length(x@assets) == 0) setNames(list(), character(0)) else stac_json_value(x@assets)
   )
   if (!is.null(x@bbox)) {
     out$bbox <- x@bbox

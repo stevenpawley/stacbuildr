@@ -7,7 +7,7 @@ test_that("every S3 print method is registered where dispatch can find it", {
   expect_true(all(private %in% base_table))
 })
 
-test_that("print dispatches for the S3 sub-object classes", {
+test_that("print dispatches for sub-object classes", {
   local_reproducible_output(unicode = FALSE)
 
   cases <- list(
@@ -28,7 +28,11 @@ test_that("print dispatches for the S3 sub-object classes", {
   )
 
   for (cls in names(cases)) {
-    expect_s3_class(cases[[cls]], cls)
+    if (inherits(cases[[cls]], "S7_object")) {
+      expect_true(S7::S7_inherits(cases[[cls]], get(cls)))
+    } else {
+      expect_s3_class(cases[[cls]], cls)
+    }
     # the raw list dump ends in an "attr(,"class")" line; a dispatched method
     # does not
     out <- capture.output(print(cases[[cls]]))
@@ -36,11 +40,11 @@ test_that("print dispatches for the S3 sub-object classes", {
   }
 })
 
-test_that("eo_band carries its class through extra fields", {
-  # c() drops attributes, so the class has to survive the extra-field merge
+test_that("eo_band stores extension fields in extra_fields", {
   band <- eo_band(name = "B4", "raster:scale" = 1e-4)
-  expect_s3_class(band, "eo_band")
-  expect_equal(band$`raster:scale`, 1e-4)
+  expect_true(S7::S7_inherits(band, eo_band))
+  expect_equal(band@name, "B4")
+  expect_equal(band@extra_fields$`raster:scale`, 1e-4)
 })
 
 test_that("every sub-object prints in the shared style", {
@@ -123,21 +127,20 @@ test_that("sub-object sections expand", {
   expect_true(any(grepl("minimum", out, fixed = TRUE)))
 })
 
-test_that("the classed helpers stay ordinary lists", {
-  # the class is for printing only: $ access, is.list() and [[ must all work
-  objs <- list(
-    stac_summaries(platform = list("landsat-8")),
-    eo_band(name = "B4")
-  )
-  for (o in objs) {
-    expect_true(is.list(o))
-    expect_type(o, "list")
-    expect_length(names(o), length(o))
-  }
-
+test_that("metadata helpers expose S7 properties", {
   expect_equal(stac_asset(href = "./b4.tif")@href, "./b4.tif")
   expect_equal(stac_provider(name = "USGS")@name, "USGS")
   expect_equal(raster_statistics(minimum = 3)@minimum, 3)
+  expect_equal(eo_band(name = "B4")@name, "B4")
+  expect_equal(classification_class(1)@value, 1L)
+  expect_equal(
+    classification_bitfield(0, 1, list(classification_class(0)))@offset,
+    0L
+  )
+  expect_equal(
+    stac_summaries(platform = "landsat-8")@extra_fields$platform,
+    list("landsat-8")
+  )
 })
 
 test_that("classed helpers survive being embedded in S7 objects", {

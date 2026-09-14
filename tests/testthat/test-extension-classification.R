@@ -3,10 +3,10 @@
 test_that("classification_class creates a minimal object with just value", {
   cls <- classification_class(value = 1)
 
-  expect_equal(cls$value, 1L)
-  expect_null(cls$name)
-  expect_null(cls$color_hint)
-  expect_s3_class(cls, "classification_class")
+  expect_equal(cls@value, 1L)
+  expect_null(cls@name)
+  expect_null(cls@color_hint)
+  expect_true(S7::S7_inherits(cls, classification_class))
 })
 
 test_that("classification_class stores all optional fields", {
@@ -21,21 +21,21 @@ test_that("classification_class stores all optional fields", {
     count       = 9040L
   )
 
-  expect_equal(cls$value, 3L)
-  expect_equal(cls$name, "forest")
-  expect_equal(cls$title, "Forest")
-  expect_equal(cls$description, "Dense forest canopy")
-  expect_equal(cls$color_hint, "00FF00")
-  expect_false(cls$nodata)
-  expect_equal(cls$percentage, 45.2)
-  expect_equal(cls$count, 9040L)
+  expect_equal(cls@value, 3L)
+  expect_equal(cls@name, "forest")
+  expect_equal(cls@title, "Forest")
+  expect_equal(cls@description, "Dense forest canopy")
+  expect_equal(cls@color_hint, "00FF00")
+  expect_false(cls@nodata)
+  expect_equal(cls@percentage, 45.2)
+  expect_equal(cls@count, 9040L)
 })
 
 test_that("classification_class coerces value and count to integer", {
   cls <- classification_class(value = 2.0, count = 500.0)
 
-  expect_identical(cls$value, 2L)
-  expect_identical(cls$count, 500L)
+  expect_identical(cls@value, 2L)
+  expect_identical(cls@count, 500L)
 })
 
 test_that("classification_class errors when value is missing", {
@@ -93,10 +93,10 @@ make_classes <- function() {
 test_that("classification_bitfield creates a valid object", {
   bf <- classification_bitfield(offset = 0, length = 1, classes = make_classes())
 
-  expect_equal(bf$offset, 0L)
-  expect_equal(bf$length, 1L)
-  expect_length(bf$classes, 2)
-  expect_s3_class(bf, "classification_bitfield")
+  expect_equal(bf@offset, 0L)
+  expect_equal(bf@length, 1L)
+  expect_length(bf@classes, 2)
+  expect_true(S7::S7_inherits(bf, classification_bitfield))
 })
 
 test_that("classification_bitfield stores optional fields", {
@@ -109,18 +109,18 @@ test_that("classification_bitfield stores optional fields", {
     roles       = c("data", "cloud")
   )
 
-  expect_equal(bf$offset, 3L)
-  expect_equal(bf$length, 2L)
-  expect_equal(bf$name, "cloud_conf")
-  expect_equal(bf$description, "Cloud confidence")
-  expect_equal(bf$roles, list("data", "cloud"))
+  expect_equal(bf@offset, 3L)
+  expect_equal(bf@length, 2L)
+  expect_equal(bf@name, "cloud_conf")
+  expect_equal(bf@description, "Cloud confidence")
+  expect_equal(bf@roles, c("data", "cloud"))
 })
 
 test_that("classification_bitfield coerces offset and length to integer", {
   bf <- classification_bitfield(offset = 2.0, length = 1.0, classes = make_classes())
 
-  expect_identical(bf$offset, 2L)
-  expect_identical(bf$length, 1L)
+  expect_identical(bf@offset, 2L)
+  expect_identical(bf@length, 1L)
 })
 
 test_that("classification_bitfield errors when required args are missing", {
@@ -209,8 +209,8 @@ test_that("add_classification_extension writes classes to item properties", {
   item <- add_classification_extension(make_item(), classes = classes)
 
   expect_length(item@properties$`classification:classes`, 2)
-  expect_equal(item@properties$`classification:classes`[[1]]$name, "water")
-  expect_equal(item@properties$`classification:classes`[[2]]$name, "land")
+  expect_equal(item@properties$`classification:classes`[[1]]@name, "water")
+  expect_equal(item@properties$`classification:classes`[[2]]@name, "land")
 })
 
 test_that("add_classification_extension writes bitfields to item properties", {
@@ -221,7 +221,7 @@ test_that("add_classification_extension writes bitfields to item properties", {
   item <- add_classification_extension(make_item(), bitfields = bfs)
 
   expect_length(item@properties$`classification:bitfields`, 1)
-  expect_equal(item@properties$`classification:bitfields`[[1]]$name, "fill")
+  expect_equal(item@properties$`classification:bitfields`[[1]]@name, "fill")
 })
 
 test_that("add_classification_extension writes classes to a named asset", {
@@ -237,7 +237,7 @@ test_that("add_classification_extension writes classes to a named asset", {
     add_classification_extension(classes = classes, asset_key = "landcover")
 
   expect_length(item@assets$landcover@extra_fields$`classification:classes`, 1)
-  expect_equal(item@assets$landcover@extra_fields$`classification:classes`[[1]]$name, "forest")
+  expect_equal(item@assets$landcover@extra_fields$`classification:classes`[[1]]@name, "forest")
   # should NOT be in item properties
   expect_null(item@properties$`classification:classes`)
 })
@@ -257,7 +257,7 @@ test_that("add_classification_extension writes bitfields to a named asset", {
     add_classification_extension(bitfields = bfs, asset_key = "qa")
 
   expect_length(item@assets$qa@extra_fields$`classification:bitfields`, 1)
-  expect_equal(item@assets$qa@extra_fields$`classification:bitfields`[[1]]$name, "cloud")
+  expect_equal(item@assets$qa@extra_fields$`classification:bitfields`[[1]]@name, "cloud")
   expect_null(item@properties$`classification:bitfields`)
 })
 

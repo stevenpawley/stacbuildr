@@ -164,11 +164,6 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
     item@stac_extensions <- c(item@stac_extensions, ext_uri)
   }
 
-  # Convert any S7 raster_band objects to plain lists for JSON serialization
-  bands <- lapply(bands, function(b) {
-    if (S7::S7_inherits(b, raster_band)) as.list(b) else b
-  })
-
   set_bands(item, bands, asset_key = asset_key)
 }
 
@@ -502,7 +497,7 @@ as_raster_statistics <- function(x) {
 #'
 #' @return `x`, invisibly.
 #'
-#' @export
+#' @noRd
 S7::method(print, raster_statistics) <- function(x, ...) {
   stac_print_header("Raster Statistics")
 
@@ -620,7 +615,7 @@ as_raster_histogram <- function(x) {
 #'
 #' @return `x`, invisibly.
 #'
-#' @export
+#' @noRd
 S7::method(print, raster_histogram) <- function(x, ...) {
   stac_print_header("Raster Histogram")
   stac_print_field("count", stac_fmt_value(x@count), stac_style_count)

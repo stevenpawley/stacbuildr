@@ -145,7 +145,7 @@ normalize_assets <- function(x) {
 #'
 #' @return `x`, invisibly.
 #'
-#' @export
+#' @noRd
 S7::method(print, stac_asset) <- function(x, ..., expand = NULL) {
   stac_print_header("STAC Asset")
   stac_print_field("href", x@href, stac_style_url)

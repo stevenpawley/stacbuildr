@@ -8,7 +8,7 @@
 #' @param strict (logical, optional) If TRUE, enforces stricter validation including
 #'   recommended fields. Default is FALSE.
 #'
-#' @return A list with elements:
+#' @return A `stac_validation` S7 object with properties:
 #'   * `valid`: Logical indicating if the object is valid
 #'   * `errors`: Character vector of error messages (empty if valid)
 #'   * `warnings`: Character vector of warning messages for missing recommended fields
@@ -33,20 +33,36 @@ validate_stac <- function(stac_object, strict = FALSE) {
 }
 
 
-# Result returned by every validator. Classed so that it prints as a report
-# rather than a raw list; the fields themselves stay a plain named list, so
-# `result$valid`, `result$errors` and `result$warnings` work as before.
+# Result returned by every validator.
+stac_validation <- S7::new_class(
+  "stac_validation",
+  properties = list(
+    valid = S7::new_property(
+      S7::class_logical,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value)) "must be TRUE or FALSE"
+      }
+    ),
+    errors = S7::class_character,
+    warnings = S7::class_character
+  ),
+  constructor = function(errors = character(), warnings = character(),
+                         valid = NULL) {
+    S7::new_object(
+      S7::S7_object(), valid = valid %||% (length(errors) == 0L),
+      errors = errors, warnings = warnings
+    )
+  }
+)
+
+S7::method(as.list, stac_validation) <- function(x, ...) {
+  list(valid = x@valid, errors = x@errors, warnings = x@warnings)
+}
+
 new_stac_validation <- function(errors = character(),
                                 warnings = character(),
                                 valid = NULL) {
-  structure(
-    list(
-      valid = valid %||% (length(errors) == 0),
-      errors = errors,
-      warnings = warnings
-    ),
-    class = c("stac_validation", "list")
-  )
+  stac_validation(errors = errors, warnings = warnings, valid = valid)
 }
 
 
@@ -58,22 +74,22 @@ new_stac_validation <- function(errors = character(),
 #'
 #' @return `x`, invisibly.
 #'
-#' @export
-print.stac_validation <- function(x, ...) {
+#' @noRd
+S7::method(print, stac_validation) <- function(x, ...) {
   stac_print_header("STAC Validation")
 
-  if (isTRUE(x$valid)) {
+  if (isTRUE(x@valid)) {
     cat(sprintf(
       "  %s %s\n",
       stac_style_ok(stac_sym("tick")),
       stac_style_ok("valid")
     ))
   } else {
-    stac_print_issues(x$errors, "error", stac_sym("cross"), stac_style_bad)
+    stac_print_issues(x@errors, "error", stac_sym("cross"), stac_style_bad)
   }
 
   # warnings are reported whether or not the object is valid
-  stac_print_issues(x$warnings, "warning", stac_sym("info"), stac_style_warn)
+  stac_print_issues(x@warnings, "warning", stac_sym("info"), stac_style_warn)
 
   invisible(x)
 }
@@ -772,7 +788,8 @@ validate_item_properties <- function(properties) {
 #'   Extension errors are prefixed with the extension schema URI.
 #' * `warnings` — always an empty character vector (reserved for future use).
 #'
-#' @return A named list with elements `valid`, `errors`, and `warnings`.
+#' @return A `stac_validation` S7 object with `valid`, `errors`, and `warnings`
+#'   properties.
 #'
 #' @seealso [validate_stac()] for fast, offline structural checks.
 #'
@@ -789,8 +806,8 @@ validate_item_properties <- function(properties) {
 #'
 #' \dontrun{
 #' result <- validate_stac_schema(item)
-#' result$valid
-#' result$errors
+#' result@valid
+#' result@errors
 #' }
 #'
 #' @export

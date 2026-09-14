@@ -9,7 +9,7 @@ test_that("STAC Item creation works", {
   expect_true(S7::S7_inherits(item, stac_item))
   expect_equal(item@type, "Feature")
   expect_equal(item@stac_version, "1.1.0")
-  expect_true(validate_stac(item)$valid)
+  expect_true(validate_stac(item)@valid)
 })
 
 test_that("item with assets matches pystac", {
@@ -37,16 +37,16 @@ test_that("item with assets matches pystac", {
   )
 
   r_item@assets <- list(
-    thumbnail = list(
+    thumbnail = stac_asset(
       href = "https://example.com/thumbnail.png",
       type = "image/png",
       title = "Thumbnail",
-      roles = list("thumbnail")
+      roles = "thumbnail"
     ),
-    data = list(
+    data = stac_asset(
       href = "https://example.com/data.tif",
       type = "image/tiff; application=geotiff",
-      roles = list("data")
+      roles = "data"
     )
   )
 
@@ -65,7 +65,7 @@ test_that("item with assets matches pystac", {
       href = "https://example.com/thumbnail.png",
       media_type = "image/png",
       title = "Thumbnail",
-      roles = list("thumbnail")
+      roles = "thumbnail"
     )
   )
 
@@ -74,14 +74,14 @@ test_that("item with assets matches pystac", {
     pystac$Asset(
       href = "https://example.com/data.tif",
       media_type = "image/tiff; application=geotiff",
-      roles = list("data")
+      roles = "data"
     )
   )
 
   # Validate both
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation$valid)
-  expect_length(r_validation$errors, 0)
+  expect_true(r_validation@valid)
+  expect_length(r_validation@errors, 0)
 
   # Check assets exist and match
   r_json <- jsonlite::fromJSON(
@@ -164,7 +164,7 @@ test_that("item with links matches pystac", {
 
   # Validate
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation$valid)
+  expect_true(r_validation@valid)
 
   # Check links structure
   r_json <- jsonlite::fromJSON(
@@ -204,16 +204,16 @@ test_that("item with assets matches pystac", {
   )
 
   r_item@assets <- list(
-    thumbnail = list(
+    thumbnail = stac_asset(
       href = "https://example.com/thumbnail.png",
       type = "image/png",
       title = "Thumbnail",
-      roles = list("thumbnail")
+      roles = "thumbnail"
     ),
-    data = list(
+    data = stac_asset(
       href = "https://example.com/data.tif",
       type = "image/tiff; application=geotiff",
-      roles = list("data")
+      roles = "data"
     )
   )
 
@@ -232,7 +232,7 @@ test_that("item with assets matches pystac", {
       href = "https://example.com/thumbnail.png",
       media_type = "image/png",
       title = "Thumbnail",
-      roles = list("thumbnail")
+      roles = "thumbnail"
     )
   )
 
@@ -241,14 +241,14 @@ test_that("item with assets matches pystac", {
     pystac$Asset(
       href = "https://example.com/data.tif",
       media_type = "image/tiff; application=geotiff",
-      roles = list("data")
+      roles = "data"
     )
   )
 
   # Validate both
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation$valid)
-  expect_length(r_validation$errors, 0)
+  expect_true(r_validation@valid)
+  expect_length(r_validation@errors, 0)
 
   # Check assets exist and match
   r_json <- jsonlite::fromJSON(
@@ -331,7 +331,7 @@ test_that("item with links matches pystac", {
 
   # Validate
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation$valid)
+  expect_true(r_validation@valid)
 
   # Check links structure
   r_json <- jsonlite::fromJSON(
@@ -403,8 +403,8 @@ test_that("collection with items matches pystac", {
   r_validation_coll <- validate_stac(r_collection)
   r_validation_item <- validate_stac(r_item)
 
-  expect_true(r_validation_coll$valid)
-  expect_true(r_validation_item$valid)
+  expect_true(r_validation_coll@valid)
+  expect_true(r_validation_item@valid)
 
   # Check collection field
   expect_equal(r_item@collection, py_item$collection_id)
@@ -460,7 +460,7 @@ test_that("items with different geometry types match pystac", {
 
     # Validate
     r_validation <- validate_stac(r_item)
-    expect_true(r_validation$valid, info = paste("Geometry type:", geom_name))
+    expect_true(r_validation@valid, info = paste("Geometry type:", geom_name))
 
     # Compare structure
     r_json <- jsonlite::fromJSON(
@@ -509,7 +509,7 @@ test_that("item with null geometry matches pystac", {
 
   # Validate
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation$valid)
+  expect_true(r_validation@valid)
 
   # Compare
   r_json <- jsonlite::fromJSON(
@@ -722,7 +722,7 @@ test_that("item with temporal range matches pystac", {
 
   # Validate
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation$valid)
+  expect_true(r_validation@valid)
 
   # Check both have temporal properties
   expect_true(!is.null(r_item@properties$start_datetime))

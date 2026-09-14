@@ -167,7 +167,11 @@ wrong, so the package ships presets:
 ```{r}
 bands <- landsat_oli_bands()
 length(bands)
-bands[[4]][c("name", "eo:common_name", "eo:center_wavelength")]
+list(
+  name = bands[[4]]@name,
+  `eo:common_name` = bands[[4]]@common_name,
+  `eo:center_wavelength` = bands[[4]]@center_wavelength
+)
 ```
 
 The others are `sentinel2_msi_bands()`, `worldview3_bands()`, `skysat_bands()`
@@ -367,7 +371,11 @@ qa_item <- add_classification_extension(
   )
 )
 
-vapply(qa_item@properties$`classification:bitfields`, `[[`, character(1), "name")
+vapply(
+  qa_item@properties$`classification:bitfields`,
+  function(bitfield) bitfield@name,
+  character(1)
+)
 ```
 
 ## Render
@@ -513,7 +521,8 @@ parcels <- stac_item(
     asset_key = "data"
   )
 
-vapply(parcels@properties$`table:columns`, `[[`, character(1), "name")
+vapply(parcels@properties$`table:columns`, function(column) column@name,
+       character(1))
 names(parcels@assets$data@extra_fields$`table:storage_options`)
 ```
 
@@ -544,7 +553,8 @@ multi <- stac_item(
     asset_key = "persons"
   )
 
-vapply(multi@assets$persons@extra_fields$`table:columns`, `[[`, character(1), "name")
+vapply(multi@assets$persons@extra_fields$`table:columns`,
+       function(column) column@name, character(1))
 ```
 
 One caveat on how much the spec backs any of this. The item/asset split is
@@ -737,7 +747,7 @@ The dimension schema is derived from the file's point data record format and
 from any Extra Bytes record it declares:
 
 ```{r, eval = requireNamespace("lidR", quietly = TRUE)}
-vapply(tile@properties$`pc:schemas`, function(s) s$name, character(1))
+vapply(tile@properties$`pc:schemas`, function(s) s@name, character(1))
 ```
 
 Statistics are the one thing the header cannot fully supply. It carries the X,
@@ -808,7 +818,7 @@ structural rules and needs no extra dependencies:
 
 ```{r}
 result <- validate_stac(item)
-result$valid
+result@valid
 ```
 
 `validate_stac_schema()` goes further, fetching the official JSON schemas and

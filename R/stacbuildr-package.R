@@ -7,14 +7,13 @@
 #'
 #' ## Object Types
 #'
-#' The package uses two kinds of objects: **S7 classes** for the core STAC
-#' structures, and **plain lists** for lightweight sub-objects.
+#' The package uses **S7 classes** for core STAC structures and metadata helper
+#' objects.
 #'
 #' ### S7 Classes (use `@` to access properties)
 #'
-#' The primary STAC document types, `stac_asset`, `stac_provider`, raster
-#' metadata and the extent objects are S7 objects. Use the `@` operator to
-#' read or modify their properties:
+#' The primary STAC document types and most extension helper objects are S7
+#' objects. Use the `@` operator to read or modify their properties:
 #'
 #' | Constructor | Class | Example access |
 #' | --- | --- | --- |
@@ -26,30 +25,22 @@
 #' | [raster_band()] | `raster_band` | `band@data_type`, `band@scale` |
 #' | [raster_statistics()] | `raster_statistics` | `stats@minimum` |
 #' | [raster_histogram()] | `raster_histogram` | `hist@buckets` |
+#' | [eo_band()] | `eo_band` | `band@common_name` |
+#' | [scientific_publication()] | `scientific_publication` | `publication@doi` |
+#' | [table_column()] | `table_column` | `column@name` |
+#' | [pc_schema()] | `pc_schema` | `schema@size` |
+#' | [pc_statistic()] | `pc_statistic` | `statistic@minimum` |
+#' | [render_object()] | `render_object` | `render@assets` |
+#' | [cube_dimension()] | `cube_dimension` | `dimension@axis` |
+#' | [cube_variable()] | `cube_variable` | `variable@dimensions` |
+#' | [classification_class()] | `classification_class` | `class@value` |
+#' | [classification_bitfield()] | `classification_bitfield` | `bitfield@classes` |
+#' | [stac_summaries()] | `stac_summaries` | `summaries@extra_fields` |
+#' | [validate_stac()] | `stac_validation` | `result@valid`, `result@errors` |
 #' | [stac_extent()] | `Extent` | `extent@spatial`, `extent@temporal` |
 #'
 #' Note that `stac_collection` extends `stac_catalog`, so
 #' `S7::S7_inherits(x, stac_catalog)` is also true for a Collection.
-#'
-#' ### Classed Lists (use `$` to access fields)
-#'
-#' The remaining constructors return ordinary R lists carrying an S3 class.
-#' They are embedded inside S7 objects but are not S7 classes themselves. The
-#' class exists so that each object prints as itself; fields are reached with
-#' `$` as for any list, and the class is dropped on serialisation so it never
-#' reaches the written JSON.
-#'
-#' | Constructor | Class | Typically used in |
-#' | --- | --- | --- |
-#' | [eo_band()] | `eo_band` | asset `"bands"` field |
-#' | [stac_summaries()] | `stac_summaries` | `collection@summaries` |
-#' | [classification_class()] | `classification_class` | classification extension |
-#' | [classification_bitfield()] | `classification_bitfield` | classification extension |
-#' | [scientific_publication()] | `scientific_publication` | scientific extension |
-#' | [table_column()] | `table_column` | table extension |
-#' | [render_object()] | `render_object` | render extension |
-#' | [cube_dimension()] | `cube_dimension` | datacube extension |
-#' | [cube_variable()] | `cube_variable` | datacube extension |
 #'
 #' ## Printing
 #'

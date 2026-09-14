@@ -44,7 +44,7 @@ test_that("collection with providers matches pystac", {
 
   # Validate
   r_validation <- validate_stac(r_collection)
-  expect_true(r_validation$valid)
+  expect_true(r_validation@valid)
 
   # Check providers exist
   expect_length(r_collection@providers, 1)
@@ -92,9 +92,9 @@ test_that("collection with summaries matches pystac", {
 
   # Validate
   r_validation <- validate_stac(r_collection)
-  expect_true(r_validation$valid)
+  expect_true(r_validation@valid)
 
   # Check summaries exist
   expect_true(!is.null(r_collection@summaries))
-  expect_true("platform" %in% names(r_collection@summaries))
+  expect_true("platform" %in% names(r_collection@summaries@extra_fields))
 })

@@ -30,7 +30,7 @@
 #' @param bidx (numeric, optional) Band indexes to use for rendering.
 #' @param ... Additional fields allowed by the open-ended Render Object schema.
 #'
-#' @return A named list of class `"render_object"`.
+#' @return A `render_object` S7 object. Access fields with `@`.
 #'
 #' @details
 #' ## Render Object Fields
@@ -126,8 +126,61 @@ render_object <- function(
     render <- c(render, extra_fields)
   }
 
-  class(render) <- c("render_object", "list")
   render
+}
+
+.render_object_fields <- render_object
+
+render_object <- S7::new_class(
+  "render_object",
+  properties = list(
+    assets = S7::class_character,
+    title = S7::class_any,
+    rescale = S7::class_any,
+    nodata = S7::class_any,
+    colormap_name = S7::class_any,
+    colormap = S7::class_any,
+    color_formula = S7::class_any,
+    resampling = S7::class_any,
+    expression = S7::class_any,
+    minmax_zoom = S7::class_any,
+    bidx = S7::class_any,
+    extra_fields = S7::new_property(S7::class_list, default = list())
+  ),
+  constructor = function(assets, title = NULL, rescale = NULL, nodata = NULL,
+                         colormap_name = NULL, colormap = NULL,
+                         color_formula = NULL, resampling = NULL,
+                         expression = NULL, minmax_zoom = NULL, bidx = NULL,
+                         ...) {
+    fields <- .render_object_fields(
+      assets, title, rescale, nodata, colormap_name, colormap, color_formula,
+      resampling, expression, minmax_zoom, bidx, ...
+    )
+    standard <- c("assets", "title", "rescale", "nodata", "colormap_name",
+                  "colormap", "color_formula", "resampling", "expression",
+                  "minmax_zoom", "bidx")
+    S7::new_object(
+      S7::S7_object(), assets = unlist(fields$assets, use.names = FALSE),
+      title = fields$title, rescale = fields$rescale, nodata = fields$nodata,
+      colormap_name = fields$colormap_name, colormap = fields$colormap,
+      color_formula = fields$color_formula, resampling = fields$resampling,
+      expression = fields$expression, minmax_zoom = fields$minmax_zoom,
+      bidx = if (is.null(fields$bidx)) NULL else unlist(fields$bidx, use.names = FALSE),
+      extra_fields = fields[setdiff(names(fields), standard)]
+    )
+  }
+)
+
+S7::method(as.list, render_object) <- function(x, ...) {
+  fields <- compact_nulls(list(
+    assets = as_json_array(x@assets), title = x@title, rescale = x@rescale,
+    nodata = x@nodata, colormap_name = x@colormap_name,
+    colormap = x@colormap, color_formula = x@color_formula,
+    resampling = x@resampling, expression = x@expression,
+    minmax_zoom = x@minmax_zoom,
+    bidx = if (is.null(x@bidx)) NULL else as_json_array(x@bidx)
+  ))
+  c(fields, x@extra_fields)
 }
 
 
@@ -272,7 +325,7 @@ validate_render_named_list <- function(x) {
     cli::cli_abort("'renders' must not contain duplicate names")
   }
 
-  not_cls <- !vapply(x, inherits, logical(1), "render_object")
+  not_cls <- !vapply(x, S7::S7_inherits, logical(1), render_object)
   if (any(not_cls)) {
     cli::cli_abort("All elements of 'renders' must be render_object objects")
   }
@@ -286,9 +339,16 @@ validate_render_named_list <- function(x) {
 #' @param x A render_object object.
 #' @param ... Additional arguments (ignored).
 #'
-#' @export
-print.render_object <- function(x, ...) {
+#' @noRd
+S7::method(print, render_object) <- function(x, ...) {
   stac_print_header("Render Object")
-  stac_print_list_fields(x, styles = list(assets = stac_style_key))
+  fields <- c(compact_nulls(list(
+    assets = x@assets, title = x@title, rescale = x@rescale,
+    nodata = x@nodata, colormap_name = x@colormap_name,
+    colormap = x@colormap, color_formula = x@color_formula,
+    resampling = x@resampling, expression = x@expression,
+    minmax_zoom = x@minmax_zoom, bidx = x@bidx
+  )), x@extra_fields)
+  stac_print_list_fields(fields, styles = list(assets = stac_style_key))
   invisible(x)
 }

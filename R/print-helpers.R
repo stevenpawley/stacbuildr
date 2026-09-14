@@ -121,7 +121,14 @@ stac_fmt_value <- function(x, width = stac_avail(20L)) {
 stac_object_labels <- function(x) {
   for (field in c("name", "eo:common_name", "common_name", "value", "data_type")) {
     labels <- lapply(x, function(el) {
-      if (is.list(el) || (!is.null(names(el)))) el[[field]] else NULL
+      if (inherits(el, "S7_object")) {
+        property <- if (field == "eo:common_name") "common_name" else field
+        tryCatch(S7::prop(el, property), error = function(e) NULL)
+      } else if (is.list(el) || !is.null(names(el))) {
+        el[[field]]
+      } else {
+        NULL
+      }
     })
     if (all(vapply(labels, function(l) length(l) == 1L && is.atomic(l), logical(1)))) {
       return(as.character(unlist(labels)))
@@ -415,14 +422,14 @@ stac_field_lines <- function(x, width = 10L, indent = 9L) {
 
 # Classification classes -> "value  label" entries.
 stac_classification_lines <- function(classes) {
-  values <- vapply(classes, function(cls) as.character(cls$value %||% "?"), character(1))
+  values <- vapply(classes, function(cls) as.character(cls@value), character(1))
   value_width <- max(nchar(values), 0L)
   vapply(seq_along(classes), function(i) {
     cls <- classes[[i]]
     stac_entry(
       values[[i]],
       value_width,
-      cls$title %||% cls$name %||% "",
+      cls@title %||% cls@name %||% "",
       style = stac_style_count
     )
   }, character(1), USE.NAMES = FALSE)

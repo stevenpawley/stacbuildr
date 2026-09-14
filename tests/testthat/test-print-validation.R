@@ -1,15 +1,10 @@
 mk_result <- function(errors = character(), warnings = character(), valid = NULL) {
-  structure(
-    list(
-      valid = valid %||% (length(errors) == 0),
-      errors = errors,
-      warnings = warnings
-    ),
-    class = c("stac_validation", "list")
+  stacbuildr:::new_stac_validation(
+    errors = errors, warnings = warnings, valid = valid
   )
 }
 
-test_that("validators return a classed result that still behaves as a list", {
+test_that("validators return an S7 validation result", {
   item <- stac_item(
     id = "i",
     geometry = list(type = "Point", coordinates = c(0, 0)),
@@ -18,15 +13,16 @@ test_that("validators return a classed result that still behaves as a list", {
   )
   res <- validate_stac(item)
 
-  expect_s3_class(res, "stac_validation")
-  expect_true(is.list(res))
-  expect_named(res, c("valid", "errors", "warnings"))
-  expect_true(res$valid)
-  expect_type(res$errors, "character")
-  expect_type(res$warnings, "character")
+  expect_true(S7::S7_inherits(res, stacbuildr:::stac_validation))
+  expect_named(as.list(res), c("valid", "errors", "warnings"))
+  expect_true(res@valid)
+  expect_type(res@errors, "character")
+  expect_type(res@warnings, "character")
 
-  # the non-STAC branch is classed too
-  expect_s3_class(validate_stac(list(a = 1)), "stac_validation")
+  # the non-STAC branch uses the same result class
+  expect_true(S7::S7_inherits(
+    validate_stac(list(a = 1)), stacbuildr:::stac_validation
+  ))
 })
 
 test_that("a valid result prints a tick", {

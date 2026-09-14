@@ -13,7 +13,7 @@ validate_stac(stac_object, strict = FALSE)
 recommended fields. Default is FALSE.}
 }
 \value{
-A list with elements:
+A \code{stac_validation} S7 object with properties:
 \itemize{
 \item \code{valid}: Logical indicating if the object is valid
 \item \code{errors}: Character vector of error messages (empty if valid)

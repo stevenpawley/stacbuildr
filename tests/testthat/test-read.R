@@ -151,7 +151,7 @@ test_that("read_stac restores collection summaries", {
   collection <- read_stac(fixture("collection.json"))
 
   expect_false(is.null(collection@summaries))
-  expect_true("platform" %in% names(collection@summaries))
+  expect_true("platform" %in% names(collection@summaries@extra_fields))
 })
 
 test_that("read_stac restores collection links", {

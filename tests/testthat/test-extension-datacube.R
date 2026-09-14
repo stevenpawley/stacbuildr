@@ -3,10 +3,10 @@
 test_that("cube_dimension creates a horizontal spatial dimension", {
   dim <- cube_dimension(type = "spatial", axis = "x", extent = c(-105.5, -104.5))
 
-  expect_equal(dim$type, "spatial")
-  expect_equal(dim$axis, "x")
-  expect_equal(dim$extent, c(-105.5, -104.5))
-  expect_s3_class(dim, "cube_dimension")
+  expect_equal(dim@type, "spatial")
+  expect_equal(dim@axis, "x")
+  expect_equal(dim@extent, c(-105.5, -104.5))
+  expect_true(S7::S7_inherits(dim, cube_dimension))
 })
 
 test_that("cube_dimension errors on missing type", {
@@ -30,8 +30,8 @@ test_that("cube_dimension errors on horizontal spatial dimension without extent"
 test_that("cube_dimension allows vertical spatial dimension with only values", {
   dim <- cube_dimension(type = "spatial", axis = "z", values = c(0, 10, 20))
 
-  expect_equal(dim$axis, "z")
-  expect_equal(dim$values, list(0, 10, 20))
+  expect_equal(dim@axis, "z")
+  expect_equal(dim@values, c(0, 10, 20))
 })
 
 test_that("cube_dimension errors on vertical spatial dimension without extent or values", {
@@ -44,8 +44,8 @@ test_that("cube_dimension errors on vertical spatial dimension without extent or
 test_that("cube_dimension creates a geometry dimension", {
   dim <- cube_dimension(type = "geometry", bbox = c(-105.5, 39.5, -104.5, 40.5))
 
-  expect_equal(dim$type, "geometry")
-  expect_equal(dim$bbox, c(-105.5, 39.5, -104.5, 40.5))
+  expect_equal(dim@type, "geometry")
+  expect_equal(dim@bbox, c(-105.5, 39.5, -104.5, 40.5))
 })
 
 test_that("cube_dimension errors on geometry dimension without bbox", {
@@ -61,8 +61,8 @@ test_that("cube_dimension creates a temporal dimension", {
     extent = c("2023-06-01T00:00:00Z", "2023-06-30T00:00:00Z")
   )
 
-  expect_equal(dim$type, "temporal")
-  expect_length(dim$extent, 2)
+  expect_equal(dim@type, "temporal")
+  expect_length(dim@extent, 2)
 })
 
 test_that("cube_dimension errors on temporal dimension without extent", {
@@ -75,8 +75,8 @@ test_that("cube_dimension errors on temporal dimension without extent", {
 test_that("cube_dimension creates an additional (custom) dimension", {
   dim <- cube_dimension(type = "bands", values = c("B02", "B03", "B04"))
 
-  expect_equal(dim$type, "bands")
-  expect_equal(dim$values, list("B02", "B03", "B04"))
+  expect_equal(dim@type, "bands")
+  expect_equal(dim@values, c("B02", "B03", "B04"))
 })
 
 test_that("cube_dimension errors on additional dimension without extent or values", {
@@ -94,7 +94,7 @@ test_that("cube_dimension stores extra fields via ...", {
   )
 
   # reference_system is only kept for spatial/geometry dimensions
-  expect_null(dim$reference_system)
+  expect_null(dim@reference_system)
 })
 
 
@@ -103,15 +103,15 @@ test_that("cube_dimension stores extra fields via ...", {
 test_that("cube_variable creates a minimal data variable", {
   var <- cube_variable(type = "data", dimensions = c("x", "y", "time"))
 
-  expect_equal(var$type, "data")
-  expect_equal(var$dimensions, list("x", "y", "time"))
-  expect_s3_class(var, "cube_variable")
+  expect_equal(var@type, "data")
+  expect_equal(var@dimensions, c("x", "y", "time"))
+  expect_true(S7::S7_inherits(var, cube_variable))
 })
 
 test_that("cube_variable allows an empty dimensions vector", {
   var <- cube_variable(type = "auxiliary", dimensions = character(0))
 
-  expect_equal(var$dimensions, list())
+  expect_equal(var@dimensions, character(0))
 })
 
 test_that("cube_variable stores all optional fields", {
@@ -124,10 +124,10 @@ test_that("cube_variable stores all optional fields", {
     description = "Air temperature"
   )
 
-  expect_equal(var$unit, "degC")
-  expect_equal(var$data_type, "float32")
-  expect_equal(var$nodata, -9999)
-  expect_equal(var$description, "Air temperature")
+  expect_equal(var@unit, "degC")
+  expect_equal(var@data_type, "float32")
+  expect_equal(var@nodata, -9999)
+  expect_equal(var@description, "Air temperature")
 })
 
 test_that("cube_variable errors on missing or invalid type", {
@@ -263,9 +263,9 @@ test_that("add_datacube_extension writes fields to item properties by default", 
   item <- add_datacube_extension(make_item(), dimensions = make_dims(), variables = vars)
 
   expect_length(item@properties$`cube:dimensions`, 3)
-  expect_equal(item@properties$`cube:dimensions`$x$axis, "x")
+  expect_equal(item@properties$`cube:dimensions`$x@axis, "x")
   expect_length(item@properties$`cube:variables`, 1)
-  expect_equal(item@properties$`cube:variables`$temperature$type, "data")
+  expect_equal(item@properties$`cube:variables`$temperature@type, "data")
 })
 
 test_that("add_datacube_extension writes fields to the specified asset", {

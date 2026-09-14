@@ -74,8 +74,8 @@ test_that("fields can go on an asset instead of properties", {
 
 test_that("pc_schema validates name, size and type", {
   s <- pc_schema("X", size = 8, type = "floating")
-  expect_s3_class(s, "pc_schema")
-  expect_equal(s$size, 8L)
+  expect_true(S7::S7_inherits(s, pc_schema))
+  expect_equal(s@size, 8L)
 
   expect_error(pc_schema("X", size = 8, type = "double"), "Invalid dimension type")
   expect_error(pc_schema("X", size = 0, type = "floating"), "greater than 0")
@@ -87,10 +87,10 @@ test_that("pc_statistic needs at least one statistic beside the name", {
   expect_error(pc_statistic("Z"), "at least one statistic")
 
   s <- pc_statistic("Z", position = 2, minimum = 1, maximum = 9)
-  expect_s3_class(s, "pc_statistic")
-  expect_equal(s$position, 2L)
+  expect_true(S7::S7_inherits(s, pc_statistic))
+  expect_equal(s@position, 2L)
   # fields follow the specification's order, not the argument order
-  expect_equal(names(s), c("name", "position", "maximum", "minimum"))
+  expect_equal(names(as.list(s)), c("name", "position", "maximum", "minimum"))
 
   expect_error(pc_statistic("Z", position = -1, minimum = 1), "greater than or equal to 0")
 })
