@@ -33,6 +33,23 @@ demo_collection <- function(n = 3) {
   coll
 }
 
+test_that("core objects retain only their qualified S7 class hierarchy", {
+  item <- demo_item()
+  catalog <- stac_catalog(id = "c", description = "d")
+  collection <- demo_collection(0)
+
+  expect_identical(class(item), c("stacbuildr::stac_item", "S7_object"))
+  expect_identical(class(catalog), c("stacbuildr::stac_catalog", "S7_object"))
+  expect_identical(
+    class(collection),
+    c(
+      "stacbuildr::stac_collection",
+      "stacbuildr::stac_catalog",
+      "S7_object"
+    )
+  )
+})
+
 # length ------------------------------------------------------------------
 
 test_that("length() counts items and agrees with count_items()", {
@@ -257,7 +274,7 @@ test_that("[[ returns a single item, by position or id", {
   coll <- demo_collection(3)
   expect_equal(coll[[2]]@id, "s02")
   expect_equal(coll[["s03"]]@id, "s03")
-  expect_true(inherits(coll[[1]], "stac_item"))
+  expect_true(S7::S7_inherits(coll[[1]], stac_item))
 })
 
 test_that("[ returns a list of items, by position or id", {

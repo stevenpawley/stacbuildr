@@ -55,7 +55,7 @@ test_that("get_children returns the correct collection in memory", {
   tree <- make_catalog_tree()
   children <- get_children(tree$catalog)
 
-  expect_s3_class(children[["elevation"]], "stac_collection")
+  expect_true(S7::S7_inherits(children[["elevation"]], stac_collection))
   expect_equal(children[["elevation"]]@id, "elevation")
   expect_equal(children[["elevation"]]@title, "Elevation")
 })
@@ -79,7 +79,7 @@ test_that("get_items returns the correct item in memory", {
   tree <- make_catalog_tree()
   items <- get_items(tree$collection)
 
-  expect_s3_class(items[[1]], "stac_item")
+  expect_true(S7::S7_inherits(items[[1]], stac_item))
   expect_equal(items[[1]]@id, "dem-2023")
   expect_equal(items[[1]]@properties$datetime, "2023-06-15T00:00:00Z")
 })
@@ -120,7 +120,7 @@ test_that("get_children with resolve = TRUE returns collections after round-trip
 
   expect_type(children, "list")
   expect_named(children, "elevation")
-  expect_s3_class(children[["elevation"]], "stac_collection")
+  expect_true(S7::S7_inherits(children[["elevation"]], stac_collection))
   expect_equal(children[["elevation"]]@id, "elevation")
   expect_equal(children[["elevation"]]@title, "Elevation")
 })
@@ -138,7 +138,7 @@ test_that("get_items with resolve = TRUE returns items after round-trip", {
 
   expect_type(items, "list")
   expect_length(items, 1L)
-  expect_s3_class(items[[1]], "stac_item")
+  expect_true(S7::S7_inherits(items[[1]], stac_item))
   expect_equal(items[[1]]@id, "dem-2023")
   expect_equal(items[[1]]@properties$datetime, "2023-06-15T00:00:00Z")
 })

@@ -23,8 +23,8 @@
 #' | [raster_band()] | `raster_band` | `band@data_type`, `band@scale` |
 #' | [stac_extent()] | `Extent` | `extent@spatial`, `extent@temporal` |
 #'
-#' Note that `stac_collection` extends `stac_catalog`, so a Collection
-#' satisfies `inherits(x, "stac_catalog")` as well.
+#' Note that `stac_collection` extends `stac_catalog`, so
+#' `S7::S7_inherits(x, stac_catalog)` is also true for a Collection.
 #'
 #' ### Classed Lists (use `$` to access fields)
 #'
@@ -134,6 +134,7 @@
 #' STAC Specification: \url{https://stacspec.org}
 #'
 #' @importFrom stats setNames
+#' @importFrom sf st_as_sf st_bbox st_crs st_geometry
 #' @importFrom utils modifyList tail
 #' @docType package
 #' @name stacbuildr-package

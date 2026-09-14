@@ -2,17 +2,10 @@
 % Please edit documentation in R/coercion.R
 \name{stac_item_sf_accessors}
 \alias{stac_item_sf_accessors}
-\alias{st_geometry.stac_item}
-\alias{st_bbox.stac_item}
-\alias{st_crs.stac_item}
+\alias{st_geometry,stacbuildr::stac_item-method}
+\alias{st_bbox,stacbuildr::stac_item-method}
+\alias{st_crs,stacbuildr::stac_item-method}
 \title{sf Accessors for a STAC Item}
-\usage{
-\method{st_geometry}{stac_item}(obj, ...)
-
-\method{st_bbox}{stac_item}(obj, ...)
-
-\method{st_crs}{stac_item}(x, ...)
-}
 \arguments{
 \item{obj}{A \code{stac_item} object.}
 

@@ -3,9 +3,6 @@
 \name{length.stac_catalog}
 \alias{length.stac_catalog}
 \title{Number of Items in a STAC Catalog or Collection}
-\usage{
-\method{length}{stac_catalog}(x)
-}
 \arguments{
 \item{x}{A \code{stac_catalog} or \code{stac_collection} object.}
 }

@@ -26,8 +26,8 @@ S7 objects. Use the \code{@} operator to read or modify their properties:\tabula
 }
 
 
-Note that \code{stac_collection} extends \code{stac_catalog}, so a Collection
-satisfies \code{inherits(x, "stac_catalog")} as well.
+Note that \code{stac_collection} extends \code{stac_catalog}, so
+\code{S7::S7_inherits(x, stac_catalog)} is also true for a Collection.
 }
 
 \subsection{Classed Lists (use \code{$} to access fields)}{

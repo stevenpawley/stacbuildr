@@ -180,7 +180,7 @@ stac_catalog <- S7::new_class(
                          conformsTo = NULL,
                          links = list(),
                          ...) {
-    obj <- S7::new_object(
+    S7::new_object(
       S7::S7_object(),
       type = type,
       stac_version = stac_version,
@@ -192,10 +192,6 @@ stac_catalog <- S7::new_class(
       links = links,
       extra_fields = list(...)
     )
-    # When loaded as a package, S7 qualifies class names (e.g. "buildstac::stac_catalog").
-    # Insert the unqualified name so that inherits() and $ S3 dispatch work correctly.
-    # Use structure() rather than class<- to avoid triggering S7's mutation mechanism.
-    structure(obj, class = append(class(obj), "stac_catalog", after = 1L))
   },
   validator = function(self) {
     if (nchar(self@stac_version) == 0) {
@@ -485,7 +481,7 @@ add_child <- function(catalog,
                       child,
                       href = NULL,
                       title = NULL) {
-  if (!inherits(child, "stac_catalog")) {
+  if (!S7::S7_inherits(child, stac_catalog)) {
     cli::cli_abort("'child' must be a stac_catalog or stac_collection object")
   }
 
@@ -496,7 +492,7 @@ add_child <- function(catalog,
   )
 
   if (is.null(href)) {
-    if (inherits(child, "stac_collection")) {
+    if (S7::S7_inherits(child, stac_collection)) {
       href <- paste0("./", child@id, "/collection.json")
     } else {
       href <- paste0("./", child@id, "/catalog.json")

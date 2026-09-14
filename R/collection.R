@@ -277,7 +277,7 @@ stac_collection <- S7::new_class(
         temporal = TemporalExtent(interval = extent$temporal$interval)
       )
     }
-    obj <- S7::new_object(
+    S7::new_object(
       stac_catalog(
         id = id,
         description = description,
@@ -295,14 +295,6 @@ stac_collection <- S7::new_class(
       providers = providers,
       summaries = summaries,
       assets = assets
-    )
-    structure(
-      obj,
-      class = append(
-        class(obj),
-        c("stac_collection", "stac_catalog"),
-        after = 1L
-      )
     )
   },
   validator = function(self) {
@@ -707,7 +699,7 @@ print.stac_summaries <- function(x, ...) {
 #'
 #' @export
 add_item_assets <- function(collection) {
-  if (!inherits(collection, "stac_collection")) {
+  if (!S7::S7_inherits(collection, stac_collection)) {
     cli::cli_abort("'collection' must be a stac_collection object")
   }
 

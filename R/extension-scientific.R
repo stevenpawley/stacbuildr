@@ -90,7 +90,7 @@ add_scientific_extension <- function(
   citation = NULL,
   publications = NULL
 ) {
-  if (!inherits(item, "stac_item")) {
+  if (!S7::S7_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 

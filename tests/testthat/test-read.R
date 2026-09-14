@@ -5,7 +5,7 @@ fixture <- function(name) testthat::test_path("fixtures", name)
 test_that("read_stac returns a stac_item for a Feature JSON", {
   item <- read_stac(fixture("simple-item.json"))
 
-  expect_s3_class(item, "stac_item")
+  expect_true(S7::S7_inherits(item, stac_item))
   expect_equal(item@id, "20201211_223832_CS2")
   expect_equal(item@type, "Feature")
   expect_equal(item@stac_version, "1.1.0")
@@ -64,8 +64,8 @@ test_that("read_stac restores item collection field", {
 test_that("read_stac returns a stac_catalog for a Catalog JSON", {
   catalog <- read_stac(fixture("catalog.json"))
 
-  expect_s3_class(catalog, "stac_catalog")
-  expect_false(inherits(catalog, "stac_collection"))
+  expect_true(S7::S7_inherits(catalog, stac_catalog))
+  expect_false(S7::S7_inherits(catalog, stac_collection))
 })
 
 test_that("read_stac restores catalog core fields", {
@@ -92,8 +92,8 @@ test_that("read_stac restores catalog links", {
 test_that("read_stac returns a stac_collection for a Collection JSON", {
   collection <- read_stac(fixture("collection.json"))
 
-  expect_s3_class(collection, "stac_collection")
-  expect_s3_class(collection, "stac_catalog")
+  expect_true(S7::S7_inherits(collection, stac_collection))
+  expect_true(S7::S7_inherits(collection, stac_catalog))
 })
 
 test_that("read_stac restores collection core fields", {
@@ -184,7 +184,7 @@ test_that("stac_item survives a write/read round-trip", {
   write_item(original, path)
   restored <- read_stac(path)
 
-  expect_s3_class(restored, "stac_item")
+  expect_true(S7::S7_inherits(restored, stac_item))
   expect_equal(restored@id, original@id)
   expect_equal(restored@bbox, original@bbox)
   expect_equal(restored@properties$datetime, "2023-06-15T10:30:00Z")
@@ -227,8 +227,8 @@ test_that("stac_catalog survives a write/read round-trip", {
   write_catalog(original, path)
   restored <- read_stac(path)
 
-  expect_s3_class(restored, "stac_catalog")
-  expect_false(inherits(restored, "stac_collection"))
+  expect_true(S7::S7_inherits(restored, stac_catalog))
+  expect_false(S7::S7_inherits(restored, stac_collection))
   expect_equal(restored@id, "my-catalog")
   expect_equal(restored@title, "Test Catalog")
   expect_equal(restored@description, "A test catalog")
@@ -255,7 +255,7 @@ test_that("stac_collection survives a write/read round-trip", {
   write_catalog(original, path)
   restored <- read_stac(path)
 
-  expect_s3_class(restored, "stac_collection")
+  expect_true(S7::S7_inherits(restored, stac_collection))
   expect_equal(restored@id, "my-collection")
   expect_equal(restored@license, "CC0-1.0")
   expect_equal(restored@keywords, c("test", "example"))

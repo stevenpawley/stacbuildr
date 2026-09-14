@@ -13,7 +13,7 @@ test_that("item_from_terra creates a valid item from a SpatRaster", {
     datetime = "2023-06-15T10:30:00Z"
   )
 
-  expect_s3_class(item, "stac_item")
+  expect_true(S7::S7_inherits(item, stac_item))
   expect_equal(item@id, "L7_ETMs")
   expect_equal(item@type, "Feature")
   expect_equal(item@properties$datetime, "2023-06-15T10:30:00Z")

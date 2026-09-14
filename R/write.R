@@ -185,7 +185,7 @@ write_stac <- function(
   pretty = TRUE,
   base_url = NULL
 ) {
-  if (!inherits(catalog, "stac_catalog")) {
+  if (!S7::S7_inherits(catalog, stac_catalog)) {
     cli::cli_abort(
       "'catalog' must be a stac_catalog or stac_collection object"
     )
@@ -258,7 +258,7 @@ write_stac <- function(
 #'
 #' @export
 write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
-  if (!inherits(catalog, "stac_catalog")) {
+  if (!S7::S7_inherits(catalog, stac_catalog)) {
     cli::cli_abort(
       "'catalog' must be a stac_catalog or stac_collection object"
     )
@@ -280,7 +280,7 @@ write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
   catalog_clean <- strip_stored_objects(catalog)
 
   # Convert S7 objects to plain list for JSON serialization
-  if (inherits(catalog_clean, "S7_object")) {
+  if (S7::S7_inherits(catalog_clean)) {
     catalog_clean <- as.list(catalog_clean)
   }
 
@@ -327,7 +327,7 @@ write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
 #'
 #' @export
 write_item <- function(item, file, overwrite = FALSE, pretty = TRUE) {
-  if (!inherits(item, "stac_item")) {
+  if (!S7::S7_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -351,7 +351,7 @@ write_item <- function(item, file, overwrite = FALSE, pretty = TRUE) {
   item_clean <- strip_stored_objects(item)
 
   # Convert S7 objects to plain list for JSON serialization
-  if (inherits(item_clean, "S7_object")) {
+  if (S7::S7_inherits(item_clean)) {
     item_clean <- as.list(item_clean)
   }
 
@@ -416,7 +416,7 @@ write_catalog_recursive <- function(
   depth = 0L,
   root_file = NULL
 ) {
-  catalog_file <- if (inherits(catalog, "stac_collection")) "collection.json" else "catalog.json"
+  catalog_file <- if (S7::S7_inherits(catalog, stac_collection)) "collection.json" else "catalog.json"
 
   # For the root, establish root_href and the root filename once, then thread
   # both down through the children. Relative root hrefs are rebuilt at each
@@ -508,7 +508,7 @@ write_catalog_recursive <- function(
           paste0(item_base_url, "/", item@id, ".json"),
           paste0(base_url, "/", catalog_file),
           root_href,
-          parent_is_collection = inherits(catalog, "stac_collection")
+          parent_is_collection = S7::S7_inherits(catalog, stac_collection)
         )
       } else {
         # Self-contained and relative catalogs carry no item self links; only
@@ -518,7 +518,7 @@ write_catalog_recursive <- function(
           NULL,
           paste0("../", catalog_file),
           paste0(strrep("../", depth + 1L), root_file),
-          parent_is_collection = inherits(catalog, "stac_collection")
+          parent_is_collection = S7::S7_inherits(catalog, stac_collection)
         )
       }
 
@@ -560,7 +560,7 @@ update_catalog_links <- function(
   root_href = NULL
 ) {
   # Determine the catalog filename
-  if (inherits(catalog, "stac_collection")) {
+  if (S7::S7_inherits(catalog, stac_collection)) {
     catalog_file <- "collection.json"
   } else {
     catalog_file <- "catalog.json"
@@ -600,7 +600,7 @@ update_catalog_links <- function(
     for (child_id in names(stored_children)) {
       child <- stored_children[[child_id]]
 
-      if (inherits(child, "stac_collection")) {
+      if (S7::S7_inherits(child, stac_collection)) {
         child_file <- "collection.json"
       } else {
         child_file <- "catalog.json"
@@ -1066,7 +1066,7 @@ parse_stac_collection <- function(parsed) {
 #'
 #' @export
 get_children <- function(catalog, resolve = FALSE, base_path = ".") {
-  if (!inherits(catalog, "stac_catalog")) {
+  if (!S7::S7_inherits(catalog, stac_catalog)) {
     cli::cli_abort(
       "'catalog' must be a stac_catalog or stac_collection object"
     )
@@ -1126,7 +1126,7 @@ get_children <- function(catalog, resolve = FALSE, base_path = ".") {
 #'
 #' @export
 get_items <- function(catalog, resolve = FALSE, base_path = ".") {
-  if (!inherits(catalog, "stac_catalog")) {
+  if (!S7::S7_inherits(catalog, stac_catalog)) {
     cli::cli_abort(
       "'catalog' must be a stac_catalog or stac_collection object"
     )

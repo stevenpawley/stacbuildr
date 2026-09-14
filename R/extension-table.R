@@ -110,7 +110,7 @@ add_table_extension <- function(
   storage_options = NULL,
   asset_key = NULL
 ) {
-  if (!inherits(item, "stac_item")) {
+  if (!S7::S7_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 

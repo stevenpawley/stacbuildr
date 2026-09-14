@@ -1,11 +1,10 @@
 # Turning STAC objects into the shapes R works in: a data frame of items, an
 # sf object, and the sf accessors on a single Item.
 #
-# These are plain S3 methods rather than S7::method() assignments. Assigning to
-# an S3 generic through S7 leaves a binding of the generic's name in this
-# namespace, which is what the workaround in .onLoad() exists to undo (see
-# zzz.R). Registering these the ordinary way avoids the problem rather than
-# adding to it.
+# The public coercion and subsetting generics are S3 generics, but S7 can
+# register methods for them directly. This preserves the formal, qualified S7
+# class names instead of adding unqualified aliases to each object's S3 class
+# vector.
 
 # One item's properties as a single-row list, with the fields promoted out of
 # @properties that every item has.
@@ -103,8 +102,9 @@ item_sfc <- function(item) {
 #' catalog <- stac_catalog(id = "my-catalog", description = "Example")
 #' length(catalog)
 #'
-#' @export
-length.stac_catalog <- function(x) {
+#' @name length.stac_catalog
+#' @usage NULL
+S7::method(length, stac_catalog) <- function(x) {
   count_items(x)
 }
 
@@ -158,8 +158,9 @@ length.stac_catalog <- function(x) {
 #' df <- as.data.frame(collection)
 #' df[df$`eo:cloud_cover` < 20, c("id", "datetime")]
 #'
-#' @export
-as.data.frame.stac_catalog <- function(
+#' @name as.data.frame.stac_catalog
+#' @usage NULL
+S7::method(as.data.frame, stac_catalog) <- function(
   x,
   row.names = NULL,
   optional = FALSE,
@@ -181,8 +182,8 @@ as.data.frame.stac_catalog <- function(
 }
 
 #' @rdname as.data.frame.stac_catalog
-#' @export
-as.data.frame.stac_item <- function(
+#' @usage NULL
+S7::method(as.data.frame, stac_item) <- function(
   x,
   row.names = NULL,
   optional = FALSE,
@@ -195,7 +196,7 @@ as.data.frame.stac_item <- function(
 #' Coerce a STAC Catalog, Collection or Item to an sf Object
 #'
 #' @description
-#' Returns the table that [as.data.frame()][as.data.frame.stac_catalog] gives,
+#' Returns the table that [base::as.data.frame()] gives,
 #' with the Item footprints attached as a geometry column. This is the shape
 #' most spatial work in R wants: filter on properties, plot the footprints, join
 #' against other layers.
@@ -234,8 +235,14 @@ as.data.frame.stac_item <- function(
 #' scenes <- sf::st_as_sf(item)
 #' sf::st_bbox(scenes)
 #'
-#' @exportS3Method sf::st_as_sf
-st_as_sf.stac_catalog <- function(x, ..., resolve = FALSE, base_path = ".") {
+#' @name st_as_sf.stac_catalog
+#' @usage NULL
+S7::method(st_as_sf, stac_catalog) <- function(
+  x,
+  ...,
+  resolve = FALSE,
+  base_path = "."
+) {
   items <- catalog_items(x, resolve, base_path)
 
   if (length(items) == 0) {
@@ -253,8 +260,8 @@ st_as_sf.stac_catalog <- function(x, ..., resolve = FALSE, base_path = ".") {
 }
 
 #' @rdname st_as_sf.stac_catalog
-#' @exportS3Method sf::st_as_sf
-st_as_sf.stac_item <- function(x, ...) {
+#' @usage NULL
+S7::method(st_as_sf, stac_item) <- function(x, ...) {
   sf::st_sf(rows_to_df(list(item_row(x))), geometry = item_sfc(x))
 }
 
@@ -291,17 +298,18 @@ st_as_sf.stac_item <- function(x, ...) {
 #' sf::st_crs(item)$epsg
 #'
 #' @name stac_item_sf_accessors
+#' @usage NULL
 NULL
 
 #' @rdname stac_item_sf_accessors
-#' @exportS3Method sf::st_geometry
-st_geometry.stac_item <- function(obj, ...) {
+#' @usage NULL
+S7::method(st_geometry, stac_item) <- function(obj, ...) {
   item_sfc(obj)
 }
 
 #' @rdname stac_item_sf_accessors
-#' @exportS3Method sf::st_bbox
-st_bbox.stac_item <- function(obj, ...) {
+#' @usage NULL
+S7::method(st_bbox, stac_item) <- function(obj, ...) {
   if (!is.null(obj@bbox) && length(obj@bbox) >= 4) {
     # A 3D STAC bbox is (xmin, ymin, zmin, xmax, ymax, zmax); sf's bbox is 2D,
     # so the elevation pair is dropped.
@@ -318,8 +326,8 @@ st_bbox.stac_item <- function(obj, ...) {
 }
 
 #' @rdname stac_item_sf_accessors
-#' @exportS3Method sf::st_crs
-st_crs.stac_item <- function(x, ...) {
+#' @usage NULL
+S7::method(st_crs, stac_item) <- function(x, ...) {
   sf::st_crs(4326)
 }
 
@@ -363,15 +371,16 @@ st_crs.stac_item <- function(x, ...) {
 #' collection[["scene-1"]]@id
 #' length(collection[1])
 #'
-#' @export
-`[.stac_catalog` <- function(x, i) {
+#' @name sub-.stac_catalog
+#' @usage NULL
+S7::method(`[`, stac_catalog) <- function(x, i) {
   items <- catalog_items(x, resolve = FALSE, base_path = ".")
   items[stac_item_index(items, i, multiple = TRUE)]
 }
 
 #' @rdname sub-.stac_catalog
-#' @export
-`[[.stac_catalog` <- function(x, i) {
+#' @usage NULL
+S7::method(`[[`, stac_catalog) <- function(x, i) {
   items <- catalog_items(x, resolve = FALSE, base_path = ".")
   idx <- stac_item_index(items, i, multiple = FALSE)
   items[[idx]]
