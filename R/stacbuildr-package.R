@@ -12,12 +12,14 @@
 #'
 #' ### S7 Classes (use `@` to access properties)
 #'
-#' The primary STAC document types, `stac_asset`, `raster_band` and the extent objects are
-#' S7 objects. Use the `@` operator to read or modify their properties:
+#' The primary STAC document types, `stac_asset`, `stac_provider`,
+#' `raster_band` and the extent objects are S7 objects. Use the `@` operator to
+#' read or modify their properties:
 #'
 #' | Constructor | Class | Example access |
 #' | --- | --- | --- |
 #' | [stac_asset()] | `stac_asset` | `asset@href`, `asset@extra_fields` |
+#' | [stac_provider()] | `stac_provider` | `provider@name`, `provider@roles` |
 #' | [stac_item()] | `stac_item` | `item@id`, `item@assets` |
 #' | [stac_catalog()] | `stac_catalog` | `catalog@title` |
 #' | [stac_collection()] | `stac_collection` | `collection@description` |
@@ -40,7 +42,6 @@
 #' | [raster_statistics()] | `raster_statistics` | `band@statistics` |
 #' | [raster_histogram()] | `raster_histogram` | `band@histogram` |
 #' | [eo_band()] | `eo_band` | asset `"bands"` field |
-#' | [stac_provider()] | `stac_provider` | `collection@providers` |
 #' | [stac_summaries()] | `stac_summaries` | `collection@summaries` |
 #' | [classification_class()] | `classification_class` | classification extension |
 #' | [classification_bitfield()] | `classification_bitfield` | classification extension |

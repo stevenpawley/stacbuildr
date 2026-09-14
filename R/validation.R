@@ -1100,19 +1100,20 @@ validate_providers <- function(providers) {
   for (i in seq_along(providers)) {
     provider <- providers[[i]]
 
-    if (!is.list(provider)) {
-      errors <- c(errors, paste0("Provider[", i, "] must be an object"))
+    if (!S7::S7_inherits(provider, stac_provider)) {
+      errors <- c(errors, paste0("Provider[", i, "] must be a stac_provider object"))
       next
     }
 
-    if (is.null(provider$name) || nchar(provider$name) == 0) {
+    if (length(provider@name) != 1L || is.na(provider@name) ||
+        !nzchar(provider@name)) {
       errors <- c(errors, paste0("Provider[", i, "] must have 'name' field"))
     }
 
-    if (!is.null(provider$roles)) {
+    if (!is.null(provider@roles)) {
       valid_roles <- c("producer", "licensor", "processor", "host")
-      if (is.character(provider$roles)) {
-        invalid <- setdiff(provider$roles, valid_roles)
+      if (is.character(provider@roles)) {
+        invalid <- setdiff(provider@roles, valid_roles)
         if (length(invalid) > 0) {
           errors <- c(
             errors,
