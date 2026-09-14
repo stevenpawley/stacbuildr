@@ -147,7 +147,7 @@ add_datacube_extension <- function(
     }
 
     for (field_name in names(fields)) {
-      item@assets[[asset_key]][[field_name]] <- fields[[field_name]]
+      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[field_name]]
     }
   } else {
     # Add to item properties

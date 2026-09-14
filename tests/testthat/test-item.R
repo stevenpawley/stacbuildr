@@ -547,9 +547,9 @@ test_that("add_asset works with inline parameters and pre-built asset", {
   )
 
   expect_true("thumbnail" %in% names(item@assets))
-  expect_equal(item@assets$thumbnail$href, "https://example.com/thumb.png")
-  expect_equal(item@assets$thumbnail$title, "Thumbnail")
-  expect_equal(item@assets$thumbnail$type, "image/png")
+  expect_equal(item@assets$thumbnail@href, "https://example.com/thumb.png")
+  expect_equal(item@assets$thumbnail@title, "Thumbnail")
+  expect_equal(item@assets$thumbnail@type, "image/png")
 
   # Add asset using a pre-built stac_asset()
   data_asset <- stac_asset(
@@ -561,12 +561,12 @@ test_that("add_asset works with inline parameters and pre-built asset", {
   item <- add_asset(item, key = "data", asset = data_asset)
 
   expect_true("data" %in% names(item@assets))
-  expect_equal(item@assets$data$href, "https://example.com/data.tif")
-  expect_equal(item@assets$data$type, "image/tiff; application=geotiff")
+  expect_equal(item@assets$data@href, "https://example.com/data.tif")
+  expect_equal(item@assets$data@type, "image/tiff; application=geotiff")
   # roles are stored as a list so jsonlite serialises them as a JSON array
   # regardless of how many roles are present (regression: single-element
   # character vectors were previously auto-unboxed to a string scalar)
-  expect_equal(item@assets$data$roles, list("data"))
+  expect_equal(item@assets$data@roles, "data")
 
   # Both assets present
   expect_length(item@assets, 2)
@@ -574,7 +574,7 @@ test_that("add_asset works with inline parameters and pre-built asset", {
   # Error on invalid asset
   expect_error(
     add_asset(item, key = "bad", asset = list(title = "no href")),
-    "'asset' must be a list with at least an 'href' field"
+    "'asset' must be a stac_asset or a list with an 'href' field"
   )
 })
 
@@ -583,10 +583,10 @@ test_that("add_asset works with inline parameters and pre-built asset", {
 #
 # Single-element character vectors were previously auto-unboxed by
 # jsonlite::toJSON(auto_unbox = TRUE) to a JSON string scalar ("data") rather
-# than an array (["data"]).  The fix stores roles as a list() so that jsonlite
+# than an array (["data"]). Serialization converts roles to a list() so jsonlite
 # always emits an array.  These tests guard against that regression.
 
-test_that("single asset role is stored as a list, not a character vector", {
+test_that("single asset role is stored as a character vector in S7", {
   item <- stac_item(
     id       = "roles-test",
     geometry = list(type = "Point", coordinates = c(0, 0)),
@@ -600,8 +600,8 @@ test_that("single asset role is stored as a list, not a character vector", {
       roles = c("data")
     )
 
-  expect_type(item@assets$data$roles, "list")
-  expect_equal(item@assets$data$roles, list("data"))
+  expect_type(item@assets$data@roles, "character")
+  expect_equal(item@assets$data@roles, "data")
 })
 
 test_that("single asset role serialises to a JSON array, not a scalar string", {
@@ -681,10 +681,10 @@ test_that("asset roles survive a write/read round-trip as a list", {
 
   # Verify restored object has list roles
   restored <- read_stac(path)
-  expect_type(restored@assets$data$roles,      "list")
-  expect_type(restored@assets$thumbnail$roles, "list")
-  expect_equal(restored@assets$data$roles,      list("data"))
-  expect_equal(restored@assets$thumbnail$roles, list("thumbnail"))
+  expect_type(restored@assets$data@roles,      "character")
+  expect_type(restored@assets$thumbnail@roles, "character")
+  expect_equal(restored@assets$data@roles,      "data")
+  expect_equal(restored@assets$thumbnail@roles, "thumbnail")
 })
 
 

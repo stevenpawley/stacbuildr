@@ -13,7 +13,7 @@
 #' @param title (character, optional) Title for the returned asset.
 #' @param ... Additional arguments passed to `terra::plotRGB()` or `terra::plot()`.
 #'
-#' @return A STAC asset list with `href`, `type = "image/png"`, and
+#' @return An S7 STAC asset with `href`, `type = "image/png"`, and
 #'   `roles = c("overview")`.
 #'
 #' @examples
@@ -80,7 +80,7 @@ preview_from_terra <- function(terra_obj, path, width = 256, height = 256,
 #' @param title (character, optional) Title for the returned asset.
 #' @param ... Additional arguments passed to `plot()`.
 #'
-#' @return A STAC asset list with `href`, `type = "image/png"`, and
+#' @return An S7 STAC asset with `href`, `type = "image/png"`, and
 #'   `roles = c("thumbnail")`.
 #'
 #' @examples

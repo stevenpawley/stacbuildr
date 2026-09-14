@@ -69,7 +69,7 @@ test_that("add_projection_extension writes to an asset when given asset_key", {
     asset_key = "swir"
   )
 
-  expect_equal(item@assets$swir$`proj:shape`, c(2779, 4780))
+  expect_equal(item@assets$swir@extra_fields$`proj:shape`, c(2779, 4780))
   # Asset-level placement leaves the item properties alone
   expect_null(item@properties$`proj:shape`)
   expect_true(proj_uri %in% item@stac_extensions)

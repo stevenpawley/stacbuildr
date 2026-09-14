@@ -15,9 +15,10 @@ The package uses two kinds of objects: \strong{S7 classes} for the core STAC
 structures, and \strong{plain lists} for lightweight sub-objects.
 \subsection{S7 Classes (use \code{@} to access properties)}{
 
-The primary STAC document types, \code{raster_band} and the extent objects are
+The primary STAC document types, \code{stac_asset}, \code{raster_band} and the extent objects are
 S7 objects. Use the \code{@} operator to read or modify their properties:\tabular{lll}{
    Constructor \tab Class \tab Example access \cr
+   \code{\link[=stac_asset]{stac_asset()}} \tab \code{stac_asset} \tab \code{asset@href}, \code{asset@extra_fields} \cr
    \code{\link[=stac_item]{stac_item()}} \tab \code{stac_item} \tab \code{item@id}, \code{item@assets} \cr
    \code{\link[=stac_catalog]{stac_catalog()}} \tab \code{stac_catalog} \tab \code{catalog@title} \cr
    \code{\link[=stac_collection]{stac_collection()}} \tab \code{stac_collection} \tab \code{collection@description} \cr
@@ -38,7 +39,6 @@ class exists so that each object prints as itself; fields are reached with
 \code{$} as for any list, and the class is dropped on serialisation so it never
 reaches the written JSON.\tabular{lll}{
    Constructor \tab Class \tab Typically used in \cr
-   \code{\link[=stac_asset]{stac_asset()}} \tab \code{stac_asset} \tab \code{item@assets} \cr
    \code{\link[=raster_statistics]{raster_statistics()}} \tab \code{raster_statistics} \tab \code{band@statistics} \cr
    \code{\link[=raster_histogram]{raster_histogram()}} \tab \code{raster_histogram} \tab \code{band@histogram} \cr
    \code{\link[=eo_band]{eo_band()}} \tab \code{eo_band} \tab asset \code{"bands"} field \cr
@@ -102,7 +102,7 @@ item <- stac_item(
   datetime = "2024-06-01T00:00:00Z"
 )
 
-# 2. Add an asset (plain list embedded in the item)
+# 2. Add an asset (S7 object embedded in the item)
 item <- add_asset(
   item,
   key   = "B4",

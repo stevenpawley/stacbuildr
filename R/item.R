@@ -296,7 +296,7 @@ stac_item <- S7::new_class(
       bbox = bbox,
       properties = props,
       links = links,
-      assets = assets,
+      assets = normalize_assets(assets),
       stac_extensions = stac_extensions,
       collection = collection
     )
@@ -390,7 +390,7 @@ S7::method(as.list, stac_item) <- function(x, ...) {
     properties = x@properties,
     links = x@links,
     # Ensure assets serializes as {} not [] when empty
-    assets = if (length(x@assets) == 0) setNames(list(), character(0)) else x@assets
+    assets = if (length(x@assets) == 0) setNames(list(), character(0)) else lapply(x@assets, as.list)
   )
   if (!is.null(x@bbox)) {
     out$bbox <- x@bbox

@@ -13,7 +13,6 @@ s3_print_classes <- c(
   "raster_statistics",
   "render_object",
   "scientific_publication",
-  "stac_asset",
   "stac_provider",
   "stac_summaries",
   "stac_validation",

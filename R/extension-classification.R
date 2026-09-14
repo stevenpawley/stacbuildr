@@ -166,9 +166,9 @@ add_classification_extension <- function(
     }
 
     if (!is.null(classes)) {
-      item@assets[[asset_key]]$`classification:classes` <- classes
+      item@assets[[asset_key]]@extra_fields$`classification:classes` <- classes
     } else {
-      item@assets[[asset_key]]$`classification:bitfields` <- bitfields
+      item@assets[[asset_key]]@extra_fields$`classification:bitfields` <- bitfields
     }
   } else {
     if (!is.null(classes)) {

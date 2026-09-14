@@ -89,8 +89,8 @@ test_that("get_items item contains the expected asset in memory", {
   items <- get_items(tree$collection)
 
   expect_true("dem" %in% names(items[[1]]@assets))
-  expect_equal(items[[1]]@assets$dem$href, "https://example.com/dem.tif")
-  expect_equal(items[[1]]@assets$dem$type, "image/tiff; application=geotiff")
+  expect_equal(items[[1]]@assets$dem@href, "https://example.com/dem.tif")
+  expect_equal(items[[1]]@assets$dem@type, "image/tiff; application=geotiff")
 })
 
 test_that("get_items returns NULL when no items added", {
@@ -155,8 +155,8 @@ test_that("resolved item contains the expected asset after round-trip", {
   items <- get_items(collection, resolve = TRUE, base_path = collection_path)
 
   expect_true("dem" %in% names(items[[1]]@assets))
-  expect_equal(items[[1]]@assets$dem$href, "https://example.com/dem.tif")
-  expect_equal(items[[1]]@assets$dem$type, "image/tiff; application=geotiff")
+  expect_equal(items[[1]]@assets$dem@href, "https://example.com/dem.tif")
+  expect_equal(items[[1]]@assets$dem@type, "image/tiff; application=geotiff")
 })
 
 test_that("get_children returns NULL without resolve after round-trip", {

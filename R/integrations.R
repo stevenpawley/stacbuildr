@@ -137,7 +137,7 @@ item_from_terra <- function(
     if (length(src) > 0 && nchar(src[1]) > 0 && file.exists(src[1])) {
       nodata_val <- gdal_nodata(src[1])
       if (!is.null(nodata_val)) {
-        item@assets[[asset_key]]$nodata <- nodata_val
+        item@assets[[asset_key]]@extra_fields$nodata <- nodata_val
       }
     }
   }

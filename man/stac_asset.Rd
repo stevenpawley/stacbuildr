@@ -35,12 +35,20 @@ metadata such as \code{"bands"} and extension-specific properties like
 \code{"proj:shape"}, etc.}
 }
 \value{
-A list representing a STAC asset object.
+An S7 asset. Access core fields with \code{asset@href} and arbitrary
+metadata with \code{asset@extra_fields}.
 }
 \description{
 Creates an asset object for use in STAC Items. Assets are the actual data
 files or resources associated with an Item (e.g., imagery files, metadata
 documents, thumbnails).
+}
+\details{
+\code{roles} is a character vector in memory and a JSON array when serialized.
+Assets retain their S7 class when attached to Items or Collections and when
+restored with \code{\link[=read_stac]{read_stac()}}. The assets dictionary remains a named list:
+use \code{item@assets[["data"]]@href} to access an asset's URL.
+Use \code{as.list(asset)} to obtain the JSON-ready representation.
 }
 \examples{
 # Simple asset
@@ -57,6 +65,8 @@ asset <- stac_asset(
   type = "image/tiff; application=geotiff",
   roles = c("data", "reflectance")
 )
+asset@href
+asset@roles
 
 # Asset with extension properties
 asset <- stac_asset(

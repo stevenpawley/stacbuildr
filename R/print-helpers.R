@@ -314,18 +314,18 @@ stac_asset_lines <- function(assets) {
   key_width <- max(nchar(names(assets)), 0L)
   unname(lapply(names(assets), function(key) {
     asset <- assets[[key]]
-    roles <- unlist(asset$roles)
+    roles <- asset@roles %||% character(0)
     detail <- paste(c(
-      asset$type,
+      asset@type,
       if (length(roles) > 0) sprintf("[%s]", paste(roles, collapse = ", "))
     ), collapse = " ")
     c(
       stac_entry(key, key_width, detail),
-      stac_style_url(stac_truncate(asset$href %||% "", stac_avail(11L))),
+      stac_style_url(stac_truncate(asset@href, stac_avail(11L))),
       # Extension fields attached to the asset (bands,
       # classification:classes, table:storage_options, ...)
       stac_field_lines(
-        asset[!names(asset) %in% stac_asset_core_fields],
+        asset@extra_fields,
         indent = 11L
       )
     )

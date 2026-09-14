@@ -64,7 +64,7 @@ test_that("fields can go on an asset instead of properties", {
     count = 10, type = "lidar", asset_key = "data"
   )
 
-  expect_equal(item@assets$data$`pc:count`, 10L)
+  expect_equal(item@assets$data@extra_fields$`pc:count`, 10L)
   expect_null(item@properties$`pc:count`)
   expect_error(
     add_pointcloud_extension(pc_test_item(), count = 1, type = "lidar", asset_key = "nope"),
