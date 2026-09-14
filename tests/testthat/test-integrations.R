@@ -149,9 +149,9 @@ test_that("bands_from_terra calculates statistics when requested", {
 
   for (band in bands) {
     expect_true(length(band@statistics) > 0)
-    expect_true(band@statistics$minimum <= band@statistics$maximum)
-    expect_true(band@statistics$valid_percent > 0)
-    expect_true(band@statistics$valid_percent <= 100)
+    expect_true(band@statistics@minimum <= band@statistics@maximum)
+    expect_true(band@statistics@valid_percent > 0)
+    expect_true(band@statistics@valid_percent <= 100)
   }
 })
 
@@ -251,7 +251,7 @@ test_that("band_from_file calculates statistics when asked", {
   expect_length(bands, 6)
   for (band in bands) {
     expect_true(length(band@statistics) > 0)
-    expect_true(band@statistics$minimum <= band@statistics$maximum)
+    expect_true(band@statistics@minimum <= band@statistics@maximum)
   }
 })
 
@@ -261,8 +261,8 @@ test_that("band_from_file passes sample_size through to the statistics", {
   sampled <- band_from_file(tif, calculate_statistics = TRUE, sample_size = 50L)
 
   expect_length(sampled, 6)
-  expect_true(sampled[[1]]@statistics$minimum >= full[[1]]@statistics$minimum)
-  expect_true(sampled[[1]]@statistics$maximum <= full[[1]]@statistics$maximum)
+  expect_true(sampled[[1]]@statistics@minimum >= full[[1]]@statistics@minimum)
+  expect_true(sampled[[1]]@statistics@maximum <= full[[1]]@statistics@maximum)
 })
 
 test_that("band_from_file errors on a file that does not exist", {

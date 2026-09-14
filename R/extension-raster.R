@@ -252,7 +252,14 @@ raster_band <- S7::new_class(
       }
     ),
     unit = S7::class_character,
-    statistics = S7::class_any,
+    statistics = S7::new_property(
+      S7::class_any,
+      validator = function(value) {
+        if (!is.null(value) && !S7::S7_inherits(value, raster_statistics)) {
+          "must be a raster_statistics object or NULL"
+        }
+      }
+    ),
     sampling = S7::new_property(
       S7::class_character,
       validator = function(value) {
@@ -272,7 +279,14 @@ raster_band <- S7::new_class(
     ),
     scale = S7::new_property(S7::class_numeric, default = 1),
     offset = S7::new_property(S7::class_numeric, default = 0),
-    histogram = S7::class_any,
+    histogram = S7::new_property(
+      S7::class_any,
+      validator = function(value) {
+        if (!is.null(value) && !S7::S7_inherits(value, raster_histogram)) {
+          "must be a raster_histogram object or NULL"
+        }
+      }
+    ),
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
   constructor = function(nodata = NULL,
@@ -291,13 +305,13 @@ raster_band <- S7::new_class(
       nodata = nodata %||% numeric(0),
       data_type = data_type %||% character(0),
       unit = unit %||% character(0),
-      statistics = statistics,
+      statistics = as_raster_statistics(statistics),
       sampling = sampling %||% character(0),
       bits_per_sample = if (is.null(bits_per_sample)) integer(0) else as.integer(bits_per_sample),
       spatial_resolution = spatial_resolution %||% numeric(0),
       scale = scale,
       offset = offset,
-      histogram = histogram,
+      histogram = as_raster_histogram(histogram),
       extra_fields = list(...)
     )
   }
@@ -316,7 +330,7 @@ S7::method(as.list, raster_band) <- function(x, ...) {
     y$unit <- x@unit
 
   if (!is.null(x@statistics) && length(x@statistics) > 0)
-    y$statistics <- x@statistics
+    y$statistics <- as.list(x@statistics)
 
   # nodata, data_type, unit and statistics are STAC Common Metadata and keep
   # their bare names; everything below is raster-specific and, since v2.0.0 of
@@ -337,7 +351,7 @@ S7::method(as.list, raster_band) <- function(x, ...) {
     y$`raster:offset` <- x@offset
 
   if (!is.null(x@histogram) && length(x@histogram) > 0)
-    y$`raster:histogram` <- x@histogram
+    y$`raster:histogram` <- as.list(x@histogram)
 
   if (length(x@extra_fields) > 0)
     y <- c(y, x@extra_fields)
@@ -360,8 +374,16 @@ S7::method(print, raster_band) <- function(x, ..., expand = NULL) {
     styles = list(data_type = stac_style_key)
   )
 
-  statistics <- x@statistics %||% list()
-  histogram <- x@histogram %||% list()
+  statistics <- if (!is.null(x@statistics)) {
+    raster_statistics_fields(x@statistics)
+  } else {
+    list()
+  }
+  histogram <- if (!is.null(x@histogram)) {
+    raster_histogram_fields(x@histogram)
+  } else {
+    list()
+  }
 
   collapsed <- c(
     if (length(statistics) > 0) {
@@ -406,7 +428,8 @@ S7::method(print, raster_band) <- function(x, ..., expand = NULL) {
 #' @param valid_percent (numeric, optional) Percentage of valid (non-nodata)
 #'   pixels. Should be between 0 and 100.
 #'
-#' @return A list representing a statistics object.
+#' @return An S7 raster statistics object. Access its properties with `@`, for
+#'   example `stats@minimum` and `stats@valid_percent`.
 #'
 #' @examples
 #' stats <- raster_statistics(
@@ -416,36 +439,59 @@ S7::method(print, raster_band) <- function(x, ..., expand = NULL) {
 #'   stddev = 1200,
 #'   valid_percent = 99.8
 #' )
+#' stats@minimum
+#' stats@valid_percent
 #'
 #' @export
-raster_statistics <- function(minimum = NULL,
-                              maximum = NULL,
-                              mean = NULL,
-                              stddev = NULL,
-                              valid_percent = NULL) {
-  stats <- list()
-
-  if (!is.null(minimum)) {
-    stats$minimum <- minimum
-  }
-  if (!is.null(maximum)) {
-    stats$maximum <- maximum
-  }
-  if (!is.null(mean)) {
-    stats$mean <- mean
-  }
-  if (!is.null(stddev)) {
-    stats$stddev <- stddev
-  }
-  if (!is.null(valid_percent)) {
-    if (valid_percent < 0 || valid_percent > 100) {
+raster_statistics <- S7::new_class(
+  "raster_statistics",
+  properties = list(
+    minimum = S7::new_union(S7::class_numeric, NULL),
+    maximum = S7::new_union(S7::class_numeric, NULL),
+    mean = S7::new_union(S7::class_numeric, NULL),
+    stddev = S7::new_union(S7::class_numeric, NULL),
+    valid_percent = S7::new_union(S7::class_numeric, NULL)
+  ),
+  constructor = function(minimum = NULL, maximum = NULL, mean = NULL,
+                         stddev = NULL, valid_percent = NULL) {
+    if (!is.null(valid_percent) &&
+        (valid_percent < 0 || valid_percent > 100)) {
       cli::cli_warn("'valid_percent' should be between 0 and 100")
     }
-    stats$valid_percent <- valid_percent
+    S7::new_object(
+      S7::S7_object(),
+      minimum = minimum,
+      maximum = maximum,
+      mean = mean,
+      stddev = stddev,
+      valid_percent = valid_percent
+    )
   }
+)
 
-  class(stats) <- c("raster_statistics", "list")
-  stats
+raster_statistics_fields <- function(x) {
+  fields <- list(
+    minimum = x@minimum,
+    maximum = x@maximum,
+    mean = x@mean,
+    stddev = x@stddev,
+    valid_percent = x@valid_percent
+  )
+  fields[!vapply(fields, is.null, logical(1))]
+}
+
+S7::method(as.list, raster_statistics) <- function(x, ...) {
+  raster_statistics_fields(x)
+}
+
+as_raster_statistics <- function(x) {
+  if (is.null(x) || S7::S7_inherits(x, raster_statistics)) {
+    return(x)
+  }
+  if (!is.list(x)) {
+    cli::cli_abort("'statistics' must be a raster_statistics object or a list.")
+  }
+  do.call(raster_statistics, x)
 }
 
 
@@ -457,18 +503,19 @@ raster_statistics <- function(minimum = NULL,
 #' @return `x`, invisibly.
 #'
 #' @export
-print.raster_statistics <- function(x, ...) {
+S7::method(print, raster_statistics) <- function(x, ...) {
   stac_print_header("Raster Statistics")
 
-  if (length(x) == 0) {
+  fields <- raster_statistics_fields(x)
+  if (length(fields) == 0) {
     stac_print_empty()
     return(invisible(x))
   }
 
   # "valid_percent" is wider than the default label column
-  width <- max(stac_label_width, nchar(names(x)))
-  for (key in names(x)) {
-    stac_print_field(key, stac_fmt_value(x[[key]]), stac_style_value, width)
+  width <- max(stac_label_width, nchar(names(fields)))
+  for (key in names(fields)) {
+    stac_print_field(key, stac_fmt_value(fields[[key]]), stac_style_value, width)
   }
 
   invisible(x)
@@ -489,7 +536,8 @@ print.raster_statistics <- function(x, ...) {
 #' @param buckets (integer vector, required) Array of counts for each bucket.
 #'   Length must equal `count`.
 #'
-#' @return A list representing a histogram object.
+#' @return An S7 raster histogram object. Access its properties with `@`, for
+#'   example `hist@count` and `hist@buckets`.
 #'
 #' @examples
 #' # Simple histogram with 5 buckets
@@ -499,39 +547,69 @@ print.raster_statistics <- function(x, ...) {
 #'   max = 100,
 #'   buckets = c(1500, 3200, 4100, 2800, 1400)
 #' )
+#' hist@count
+#' hist@buckets
 #'
 #' @export
-raster_histogram <- function(count, min, max, buckets) {
-  if (missing(count) || missing(min) || missing(max) || missing(buckets)) {
-    cli::cli_abort("'count', 'min', 'max', and 'buckets' are all required")
-  }
-  if (length(count) != 1L || !is.numeric(count)) {
-    cli::cli_abort("'count' must be a single number")
-  }
-  if (length(min) != 1L || !is.numeric(min)) {
-    cli::cli_abort("'min' must be a single number")
-  }
-  if (length(max) != 1L || !is.numeric(max)) {
-    cli::cli_abort("'max' must be a single number")
-  }
-  if (min >= max) {
-    cli::cli_abort("'min' must be smaller than 'max'")
-  }
-  if (length(buckets) != count) {
-    cli::cli_abort(
-      "'buckets' length ({length(buckets)}) must equal 'count' ({as.integer(count)})"
-    )
-  }
-
-  structure(
-    list(
-      count   = as.integer(count),
-      min     = min,
-      max     = max,
+raster_histogram <- S7::new_class(
+  "raster_histogram",
+  properties = list(
+    count = S7::class_integer,
+    min = S7::class_numeric,
+    max = S7::class_numeric,
+    buckets = S7::class_integer
+  ),
+  constructor = function(count, min, max, buckets) {
+    if (missing(count) || missing(min) || missing(max) || missing(buckets)) {
+      cli::cli_abort("'count', 'min', 'max', and 'buckets' are all required")
+    }
+    if (length(count) != 1L || !is.numeric(count)) {
+      cli::cli_abort("'count' must be a single number")
+    }
+    if (length(min) != 1L || !is.numeric(min)) {
+      cli::cli_abort("'min' must be a single number")
+    }
+    if (length(max) != 1L || !is.numeric(max)) {
+      cli::cli_abort("'max' must be a single number")
+    }
+    S7::new_object(
+      S7::S7_object(),
+      count = as.integer(count),
+      min = min,
+      max = max,
       buckets = as.integer(buckets)
-    ),
-    class = c("raster_histogram", "list")
-  )
+    )
+  },
+  validator = function(self) {
+    if (self@min >= self@max) {
+      return("'min' must be smaller than 'max'")
+    }
+    if (length(self@buckets) != self@count) {
+      return(sprintf(
+        "'buckets' length (%d) must equal 'count' (%d)",
+        length(self@buckets), self@count
+      ))
+    }
+    NULL
+  }
+)
+
+raster_histogram_fields <- function(x) {
+  list(count = x@count, min = x@min, max = x@max, buckets = x@buckets)
+}
+
+S7::method(as.list, raster_histogram) <- function(x, ...) {
+  raster_histogram_fields(x)
+}
+
+as_raster_histogram <- function(x) {
+  if (is.null(x) || S7::S7_inherits(x, raster_histogram)) {
+    return(x)
+  }
+  if (!is.list(x)) {
+    cli::cli_abort("'histogram' must be a raster_histogram object or a list.")
+  }
+  do.call(raster_histogram, x)
 }
 
 
@@ -543,11 +621,11 @@ raster_histogram <- function(count, min, max, buckets) {
 #' @return `x`, invisibly.
 #'
 #' @export
-print.raster_histogram <- function(x, ...) {
+S7::method(print, raster_histogram) <- function(x, ...) {
   stac_print_header("Raster Histogram")
-  stac_print_field("count", stac_fmt_value(x$count), stac_style_count)
-  stac_print_field("range", sprintf("%g / %g", x$min, x$max))
-  stac_print_field("buckets", stac_fmt_value(x$buckets))
+  stac_print_field("count", stac_fmt_value(x@count), stac_style_count)
+  stac_print_field("range", sprintf("%g / %g", x@min, x@max))
+  stac_print_field("buckets", stac_fmt_value(x@buckets))
 
   invisible(x)
 }

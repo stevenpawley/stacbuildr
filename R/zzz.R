@@ -9,8 +9,6 @@ s3_print_classes <- c(
   "eo_band",
   "pc_schema",
   "pc_statistic",
-  "raster_histogram",
-  "raster_statistics",
   "render_object",
   "scientific_publication",
   "stac_summaries",
