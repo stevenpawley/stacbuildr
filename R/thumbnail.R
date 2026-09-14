@@ -62,7 +62,7 @@ preview_from_terra <- function(terra_obj, path, width = 256, height = 256,
     href = normalize_href(path),
     title = title,
     type = "image/png",
-    roles = c("overview")
+    roles = "thumbnail"
   )
 }
 
@@ -115,6 +115,6 @@ thumbnail_from_sf <- function(sf_obj, path, width = 256, height = 256,
     href = normalize_href(path),
     title = title,
     type = "image/png",
-    roles = c("thumbnail")
+    roles = "thumbnail"
   )
 }
