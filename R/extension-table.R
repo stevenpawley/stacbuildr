@@ -198,13 +198,13 @@ add_table_extension <- function(
     }
   } else {
     for (field_name in names(fields)) {
-      item@assets[[asset_key]][[field_name]] <- fields[[field_name]]
+      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[field_name]]
     }
   }
 
   # table:storage_options is always an asset-level field
   if (!is.null(storage_options)) {
-    item@assets[[asset_key]]$`table:storage_options` <- storage_options
+    item@assets[[asset_key]]@extra_fields$`table:storage_options` <- storage_options
   }
 
   item

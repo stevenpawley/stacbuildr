@@ -175,7 +175,7 @@ test_that("add_table_extension writes table:storage_options to the specified ass
     asset_key = "data"
   )
 
-  expect_equal(item@assets$data$`table:storage_options`, list(anon = TRUE))
+  expect_equal(item@assets$data@extra_fields$`table:storage_options`, list(anon = TRUE))
   expect_null(item@properties$`table:storage_options`)
 })
 
@@ -191,10 +191,10 @@ test_that("add_table_extension can set all fields at once", {
   )
 
   # asset_key routes every field it can, as in the other extensions
-  expect_length(item@assets$data$`table:columns`, 1)
-  expect_equal(item@assets$data$`table:primary_geometry`, "geometry")
-  expect_equal(item@assets$data$`table:row_count`, 42)
-  expect_equal(item@assets$data$`table:storage_options`, list(anon = TRUE))
+  expect_length(item@assets$data@extra_fields$`table:columns`, 1)
+  expect_equal(item@assets$data@extra_fields$`table:primary_geometry`, "geometry")
+  expect_equal(item@assets$data@extra_fields$`table:row_count`, 42)
+  expect_equal(item@assets$data@extra_fields$`table:storage_options`, list(anon = TRUE))
 
   expect_null(item@properties$`table:columns`)
   expect_null(item@properties$`table:primary_geometry`)
@@ -212,7 +212,7 @@ test_that("add_table_extension routes columns to an asset when asset_key is give
     asset_key = "data"
   )
 
-  expect_length(item@assets$data$`table:columns`, 2)
+  expect_length(item@assets$data@extra_fields$`table:columns`, 2)
   expect_null(item@properties$`table:columns`)
 })
 
@@ -227,5 +227,5 @@ test_that("add_table_extension keeps item-level placement when asset_key is omit
   expect_length(item@properties$`table:columns`, 1)
   expect_equal(item@properties$`table:primary_geometry`, "geometry")
   expect_equal(item@properties$`table:row_count`, 42)
-  expect_null(item@assets$data$`table:columns`)
+  expect_null(item@assets$data@extra_fields$`table:columns`)
 })

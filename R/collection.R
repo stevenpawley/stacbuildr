@@ -294,7 +294,7 @@ stac_collection <- S7::new_class(
       keywords = keywords,
       providers = providers,
       summaries = summaries,
-      assets = assets
+      assets = normalize_assets(assets)
     )
   },
   validator = function(self) {
@@ -334,7 +334,7 @@ S7::method(as.list, stac_collection) <- function(x, ...) {
     out$summaries <- x@summaries
   }
   if (!is.null(x@assets) && length(x@assets) > 0) {
-    out$assets <- x@assets
+    out$assets <- lapply(x@assets, as.list)
   }
   if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
     out$conformsTo <- as_json_array(x@conformsTo)
@@ -716,13 +716,24 @@ add_item_assets <- function(collection) {
     for (item in items) {
       asset <- item@assets[[key]]
       if (!is.null(asset)) {
-        asset <- asset[setdiff(names(asset), "href")]
-        if (!is.null(asset$bands)) {
-          asset$bands <- lapply(asset$bands, function(band) {
+        item_asset <- list()
+        for (field in c("title", "description", "type", "roles")) {
+          value <- S7::prop(asset, field)
+          if (!is.null(value)) {
+            item_asset[[field]] <- if (field == "roles") {
+              as_json_array(value)
+            } else {
+              value
+            }
+          }
+        }
+        item_asset <- c(item_asset, asset@extra_fields)
+        if (!is.null(item_asset$bands)) {
+          item_asset$bands <- lapply(item_asset$bands, function(band) {
             band[setdiff(names(band), "statistics")]
           })
         }
-        return(asset)
+        return(item_asset)
       }
     }
     NULL

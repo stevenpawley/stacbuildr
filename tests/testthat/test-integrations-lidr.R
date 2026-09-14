@@ -30,8 +30,8 @@ test_that("the point cloud asset gets the LAZ media type", {
   f <- lidr_test_file()
 
   suppressWarnings(item <- item_from_lidr(f))
-  expect_equal(item@assets$data$type, "application/vnd.laszip")
-  expect_equal(item@assets$data$roles, list("data"))
+  expect_equal(item@assets$data@type, "application/vnd.laszip")
+  expect_equal(item@assets$data@roles, "data")
 })
 
 test_that("COPC files are recognised by name", {

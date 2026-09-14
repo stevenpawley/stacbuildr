@@ -38,10 +38,10 @@ test_that("read_stac restores item assets", {
   expect_true("visual" %in% names(item@assets))
   expect_true("thumbnail" %in% names(item@assets))
   expect_equal(
-    item@assets$visual$href,
+    item@assets$visual@href,
     "https://storage.googleapis.com/open-cogs/stac-examples/20201211_223832_CS2.tif"
   )
-  expect_equal(item@assets$visual$roles, list("visual"))
+  expect_equal(item@assets$visual@roles, "visual")
 })
 
 test_that("read_stac restores item links", {
@@ -190,7 +190,7 @@ test_that("stac_item survives a write/read round-trip", {
   expect_equal(restored@properties$datetime, "2023-06-15T10:30:00Z")
   expect_equal(restored@properties$platform, "landsat-8")
   expect_equal(restored@properties$gsd, 30)
-  expect_equal(restored@assets$visual$href, "https://example.com/visual.tif")
+  expect_equal(restored@assets$visual@href, "https://example.com/visual.tif")
 })
 
 test_that("stac_item with time range survives a write/read round-trip", {

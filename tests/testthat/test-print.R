@@ -188,7 +188,7 @@ test_that("asset-level extension fields print under their asset", {
 
   # the two extensions describe the same bands, so their fields merged
   expect_named(
-    item@assets$B4$bands[[1]],
+    item@assets$B4@extra_fields$bands[[1]],
     c("name", "eo:common_name", "nodata", "data_type", "raster:scale",
       "raster:offset")
   )

@@ -236,8 +236,8 @@ test_that("add_classification_extension writes classes to a named asset", {
     ) |>
     add_classification_extension(classes = classes, asset_key = "landcover")
 
-  expect_length(item@assets$landcover$`classification:classes`, 1)
-  expect_equal(item@assets$landcover$`classification:classes`[[1]]$name, "forest")
+  expect_length(item@assets$landcover@extra_fields$`classification:classes`, 1)
+  expect_equal(item@assets$landcover@extra_fields$`classification:classes`[[1]]$name, "forest")
   # should NOT be in item properties
   expect_null(item@properties$`classification:classes`)
 })
@@ -256,8 +256,8 @@ test_that("add_classification_extension writes bitfields to a named asset", {
     ) |>
     add_classification_extension(bitfields = bfs, asset_key = "qa")
 
-  expect_length(item@assets$qa$`classification:bitfields`, 1)
-  expect_equal(item@assets$qa$`classification:bitfields`[[1]]$name, "cloud")
+  expect_length(item@assets$qa@extra_fields$`classification:bitfields`, 1)
+  expect_equal(item@assets$qa@extra_fields$`classification:bitfields`[[1]]$name, "cloud")
   expect_null(item@properties$`classification:bitfields`)
 })
 

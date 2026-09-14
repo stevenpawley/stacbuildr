@@ -8,7 +8,7 @@ test_that("errors are raised as cli conditions", {
 
   # cli_abort() produces an rlang error, not a bare simpleError
   expect_error(add_asset(item, "k", asset = list(no_href = 1)), class = "rlang_error")
-  expect_error(stac_asset(href = ""), class = "rlang_error")
+  expect_error(stac_asset(href = ""), "non-empty string")
   expect_error(add_item(item, item), class = "rlang_error")
 })
 
@@ -46,7 +46,7 @@ test_that("hints are carried as a separate bullet", {
   )
   msg <- conditionMessage(err)
 
-  expect_match(msg, "'asset' must be a list with at least an 'href' field", fixed = TRUE)
+  expect_match(msg, "'asset' must be a stac_asset or a list with an 'href' field", fixed = TRUE)
   expect_match(msg, "Use stac_asset() to build one.", fixed = TRUE)
 })
 

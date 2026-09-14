@@ -75,7 +75,7 @@ test_that("add_raster_extension writes bands to a named asset", {
   item  <- make_item() |>
     add_raster_extension(bands = bands, asset_key = "B4")
 
-  expect_length(item@assets$B4$bands, 1L)
+  expect_length(item@assets$B4@extra_fields$bands, 1L)
   expect_null(item@properties$bands)
 })
 
@@ -171,5 +171,5 @@ test_that("raster:scale precision holds when bands are on an asset, not item", {
   write_item(item, path)
 
   restored <- read_stac(path)
-  expect_equal(restored@assets$B4$bands[[1]]$`raster:scale`, 2.75e-5)
+  expect_equal(restored@assets$B4@extra_fields$bands[[1]]$`raster:scale`, 2.75e-5)
 })

@@ -55,9 +55,9 @@ test_that("item_from_terra adds the main asset with correct fields", {
   )
 
   expect_true("data" %in% names(item@assets))
-  expect_equal(item@assets$data$href, gsub("\\\\", "/", normalizePath(tif)))
-  expect_equal(item@assets$data$type, "image/tiff; application=geotiff")
-  expect_equal(item@assets$data$roles, list("data"))
+  expect_equal(item@assets$data@href, gsub("\\\\", "/", normalizePath(tif)))
+  expect_equal(item@assets$data@type, "image/tiff; application=geotiff")
+  expect_equal(item@assets$data@roles, "data")
 })
 
 test_that("item_from_terra adds raster extension with 6 band objects", {
@@ -74,7 +74,7 @@ test_that("item_from_terra adds raster extension with 6 band objects", {
   raster_ext <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
   expect_true(raster_ext %in% item@stac_extensions)
 
-  bands <- item@assets$data$bands
+  bands <- item@assets$data@extra_fields$bands
   expect_length(bands, 6)
   expect_equal(bands[[1]]$data_type, "uint8")
   expect_equal(bands[[1]]$`raster:spatial_resolution`, 28.5)
@@ -93,7 +93,7 @@ test_that("item_from_terra skips raster extension when add_raster_bands is FALSE
 
   raster_ext <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
   expect_false(raster_ext %in% item@stac_extensions)
-  expect_null(item@assets$data$bands)
+  expect_null(item@assets$data@extra_fields$bands)
 })
 
 test_that("item_from_terra adds projection extension for non-WGS84 CRS", {
@@ -279,7 +279,7 @@ test_that("band_from_file output attaches to an item as raster bands", {
   item <- add_asset(item, key = "data", href = tif, type = "image/tiff")
   item <- add_raster_extension(item, bands = band_from_file(tif), asset_key = "data")
 
-  expect_length(item@assets$data$bands, 6)
-  expect_equal(item@assets$data$bands[[1]]$data_type, "uint8")
+  expect_length(item@assets$data@extra_fields$bands, 6)
+  expect_equal(item@assets$data@extra_fields$bands[[1]]$data_type, "uint8")
   expect_true(any(grepl("raster/v2.0.0", item@stac_extensions)))
 })

@@ -838,15 +838,15 @@ absolutize_asset_hrefs <- function(item, item_base_url) {
   unresolved <- character(0)
 
   item@assets <- lapply(item@assets, function(a) {
-    if (is.null(a$href)) return(a)
-    if (grepl("://", a$href, fixed = TRUE)) return(a)
+    if (is.null(a@href)) return(a)
+    if (grepl("://", a@href, fixed = TRUE)) return(a)
 
-    if (startsWith(a$href, "/")) {
-      unresolved <<- c(unresolved, a$href)
+    if (startsWith(a@href, "/")) {
+      unresolved <<- c(unresolved, a@href)
       return(a)
     }
 
-    a$href <- url_join(item_base_url, a$href)
+    a@href <- url_join(item_base_url, a@href)
     a
   })
 
@@ -871,7 +871,7 @@ absolutize_asset_hrefs <- function(item, item_base_url) {
 relativize_asset_hrefs <- function(item, item_dir) {
   if (is.null(item@assets) || length(item@assets) == 0) return(item)
   item@assets <- lapply(item@assets, function(a) {
-    if (!is.null(a$href)) a$href <- make_relative_href(a$href, item_dir)
+    if (!is.null(a@href)) a@href <- make_relative_href(a@href, item_dir)
     a
   })
   item

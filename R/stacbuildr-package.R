@@ -12,11 +12,12 @@
 #'
 #' ### S7 Classes (use `@` to access properties)
 #'
-#' The primary STAC document types, `raster_band` and the extent objects are
+#' The primary STAC document types, `stac_asset`, `raster_band` and the extent objects are
 #' S7 objects. Use the `@` operator to read or modify their properties:
 #'
 #' | Constructor | Class | Example access |
 #' | --- | --- | --- |
+#' | [stac_asset()] | `stac_asset` | `asset@href`, `asset@extra_fields` |
 #' | [stac_item()] | `stac_item` | `item@id`, `item@assets` |
 #' | [stac_catalog()] | `stac_catalog` | `catalog@title` |
 #' | [stac_collection()] | `stac_collection` | `collection@description` |
@@ -36,7 +37,6 @@
 #'
 #' | Constructor | Class | Typically used in |
 #' | --- | --- | --- |
-#' | [stac_asset()] | `stac_asset` | `item@assets` |
 #' | [raster_statistics()] | `raster_statistics` | `band@statistics` |
 #' | [raster_histogram()] | `raster_histogram` | `band@histogram` |
 #' | [eo_band()] | `eo_band` | asset `"bands"` field |
@@ -95,7 +95,7 @@
 #'   datetime = "2024-06-01T00:00:00Z"
 #' )
 #'
-#' # 2. Add an asset (plain list embedded in the item)
+#' # 2. Add an asset (S7 object embedded in the item)
 #' item <- add_asset(
 #'   item,
 #'   key   = "B4",

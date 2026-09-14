@@ -142,7 +142,7 @@ item <- item |>
   )
 
 item@properties$`eo:cloud_cover`
-item@assets$red$bands
+item@assets$red@extra_fields$bands
 ```
 
 Note the pattern above: calling `add_eo_extension()` several times is fine. The
@@ -203,7 +203,7 @@ red_band <- raster_band(
 
 item <- add_raster_extension(item, bands = list(red_band), asset_key = "red")
 
-item@assets$red$bands[[1]]$`raster:scale`
+item@assets$red@extra_fields$bands[[1]]$`raster:scale`
 ```
 
 Raster v2.0.0 made the same move as EO: the band objects go in the shared
@@ -265,7 +265,7 @@ combined_item <- item |>
     asset_key = "red"
   )
 
-names(combined_item@assets$red$bands[[1]])
+names(combined_item@assets$red@extra_fields$bands[[1]])
 ```
 
 A list of a different length is taken to describe different bands and replaces
@@ -514,7 +514,7 @@ parcels <- stac_item(
   )
 
 vapply(parcels@properties$`table:columns`, `[[`, character(1), "name")
-names(parcels@assets$data$`table:storage_options`)
+names(parcels@assets$data@extra_fields$`table:storage_options`)
 ```
 
 When one item bundles several tables with different schemas, pass `asset_key`
@@ -544,7 +544,7 @@ multi <- stac_item(
     asset_key = "persons"
   )
 
-vapply(multi@assets$persons$`table:columns`, `[[`, character(1), "name")
+vapply(multi@assets$persons@extra_fields$`table:columns`, `[[`, character(1), "name")
 ```
 
 One caveat on how much the spec backs any of this. The item/asset split is

@@ -12,7 +12,6 @@ test_that("print dispatches for the S3 sub-object classes", {
 
   cases <- list(
     eo_band = eo_band(name = "B4", common_name = "red"),
-    stac_asset = stac_asset(href = "./b4.tif", type = "image/tiff", roles = "data"),
     stac_provider = stac_provider(name = "USGS", roles = "producer"),
     stac_summaries = stac_summaries(platform = list("landsat-8")),
     raster_statistics = raster_statistics(minimum = 0, maximum = 1),
@@ -130,7 +129,6 @@ test_that("sub-object sections expand", {
 test_that("the classed helpers stay ordinary lists", {
   # the class is for printing only: $ access, is.list() and [[ must all work
   objs <- list(
-    stac_asset(href = "./b4.tif", type = "image/tiff"),
     stac_provider(name = "USGS"),
     stac_summaries(platform = list("landsat-8")),
     raster_statistics(minimum = 0, maximum = 1),
@@ -143,7 +141,7 @@ test_that("the classed helpers stay ordinary lists", {
     expect_length(names(o), length(o))
   }
 
-  expect_equal(stac_asset(href = "./b4.tif")$href, "./b4.tif")
+  expect_equal(stac_asset(href = "./b4.tif")@href, "./b4.tif")
   expect_equal(stac_provider(name = "USGS")[["name"]], "USGS")
   expect_equal(raster_statistics(minimum = 3)$minimum, 3)
 })
@@ -164,7 +162,7 @@ test_that("classed helpers survive being embedded in S7 objects", {
     datetime = "2023-01-01T00:00:00Z"
   )
   item <- add_asset(item, "B4", href = "./b4.tif", type = "image/tiff")
-  expect_s3_class(item@assets$B4, "stac_asset")
+  expect_true(S7::S7_inherits(item@assets$B4, stac_asset))
 })
 
 test_that("the new classes do not leak into JSON", {

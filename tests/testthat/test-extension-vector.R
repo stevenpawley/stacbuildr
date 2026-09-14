@@ -120,8 +120,8 @@ test_that("add_vector_extension writes fields to the specified asset", {
     asset_key = "data"
   )
 
-  expect_equal(item@assets$data$`vector:geometry_types`, list("Point"))
-  expect_equal(item@assets$data$`vector:mmu`, 10)
+  expect_equal(item@assets$data@extra_fields$`vector:geometry_types`, list("Point"))
+  expect_equal(item@assets$data@extra_fields$`vector:mmu`, 10)
   expect_null(item@properties$`vector:geometry_types`)
   expect_null(item@properties$`vector:mmu`)
 })

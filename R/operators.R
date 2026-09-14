@@ -73,8 +73,8 @@ set_bands <- function(item, bands, asset_key = NULL) {
     if (is.null(item@assets[[asset_key]])) {
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
-    item@assets[[asset_key]]$bands <- merge_bands(
-      item@assets[[asset_key]]$bands,
+    item@assets[[asset_key]]@extra_fields$bands <- merge_bands(
+      item@assets[[asset_key]]@extra_fields$bands,
       bands
     )
   } else {

@@ -275,6 +275,6 @@ test_that("add_datacube_extension writes fields to the specified asset", {
     asset_key = "data"
   )
 
-  expect_length(item@assets$data$`cube:dimensions`, 3)
+  expect_length(item@assets$data@extra_fields$`cube:dimensions`, 3)
   expect_null(item@properties$`cube:dimensions`)
 })

@@ -27,7 +27,7 @@ preview_from_terra(
 \item{...}{Additional arguments passed to \code{terra::plotRGB()} or \code{terra::plot()}.}
 }
 \value{
-A STAC asset list with \code{href}, \code{type = "image/png"}, and
+An S7 STAC asset with \code{href}, \code{type = "image/png"}, and
 \code{roles = c("overview")}.
 }
 \description{
