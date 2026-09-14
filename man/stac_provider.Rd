@@ -17,7 +17,8 @@ stac_provider(name, description = NULL, roles = NULL, url = NULL)
 \item{url}{(character, optional) Homepage URL for the provider.}
 }
 \value{
-A list representing a STAC Provider.
+An S7 object representing a STAC Provider. Access its properties
+with \code{@}, for example \code{provider@name} and \code{provider@roles}.
 }
 \description{
 Helper function to create a properly formatted provider object for STAC Collections.
@@ -29,5 +30,7 @@ provider <- stac_provider(
   roles = c("producer", "licensor", "host"),
   url = "https://www.usgs.gov"
 )
+provider@name
+provider@roles
 
 }

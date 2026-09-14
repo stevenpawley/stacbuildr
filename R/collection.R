@@ -224,7 +224,17 @@ stac_collection <- S7::new_class(
     ),
     providers = S7::new_property(
       S7::new_union(S7::class_list, NULL),
-      default = NULL
+      default = NULL,
+      validator = function(value) {
+        if (!is.null(value) && !all(vapply(
+          value,
+          S7::S7_inherits,
+          logical(1),
+          class = stac_provider
+        ))) {
+          "must contain only stac_provider objects"
+        }
+      }
     ),
     summaries = S7::new_property(
       S7::new_union(S7::class_list, NULL),
@@ -292,7 +302,7 @@ stac_collection <- S7::new_class(
       license = license,
       extent = extent,
       keywords = keywords,
-      providers = providers,
+      providers = normalize_providers(providers),
       summaries = summaries,
       assets = normalize_assets(assets)
     )
@@ -324,7 +334,7 @@ S7::method(as.list, stac_collection) <- function(x, ...) {
     out$keywords <- as_json_array(x@keywords)
   }
   if (!is.null(x@providers) && length(x@providers) > 0) {
-    out$providers <- x@providers
+    out$providers <- lapply(x@providers, as.list)
   }
   if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
     out$stac_extensions <- as.list(x@stac_extensions)
@@ -399,7 +409,7 @@ S7::method(print, stac_collection) <- function(x, ..., expand = NULL) {
         "providers",
         length(providers),
         summary = stac_preview(vapply(
-          providers, function(p) p$name %||% "", character(1)
+          providers, function(p) p@name, character(1)
         )),
         lines = function() stac_provider_lines(providers),
         expanded = stac_expanded(expand, "providers")
@@ -524,7 +534,8 @@ stac_extent <- function(spatial_bbox, temporal_interval) {
 #'   "producer", "licensor", "processor", "host".
 #' @param url (character, optional) Homepage URL for the provider.
 #'
-#' @return A list representing a STAC Provider.
+#' @return An S7 object representing a STAC Provider. Access its properties
+#'   with `@`, for example `provider@name` and `provider@roles`.
 #'
 #' @examples
 #' provider <- stac_provider(
@@ -533,23 +544,83 @@ stac_extent <- function(spatial_bbox, temporal_interval) {
 #'   roles = c("producer", "licensor", "host"),
 #'   url = "https://www.usgs.gov"
 #' )
+#' provider@name
+#' provider@roles
 #'
 #' @export
-stac_provider <- function(name, description = NULL, roles = NULL, url = NULL) {
-  provider <- list(name = name)
+stac_provider <- S7::new_class(
+  "stac_provider",
+  properties = list(
+    name = S7::new_property(
+      S7::class_character,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value) || !nzchar(value)) {
+          "must be a non-empty string"
+        }
+      }
+    ),
+    description = S7::new_union(S7::class_character, NULL),
+    roles = S7::new_property(
+      S7::new_union(S7::class_character, NULL),
+      validator = function(value) {
+        invalid <- setdiff(value %||% character(0),
+                           c("producer", "licensor", "processor", "host"))
+        if (length(invalid) > 0) {
+          sprintf("contains invalid roles: %s", paste(invalid, collapse = ", "))
+        }
+      }
+    ),
+    url = S7::new_union(S7::class_character, NULL)
+  ),
+  constructor = function(name, description = NULL, roles = NULL, url = NULL) {
+    if (is.list(roles)) {
+      roles <- unlist(roles, use.names = FALSE)
+    }
+    S7::new_object(
+      S7::S7_object(),
+      name = name,
+      description = description,
+      roles = roles,
+      url = url
+    )
+  }
+)
 
-  if (!is.null(description)) {
-    provider$description <- description
+S7::method(as.list, stac_provider) <- function(x, ...) {
+  out <- list(name = x@name)
+  for (field in c("description", "roles", "url")) {
+    value <- S7::prop(x, field)
+    if (!is.null(value)) {
+      out[[field]] <- if (field == "roles") as_json_array(value) else value
+    }
   }
-  if (!is.null(roles)) {
-    provider$roles <- as_json_array(roles)
-  }
-  if (!is.null(url)) {
-    provider$url <- url
-  }
+  out
+}
 
-  class(provider) <- c("stac_provider", "list")
-  provider
+as_stac_provider <- function(x) {
+  if (S7::S7_inherits(x, stac_provider)) {
+    return(x)
+  }
+  if (!is.list(x) || is.null(x$name)) {
+    cli::cli_abort(c(
+      "'provider' must be a stac_provider or a list with a 'name' field.",
+      "i" = "Use stac_provider() to build one."
+    ))
+  }
+  if (!is.null(x$roles)) {
+    x$roles <- unlist(x$roles, use.names = FALSE)
+  }
+  do.call(stac_provider, x)
+}
+
+normalize_providers <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  if (!is.list(x)) {
+    cli::cli_abort("'providers' must be a list of provider objects.")
+  }
+  lapply(x, as_stac_provider)
 }
 
 
@@ -561,20 +632,20 @@ stac_provider <- function(name, description = NULL, roles = NULL, url = NULL) {
 #' @return `x`, invisibly.
 #'
 #' @export
-print.stac_provider <- function(x, ...) {
+S7::method(print, stac_provider) <- function(x, ...) {
   stac_print_header("STAC Provider")
-  stac_print_field("name", x$name %||% "", stac_style_id)
+  stac_print_field("name", x@name, stac_style_id)
 
-  if (!is.null(x$roles)) {
+  if (!is.null(x@roles)) {
     stac_print_field("roles", sprintf(
-      "[%s]", paste(unlist(x$roles), collapse = ", ")
+      "[%s]", paste(x@roles, collapse = ", ")
     ))
   }
-  if (!is.null(x$url)) {
-    stac_print_field("url", x$url, stac_style_url)
+  if (!is.null(x@url)) {
+    stac_print_field("url", x@url, stac_style_url)
   }
-  if (!is.null(x$description)) {
-    stac_print_field("description", x$description)
+  if (!is.null(x@description)) {
+    stac_print_field("description", x@description)
   }
 
   invisible(x)

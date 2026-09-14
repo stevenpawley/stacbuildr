@@ -143,7 +143,8 @@ test_that("read_stac restores collection providers", {
   collection <- read_stac(fixture("collection.json"))
 
   expect_length(collection@providers, 1L)
-  expect_equal(collection@providers[[1]]$name, "Remote Data, Inc")
+  expect_true(S7::S7_inherits(collection@providers[[1]], stac_provider))
+  expect_equal(collection@providers[[1]]@name, "Remote Data, Inc")
 })
 
 test_that("read_stac restores collection summaries", {

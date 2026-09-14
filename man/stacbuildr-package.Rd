@@ -15,10 +15,12 @@ The package uses two kinds of objects: \strong{S7 classes} for the core STAC
 structures, and \strong{plain lists} for lightweight sub-objects.
 \subsection{S7 Classes (use \code{@} to access properties)}{
 
-The primary STAC document types, \code{stac_asset}, \code{raster_band} and the extent objects are
-S7 objects. Use the \code{@} operator to read or modify their properties:\tabular{lll}{
+The primary STAC document types, \code{stac_asset}, \code{stac_provider},
+\code{raster_band} and the extent objects are S7 objects. Use the \code{@} operator to
+read or modify their properties:\tabular{lll}{
    Constructor \tab Class \tab Example access \cr
    \code{\link[=stac_asset]{stac_asset()}} \tab \code{stac_asset} \tab \code{asset@href}, \code{asset@extra_fields} \cr
+   \code{\link[=stac_provider]{stac_provider()}} \tab \code{stac_provider} \tab \code{provider@name}, \code{provider@roles} \cr
    \code{\link[=stac_item]{stac_item()}} \tab \code{stac_item} \tab \code{item@id}, \code{item@assets} \cr
    \code{\link[=stac_catalog]{stac_catalog()}} \tab \code{stac_catalog} \tab \code{catalog@title} \cr
    \code{\link[=stac_collection]{stac_collection()}} \tab \code{stac_collection} \tab \code{collection@description} \cr
@@ -42,7 +44,6 @@ reaches the written JSON.\tabular{lll}{
    \code{\link[=raster_statistics]{raster_statistics()}} \tab \code{raster_statistics} \tab \code{band@statistics} \cr
    \code{\link[=raster_histogram]{raster_histogram()}} \tab \code{raster_histogram} \tab \code{band@histogram} \cr
    \code{\link[=eo_band]{eo_band()}} \tab \code{eo_band} \tab asset \code{"bands"} field \cr
-   \code{\link[=stac_provider]{stac_provider()}} \tab \code{stac_provider} \tab \code{collection@providers} \cr
    \code{\link[=stac_summaries]{stac_summaries()}} \tab \code{stac_summaries} \tab \code{collection@summaries} \cr
    \code{\link[=classification_class]{classification_class()}} \tab \code{classification_class} \tab classification extension \cr
    \code{\link[=classification_bitfield]{classification_bitfield()}} \tab \code{classification_bitfield} \tab classification extension \cr

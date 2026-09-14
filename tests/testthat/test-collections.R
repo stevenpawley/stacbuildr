@@ -48,7 +48,7 @@ test_that("collection with providers matches pystac", {
 
   # Check providers exist
   expect_length(r_collection@providers, 1)
-  expect_equal(r_collection@providers[[1]]$name, "Example Provider")
+  expect_equal(r_collection@providers[[1]]@name, "Example Provider")
 })
 
 test_that("collection with summaries matches pystac", {

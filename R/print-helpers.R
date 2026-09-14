@@ -429,12 +429,12 @@ stac_classification_lines <- function(classes) {
 }
 
 stac_provider_lines <- function(providers) {
-  names_ <- vapply(providers, function(p) p$name %||% "<unnamed>", character(1))
+  names_ <- vapply(providers, function(p) p@name, character(1))
   name_width <- max(nchar(names_), 0L)
   vapply(providers, function(p) {
-    roles <- unlist(p$roles)
+    roles <- p@roles %||% character(0)
     stac_entry(
-      p$name %||% "<unnamed>",
+      p@name,
       name_width,
       if (length(roles) > 0) sprintf("[%s]", paste(roles, collapse = ", ")) else ""
     )

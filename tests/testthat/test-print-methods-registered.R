@@ -12,7 +12,6 @@ test_that("print dispatches for the S3 sub-object classes", {
 
   cases <- list(
     eo_band = eo_band(name = "B4", common_name = "red"),
-    stac_provider = stac_provider(name = "USGS", roles = "producer"),
     stac_summaries = stac_summaries(platform = list("landsat-8")),
     raster_statistics = raster_statistics(minimum = 0, maximum = 1),
     raster_histogram = raster_histogram(count = 2, min = 0, max = 1, buckets = c(1, 2)),
@@ -129,7 +128,6 @@ test_that("sub-object sections expand", {
 test_that("the classed helpers stay ordinary lists", {
   # the class is for printing only: $ access, is.list() and [[ must all work
   objs <- list(
-    stac_provider(name = "USGS"),
     stac_summaries(platform = list("landsat-8")),
     raster_statistics(minimum = 0, maximum = 1),
     raster_histogram(count = 1, min = 0, max = 1, buckets = 1),
@@ -142,7 +140,7 @@ test_that("the classed helpers stay ordinary lists", {
   }
 
   expect_equal(stac_asset(href = "./b4.tif")@href, "./b4.tif")
-  expect_equal(stac_provider(name = "USGS")[["name"]], "USGS")
+  expect_equal(stac_provider(name = "USGS")@name, "USGS")
   expect_equal(raster_statistics(minimum = 3)$minimum, 3)
 })
 
