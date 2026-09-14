@@ -519,7 +519,3 @@ get_item_links <- function(catalog, as_dataframe = FALSE) {
     item_links
   }
 }
-
-
-# Helper operator for NULL coalescing
-`%||%` <- function(a, b) if (is.null(a)) b else a
