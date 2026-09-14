@@ -6,7 +6,6 @@
 \usage{
 update_catalog_links(
   catalog,
-  path,
   catalog_type,
   base_url = NULL,
   is_root = FALSE,

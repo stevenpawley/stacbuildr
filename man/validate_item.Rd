@@ -4,7 +4,7 @@
 \alias{validate_item}
 \title{Validate STAC Item}
 \usage{
-validate_item(item, strict = FALSE)
+validate_item(item)
 }
 \description{
 Validate STAC Item

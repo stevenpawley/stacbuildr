@@ -435,7 +435,6 @@ write_catalog_recursive <- function(
   # Update catalog links
   catalog <- update_catalog_links(
     catalog,
-    path,
     catalog_type,
     base_url,
     is_root,
@@ -552,7 +551,6 @@ write_catalog_recursive <- function(
 #' @keywords internal
 update_catalog_links <- function(
   catalog,
-  path,
   catalog_type,
   base_url = NULL,
   is_root = FALSE,

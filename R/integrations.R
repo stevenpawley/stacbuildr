@@ -754,48 +754,6 @@ terra_dtype <- function(dt) {
 }
 
 
-#' Determine data type from a file path using GDAL
-#'
-#' @description
-#' Parses `gdalinfo` output to extract the GDAL data type and maps it to the
-#' STAC raster extension type string. More accurate than inferring from R's
-#' `typeof()`, which loses precision (e.g. UInt16 and Int32 both appear as
-#' "integer").
-#'
-#' @param file Local file path.
-#'
-#' @return A STAC raster data type string, or `"other"` if not determinable.
-#'
-#' @keywords internal
-gdal_dtype <- function(file) {
-  if (!file.exists(file)) return("other")
-  tryCatch(
-    {
-      info <- sf::gdal_utils("info", source = file, quiet = TRUE)
-      # gdalinfo reports e.g. "Type=Float32" once per band — take the first
-      m <- regmatches(info, regexpr("Type=(\\w+)", info))
-      if (length(m) == 0) return("other")
-      gdal_type <- sub("Type=", "", m[[1]])
-      switch(gdal_type,
-        "Byte"     = "uint8",
-        "UInt16"   = "uint16",
-        "Int16"    = "int16",
-        "UInt32"   = "uint32",
-        "Int32"    = "int32",
-        "Float32"  = "float32",
-        "Float64"  = "float64",
-        "CInt16"   = "cint16",
-        "CInt32"   = "cint32",
-        "CFloat32" = "cfloat32",
-        "CFloat64" = "cfloat64",
-        "other"
-      )
-    },
-    error = function(e) "other"
-  )
-}
-
-
 #' Extract the NoData Value from a File Using GDAL
 #'
 #' @keywords internal

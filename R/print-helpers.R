@@ -339,9 +339,6 @@ stac_asset_lines <- function(assets) {
   }))
 }
 
-# Asset fields defined by the STAC core spec; anything else is an extension.
-stac_asset_core_fields <- c("href", "title", "description", "type", "roles")
-
 stac_link_lines <- function(links) {
   vapply(links, function(link) {
     paste0(

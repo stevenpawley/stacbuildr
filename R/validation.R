@@ -15,12 +15,9 @@
 #'
 #' @export
 validate_stac <- function(stac_object, strict = FALSE) {
-  errors <- character()
-  warnings <- character()
-
   # Validate the formal S7 class hierarchy.
   if (S7::S7_inherits(stac_object, stac_item)) {
-    validate_item(stac_object, strict)
+    validate_item(stac_object)
   } else if (S7::S7_inherits(stac_object, stac_collection)) {
     validate_collection(stac_object, strict)
   } else if (S7::S7_inherits(stac_object, stac_catalog)) {
@@ -246,9 +243,8 @@ validate_collection <- function(collection, strict = FALSE) {
 #' Validate STAC Item
 #'
 #' @keywords internal
-validate_item <- function(item, strict = FALSE) {
+validate_item <- function(item) {
   errors <- character()
-  warnings <- character()
 
   # Check required fields
   if (is.null(item@type) || item@type != "Feature") {
@@ -312,7 +308,7 @@ validate_item <- function(item, strict = FALSE) {
     errors <- c(errors, asset_errors)
   }
 
-  new_stac_validation(errors = errors, warnings = warnings)
+  new_stac_validation(errors = errors)
 }
 
 
