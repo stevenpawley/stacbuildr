@@ -14,7 +14,7 @@ This vignette demonstrates how to build a STAC catalog with
 
 library(stacbuildr)
 library(terra)
-#> terra 1.9.46
+#> terra 1.9.50
 ```
 
 ## Create a synthetic DEM
@@ -93,7 +93,7 @@ item
 #> <STAC Item>
 #>   id           : dem-001
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-09-07T19:17:24Z
+#>   datetime     : 2026-09-14T05:02:44Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -212,7 +212,7 @@ write_stac(
   catalog_type = "self-contained",
   overwrite = TRUE
 )
-#> ✔ STAC catalog written to /tmp/RtmpgBSTDR/catalog
+#> ✔ STAC catalog written to /tmp/Rtmpu2GjbI/catalog
 ```
 
 The resulting directory structure looks like:
@@ -242,7 +242,7 @@ item_read
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-09-07T19:17:24Z
+#>   datetime     : 2026-09-14T05:02:44Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
