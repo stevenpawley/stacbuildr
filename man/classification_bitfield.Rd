@@ -36,7 +36,7 @@ this bitfield encodes.}
 bitfield. Uses the same role vocabulary as STAC asset roles.}
 }
 \value{
-A named list representing a Classification bitfield object.
+A \code{classification_bitfield} S7 object. Access fields with \code{@}.
 }
 \description{
 Creates a bitfield object for use with the Classification Extension. A

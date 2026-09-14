@@ -69,7 +69,7 @@ dimensions, the allowed GeoJSON geometry types (e.g. \code{"Point"},
 \item{...}{Additional fields for the dimension object.}
 }
 \value{
-A named list of class \code{"cube_dimension"}.
+A \code{cube_dimension} S7 object. Access fields with \code{@}.
 }
 \description{
 Creates a dimension object for use with the Datacube Extension. Describes

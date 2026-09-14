@@ -3,10 +3,10 @@
 test_that("table_column creates a minimal object with just name", {
   col <- table_column(name = "geometry")
 
-  expect_equal(col$name, "geometry")
-  expect_null(col$description)
-  expect_null(col$type)
-  expect_s3_class(col, "table_column")
+  expect_equal(col@name, "geometry")
+  expect_null(col@description)
+  expect_null(col@type)
+  expect_true(S7::S7_inherits(col, table_column))
 })
 
 test_that("table_column stores all optional fields", {
@@ -16,15 +16,15 @@ test_that("table_column stores all optional fields", {
     type        = "double"
   )
 
-  expect_equal(col$name, "elevation")
-  expect_equal(col$description, "Elevation in meters")
-  expect_equal(col$type, "double")
+  expect_equal(col@name, "elevation")
+  expect_equal(col@description, "Elevation in meters")
+  expect_equal(col@type, "double")
 })
 
 test_that("table_column stores extra fields via ...", {
   col <- table_column(name = "id", type = "int64", unit = "count")
 
-  expect_equal(col$unit, "count")
+  expect_equal(col@extra_fields$unit, "count")
 })
 
 test_that("table_column errors when name is missing or invalid", {
@@ -152,8 +152,8 @@ test_that("add_table_extension writes table:columns to item properties", {
   item <- add_table_extension(make_item(), columns = cols)
 
   expect_length(item@properties$`table:columns`, 2)
-  expect_equal(item@properties$`table:columns`[[1]]$name, "geometry")
-  expect_equal(item@properties$`table:columns`[[2]]$name, "id")
+  expect_equal(item@properties$`table:columns`[[1]]@name, "geometry")
+  expect_equal(item@properties$`table:columns`[[2]]@name, "id")
 })
 
 test_that("add_table_extension writes table:primary_geometry to item properties", {

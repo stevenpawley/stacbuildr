@@ -85,7 +85,7 @@ test_that("item_from_sf produces a valid STAC item", {
   )
 
   result <- validate_stac(item)
-  expect_true(result$valid)
+  expect_true(result@valid)
 })
 
 test_that("item_from_sf errors on non-sf input", {

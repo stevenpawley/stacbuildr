@@ -15,7 +15,8 @@ serialised object against every JSON Schema URI declared in the object's
 \code{stac_extensions} field in addition to the core STAC schema.}
 }
 \value{
-A named list with elements \code{valid}, \code{errors}, and \code{warnings}.
+A \code{stac_validation} S7 object with \code{valid}, \code{errors}, and \code{warnings}
+properties.
 }
 \description{
 Validates a STAC Catalog, Collection, or Item against the official STAC
@@ -74,8 +75,8 @@ item <- stac_item(
 
 \dontrun{
 result <- validate_stac_schema(item)
-result$valid
-result$errors
+result@valid
+result@errors
 }
 
 }

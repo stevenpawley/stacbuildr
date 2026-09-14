@@ -11,13 +11,12 @@ STAC Catalogs, Collections, and Items, including support for common STAC
 extensions (Raster, EO, Classification, Scientific).
 \subsection{Object Types}{
 
-The package uses two kinds of objects: \strong{S7 classes} for the core STAC
-structures, and \strong{plain lists} for lightweight sub-objects.
+The package uses \strong{S7 classes} for core STAC structures and metadata helper
+objects.
 \subsection{S7 Classes (use \code{@} to access properties)}{
 
-The primary STAC document types, \code{stac_asset}, \code{stac_provider}, raster
-metadata and the extent objects are S7 objects. Use the \code{@} operator to
-read or modify their properties:\tabular{lll}{
+The primary STAC document types and most extension helper objects are S7
+objects. Use the \code{@} operator to read or modify their properties:\tabular{lll}{
    Constructor \tab Class \tab Example access \cr
    \code{\link[=stac_asset]{stac_asset()}} \tab \code{stac_asset} \tab \code{asset@href}, \code{asset@extra_fields} \cr
    \code{\link[=stac_provider]{stac_provider()}} \tab \code{stac_provider} \tab \code{provider@name}, \code{provider@roles} \cr
@@ -27,33 +26,24 @@ read or modify their properties:\tabular{lll}{
    \code{\link[=raster_band]{raster_band()}} \tab \code{raster_band} \tab \code{band@data_type}, \code{band@scale} \cr
    \code{\link[=raster_statistics]{raster_statistics()}} \tab \code{raster_statistics} \tab \code{stats@minimum} \cr
    \code{\link[=raster_histogram]{raster_histogram()}} \tab \code{raster_histogram} \tab \code{hist@buckets} \cr
+   \code{\link[=eo_band]{eo_band()}} \tab \code{eo_band} \tab \code{band@common_name} \cr
+   \code{\link[=scientific_publication]{scientific_publication()}} \tab \code{scientific_publication} \tab \code{publication@doi} \cr
+   \code{\link[=table_column]{table_column()}} \tab \code{table_column} \tab \code{column@name} \cr
+   \code{\link[=pc_schema]{pc_schema()}} \tab \code{pc_schema} \tab \code{schema@size} \cr
+   \code{\link[=pc_statistic]{pc_statistic()}} \tab \code{pc_statistic} \tab \code{statistic@minimum} \cr
+   \code{\link[=render_object]{render_object()}} \tab \code{render_object} \tab \code{render@assets} \cr
+   \code{\link[=cube_dimension]{cube_dimension()}} \tab \code{cube_dimension} \tab \code{dimension@axis} \cr
+   \code{\link[=cube_variable]{cube_variable()}} \tab \code{cube_variable} \tab \code{variable@dimensions} \cr
+   \code{\link[=classification_class]{classification_class()}} \tab \code{classification_class} \tab \code{class@value} \cr
+   \code{\link[=classification_bitfield]{classification_bitfield()}} \tab \code{classification_bitfield} \tab \code{bitfield@classes} \cr
+   \code{\link[=stac_summaries]{stac_summaries()}} \tab \code{stac_summaries} \tab \code{summaries@extra_fields} \cr
+   \code{\link[=validate_stac]{validate_stac()}} \tab \code{stac_validation} \tab \code{result@valid}, \code{result@errors} \cr
    \code{\link[=stac_extent]{stac_extent()}} \tab \code{Extent} \tab \code{extent@spatial}, \code{extent@temporal} \cr
 }
 
 
 Note that \code{stac_collection} extends \code{stac_catalog}, so
 \code{S7::S7_inherits(x, stac_catalog)} is also true for a Collection.
-}
-
-\subsection{Classed Lists (use \code{$} to access fields)}{
-
-The remaining constructors return ordinary R lists carrying an S3 class.
-They are embedded inside S7 objects but are not S7 classes themselves. The
-class exists so that each object prints as itself; fields are reached with
-\code{$} as for any list, and the class is dropped on serialisation so it never
-reaches the written JSON.\tabular{lll}{
-   Constructor \tab Class \tab Typically used in \cr
-   \code{\link[=eo_band]{eo_band()}} \tab \code{eo_band} \tab asset \code{"bands"} field \cr
-   \code{\link[=stac_summaries]{stac_summaries()}} \tab \code{stac_summaries} \tab \code{collection@summaries} \cr
-   \code{\link[=classification_class]{classification_class()}} \tab \code{classification_class} \tab classification extension \cr
-   \code{\link[=classification_bitfield]{classification_bitfield()}} \tab \code{classification_bitfield} \tab classification extension \cr
-   \code{\link[=scientific_publication]{scientific_publication()}} \tab \code{scientific_publication} \tab scientific extension \cr
-   \code{\link[=table_column]{table_column()}} \tab \code{table_column} \tab table extension \cr
-   \code{\link[=render_object]{render_object()}} \tab \code{render_object} \tab render extension \cr
-   \code{\link[=cube_dimension]{cube_dimension()}} \tab \code{cube_dimension} \tab datacube extension \cr
-   \code{\link[=cube_variable]{cube_variable()}} \tab \code{cube_variable} \tab datacube extension \cr
-}
-
 }
 
 }

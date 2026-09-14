@@ -70,23 +70,23 @@ test_that("schemas come from the point data record format", {
   header <- lidR::readLASheader(lidr_test_file())
 
   schemas <- schemas_from_lidr(header)
-  names <- vapply(schemas, function(s) s$name, character(1))
+  names <- vapply(schemas, function(s) s@name, character(1))
 
   # Megaplot.laz is point format 1: the base dimensions plus GPS time
   expect_equal(names[1:3], c("X", "Y", "Z"))
   expect_true("GpsTime" %in% names)
   expect_false("Red" %in% names)
 
-  expect_equal(schemas[[1]]$size, 8L)
-  expect_equal(schemas[[1]]$type, "floating")
+  expect_equal(schemas[[1]]@size, 8L)
+  expect_equal(schemas[[1]]@type, "floating")
 
   intensity <- schemas[[which(names == "Intensity")]]
-  expect_equal(intensity$size, 2L)
-  expect_equal(intensity$type, "unsigned")
+  expect_equal(intensity@size, 2L)
+  expect_equal(intensity@type, "unsigned")
 
   # bit-packed fields are reported as whole unpacked bytes
   rn <- schemas[[which(names == "ReturnNumber")]]
-  expect_equal(rn$size, 1L)
+  expect_equal(rn@size, 1L)
 })
 
 test_that("every LAS point format maps to known dimensions", {
@@ -109,11 +109,11 @@ test_that("header-only statistics carry the X/Y/Z bounds", {
   stats <- item@properties$`pc:statistics`
 
   expect_length(stats, 3)
-  expect_equal(vapply(stats, function(s) s$name, character(1)), c("X", "Y", "Z"))
+  expect_equal(vapply(stats, function(s) s@name, character(1)), c("X", "Y", "Z"))
   # position indexes into pc:schemas and is zero-based
-  expect_equal(vapply(stats, function(s) s$position, integer(1)), 0:2)
-  expect_equal(stats[[3]]$minimum, 0)
-  expect_true(stats[[3]]$maximum > 0)
+  expect_equal(vapply(stats, function(s) s@position, integer(1)), 0:2)
+  expect_equal(stats[[3]]@minimum, 0)
+  expect_true(stats[[3]]@maximum > 0)
 })
 
 test_that("calculate_statistics adds the channels that need the points", {
@@ -122,7 +122,7 @@ test_that("calculate_statistics adds the channels that need the points", {
 
   suppressWarnings(item <- item_from_lidr(f, calculate_statistics = TRUE))
   stats <- item@properties$`pc:statistics`
-  names <- vapply(stats, function(s) s$name, character(1))
+  names <- vapply(stats, function(s) s@name, character(1))
 
   expect_true(length(stats) > 3)
   expect_true("Intensity" %in% names)
@@ -131,9 +131,9 @@ test_that("calculate_statistics adds the channels that need the points", {
   expect_false("gpstime" %in% names)
 
   z <- stats[[which(names == "Z")]]
-  expect_true(!is.null(z$average) && !is.null(z$stddev) && !is.null(z$variance))
-  expect_equal(z$count, 81590L)
-  expect_equal(z$stddev^2, z$variance)
+  expect_true(!is.null(z@average) && !is.null(z@stddev) && !is.null(z@variance))
+  expect_equal(z@count, 81590L)
+  expect_equal(z@stddev^2, z@variance)
 })
 
 test_that("statistics cannot be calculated from a header alone", {

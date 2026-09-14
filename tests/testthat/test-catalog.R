@@ -51,8 +51,8 @@ test_that("catalog structure matches pystac output", {
 
   # Validate both catalogs
   r_validation <- validate_stac(r_catalog)
-  expect_true(r_validation$valid)
-  expect_length(r_validation$errors, 0)
+  expect_true(r_validation@valid)
+  expect_length(r_validation@errors, 0)
 })
 
 test_that("collection structure matches pystac output", {
@@ -120,8 +120,8 @@ test_that("collection structure matches pystac output", {
 
   # Validate both collections
   r_validation <- validate_stac(r_collection)
-  expect_true(r_validation$valid)
-  expect_length(r_validation$errors, 0)
+  expect_true(r_validation@valid)
+  expect_length(r_validation@errors, 0)
 })
 
 test_that("item structure matches pystac output", {
@@ -192,8 +192,8 @@ test_that("item structure matches pystac output", {
 
   # Validate both items
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation$valid)
-  expect_length(r_validation$errors, 0)
+  expect_true(r_validation@valid)
+  expect_length(r_validation@errors, 0)
 })
 
 test_that("catalog with child catalogs matches pystac", {
@@ -229,8 +229,8 @@ test_that("catalog with child catalogs matches pystac", {
   )
 
   # Validate both
-  expect_true(validate_stac(r_parent)$valid)
-  expect_true(validate_stac(r_child)$valid)
+  expect_true(validate_stac(r_parent)@valid)
+  expect_true(validate_stac(r_child)@valid)
 
   # Check structure
   expect_equal(r_parent@type, "Catalog")

@@ -254,7 +254,7 @@ add_eo_extension <- function(
 #' @param ... Additional fields for the band object. Can include fields from other
 #'   extensions like raster fields (`nodata`, `data_type`, `raster:scale`, etc.).
 #'
-#' @return A list representing a band object with the EO extension's fields.
+#' @return An `eo_band` S7 object. Access fields with `@`.
 #'   The EO-specific fields are written with an `eo:` prefix, as required by
 #'   version 2.0.0 of the extension; `name` and `description` come from STAC
 #'   Common Metadata and stay unprefixed.
@@ -393,8 +393,59 @@ eo_band <- function(
     band <- c(band, extra_fields)
   }
 
-  class(band) <- c("eo_band", "list")
   band
+}
+
+.eo_band_fields <- eo_band
+
+eo_band <- S7::new_class(
+  "eo_band",
+  properties = list(
+    name = S7::class_character,
+    common_name = S7::class_character,
+    description = S7::class_character,
+    center_wavelength = S7::class_numeric,
+    full_width_half_max = S7::class_numeric,
+    solar_illumination = S7::class_numeric,
+    extra_fields = S7::new_property(S7::class_list, default = list())
+  ),
+  constructor = function(name = NULL, common_name = NULL, description = NULL,
+                         center_wavelength = NULL,
+                         full_width_half_max = NULL,
+                         solar_illumination = NULL, ...) {
+    fields <- .eo_band_fields(
+      name, common_name, description, center_wavelength,
+      full_width_half_max, solar_illumination, ...
+    )
+    standard <- c(
+      "name", "description", "eo:common_name", "eo:center_wavelength",
+      "eo:full_width_half_max", "eo:solar_illumination"
+    )
+    S7::new_object(
+      S7::S7_object(),
+      name = fields$name %||% character(0),
+      common_name = fields$`eo:common_name` %||% character(0),
+      description = fields$description %||% character(0),
+      center_wavelength = fields$`eo:center_wavelength` %||% numeric(0),
+      full_width_half_max = fields$`eo:full_width_half_max` %||% numeric(0),
+      solar_illumination = fields$`eo:solar_illumination` %||% numeric(0),
+      extra_fields = fields[setdiff(names(fields), standard)]
+    )
+  }
+)
+
+S7::method(as.list, eo_band) <- function(x, ...) {
+  fields <- list()
+  if (length(x@name) > 0L) fields$name <- x@name
+  if (length(x@description) > 0L) fields$description <- x@description
+  if (length(x@common_name) > 0L) fields$`eo:common_name` <- x@common_name
+  if (length(x@center_wavelength) > 0L)
+    fields$`eo:center_wavelength` <- x@center_wavelength
+  if (length(x@full_width_half_max) > 0L)
+    fields$`eo:full_width_half_max` <- x@full_width_half_max
+  if (length(x@solar_illumination) > 0L)
+    fields$`eo:solar_illumination` <- x@solar_illumination
+  c(fields, x@extra_fields)
 }
 
 
@@ -859,11 +910,19 @@ planetscope_bands <- function() {
 #' @param x An EO band object
 #' @param ... Additional arguments (ignored)
 #'
-#' @export
-print.eo_band <- function(x, ...) {
+#' @noRd
+S7::method(print, eo_band) <- function(x, ...) {
   stac_print_header("EO Band")
+  fields <- c(compact_nulls(list(
+    name = if (length(x@name)) x@name else NULL,
+    description = if (length(x@description)) x@description else NULL,
+    "eo:common_name" = if (length(x@common_name)) x@common_name else NULL,
+    "eo:center_wavelength" = if (length(x@center_wavelength)) x@center_wavelength else NULL,
+    "eo:full_width_half_max" = if (length(x@full_width_half_max)) x@full_width_half_max else NULL,
+    "eo:solar_illumination" = if (length(x@solar_illumination)) x@solar_illumination else NULL
+  )), x@extra_fields)
   stac_print_list_fields(
-    x,
+    fields,
     units = c(
       "eo:center_wavelength" = "micrometres",
       "eo:full_width_half_max" = "micrometres",

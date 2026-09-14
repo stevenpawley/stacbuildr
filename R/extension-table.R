@@ -131,7 +131,7 @@ add_table_extension <- function(
         "'columns' must be a non-empty list of table_column objects"
       )
     }
-    not_col <- !vapply(columns, inherits, logical(1), "table_column")
+    not_col <- !vapply(columns, S7::S7_inherits, logical(1), table_column)
     if (any(not_col)) {
       cli::cli_abort("All elements of 'columns' must be table_column objects")
     }
@@ -226,7 +226,7 @@ add_table_extension <- function(
 #'   `"string"`, `"bool"`, `"binary"`).
 #' @param ... Additional fields for the column object.
 #'
-#' @return A named list of class `"table_column"`.
+#' @return A `table_column` S7 object. Access fields with `@`.
 #'
 #' @examples
 #' # A geometry column
@@ -260,8 +260,30 @@ table_column <- function(name, description = NULL, type = NULL, ...) {
     col <- c(col, extra_fields)
   }
 
-  class(col) <- c("table_column", "list")
   col
+}
+
+.table_column_fields <- table_column
+
+table_column <- S7::new_class(
+  "table_column",
+  properties = list(
+    name = S7::class_character,
+    description = S7::new_union(S7::class_character, NULL),
+    type = S7::new_union(S7::class_character, NULL),
+    extra_fields = S7::new_property(S7::class_list, default = list())
+  ),
+  constructor = function(name, description = NULL, type = NULL, ...) {
+    fields <- .table_column_fields(name, description, type, ...)
+    S7::new_object(S7::S7_object(), name = fields$name,
+      description = fields$description, type = fields$type,
+      extra_fields = fields[setdiff(names(fields), c("name", "description", "type"))])
+  }
+)
+
+S7::method(as.list, table_column) <- function(x, ...) {
+  c(compact_nulls(list(name = x@name, description = x@description,
+                       type = x@type)), x@extra_fields)
 }
 
 
@@ -270,11 +292,12 @@ table_column <- function(name, description = NULL, type = NULL, ...) {
 #' @param x A table_column object.
 #' @param ... Additional arguments (ignored).
 #'
-#' @export
-print.table_column <- function(x, ...) {
+#' @noRd
+S7::method(print, table_column) <- function(x, ...) {
   stac_print_header("Table Column")
   stac_print_list_fields(
-    x,
+    c(compact_nulls(list(name = x@name, description = x@description,
+                         type = x@type)), x@extra_fields),
     styles = list(name = stac_style_id, type = stac_style_key)
   )
   invisible(x)

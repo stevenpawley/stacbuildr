@@ -236,10 +236,7 @@ stac_collection <- S7::new_class(
         }
       }
     ),
-    summaries = S7::new_property(
-      S7::new_union(S7::class_list, NULL),
-      default = NULL
-    ),
+    summaries = S7::new_property(S7::class_any, default = NULL),
     assets = S7::new_property(
       S7::new_union(S7::class_list, NULL),
       default = NULL
@@ -303,7 +300,7 @@ stac_collection <- S7::new_class(
       extent = extent,
       keywords = keywords,
       providers = normalize_providers(providers),
-      summaries = summaries,
+      summaries = as_stac_summaries(summaries),
       assets = normalize_assets(assets)
     )
   },
@@ -334,23 +331,23 @@ S7::method(as.list, stac_collection) <- function(x, ...) {
     out$keywords <- as_json_array(x@keywords)
   }
   if (!is.null(x@providers) && length(x@providers) > 0) {
-    out$providers <- lapply(x@providers, as.list)
+    out$providers <- stac_json_value(x@providers)
   }
   if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
     out$stac_extensions <- as.list(x@stac_extensions)
   }
   out$links <- x@links
-  if (!is.null(x@summaries) && length(x@summaries) > 0) {
-    out$summaries <- x@summaries
+  if (!is.null(x@summaries) && length(x@summaries@extra_fields) > 0) {
+    out$summaries <- stac_json_value(x@summaries)
   }
   if (!is.null(x@assets) && length(x@assets) > 0) {
-    out$assets <- lapply(x@assets, as.list)
+    out$assets <- stac_json_value(x@assets)
   }
   if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
     out$conformsTo <- as_json_array(x@conformsTo)
   }
   if (length(x@extra_fields) > 0) {
-    out <- c(out, x@extra_fields)
+    out <- c(out, stac_json_value(x@extra_fields))
   }
   out
 }
@@ -398,7 +395,7 @@ S7::method(print, stac_collection) <- function(x, ..., expand = NULL) {
 
   extensions <- x@stac_extensions %||% character(0)
   providers <- x@providers %||% list()
-  summaries <- x@summaries %||% list()
+  summaries <- if (is.null(x@summaries)) list() else x@summaries@extra_fields
   assets <- x@assets %||% list()
   children <- attr(x, "stac_children") %||% list()
   items <- attr(x, "stac_items") %||% list()
@@ -631,7 +628,7 @@ normalize_providers <- function(x) {
 #'
 #' @return `x`, invisibly.
 #'
-#' @export
+#' @noRd
 S7::method(print, stac_provider) <- function(x, ...) {
   stac_print_header("STAC Provider")
   stac_print_field("name", x@name, stac_style_id)
@@ -663,7 +660,8 @@ S7::method(print, stac_provider) <- function(x, ...) {
 #'   * A list with `minimum` and `maximum` elements
 #'   * A nested list for complex properties
 #'
-#' @return A list of property summaries.
+#' @return A `stac_summaries` S7 object. Summary fields are stored in
+#'   `summaries@extra_fields`.
 #'
 #' @examples
 #' summaries <- stac_summaries(
@@ -683,8 +681,33 @@ stac_summaries <- function(...) {
   # JSON Schema. Only the first form is an atomic vector here, and it has to
   # stay an array even when a single value was supplied.
   summaries <- lapply(summaries, as_json_array)
-  class(summaries) <- c("stac_summaries", "list")
   summaries
+}
+
+.stac_summaries_fields <- stac_summaries
+
+stac_summaries <- S7::new_class(
+  "stac_summaries",
+  properties = list(
+    extra_fields = S7::new_property(S7::class_list, default = list())
+  ),
+  constructor = function(...) {
+    S7::new_object(
+      S7::S7_object(), extra_fields = .stac_summaries_fields(...)
+    )
+  }
+)
+
+S7::method(as.list, stac_summaries) <- function(x, ...) {
+  x@extra_fields
+}
+
+as_stac_summaries <- function(x) {
+  if (is.null(x) || S7::S7_inherits(x, stac_summaries)) return(x)
+  if (!is.list(x)) {
+    cli::cli_abort("'summaries' must be a stac_summaries object or named list")
+  }
+  do.call(stac_summaries, x)
 }
 
 
@@ -695,18 +718,21 @@ stac_summaries <- function(...) {
 #'
 #' @return `x`, invisibly.
 #'
-#' @export
-print.stac_summaries <- function(x, ...) {
+#' @noRd
+S7::method(print, stac_summaries) <- function(x, ...) {
   stac_print_header("STAC Summaries")
 
-  if (length(x) == 0) {
+  fields <- x@extra_fields
+  if (length(fields) == 0) {
     stac_print_empty()
     return(invisible(x))
   }
 
-  width <- max(stac_label_width, nchar(names(x)))
-  for (key in names(x)) {
-    stac_print_field(key, stac_fmt_value(x[[key]]), stac_style_value, width)
+  width <- max(stac_label_width, nchar(names(fields)))
+  for (key in names(fields)) {
+    stac_print_field(
+      key, stac_fmt_value(fields[[key]]), stac_style_value, width
+    )
   }
 
   invisible(x)

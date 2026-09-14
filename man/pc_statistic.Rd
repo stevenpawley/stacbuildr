@@ -35,7 +35,7 @@ within \code{pc:schemas}.}
 \item{variance}{(numeric, optional) The variance of the channel.}
 }
 \value{
-A \code{pc_statistic} object (a list with a print method).
+A \code{pc_statistic} S7 object. Access fields with \code{@}.
 }
 \description{
 Creates a Stats object for the \code{pc:statistics} field of the Point Cloud

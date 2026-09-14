@@ -76,8 +76,8 @@ test_that("item_from_terra adds raster extension with 6 band objects", {
 
   bands <- item@assets$data@extra_fields$bands
   expect_length(bands, 6)
-  expect_equal(bands[[1]]$data_type, "uint8")
-  expect_equal(bands[[1]]$`raster:spatial_resolution`, 28.5)
+  expect_equal(bands[[1]]@data_type, "uint8")
+  expect_equal(bands[[1]]@spatial_resolution, 28.5)
 })
 
 test_that("item_from_terra skips raster extension when add_raster_bands is FALSE", {
@@ -128,7 +128,7 @@ test_that("item_from_terra validates correctly", {
   )
 
   result <- validate_stac(item)
-  expect_true(result$valid)
+  expect_true(result@valid)
 })
 
 test_that("bands_from_terra returns one band object per band", {
@@ -280,6 +280,6 @@ test_that("band_from_file output attaches to an item as raster bands", {
   item <- add_raster_extension(item, bands = band_from_file(tif), asset_key = "data")
 
   expect_length(item@assets$data@extra_fields$bands, 6)
-  expect_equal(item@assets$data@extra_fields$bands[[1]]$data_type, "uint8")
+  expect_equal(item@assets$data@extra_fields$bands[[1]]@data_type, "uint8")
   expect_true(any(grepl("raster/v2.0.0", item@stac_extensions)))
 })

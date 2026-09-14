@@ -140,11 +140,19 @@ add_classification_extension <- function(
     )
   }
 
-  if (!is.null(classes) && !is.list(classes)) {
+  if (!is.null(classes) && (
+    !is.list(classes) ||
+      !all(vapply(classes, S7::S7_inherits, logical(1), classification_class))
+  )) {
     cli::cli_abort("'classes' must be a list of classification_class objects")
   }
 
-  if (!is.null(bitfields) && !is.list(bitfields)) {
+  if (!is.null(bitfields) && (
+    !is.list(bitfields) ||
+      !all(vapply(
+        bitfields, S7::S7_inherits, logical(1), classification_bitfield
+      ))
+  )) {
     cli::cli_abort(
       "'bitfields' must be a list of classification_bitfield objects"
     )
@@ -207,7 +215,7 @@ add_classification_extension <- function(
 #'   that belong to this class (0–100).
 #' @param count (integer, optional) Number of pixels that belong to this class.
 #'
-#' @return A named list representing a Classification class object.
+#' @return A `classification_class` S7 object. Access fields with `@`.
 #'
 #' @details
 #' ## Name Format
@@ -293,8 +301,44 @@ classification_class <- function(
   if (!is.null(percentage))  cls$percentage  <- percentage
   if (!is.null(count))       cls$count       <- as.integer(count)
 
-  class(cls) <- c("classification_class", "list")
   cls
+}
+
+.classification_class_fields <- classification_class
+
+classification_class <- S7::new_class(
+  "classification_class",
+  properties = list(
+    value = S7::class_integer,
+    name = S7::new_union(S7::class_character, NULL),
+    title = S7::new_union(S7::class_character, NULL),
+    description = S7::new_union(S7::class_character, NULL),
+    color_hint = S7::new_union(S7::class_character, NULL),
+    nodata = S7::new_union(S7::class_logical, NULL),
+    percentage = S7::new_union(S7::class_numeric, NULL),
+    count = S7::new_union(S7::class_integer, NULL)
+  ),
+  constructor = function(value, name = NULL, title = NULL, description = NULL,
+                         color_hint = NULL, nodata = NULL, percentage = NULL,
+                         count = NULL) {
+    fields <- .classification_class_fields(
+      value, name, title, description, color_hint, nodata, percentage, count
+    )
+    S7::new_object(
+      S7::S7_object(), value = fields$value, name = fields$name,
+      title = fields$title, description = fields$description,
+      color_hint = fields$color_hint, nodata = fields$nodata,
+      percentage = fields$percentage, count = fields$count
+    )
+  }
+)
+
+S7::method(as.list, classification_class) <- function(x, ...) {
+  compact_nulls(list(
+    value = x@value, name = x@name, title = x@title,
+    description = x@description, color_hint = x@color_hint,
+    nodata = x@nodata, percentage = x@percentage, count = x@count
+  ))
 }
 
 
@@ -323,7 +367,7 @@ classification_class <- function(
 #' @param roles (character vector, optional) Roles associated with the
 #'   bitfield. Uses the same role vocabulary as STAC asset roles.
 #'
-#' @return A named list representing a Classification bitfield object.
+#' @return A `classification_bitfield` S7 object. Access fields with `@`.
 #'
 #' @details
 #' ## Bit Extraction
@@ -417,8 +461,50 @@ classification_bitfield <- function(
   if (!is.null(description)) bf$description <- description
   if (!is.null(roles))       bf$roles       <- as.list(roles)
 
-  class(bf) <- c("classification_bitfield", "list")
   bf
+}
+
+.classification_bitfield_fields <- classification_bitfield
+
+classification_bitfield <- S7::new_class(
+  "classification_bitfield",
+  properties = list(
+    offset = S7::class_integer,
+    length = S7::class_integer,
+    classes = S7::new_property(
+      S7::class_list,
+      validator = function(value) {
+        if (!all(vapply(
+          value, S7::S7_inherits, logical(1), classification_class
+        ))) "must contain only classification_class objects"
+      }
+    ),
+    name = S7::new_union(S7::class_character, NULL),
+    description = S7::new_union(S7::class_character, NULL),
+    roles = S7::new_union(S7::class_character, NULL)
+  ),
+  constructor = function(offset, length, classes, name = NULL,
+                         description = NULL, roles = NULL) {
+    fields <- .classification_bitfield_fields(
+      offset, length, classes, name, description, roles
+    )
+    S7::new_object(
+      S7::S7_object(), offset = fields$offset, length = fields$length,
+      classes = fields$classes, name = fields$name,
+      description = fields$description,
+      roles = if (is.null(fields$roles)) NULL else
+        unlist(fields$roles, use.names = FALSE)
+    )
+  }
+)
+
+S7::method(as.list, classification_bitfield) <- function(x, ...) {
+  compact_nulls(list(
+    offset = x@offset, length = x@length,
+    classes = stac_json_value(x@classes), name = x@name,
+    description = x@description,
+    roles = if (is.null(x@roles)) NULL else as_json_array(x@roles)
+  ))
 }
 
 
@@ -427,11 +513,15 @@ classification_bitfield <- function(
 #' @param x A classification_class object
 #' @param ... Additional arguments (ignored)
 #'
-#' @export
-print.classification_class <- function(x, ...) {
+#' @noRd
+S7::method(print, classification_class) <- function(x, ...) {
   stac_print_header("Classification Class")
 
-  fields <- x
+  fields <- compact_nulls(list(
+    value = x@value, name = x@name, title = x@title,
+    description = x@description, color_hint = x@color_hint,
+    nodata = x@nodata, percentage = x@percentage, count = x@count
+  ))
   if (!is.null(fields$color_hint)) {
     fields$color_hint <- paste0("#", fields$color_hint)
   }
@@ -457,17 +547,21 @@ print.classification_class <- function(x, ...) {
 #'
 #' @return `x`, invisibly.
 #'
-#' @export
-print.classification_bitfield <- function(x, ..., expand = NULL) {
+#' @noRd
+S7::method(print, classification_bitfield) <- function(x, ..., expand = NULL) {
   stac_print_header("Classification Bitfield")
+  fields <- compact_nulls(list(
+    offset = x@offset, length = x@length, name = x@name,
+    description = x@description, roles = x@roles
+  ))
   width <- stac_print_list_fields(
-    x,
+    fields,
     units = c(length = "bit(s)"),
     styles = list(name = stac_style_id, offset = stac_style_count),
     skip = "classes"
   )
 
-  classes <- x$classes %||% list()
+  classes <- x@classes
   collapsed <- stac_print_section(
     "classes",
     length(classes),

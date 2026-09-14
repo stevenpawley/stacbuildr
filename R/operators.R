@@ -56,6 +56,22 @@ normalize_common_arrays <- function(x) {
   x
 }
 
+# Recursively reduce S7 metadata objects to their JSON-ready list forms.
+# Named and unnamed lists retain their shape; atomic values pass through.
+stac_json_value <- function(x) {
+  if (inherits(x, "S7_object")) {
+    x <- as.list(x)
+  }
+  if (is.list(x)) {
+    return(lapply(x, stac_json_value))
+  }
+  x
+}
+
+compact_nulls <- function(x) {
+  x[!vapply(x, is.null, logical(1))]
+}
+
 
 # Attach band objects to an Item's properties or to one of its assets.
 #
@@ -86,14 +102,13 @@ set_bands <- function(item, bands, asset_key = NULL) {
 
 # @keywords internal
 merge_bands <- function(existing, bands) {
-  bands <- lapply(bands, unclass)
-
   if (is.null(existing) || length(existing) != length(bands)) {
     return(bands)
   }
 
   Map(function(old, new) {
-    old <- unclass(old)
+    old <- stac_json_value(old)
+    new <- stac_json_value(new)
     old[names(new)] <- new
     old
   }, existing, bands)

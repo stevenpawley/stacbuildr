@@ -172,5 +172,5 @@ test_that("stac_extent round-trips through a stac_collection and validates", {
   )
 
   result <- validate_stac(collection)
-  expect_true(result$valid)
+  expect_true(result@valid)
 })

@@ -55,7 +55,7 @@ visualization, as a length-2 numeric vector \code{c(min_zoom, max_zoom)}.}
 \item{...}{Additional fields allowed by the open-ended Render Object schema.}
 }
 \value{
-A named list of class \code{"render_object"}.
+A \code{render_object} S7 object. Access fields with \code{@}.
 }
 \description{
 Creates a render object for use with the STAC Render Extension. A render

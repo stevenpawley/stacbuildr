@@ -131,7 +131,7 @@ add_pointcloud_extension <- function(
       cli::cli_abort("'schemas' must be a non-empty list of pc_schema objects")
     }
     for (i in seq_along(schemas)) {
-      if (!is.list(schemas[[i]]) || is.null(schemas[[i]]$name)) {
+      if (!S7::S7_inherits(schemas[[i]], pc_schema)) {
         cli::cli_abort(c(
           "'schemas[[{i}]]' is not a valid Schema object",
           "i" = "Create them with {.fn pc_schema}"
@@ -147,7 +147,7 @@ add_pointcloud_extension <- function(
       )
     }
     for (i in seq_along(statistics)) {
-      if (!is.list(statistics[[i]]) || is.null(statistics[[i]]$name)) {
+      if (!S7::S7_inherits(statistics[[i]], pc_statistic)) {
         cli::cli_abort(c(
           "'statistics[[{i}]]' is not a valid Stats object",
           "i" = "Create them with {.fn pc_statistic}"
@@ -255,7 +255,7 @@ validate_pc_type <- function(type) {
 #' `ReturnNumber` are conventionally reported as the unpacked one-byte
 #' dimension a reader materialises, which is what [item_from_lidr()] does.
 #'
-#' @return A `pc_schema` object (a list with a print method).
+#' @return A `pc_schema` S7 object. Access fields with `@`.
 #'
 #' @seealso [add_pointcloud_extension()], [pc_statistic()]
 #'
@@ -291,8 +291,35 @@ pc_schema <- function(name, size, type) {
   }
 
   schema <- list(name = name, size = as.integer(size), type = type)
-  class(schema) <- c("pc_schema", "list")
   schema
+}
+
+.pc_schema_fields <- pc_schema
+
+pc_schema <- S7::new_class(
+  "pc_schema",
+  properties = list(
+    name = S7::class_character,
+    size = S7::class_integer,
+    type = S7::class_character
+  ),
+  constructor = function(name, size, type) {
+    fields <- .pc_schema_fields(name, size, type)
+    S7::new_object(S7::S7_object(), name = fields$name,
+      size = fields$size, type = fields$type)
+  },
+  validator = function(self) {
+    if (length(self@name) != 1L || is.na(self@name) || !nzchar(self@name))
+      return("'name' must be a non-empty string")
+    if (length(self@size) != 1L || self@size <= 0L)
+      return("'size' must be greater than 0")
+    if (!self@type %in% c("floating", "unsigned", "signed"))
+      return("'type' must be floating, unsigned, or signed")
+  }
+)
+
+S7::method(as.list, pc_schema) <- function(x, ...) {
+  list(name = x@name, size = x@size, type = x@type)
 }
 
 
@@ -301,11 +328,11 @@ pc_schema <- function(name, size, type) {
 #' @param x A pc_schema object.
 #' @param ... Additional arguments (ignored).
 #'
-#' @export
-print.pc_schema <- function(x, ...) {
+#' @noRd
+S7::method(print, pc_schema) <- function(x, ...) {
   stac_print_header("Point Cloud Schema")
   stac_print_list_fields(
-    x,
+    list(name = x@name, size = x@size, type = x@type),
     units = c(size = "bytes"),
     styles = list(name = stac_style_id, type = stac_style_key)
   )
@@ -334,7 +361,7 @@ print.pc_schema <- function(x, ...) {
 #' The specification requires the channel name and at least one statistic, so
 #' supplying `name` alone is an error.
 #'
-#' @return A `pc_statistic` object (a list with a print method).
+#' @return A `pc_statistic` S7 object. Access fields with `@`.
 #'
 #' @seealso [add_pointcloud_extension()], [pc_schema()]
 #'
@@ -409,8 +436,48 @@ pc_statistic <- function(
   )
   stat <- stat[intersect(ordered, names(stat))]
 
-  class(stat) <- c("pc_statistic", "list")
   stat
+}
+
+.pc_statistic_fields <- pc_statistic
+
+pc_statistic <- S7::new_class(
+  "pc_statistic",
+  properties = list(
+    name = S7::class_character,
+    position = S7::new_union(S7::class_integer, NULL),
+    average = S7::new_union(S7::class_numeric, NULL),
+    count = S7::new_union(S7::class_integer, NULL),
+    maximum = S7::new_union(S7::class_numeric, NULL),
+    minimum = S7::new_union(S7::class_numeric, NULL),
+    stddev = S7::new_union(S7::class_numeric, NULL),
+    variance = S7::new_union(S7::class_numeric, NULL)
+  ),
+  constructor = function(name, position = NULL, average = NULL, count = NULL,
+                         maximum = NULL, minimum = NULL, stddev = NULL,
+                         variance = NULL) {
+    fields <- .pc_statistic_fields(name, position, average, count, maximum,
+                                   minimum, stddev, variance)
+    S7::new_object(S7::S7_object(), name = fields$name,
+      position = fields$position, average = fields$average,
+      count = fields$count, maximum = fields$maximum,
+      minimum = fields$minimum, stddev = fields$stddev,
+      variance = fields$variance)
+  },
+  validator = function(self) {
+    if (length(self@name) != 1L || is.na(self@name) || !nzchar(self@name))
+      return("'name' must be a non-empty string")
+    values <- list(self@average, self@count, self@maximum, self@minimum,
+                   self@stddev, self@variance)
+    if (all(vapply(values, is.null, logical(1))))
+      return("at least one statistic must be provided")
+  }
+)
+
+S7::method(as.list, pc_statistic) <- function(x, ...) {
+  compact_nulls(list(name = x@name, position = x@position,
+    average = x@average, count = x@count, maximum = x@maximum,
+    minimum = x@minimum, stddev = x@stddev, variance = x@variance))
 }
 
 
@@ -419,11 +486,15 @@ pc_statistic <- function(
 #' @param x A pc_statistic object.
 #' @param ... Additional arguments (ignored).
 #'
-#' @export
-print.pc_statistic <- function(x, ...) {
+#' @noRd
+S7::method(print, pc_statistic) <- function(x, ...) {
   stac_print_header("Point Cloud Statistics")
   stac_print_list_fields(
-    x,
+    compact_nulls(list(
+      name = x@name, position = x@position, average = x@average,
+      count = x@count, maximum = x@maximum, minimum = x@minimum,
+      stddev = x@stddev, variance = x@variance
+    )),
     styles = list(name = stac_style_id)
   )
   invisible(x)

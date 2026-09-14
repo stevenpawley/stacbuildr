@@ -67,7 +67,7 @@ test_that("add_raster_extension writes bands to item properties", {
     add_raster_extension(bands = bands)
 
   expect_length(item@properties$bands, 2L)
-  expect_equal(item@properties$bands[[1]]$data_type, "uint16")
+  expect_equal(item@properties$bands[[1]]@data_type, "uint16")
 })
 
 test_that("add_raster_extension writes bands to a named asset", {

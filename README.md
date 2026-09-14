@@ -286,9 +286,9 @@ output/stac/
 
 ```r
 result <- validate_stac(collection)
-result$valid    # TRUE / FALSE
-result$errors   # character vector of errors
-result$warnings # character vector of warnings for missing recommended fields
+result@valid    # TRUE / FALSE
+result@errors   # character vector of errors
+result@warnings # character vector of warnings for missing recommended fields
 
 # Strict mode also checks recommended fields
 validate_stac(item, strict = TRUE)

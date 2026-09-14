@@ -6,25 +6,25 @@ test_that("scientific_publication creates an object with both doi and citation",
     citation = "Smith, J. (2022). My Paper. Journal of Examples."
   )
 
-  expect_equal(pub$doi, "10.1000/abc456")
-  expect_equal(pub$citation, "Smith, J. (2022). My Paper. Journal of Examples.")
-  expect_s3_class(pub, "scientific_publication")
+  expect_equal(pub@doi, "10.1000/abc456")
+  expect_equal(pub@citation, "Smith, J. (2022). My Paper. Journal of Examples.")
+  expect_true(S7::S7_inherits(pub, scientific_publication))
 })
 
 test_that("scientific_publication creates an object with only doi", {
   pub <- scientific_publication(doi = "10.1000/abc456")
 
-  expect_equal(pub$doi, "10.1000/abc456")
-  expect_null(pub$citation)
-  expect_s3_class(pub, "scientific_publication")
+  expect_equal(pub@doi, "10.1000/abc456")
+  expect_null(pub@citation)
+  expect_true(S7::S7_inherits(pub, scientific_publication))
 })
 
 test_that("scientific_publication creates an object with only citation", {
   pub <- scientific_publication(citation = "Jones, A. (2020). Background Study.")
 
-  expect_equal(pub$citation, "Jones, A. (2020). Background Study.")
-  expect_null(pub$doi)
-  expect_s3_class(pub, "scientific_publication")
+  expect_equal(pub@citation, "Jones, A. (2020). Background Study.")
+  expect_null(pub@doi)
+  expect_true(S7::S7_inherits(pub, scientific_publication))
 })
 
 test_that("scientific_publication errors when neither doi nor citation is provided", {
@@ -165,8 +165,8 @@ test_that("add_scientific_extension writes sci:publications to item properties",
   item <- add_scientific_extension(make_item(), publications = pubs)
 
   expect_length(item@properties$`sci:publications`, 2)
-  expect_equal(item@properties$`sci:publications`[[1]]$doi, "10.1000/a")
-  expect_equal(item@properties$`sci:publications`[[2]]$citation, "Pub B.")
+  expect_equal(item@properties$`sci:publications`[[1]]@doi, "10.1000/a")
+  expect_equal(item@properties$`sci:publications`[[2]]@citation, "Pub B.")
 })
 
 test_that("add_scientific_extension appends a cite-as link when doi is provided", {
