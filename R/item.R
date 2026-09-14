@@ -287,7 +287,7 @@ stac_item <- S7::new_class(
 
     props <- normalize_common_arrays(props)
 
-    obj <- S7::new_object(
+    S7::new_object(
       S7::S7_object(),
       type = type,
       stac_version = stac_version,
@@ -300,7 +300,6 @@ stac_item <- S7::new_class(
       stac_extensions = stac_extensions,
       collection = collection
     )
-    structure(obj, class = append(class(obj), "stac_item", after = 1L))
   },
   validator = function(self) {
     if (length(self@id) == 0 || nchar(self@id) == 0) {

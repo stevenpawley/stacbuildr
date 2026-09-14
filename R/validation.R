@@ -18,12 +18,12 @@ validate_stac <- function(stac_object, strict = FALSE) {
   errors <- character()
   warnings <- character()
 
-  # Validate item/collection/catalog (use inherits() to handle S7 qualified class names)
-  if (inherits(stac_object, "stac_item")) {
+  # Validate the formal S7 class hierarchy.
+  if (S7::S7_inherits(stac_object, stac_item)) {
     validate_item(stac_object, strict)
-  } else if (inherits(stac_object, "stac_collection")) {
+  } else if (S7::S7_inherits(stac_object, stac_collection)) {
     validate_collection(stac_object, strict)
-  } else if (inherits(stac_object, "stac_catalog")) {
+  } else if (S7::S7_inherits(stac_object, stac_catalog)) {
     validate_catalog(stac_object, strict)
   } else {
     new_stac_validation(
@@ -393,7 +393,7 @@ validate_extent <- function(extent) {
   errors <- character()
 
   # Convert S7 Extent objects to plain list for validation
-  if (inherits(extent, "S7_object")) {
+  if (S7::S7_inherits(extent)) {
     extent <- as.list(extent)
   }
 
@@ -405,7 +405,7 @@ validate_extent <- function(extent) {
   if (is.null(extent$spatial)) {
     errors <- c(errors, "Field 'extent$spatial' is required")
   } else {
-    spatial <- if (inherits(extent$spatial, "S7_object")) {
+    spatial <- if (S7::S7_inherits(extent$spatial)) {
       as.list(extent$spatial)
     } else {
       extent$spatial
@@ -430,7 +430,7 @@ validate_extent <- function(extent) {
   if (is.null(extent$temporal)) {
     errors <- c(errors, "Field 'extent$temporal' is required")
   } else {
-    temporal <- if (inherits(extent$temporal, "S7_object")) {
+    temporal <- if (S7::S7_inherits(extent$temporal)) {
       as.list(extent$temporal)
     } else {
       extent$temporal
@@ -811,7 +811,10 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
     ))
   }
 
-  if (!inherits(stac_object, c("stac_item", "stac_catalog"))) {
+  if (
+    !S7::S7_inherits(stac_object, stac_item) &&
+      !S7::S7_inherits(stac_object, stac_catalog)
+  ) {
     return(new_stac_validation(
       errors = "Object must be a stac_catalog, stac_collection, or stac_item"
     ))
@@ -847,7 +850,7 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
 #' @keywords internal
 stac_object_to_json_string <- function(stac_object) {
   obj <- strip_stored_objects(stac_object)
-  if (inherits(obj, "S7_object")) {
+  if (S7::S7_inherits(obj)) {
     obj <- as.list(obj)
   }
   jsonlite::toJSON(obj, auto_unbox = TRUE, null = "null", digits = 15)
@@ -860,9 +863,9 @@ stac_object_to_json_string <- function(stac_object) {
 # @keywords internal
 stac_core_schema_url <- function(stac_object, stac_version) {
   base <- paste0("https://schemas.stacspec.org/v", stac_version)
-  if (inherits(stac_object, "stac_item")) {
+  if (S7::S7_inherits(stac_object, stac_item)) {
     paste0(base, "/item-spec/json-schema/item.json")
-  } else if (inherits(stac_object, "stac_collection")) {
+  } else if (S7::S7_inherits(stac_object, stac_collection)) {
     paste0(base, "/collection-spec/json-schema/collection.json")
   } else {
     paste0(base, "/catalog-spec/json-schema/catalog.json")

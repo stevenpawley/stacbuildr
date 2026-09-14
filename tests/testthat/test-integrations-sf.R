@@ -8,7 +8,7 @@ test_that("item_from_sf creates a valid item from a multi-feature sf object", {
 
   item <- item_from_sf(nc, id = "nc", datetime = "2025-01-01T00:00:00Z")
 
-  expect_s3_class(item, "stac_item")
+  expect_true(S7::S7_inherits(item, stac_item))
   expect_equal(item@id, "nc")
   expect_equal(item@type, "Feature")
   expect_equal(item@properties$datetime, "2025-01-01T00:00:00Z")

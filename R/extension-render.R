@@ -214,7 +214,10 @@ render_object <- function(
 #'
 #' @export
 add_render_extension <- function(item, renders) {
-  if (!inherits(item, c("stac_item", "stac_collection"))) {
+  if (
+    !S7::S7_inherits(item, stac_item) &&
+      !S7::S7_inherits(item, stac_collection)
+  ) {
     cli::cli_abort("'item' must be a stac_item or stac_collection object")
   }
 
@@ -241,7 +244,7 @@ add_render_extension <- function(item, renders) {
     existing
   }
 
-  if (inherits(item, "stac_item")) {
+  if (S7::S7_inherits(item, stac_item)) {
     item@properties$renders <- merge_renders(item@properties$renders %||% list())
   } else {
     item@extra_fields$renders <- merge_renders(

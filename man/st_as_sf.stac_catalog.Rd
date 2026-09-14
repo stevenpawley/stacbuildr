@@ -2,13 +2,8 @@
 % Please edit documentation in R/coercion.R
 \name{st_as_sf.stac_catalog}
 \alias{st_as_sf.stac_catalog}
-\alias{st_as_sf.stac_item}
+\alias{st_as_sf,stacbuildr::stac_item-method}
 \title{Coerce a STAC Catalog, Collection or Item to an sf Object}
-\usage{
-\method{st_as_sf}{stac_catalog}(x, ..., resolve = FALSE, base_path = ".")
-
-\method{st_as_sf}{stac_item}(x, ...)
-}
 \arguments{
 \item{x}{A \code{stac_catalog}, \code{stac_collection} or \code{stac_item} object.}
 
@@ -24,7 +19,7 @@ against when \code{resolve = TRUE}. Default \code{"."}.}
 An \code{sf} object with one row per Item, in EPSG:4326.
 }
 \description{
-Returns the table that \link[=as.data.frame.stac_catalog]{as.data.frame()} gives,
+Returns the table that \code{\link[base:as.data.frame]{base::as.data.frame()}} gives,
 with the Item footprints attached as a geometry column. This is the shape
 most spatial work in R wants: filter on properties, plot the footprints, join
 against other layers.

@@ -6,7 +6,7 @@ test_that("STAC Item creation works", {
     datetime = "2023-06-15T10:30:00Z"
   )
 
-  expect_s3_class(item, "stac_item")
+  expect_true(S7::S7_inherits(item, stac_item))
   expect_equal(item@type, "Feature")
   expect_equal(item@stac_version, "1.1.0")
   expect_true(validate_stac(item)$valid)
