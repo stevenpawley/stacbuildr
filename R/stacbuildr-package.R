@@ -12,8 +12,8 @@
 #'
 #' ### S7 Classes (use `@` to access properties)
 #'
-#' The primary STAC document types, `stac_asset`, `stac_provider`,
-#' `raster_band` and the extent objects are S7 objects. Use the `@` operator to
+#' The primary STAC document types, `stac_asset`, `stac_provider`, raster
+#' metadata and the extent objects are S7 objects. Use the `@` operator to
 #' read or modify their properties:
 #'
 #' | Constructor | Class | Example access |
@@ -24,6 +24,8 @@
 #' | [stac_catalog()] | `stac_catalog` | `catalog@title` |
 #' | [stac_collection()] | `stac_collection` | `collection@description` |
 #' | [raster_band()] | `raster_band` | `band@data_type`, `band@scale` |
+#' | [raster_statistics()] | `raster_statistics` | `stats@minimum` |
+#' | [raster_histogram()] | `raster_histogram` | `hist@buckets` |
 #' | [stac_extent()] | `Extent` | `extent@spatial`, `extent@temporal` |
 #'
 #' Note that `stac_collection` extends `stac_catalog`, so
@@ -39,8 +41,6 @@
 #'
 #' | Constructor | Class | Typically used in |
 #' | --- | --- | --- |
-#' | [raster_statistics()] | `raster_statistics` | `band@statistics` |
-#' | [raster_histogram()] | `raster_histogram` | `band@histogram` |
 #' | [eo_band()] | `eo_band` | asset `"bands"` field |
 #' | [stac_summaries()] | `stac_summaries` | `collection@summaries` |
 #' | [classification_class()] | `classification_class` | classification extension |

@@ -13,8 +13,6 @@ test_that("print dispatches for the S3 sub-object classes", {
   cases <- list(
     eo_band = eo_band(name = "B4", common_name = "red"),
     stac_summaries = stac_summaries(platform = list("landsat-8")),
-    raster_statistics = raster_statistics(minimum = 0, maximum = 1),
-    raster_histogram = raster_histogram(count = 2, min = 0, max = 1, buckets = c(1, 2)),
     classification_class = classification_class(value = 1, name = "water"),
     classification_bitfield = classification_bitfield(
       offset = 2, length = 2,
@@ -129,8 +127,6 @@ test_that("the classed helpers stay ordinary lists", {
   # the class is for printing only: $ access, is.list() and [[ must all work
   objs <- list(
     stac_summaries(platform = list("landsat-8")),
-    raster_statistics(minimum = 0, maximum = 1),
-    raster_histogram(count = 1, min = 0, max = 1, buckets = 1),
     eo_band(name = "B4")
   )
   for (o in objs) {
@@ -141,7 +137,7 @@ test_that("the classed helpers stay ordinary lists", {
 
   expect_equal(stac_asset(href = "./b4.tif")@href, "./b4.tif")
   expect_equal(stac_provider(name = "USGS")@name, "USGS")
-  expect_equal(raster_statistics(minimum = 3)$minimum, 3)
+  expect_equal(raster_statistics(minimum = 3)@minimum, 3)
 })
 
 test_that("classed helpers survive being embedded in S7 objects", {
@@ -150,8 +146,8 @@ test_that("classed helpers survive being embedded in S7 objects", {
     statistics = raster_statistics(minimum = 1, maximum = 10),
     histogram = raster_histogram(count = 2, min = 0, max = 1, buckets = c(1, 2))
   )
-  expect_s3_class(band@statistics, "raster_statistics")
-  expect_s3_class(band@histogram, "raster_histogram")
+  expect_true(S7::S7_inherits(band@statistics, raster_statistics))
+  expect_true(S7::S7_inherits(band@histogram, raster_histogram))
 
   item <- stac_item(
     id = "i",
