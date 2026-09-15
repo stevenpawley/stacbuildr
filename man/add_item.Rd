@@ -20,15 +20,13 @@ add_item(
 \item{item}{A STAC Item object (created with \code{stac_item()}). Can also be a
 list of Items to add multiple items at once.}
 
-\item{href}{(character, optional) The relative or absolute path where the
-Item JSON file will be located. If \code{NULL} (default), generates a path
-based on the item's ID: \code{"./items/{item@id}.json"}. Can be a vector of
-paths when \code{item} is a list.}
+\item{href}{(character, optional) Href for each Item link. If \code{NULL}, uses
+\code{"./{item@id}/{item@id}.json"}. Supply one href per Item. \code{\link[=write_stac]{write_stac()}}
+regenerates these hrefs for its output layout and \code{catalog_type}.}
 
-\item{add_parent_links}{(logical, optional) If \code{TRUE}, modifies the Item(s)
-to include reciprocal links back to the parent catalog. Adds \code{"parent"} and
-\code{"root"} links. If the parent is a Collection, also adds a \code{"collection"}
-link. Default is \code{FALSE} to avoid modifying the original Item object.}
+\item{add_parent_links}{(logical, optional) If \code{TRUE}, add \code{"parent"} and
+\code{"root"} links to each retained Item. Items added to a Collection also get
+a \code{"collection"} link and \code{collection} field. Default is \code{FALSE}.}
 
 \item{parent_href}{(character, optional) The href for the parent catalog/collection.
 Only used if \code{add_parent_links = TRUE}. If not provided and a \code{"self"} link
@@ -39,118 +37,37 @@ if \code{add_parent_links = TRUE}. If not provided, attempts to use the catalog'
 \code{"root"} link or defaults to \code{parent_href}.}
 }
 \value{
-The modified catalog/collection object with the Item link(s) added.
-If \code{add_parent_links = TRUE}, also returns the Item(s) with updated links
-as an attribute named \code{"items"} (accessible via \code{attr(result, "items")}).
+The modified catalog/collection object with the Item link(s) added
+and the complete Item object(s) retained internally for \code{\link[=write_stac]{write_stac()}}.
 }
 \description{
-Adds a STAC Item to a Catalog or Collection by creating the appropriate link
-relationship. This function modifies the catalog/collection object to include
-an \code{"item"} link pointing to the Item. Optionally, it can also modify the Item
-to include links back to the parent (\code{"parent"}, \code{"collection"}, and \code{"root"}).
+Adds one or more STAC Items to a Catalog or Collection. An \code{"item"} link is
+added immediately, and the complete Item is retained internally so that
+\code{\link[=write_stac]{write_stac()}} can write it as part of the catalog tree.
 }
 \details{
-\subsection{Link Relations}{
-
-This function creates an \code{"item"} link in the catalog that points to the Item.
-Based on the STAC specification, Items are strongly
-recommended to provide a link to a STAC Collection, so when adding
-Items to a Collection, consider setting \code{add_parent_links = TRUE}.
-
-When \code{add_parent_links = TRUE}:
-\itemize{
-\item Adds \code{"parent"} link to the Item pointing to the catalog/collection
-\item Adds \code{"root"} link to the Item pointing to the root catalog
-\item If parent is a Collection, adds \code{"collection"} link and sets the \code{collection}
-property in the Item (required when collection link is present)
-}
-}
-
-\subsection{Multiple Items}{
-
-You can add multiple items at once by passing a list of Item objects. In this
-case, \code{href} should be either:
-\itemize{
-\item \code{NULL} to auto-generate paths for all items
-\item A vector of the same length as the number of items
-}
-}
-
-\subsection{Item Requirements}{
-
-Based on the STAC Item specification, each
-Item must have the following fields:
-\itemize{
-\item \code{type}: "Feature"
-\item \code{stac_version}: e.g., "1.1.0"
-\item \code{id}: Unique identifier within the collection
-\item \code{geometry}: GeoJSON geometry or null
-\item \code{bbox}: Bounding box (required if geometry is not null)
-\item \code{properties}: Object with metadata (must include \code{datetime})
-\item \code{links}: Array of links
-\item \code{assets}: Object describing available data files
-}
-}
+A Catalog's \code{links} property contains links to Items, not the Items
+themselves. Complete Items are retained in the internal \code{"stac_items"}
+attribute, which is excluded from Catalog JSON. Use \code{\link[=get_items]{get_items()}} to retrieve
+them. See \code{vignette("stac-catalog")} for the full writing model.
 }
 \examples{
-# Create a collection
-collection <- stac_collection(
-  id = "landsat-8",
-  description = "Landsat 8 imagery",
-  license = "CC0-1.0",
-  extent = stac_extent(
-    spatial_bbox = list(c(-180, -90, 180, 90)),
-    temporal_interval = list(list("2013-04-11T00:00:00Z", NULL))
-  )
+catalog <- stac_catalog(id = "example", description = "Example catalog")
+item <- stac_item(
+  id = "item-1",
+  geometry = NULL,
+  bbox = NULL,
+  datetime = "2020-01-01T00:00:00Z"
 )
 
-# Create an item. Every id in a catalog must be unique, so this helper
-# varies it per scene.
-make_item <- function(id) {
-  stac_item(
-    id = id,
-    geometry = list(
-      type = "Polygon",
-      coordinates = list(list(
-        c(-180, -90), c(180, -90), c(180, 90), c(-180, 90), c(-180, -90)
-      ))
-    ),
-    bbox = c(-180, -90, 180, 90),
-    datetime = "2020-01-01T00:00:00Z",
-    properties = list()
-  )
-}
-
-# Add a single item to the collection
-collection <- add_item(collection, make_item("LC08_20200101"))
-
-# Add an item with parent links
-collection <- add_item(
-  collection,
-  make_item("LC08_20200102"),
-  add_parent_links = TRUE,
-  parent_href = "./collection.json",
-  root_href = "../catalog.json"
-)
-
-# Add multiple items at once
-items <- lapply(c("LC08_20200103", "LC08_20200104"), make_item)
-collection <- add_item(collection, items)
-
-# Add multiple items with custom hrefs
-more_items <- lapply(c("LC08_20200105", "LC08_20200106"), make_item)
-collection <- add_item(
-  collection,
-  more_items,
-  href = c("./2020/item5.json", "./2020/item6.json")
-)
+catalog <- add_item(catalog, item)
+get_item_links(catalog)
+get_items(catalog)
 
 }
 \seealso{
 \itemize{
 \item \code{\link[=stac_item]{stac_item()}} for creating STAC Items
-\item \code{\link[=stac_catalog]{stac_catalog()}} for creating STAC Catalogs
-\item \code{\link[=stac_collection]{stac_collection()}} for creating STAC Collections
 \item \code{\link[=add_link]{add_link()}} for adding links to STAC objects
 \item \code{\link[=add_child]{add_child()}} for adding child catalogs/collections
 }

@@ -427,25 +427,26 @@ add_link <- function(catalog, rel, href, ...) {
 #' Add a child catalog or collection
 #'
 #' @description
-#' Adds a child STAC Catalog or Collection to a parent catalog by creating a
-#' link with relation type `"child"`. The child resource can be another catalog
-#' or a collection.
+#' Adds a child STAC Catalog or Collection to a parent. A `"child"` link is
+#' added immediately, and the complete child is retained internally so that
+#' [write_stac()] can write it as part of the catalog tree.
 #'
 #' @param catalog A STAC catalog or collection object to add the child to.
 #' @param child A STAC catalog or collection object to add as a child.
 #' @param href (character, optional) The URL or path to the child resource.
-#'   If `NULL` (default), automatically generates a path using the pattern
-#'   `"./<child_id>/catalog.json"`.
+#'   If `NULL`, uses `"./<child_id>/catalog.json"` for a Catalog or
+#'   `"./<child_id>/collection.json"` for a Collection. [write_stac()]
+#'   regenerates this href for its output layout and `catalog_type`.
 #' @param title (character, optional) A title for the link. If `NULL`, uses
 #'   the child's `title` field if available.
 #'
-#' @return The modified parent catalog object with the child link added.
+#' @return The modified parent with the child link added and the complete child
+#'   retained internally for [write_stac()].
 #'
 #' @seealso
 #' * [add_link()] for adding arbitrary links
 #' * [add_item()] for adding STAC Items
-#' * [stac_catalog()] for creating catalogs
-#' * [stac_collection()] for creating collections
+#' * See `vignette("stac-catalog")` for the recursive writing model
 #'
 #' @examples
 #' parent <- stac_catalog(
@@ -459,22 +460,7 @@ add_link <- function(catalog, rel, href, ...) {
 #'   description = "A child catalog"
 #' )
 #'
-#' # Add child with automatic href generation
 #' parent <- add_child(parent, child)
-#'
-#' # Add another child with a custom href and title. Each child needs its own
-#' # id, since the id becomes its directory when the catalog is written.
-#' other <- stac_catalog(
-#'   id = "other-catalog",
-#'   description = "Another child catalog"
-#' )
-#'
-#' parent <- add_child(
-#'   parent,
-#'   other,
-#'   href = "./children/custom-catalog.json",
-#'   title = "Custom Child"
-#' )
 #'
 #' @export
 add_child <- function(catalog,
