@@ -8,7 +8,7 @@ category definition, with optional display hints such as a colour.
 
 ``` r
 classification_class(
-  value,
+  value = cli::cli_abort("'value' is required"),
   name = NULL,
   title = NULL,
   description = NULL,

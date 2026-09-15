@@ -11,9 +11,9 @@ SCL masks).
 
 ``` r
 classification_bitfield(
-  offset,
-  length,
-  classes,
+  offset = cli::cli_abort("'offset' is required"),
+  length = cli::cli_abort("'length' is required"),
+  classes = cli::cli_abort("'classes' is required"),
   name = NULL,
   description = NULL,
   roles = NULL

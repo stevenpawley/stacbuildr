@@ -8,7 +8,11 @@ interpreted.
 ## Usage
 
 ``` r
-pc_schema(name, size, type)
+pc_schema(
+  name = cli::cli_abort("'name' is required"),
+  size = cli::cli_abort("'size' is required"),
+  type = cli::cli_abort("'type' is required")
+)
 ```
 
 ## Arguments

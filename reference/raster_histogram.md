@@ -7,7 +7,12 @@ GDAL's `gdalinfo -hist -json` command.
 ## Usage
 
 ``` r
-raster_histogram(count, min, max, buckets)
+raster_histogram(
+  count = cli::cli_abort("'count' is required"),
+  min = cli::cli_abort("'min' is required"),
+  max = cli::cli_abort("'max' is required"),
+  buckets = cli::cli_abort("'buckets' is required")
+)
 ```
 
 ## Arguments
