@@ -289,11 +289,9 @@ classification_class <- S7::new_class(
       validator = function(value) {
         if (
           !is.null(value) &&
-            (
-              length(value) != 1L ||
-                is.na(value) ||
-                !grepl("^[A-Za-z0-9_-]+$", value)
-            )
+            (length(value) != 1L ||
+              is.na(value) ||
+              !grepl("^[A-Za-z0-9_-]+$", value))
         ) {
           "must consist only of letters, numbers, hyphens, and underscores"
         }
@@ -306,11 +304,9 @@ classification_class <- S7::new_class(
       validator = function(value) {
         if (
           !is.null(value) &&
-            (
-              length(value) != 1L ||
-                is.na(value) ||
-                !grepl("^[0-9A-F]{6}$", value)
-            )
+            (length(value) != 1L ||
+              is.na(value) ||
+              !grepl("^[0-9A-F]{6}$", value))
         ) {
           paste(
             "must be exactly 6 upper-case hexadecimal characters",
@@ -332,12 +328,10 @@ classification_class <- S7::new_class(
       validator = function(value) {
         if (
           !is.null(value) &&
-            (
-              length(value) != 1L ||
-                is.na(value) ||
-                value < 0 ||
-                value > 100
-            )
+            (length(value) != 1L ||
+              is.na(value) ||
+              value < 0 ||
+              value > 100)
         ) {
           "must be a number between 0 and 100"
         }
@@ -522,11 +516,9 @@ classification_bitfield <- S7::new_class(
       validator = function(value) {
         if (
           !is.null(value) &&
-            (
-              length(value) != 1L ||
-                is.na(value) ||
-                !grepl("^[A-Za-z0-9_-]+$", value)
-            )
+            (length(value) != 1L ||
+              is.na(value) ||
+              !grepl("^[A-Za-z0-9_-]+$", value))
         ) {
           "must consist only of letters, numbers, hyphens, and underscores"
         }
