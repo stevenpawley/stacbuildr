@@ -675,25 +675,16 @@ S7::method(print, stac_provider) <- function(x, ...) {
 #' )
 #'
 #' @export
-stac_summaries <- function(...) {
-  summaries <- list(...)
-  # A summary is either a set of values (JSON array), a range object, or a
-  # JSON Schema. Only the first form is an atomic vector here, and it has to
-  # stay an array even when a single value was supplied.
-  summaries <- lapply(summaries, as_json_array)
-  summaries
-}
-
-.stac_summaries_fields <- stac_summaries
-
 stac_summaries <- S7::new_class(
   "stac_summaries",
   properties = list(
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
   constructor = function(...) {
+    # Atomic summaries represent sets of values and must remain JSON arrays.
+    summaries <- lapply(list(...), as_json_array)
     S7::new_object(
-      S7::S7_object(), extra_fields = .stac_summaries_fields(...)
+      S7::S7_object(), extra_fields = summaries
     )
   }
 )

@@ -347,7 +347,7 @@ geometry_from_sf <- function(sf_obj) {
 #'
 #' @return A numeric vector of length 4: c(west, south, east, north).
 #'
-#' @keywords internal
+#' @noRd
 bbox_from_sf <- function(sf_obj) {
   if (!requireNamespace("sf", quietly = TRUE)) {
     cli::cli_abort("Package 'sf' is required")
@@ -369,7 +369,7 @@ bbox_from_sf <- function(sf_obj) {
 #'
 #' @return A list with geometry and bbox.
 #'
-#' @keywords internal
+#' @noRd
 extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE) {
   # terra reports a missing CRS as "", which st_crs() rejects outright, so
   # normalise it to an NA crs and let the check below report it properly.
@@ -426,7 +426,7 @@ extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE)
 #'
 #' @return The modified STAC Item.
 #'
-#' @keywords internal
+#' @noRd
 add_projection_metadata_terra <- function(item, terra_obj) {
   # proj:code is an authority:code string, so codes from authorities other than
   # EPSG (such as OGC:CRS84) are recorded as well. It is left out when terra
@@ -484,7 +484,7 @@ add_projection_metadata_terra <- function(item, terra_obj) {
 #'
 #' @return A normalized path or unchanged URL string.
 #'
-#' @keywords internal
+#' @noRd
 normalize_href <- function(href) {
   if (!grepl("://", href, fixed = TRUE)) {
     href <- normalizePath(href, mustWork = FALSE)
@@ -505,7 +505,7 @@ normalize_href <- function(href) {
 #'
 #' @return Media type string.
 #'
-#' @keywords internal
+#' @noRd
 get_media_type <- function(file) {
   ext <- tolower(tools::file_ext(file))
 
@@ -545,14 +545,14 @@ get_media_type <- function(file) {
 #'
 #' @description
 #' Recognises the `.copc.laz` naming convention that COPC files use. Unlike
-#' [is_cog()] this is a name check rather than a structural one, so it works
+#' `is_cog()`, this is a name check rather than a structural one, so it works
 #' for remote URLs as well as local files.
 #'
 #' @param file File path or URL.
 #'
 #' @return Logical scalar.
 #'
-#' @keywords internal
+#' @noRd
 is_copc <- function(file) {
   grepl("\\.copc\\.laz$", basename(file), ignore.case = TRUE)
 }
@@ -568,7 +568,7 @@ is_copc <- function(file) {
 #'
 #' @return Logical scalar.
 #'
-#' @keywords internal
+#' @noRd
 is_cog <- function(file) {
   if (grepl("://", file, fixed = TRUE)) {
     return(FALSE)
@@ -739,7 +739,7 @@ bands_from_terra <- function(terra_obj, calculate_statistics = FALSE, sample_siz
 
 #' Map terra datatype string to STAC raster data type string
 #'
-#' @keywords internal
+#' @noRd
 terra_dtype <- function(dt) {
   switch(dt,
     "INT1U"  = "uint8",
@@ -756,7 +756,7 @@ terra_dtype <- function(dt) {
 
 #' Extract the NoData Value from a File Using GDAL
 #'
-#' @keywords internal
+#' @noRd
 gdal_nodata <- function(file) {
   if (!file.exists(file)) return(NULL)
   tryCatch(

@@ -240,31 +240,6 @@ add_table_extension <- function(
 #' col <- table_column(name = "elevation", type = "double")
 #'
 #' @export
-table_column <- function(name, description = NULL, type = NULL, ...) {
-  if (missing(name) || !is.character(name) || length(name) != 1) {
-    cli::cli_abort("'name' must be a single character string")
-  }
-
-  col <- list(name = name)
-
-  if (!is.null(description)) {
-    col$description <- description
-  }
-
-  if (!is.null(type)) {
-    col$type <- type
-  }
-
-  extra_fields <- list(...)
-  if (length(extra_fields) > 0) {
-    col <- c(col, extra_fields)
-  }
-
-  col
-}
-
-.table_column_fields <- table_column
-
 table_column <- S7::new_class(
   "table_column",
   properties = list(
@@ -274,10 +249,17 @@ table_column <- S7::new_class(
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
   constructor = function(name, description = NULL, type = NULL, ...) {
-    fields <- .table_column_fields(name, description, type, ...)
-    S7::new_object(S7::S7_object(), name = fields$name,
-      description = fields$description, type = fields$type,
-      extra_fields = fields[setdiff(names(fields), c("name", "description", "type"))])
+    if (missing(name) || !is.character(name) || length(name) != 1) {
+      cli::cli_abort("'name' must be a single character string")
+    }
+
+    S7::new_object(
+      S7::S7_object(),
+      name = name,
+      description = description,
+      type = type,
+      extra_fields = list(...)
+    )
   }
 )
 

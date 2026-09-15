@@ -119,7 +119,7 @@ stac_print_issues <- function(issues, label, symbol, style) {
 
 #' Validate STAC Catalog
 #'
-#' @keywords internal
+#' @noRd
 validate_catalog <- function(catalog, strict = FALSE) {
   errors <- character()
   warnings <- character()
@@ -171,7 +171,7 @@ validate_catalog <- function(catalog, strict = FALSE) {
 
 #' Validate STAC Collection
 #'
-#' @keywords internal
+#' @noRd
 validate_collection <- function(collection, strict = FALSE) {
   errors <- character()
   warnings <- character()
@@ -242,7 +242,7 @@ validate_collection <- function(collection, strict = FALSE) {
 
 #' Validate STAC Item
 #'
-#' @keywords internal
+#' @noRd
 validate_item <- function(item) {
   errors <- character()
 
@@ -314,7 +314,7 @@ validate_item <- function(item) {
 
 #' Validate Links
 #'
-#' @keywords internal
+#' @noRd
 validate_links <- function(links) {
   errors <- character()
 
@@ -345,7 +345,7 @@ validate_links <- function(links) {
 
 #' Validate Assets
 #'
-#' @keywords internal
+#' @noRd
 validate_assets <- function(assets) {
   errors <- character()
 
@@ -391,7 +391,7 @@ validate_assets <- function(assets) {
 #'     (as character or NA for open-ended intervals).
 #' }
 #'
-#' @keywords internal
+#' @noRd
 validate_extent <- function(extent) {
   errors <- character()
 
@@ -467,7 +467,7 @@ validate_extent <- function(extent) {
 
 #' Validate Bounding Box
 #'
-#' @keywords internal
+#' @noRd
 validate_bbox <- function(bbox, prefix = "bbox") {
   errors <- character()
 
@@ -504,7 +504,7 @@ validate_bbox <- function(bbox, prefix = "bbox") {
 #' Validates a GeoJSON geometry object against RFC 7946, checking type,
 #' coordinate structure, ring closure, and WGS 84 coordinate ranges.
 #'
-#' @keywords internal
+#' @noRd
 validate_geometry <- function(geometry) {
   if (!is.list(geometry)) {
     return("Field 'geometry' must be a GeoJSON geometry object")
@@ -714,7 +714,7 @@ validate_geometry_collection <- function(geometry) {
 
 #' Validate Item Properties
 #'
-#' @keywords internal
+#' @noRd
 validate_item_properties <- function(properties) {
   errors <- character()
 
@@ -1088,7 +1088,7 @@ find_schema_refs <- function(x) {
 
 #' Validate Providers
 #'
-#' @keywords internal
+#' @noRd
 validate_providers <- function(providers) {
   errors <- character()
 

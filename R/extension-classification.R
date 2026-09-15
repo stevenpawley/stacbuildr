@@ -248,64 +248,6 @@ add_classification_extension <- function(
 #' nodata_cls <- classification_class(value = 0, name = "nodata", nodata = TRUE)
 #'
 #' @export
-classification_class <- function(
-  value,
-  name = NULL,
-  title = NULL,
-  description = NULL,
-  color_hint = NULL,
-  nodata = NULL,
-  percentage = NULL,
-  count = NULL
-) {
-  if (missing(value)) {
-    cli::cli_abort("'value' is required")
-  }
-  if (!is.numeric(value) || length(value) != 1) {
-    cli::cli_abort("'value' must be a single integer")
-  }
-
-  if (!is.null(name)) {
-    if (!grepl("^[A-Za-z0-9_-]+$", name)) {
-      cli::cli_abort(
-        "'name' must consist only of letters, numbers, hyphens, and underscores"
-      )
-    }
-  }
-
-  if (!is.null(color_hint)) {
-    if (!grepl("^[0-9A-F]{6}$", color_hint)) {
-      cli::cli_abort(
-        "'color_hint' must be exactly 6 upper-case hexadecimal characters (e.g., 'FF0000')"
-      )
-    }
-  }
-
-  if (!is.null(percentage)) {
-    if (!is.numeric(percentage) || percentage < 0 || percentage > 100) {
-      cli::cli_abort("'percentage' must be a number between 0 and 100")
-    }
-  }
-
-  if (!is.null(nodata) && !is.logical(nodata)) {
-    cli::cli_abort("'nodata' must be TRUE or FALSE")
-  }
-
-  cls <- list(value = as.integer(value))
-
-  if (!is.null(name))        cls$name        <- name
-  if (!is.null(title))       cls$title       <- title
-  if (!is.null(description)) cls$description <- description
-  if (!is.null(color_hint))  cls$color_hint  <- color_hint
-  if (!is.null(nodata))      cls$nodata      <- nodata
-  if (!is.null(percentage))  cls$percentage  <- percentage
-  if (!is.null(count))       cls$count       <- as.integer(count)
-
-  cls
-}
-
-.classification_class_fields <- classification_class
-
 classification_class <- S7::new_class(
   "classification_class",
   properties = list(
@@ -321,14 +263,44 @@ classification_class <- S7::new_class(
   constructor = function(value, name = NULL, title = NULL, description = NULL,
                          color_hint = NULL, nodata = NULL, percentage = NULL,
                          count = NULL) {
-    fields <- .classification_class_fields(
-      value, name, title, description, color_hint, nodata, percentage, count
-    )
+    if (missing(value)) {
+      cli::cli_abort("'value' is required")
+    }
+    if (!is.numeric(value) || length(value) != 1) {
+      cli::cli_abort("'value' must be a single integer")
+    }
+
+    if (!is.null(name) && !grepl("^[A-Za-z0-9_-]+$", name)) {
+      cli::cli_abort(
+        "'name' must consist only of letters, numbers, hyphens, and underscores"
+      )
+    }
+
+    if (!is.null(color_hint) && !grepl("^[0-9A-F]{6}$", color_hint)) {
+      cli::cli_abort(
+        "'color_hint' must be exactly 6 upper-case hexadecimal characters (e.g., 'FF0000')"
+      )
+    }
+
+    if (!is.null(percentage) &&
+        (!is.numeric(percentage) || percentage < 0 || percentage > 100)) {
+      cli::cli_abort("'percentage' must be a number between 0 and 100")
+    }
+
+    if (!is.null(nodata) && !is.logical(nodata)) {
+      cli::cli_abort("'nodata' must be TRUE or FALSE")
+    }
+
     S7::new_object(
-      S7::S7_object(), value = fields$value, name = fields$name,
-      title = fields$title, description = fields$description,
-      color_hint = fields$color_hint, nodata = fields$nodata,
-      percentage = fields$percentage, count = fields$count
+      S7::S7_object(),
+      value = as.integer(value),
+      name = name,
+      title = title,
+      description = description,
+      color_hint = color_hint,
+      nodata = nodata,
+      percentage = percentage,
+      count = if (is.null(count)) NULL else as.integer(count)
     )
   }
 )
@@ -413,59 +385,6 @@ S7::method(as.list, classification_class) <- function(x, ...) {
 #' )
 #'
 #' @export
-classification_bitfield <- function(
-  offset,
-  length,
-  classes,
-  name = NULL,
-  description = NULL,
-  roles = NULL
-) {
-  if (missing(offset) || missing(length) || missing(classes)) {
-    cli::cli_abort("'offset', 'length', and 'classes' are all required")
-  }
-
-  if (!is.numeric(offset) || length(offset) != 1 || offset < 0) {
-    cli::cli_abort("'offset' must be a non-negative integer")
-  }
-
-  if (!is.numeric(length) || length(length) != 1 || length < 1) {
-    cli::cli_abort("'length' must be a positive integer")
-  }
-
-  if (!is.list(classes) || length(classes) == 0) {
-    cli::cli_abort(
-      "'classes' must be a non-empty list of classification_class objects"
-    )
-  }
-
-  if (!is.null(name)) {
-    if (!grepl("^[A-Za-z0-9_-]+$", name)) {
-      cli::cli_abort(
-        "'name' must consist only of letters, numbers, hyphens, and underscores"
-      )
-    }
-  }
-
-  if (!is.null(roles) && !is.character(roles)) {
-    cli::cli_abort("'roles' must be a character vector")
-  }
-
-  bf <- list(
-    offset  = as.integer(offset),
-    length  = as.integer(length),
-    classes = classes
-  )
-
-  if (!is.null(name))        bf$name        <- name
-  if (!is.null(description)) bf$description <- description
-  if (!is.null(roles))       bf$roles       <- as.list(roles)
-
-  bf
-}
-
-.classification_bitfield_fields <- classification_bitfield
-
 classification_bitfield <- S7::new_class(
   "classification_bitfield",
   properties = list(
@@ -485,15 +404,42 @@ classification_bitfield <- S7::new_class(
   ),
   constructor = function(offset, length, classes, name = NULL,
                          description = NULL, roles = NULL) {
-    fields <- .classification_bitfield_fields(
-      offset, length, classes, name, description, roles
-    )
+    if (missing(offset) || missing(length) || missing(classes)) {
+      cli::cli_abort("'offset', 'length', and 'classes' are all required")
+    }
+
+    if (!is.numeric(offset) || length(offset) != 1 || offset < 0) {
+      cli::cli_abort("'offset' must be a non-negative integer")
+    }
+
+    if (!is.numeric(length) || length(length) != 1 || length < 1) {
+      cli::cli_abort("'length' must be a positive integer")
+    }
+
+    if (!is.list(classes) || length(classes) == 0) {
+      cli::cli_abort(
+        "'classes' must be a non-empty list of classification_class objects"
+      )
+    }
+
+    if (!is.null(name) && !grepl("^[A-Za-z0-9_-]+$", name)) {
+      cli::cli_abort(
+        "'name' must consist only of letters, numbers, hyphens, and underscores"
+      )
+    }
+
+    if (!is.null(roles) && !is.character(roles)) {
+      cli::cli_abort("'roles' must be a character vector")
+    }
+
     S7::new_object(
-      S7::S7_object(), offset = fields$offset, length = fields$length,
-      classes = fields$classes, name = fields$name,
-      description = fields$description,
-      roles = if (is.null(fields$roles)) NULL else
-        unlist(fields$roles, use.names = FALSE)
+      S7::S7_object(),
+      offset = as.integer(offset),
+      length = as.integer(length),
+      classes = classes,
+      name = name,
+      description = description,
+      roles = roles
     )
   }
 )

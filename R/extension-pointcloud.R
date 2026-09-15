@@ -264,38 +264,6 @@ validate_pc_type <- function(type) {
 #' pc_schema("Intensity", size = 2, type = "unsigned")
 #'
 #' @export
-pc_schema <- function(name, size, type) {
-  if (missing(name) || !is.character(name) || length(name) != 1 || is.na(name)) {
-    cli::cli_abort("'name' must be a single character string")
-  }
-  if (!nzchar(name)) {
-    cli::cli_abort("'name' must not be an empty string")
-  }
-
-  if (missing(size) || !is.numeric(size) || length(size) != 1 || is.na(size)) {
-    cli::cli_abort("'size' must be a single number")
-  }
-  if (size != trunc(size) || size <= 0) {
-    cli::cli_abort("'size' must be a whole number of bytes greater than 0")
-  }
-
-  valid_types <- c("floating", "unsigned", "signed")
-  if (missing(type) || !is.character(type) || length(type) != 1 || is.na(type)) {
-    cli::cli_abort("'type' must be a single character string")
-  }
-  if (!type %in% valid_types) {
-    cli::cli_abort(c(
-      "Invalid dimension type: {.val {type}}",
-      "i" = "Valid types: {paste(valid_types, collapse = ', ')}"
-    ))
-  }
-
-  schema <- list(name = name, size = as.integer(size), type = type)
-  schema
-}
-
-.pc_schema_fields <- pc_schema
-
 pc_schema <- S7::new_class(
   "pc_schema",
   properties = list(
@@ -304,9 +272,37 @@ pc_schema <- S7::new_class(
     type = S7::class_character
   ),
   constructor = function(name, size, type) {
-    fields <- .pc_schema_fields(name, size, type)
-    S7::new_object(S7::S7_object(), name = fields$name,
-      size = fields$size, type = fields$type)
+    if (missing(name) || !is.character(name) ||
+        length(name) != 1 || is.na(name)) {
+      cli::cli_abort("'name' must be a single character string")
+    }
+    if (!nzchar(name)) {
+      cli::cli_abort("'name' must not be an empty string")
+    }
+
+    if (missing(size) || !is.numeric(size) ||
+        length(size) != 1 || is.na(size)) {
+      cli::cli_abort("'size' must be a single number")
+    }
+    if (size != trunc(size) || size <= 0) {
+      cli::cli_abort("'size' must be a whole number of bytes greater than 0")
+    }
+
+    valid_types <- c("floating", "unsigned", "signed")
+    if (missing(type) || !is.character(type) ||
+        length(type) != 1 || is.na(type)) {
+      cli::cli_abort("'type' must be a single character string")
+    }
+    if (!type %in% valid_types) {
+      cli::cli_abort(c(
+        "Invalid dimension type: {.val {type}}",
+        "i" = "Valid types: {paste(valid_types, collapse = ', ')}"
+      ))
+    }
+
+    S7::new_object(
+      S7::S7_object(), name = name, size = as.integer(size), type = type
+    )
   },
   validator = function(self) {
     if (length(self@name) != 1L || is.na(self@name) || !nzchar(self@name))
@@ -369,78 +365,6 @@ S7::method(print, pc_schema) <- function(x, ...) {
 #' pc_statistic("Z", position = 2, minimum = 406.14, maximum = 615.26)
 #'
 #' @export
-pc_statistic <- function(
-  name,
-  position = NULL,
-  average = NULL,
-  count = NULL,
-  maximum = NULL,
-  minimum = NULL,
-  stddev = NULL,
-  variance = NULL
-) {
-  if (missing(name) || !is.character(name) || length(name) != 1 || is.na(name)) {
-    cli::cli_abort("'name' must be a single character string")
-  }
-  if (!nzchar(name)) {
-    cli::cli_abort("'name' must not be an empty string")
-  }
-
-  stat <- list(name = name)
-
-  if (!is.null(position)) {
-    if (
-      !is.numeric(position) ||
-        length(position) != 1 ||
-        is.na(position) ||
-        position != trunc(position) ||
-        position < 0
-    ) {
-      cli::cli_abort("'position' must be a whole number greater than or equal to 0")
-    }
-    stat$position <- as.integer(position)
-  }
-
-  numeric_stats <- list(
-    average = average,
-    maximum = maximum,
-    minimum = minimum,
-    stddev = stddev,
-    variance = variance
-  )
-  for (field in names(numeric_stats)) {
-    value <- numeric_stats[[field]]
-    if (is.null(value)) next
-    if (!is.numeric(value) || length(value) != 1 || is.na(value)) {
-      cli::cli_abort("'{field}' must be a single number")
-    }
-    stat[[field]] <- value
-  }
-
-  if (!is.null(count)) {
-    stat$count <- validate_pc_count(count)
-  }
-
-  if (length(stat) == 1L) {
-    cli::cli_abort(c(
-      "A Stats object needs the channel name and at least one statistic",
-      "i" = "Supply one or more of 'average', 'count', 'maximum', 'minimum',
-             'stddev', or 'variance'"
-    ))
-  }
-
-  # Field order follows the specification's table rather than argument order
-  ordered <- c(
-    "name", "position", "average", "count",
-    "maximum", "minimum", "stddev", "variance"
-  )
-  stat <- stat[intersect(ordered, names(stat))]
-
-  stat
-}
-
-.pc_statistic_fields <- pc_statistic
-
 pc_statistic <- S7::new_class(
   "pc_statistic",
   properties = list(
@@ -456,13 +380,64 @@ pc_statistic <- S7::new_class(
   constructor = function(name, position = NULL, average = NULL, count = NULL,
                          maximum = NULL, minimum = NULL, stddev = NULL,
                          variance = NULL) {
-    fields <- .pc_statistic_fields(name, position, average, count, maximum,
-                                   minimum, stddev, variance)
-    S7::new_object(S7::S7_object(), name = fields$name,
-      position = fields$position, average = fields$average,
-      count = fields$count, maximum = fields$maximum,
-      minimum = fields$minimum, stddev = fields$stddev,
-      variance = fields$variance)
+    if (missing(name) || !is.character(name) ||
+        length(name) != 1 || is.na(name)) {
+      cli::cli_abort("'name' must be a single character string")
+    }
+    if (!nzchar(name)) {
+      cli::cli_abort("'name' must not be an empty string")
+    }
+
+    if (!is.null(position) && (
+      !is.numeric(position) ||
+        length(position) != 1 ||
+        is.na(position) ||
+        position != trunc(position) ||
+        position < 0
+    )) {
+      cli::cli_abort(
+        "'position' must be a whole number greater than or equal to 0"
+      )
+    }
+
+    numeric_stats <- list(
+      average = average,
+      maximum = maximum,
+      minimum = minimum,
+      stddev = stddev,
+      variance = variance
+    )
+    for (field in names(numeric_stats)) {
+      value <- numeric_stats[[field]]
+      if (!is.null(value) &&
+          (!is.numeric(value) || length(value) != 1 || is.na(value))) {
+        cli::cli_abort("'{field}' must be a single number")
+      }
+    }
+
+    if (!is.null(count)) {
+      count <- validate_pc_count(count)
+    }
+
+    if (all(vapply(c(numeric_stats, list(count = count)), is.null, logical(1)))) {
+      cli::cli_abort(c(
+        "A Stats object needs the channel name and at least one statistic",
+        "i" = "Supply one or more of 'average', 'count', 'maximum', 'minimum',
+               'stddev', or 'variance'"
+      ))
+    }
+
+    S7::new_object(
+      S7::S7_object(),
+      name = name,
+      position = if (is.null(position)) NULL else as.integer(position),
+      average = average,
+      count = count,
+      maximum = maximum,
+      minimum = minimum,
+      stddev = stddev,
+      variance = variance
+    )
   },
   validator = function(self) {
     if (length(self@name) != 1L || is.na(self@name) || !nzchar(self@name))
