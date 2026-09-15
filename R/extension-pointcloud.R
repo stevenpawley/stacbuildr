@@ -203,21 +203,26 @@ add_pointcloud_extension <- function(
 # when it holds a whole number. LAS 1.4 allows more points than an R integer
 # can hold, and jsonlite writes a whole double without a decimal point, so the
 # double is passed through rather than coerced.
-validate_pc_count <- function(count, arg = "count") {
+coerce_pc_count <- function(count, arg = "count") {
   if (!is.numeric(count) || length(count) != 1 || is.na(count)) {
     cli::cli_abort("'{arg}' must be a single number")
   }
   if (count != trunc(count)) {
     cli::cli_abort("'{arg}' must be a whole number, not {count}")
   }
-  if (count < 0) {
-    cli::cli_abort("'{arg}' must be greater than or equal to 0")
-  }
   if (is.integer(count) || count <= .Machine$integer.max) {
     as.integer(count)
   } else {
     count
   }
+}
+
+validate_pc_count <- function(count, arg = "count") {
+  count <- coerce_pc_count(count, arg)
+  if (count < 0) {
+    cli::cli_abort("'{arg}' must be greater than or equal to 0")
+  }
+  count
 }
 
 
@@ -275,40 +280,48 @@ validate_pc_type <- function(type) {
 pc_schema <- S7::new_class(
   "pc_schema",
   properties = list(
-    name = S7::class_character,
-    size = S7::class_integer,
-    type = S7::class_character
+    name = S7::new_property(
+      S7::class_character,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value) || !nzchar(value)) {
+          "must be a non-empty string"
+        }
+      }
+    ),
+    size = S7::new_property(
+      S7::class_integer,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value) || value <= 0L) {
+          "must be greater than 0"
+        }
+      }
+    ),
+    type = S7::new_property(
+      S7::class_character,
+      validator = function(value) {
+        if (
+          length(value) != 1L ||
+            is.na(value) ||
+            !value %in% c("floating", "unsigned", "signed")
+        ) {
+          "must be floating, unsigned, or signed"
+        }
+      }
+    )
   ),
   constructor = function(name, size, type) {
-    if (
-      missing(name) || !is.character(name) || length(name) != 1 || is.na(name)
-    ) {
-      cli::cli_abort("'name' must be a single character string")
-    }
-    if (!nzchar(name)) {
-      cli::cli_abort("'name' must not be an empty string")
+    if (missing(name) || missing(size) || missing(type)) {
+      cli::cli_abort("'name', 'size', and 'type' are all required")
     }
 
+    # Validate before coercion so fractional values are not silently truncated.
     if (
-      missing(size) || !is.numeric(size) || length(size) != 1 || is.na(size)
+      !is.numeric(size) ||
+        length(size) != 1L ||
+        is.na(size) ||
+        size != trunc(size)
     ) {
-      cli::cli_abort("'size' must be a single number")
-    }
-    if (size != trunc(size) || size <= 0) {
       cli::cli_abort("'size' must be a whole number of bytes greater than 0")
-    }
-
-    valid_types <- c("floating", "unsigned", "signed")
-    if (
-      missing(type) || !is.character(type) || length(type) != 1 || is.na(type)
-    ) {
-      cli::cli_abort("'type' must be a single character string")
-    }
-    if (!type %in% valid_types) {
-      cli::cli_abort(c(
-        "Invalid dimension type: {.val {type}}",
-        "i" = "Valid types: {paste(valid_types, collapse = ', ')}"
-      ))
     }
 
     S7::new_object(
@@ -317,17 +330,6 @@ pc_schema <- S7::new_class(
       size = as.integer(size),
       type = type
     )
-  },
-  validator = function(self) {
-    if (length(self@name) != 1L || is.na(self@name) || !nzchar(self@name)) {
-      return("'name' must be a non-empty string")
-    }
-    if (length(self@size) != 1L || self@size <= 0L) {
-      return("'size' must be greater than 0")
-    }
-    if (!self@type %in% c("floating", "unsigned", "signed")) {
-      return("'type' must be floating, unsigned, or signed")
-    }
   }
 )
 
@@ -350,6 +352,18 @@ S7::method(print, pc_schema) <- function(x, ...) {
     styles = list(name = stac_style_id, type = stac_style_key)
   )
   invisible(x)
+}
+
+
+pc_statistic_number_property <- function() {
+  S7::new_property(
+    S7::new_union(NULL, S7::class_numeric),
+    validator = function(value) {
+      if (!is.null(value) && (length(value) != 1L || is.na(value))) {
+        "must be a single number"
+      }
+    }
+  )
 }
 
 
@@ -385,14 +399,43 @@ S7::method(print, pc_schema) <- function(x, ...) {
 pc_statistic <- S7::new_class(
   "pc_statistic",
   properties = list(
-    name = S7::class_character,
-    position = S7::new_union(S7::class_integer, NULL),
-    average = S7::new_union(S7::class_numeric, NULL),
-    count = S7::new_union(S7::class_integer, NULL),
-    maximum = S7::new_union(S7::class_numeric, NULL),
-    minimum = S7::new_union(S7::class_numeric, NULL),
-    stddev = S7::new_union(S7::class_numeric, NULL),
-    variance = S7::new_union(S7::class_numeric, NULL)
+    name = S7::new_property(
+      S7::class_character,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value) || !nzchar(value)) {
+          "must be a non-empty string"
+        }
+      }
+    ),
+    position = S7::new_property(
+      S7::new_union(NULL, S7::class_integer),
+      validator = function(value) {
+        if (!is.null(value) && (length(value) != 1L || is.na(value) || value < 0L)) {
+          "must be a whole number greater than or equal to 0"
+        }
+      }
+    ),
+    average = pc_statistic_number_property(),
+    count = S7::new_property(
+      S7::new_union(NULL, S7::class_numeric),
+      validator = function(value) {
+        if (
+          !is.null(value) &&
+            (
+              length(value) != 1L ||
+                is.na(value) ||
+                value != trunc(value) ||
+                value < 0
+            )
+        ) {
+          "must be a whole number greater than or equal to 0"
+        }
+      }
+    ),
+    maximum = pc_statistic_number_property(),
+    minimum = pc_statistic_number_property(),
+    stddev = pc_statistic_number_property(),
+    variance = pc_statistic_number_property()
   ),
   constructor = function(
     name,
@@ -404,57 +447,25 @@ pc_statistic <- S7::new_class(
     stddev = NULL,
     variance = NULL
   ) {
-    if (
-      missing(name) || !is.character(name) || length(name) != 1 || is.na(name)
-    ) {
-      cli::cli_abort("'name' must be a single character string")
-    }
-    if (!nzchar(name)) {
-      cli::cli_abort("'name' must not be an empty string")
+    if (missing(name)) {
+      cli::cli_abort("'name' is required")
     }
 
+    # Validate before coercion so fractional values are not silently truncated.
     if (
       !is.null(position) &&
         (!is.numeric(position) ||
           length(position) != 1 ||
           is.na(position) ||
-          position != trunc(position) ||
-          position < 0)
+          position != trunc(position))
     ) {
       cli::cli_abort(
         "'position' must be a whole number greater than or equal to 0"
       )
     }
 
-    numeric_stats <- list(
-      average = average,
-      maximum = maximum,
-      minimum = minimum,
-      stddev = stddev,
-      variance = variance
-    )
-    for (field in names(numeric_stats)) {
-      value <- numeric_stats[[field]]
-      if (
-        !is.null(value) &&
-          (!is.numeric(value) || length(value) != 1 || is.na(value))
-      ) {
-        cli::cli_abort("'{field}' must be a single number")
-      }
-    }
-
     if (!is.null(count)) {
-      count <- validate_pc_count(count)
-    }
-
-    if (
-      all(vapply(c(numeric_stats, list(count = count)), is.null, logical(1)))
-    ) {
-      cli::cli_abort(c(
-        "A Stats object needs the channel name and at least one statistic",
-        "i" = "Supply one or more of 'average', 'count', 'maximum', 'minimum',
-               'stddev', or 'variance'"
-      ))
+      count <- coerce_pc_count(count)
     }
 
     S7::new_object(
@@ -470,9 +481,6 @@ pc_statistic <- S7::new_class(
     )
   },
   validator = function(self) {
-    if (length(self@name) != 1L || is.na(self@name) || !nzchar(self@name)) {
-      return("'name' must be a non-empty string")
-    }
     values <- list(
       self@average,
       self@count,

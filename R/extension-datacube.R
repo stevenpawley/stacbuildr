@@ -283,7 +283,14 @@ validate_cube_named_list <- function(x, arg_name, class_name) {
 cube_dimension <- S7::new_class(
   "cube_dimension",
   properties = list(
-    type = S7::class_character,
+    type = S7::new_property(
+      S7::class_character,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value)) {
+          "must be a single character string"
+        }
+      }
+    ),
     extent = S7::class_any,
     values = S7::class_any,
     step = S7::class_any,
@@ -296,6 +303,42 @@ cube_dimension <- S7::new_class(
     geometry_types = S7::class_any,
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
+  validator = function(self) {
+    if (identical(self@type, "spatial")) {
+      if (
+        !is.character(self@axis) ||
+          length(self@axis) != 1L ||
+          is.na(self@axis) ||
+          !self@axis %in% c("x", "y", "z")
+      ) {
+        return("@axis must be one of 'x', 'y', or 'z' when @type = 'spatial'")
+      }
+      if (self@axis %in% c("x", "y") && length(self@extent) != 2L) {
+        return(
+          "@extent (length 2) is required for horizontal spatial dimensions"
+        )
+      }
+      if (
+        identical(self@axis, "z") &&
+          is.null(self@extent) &&
+          is.null(self@values)
+      ) {
+        return(
+          "Either @extent or @values is required for vertical ('z') spatial dimensions"
+        )
+      }
+    } else if (identical(self@type, "geometry")) {
+      if (is.null(self@bbox)) {
+        return("@bbox is required when @type = 'geometry'")
+      }
+    } else if (identical(self@type, "temporal")) {
+      if (length(self@extent) != 2L) {
+        return("@extent (length 2) is required when @type = 'temporal'")
+      }
+    } else if (is.null(self@extent) && is.null(self@values)) {
+      return("Either @extent or @values is required for additional dimensions")
+    }
+  },
   constructor = function(
     type,
     extent = NULL,
@@ -310,42 +353,8 @@ cube_dimension <- S7::new_class(
     geometry_types = NULL,
     ...
   ) {
-    if (
-      missing(type) || !is.character(type) || length(type) != 1 || is.na(type)
-    ) {
-      cli::cli_abort("'type' must be a single character string")
-    }
-
-    if (type == "spatial") {
-      if (is.null(axis) || !axis %in% c("x", "y", "z")) {
-        cli::cli_abort(
-          "'axis' must be one of 'x', 'y', or 'z' when type = 'spatial'"
-        )
-      }
-
-      if (axis %in% c("x", "y")) {
-        if (is.null(extent) || length(extent) != 2) {
-          cli::cli_abort(
-            "'extent' (length 2) is required for horizontal spatial dimensions"
-          )
-        }
-      } else if (is.null(extent) && is.null(values)) {
-        cli::cli_abort(
-          "Either 'extent' or 'values' is required for vertical ('z') spatial dimensions"
-        )
-      }
-    } else if (type == "geometry") {
-      if (is.null(bbox)) {
-        cli::cli_abort("'bbox' is required when type = 'geometry'")
-      }
-    } else if (type == "temporal") {
-      if (is.null(extent) || length(extent) != 2) {
-        cli::cli_abort("'extent' (length 2) is required when type = 'temporal'")
-      }
-    } else if (is.null(extent) && is.null(values)) {
-      cli::cli_abort(
-        "Either 'extent' or 'values' is required for additional dimensions"
-      )
+    if (missing(type)) {
+      cli::cli_abort("'type' is required")
     }
 
     S7::new_object(
@@ -355,20 +364,24 @@ cube_dimension <- S7::new_class(
       values = if (is.null(values)) NULL else unlist(values, use.names = FALSE),
       step = step,
       unit = unit,
-      reference_system = if (type %in% c("spatial", "geometry")) {
+      reference_system = if (
+        identical(type, "spatial") || identical(type, "geometry")
+      ) {
         reference_system
       } else {
         NULL
       },
       description = description,
-      axis = if (type == "spatial") axis else NULL,
-      axes = if (type == "geometry" && !is.null(axes)) {
+      axis = if (identical(type, "spatial")) axis else NULL,
+      axes = if (identical(type, "geometry") && !is.null(axes)) {
         unlist(axes, use.names = FALSE)
       } else {
         NULL
       },
-      bbox = if (type == "geometry") bbox else NULL,
-      geometry_types = if (type == "geometry" && !is.null(geometry_types)) {
+      bbox = if (identical(type, "geometry")) bbox else NULL,
+      geometry_types = if (
+        identical(type, "geometry") && !is.null(geometry_types)
+      ) {
         unlist(geometry_types, use.names = FALSE)
       } else {
         NULL
@@ -477,7 +490,18 @@ S7::method(print, cube_dimension) <- function(x, ...) {
 cube_variable <- S7::new_class(
   "cube_variable",
   properties = list(
-    type = S7::class_character,
+    type = S7::new_property(
+      S7::class_character,
+      validator = function(value) {
+        if (
+          length(value) != 1L ||
+            is.na(value) ||
+            !value %in% c("data", "auxiliary")
+        ) {
+          "must be either 'data' or 'auxiliary'"
+        }
+      }
+    ),
     dimensions = S7::class_character,
     extent = S7::class_any,
     values = S7::class_any,
@@ -498,20 +522,8 @@ cube_variable <- S7::new_class(
     description = NULL,
     ...
   ) {
-    if (
-      missing(type) || !is.character(type) || length(type) != 1 || is.na(type)
-    ) {
-      cli::cli_abort("'type' must be a single character string")
-    }
-
-    if (!type %in% c("data", "auxiliary")) {
-      cli::cli_abort("'type' must be either 'data' or 'auxiliary'")
-    }
-
-    if (!is.character(dimensions)) {
-      cli::cli_abort(
-        "'dimensions' must be a character vector (use character(0) for none)"
-      )
+    if (missing(type)) {
+      cli::cli_abort("'type' is required")
     }
 
     S7::new_object(

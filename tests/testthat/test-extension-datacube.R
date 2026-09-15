@@ -14,20 +14,20 @@ test_that("cube_dimension creates a horizontal spatial dimension", {
 })
 
 test_that("cube_dimension errors on missing type", {
-  expect_error(cube_dimension(), "'type' must be a single character string")
+  expect_error(cube_dimension(), "'type' is required")
 })
 
 test_that("cube_dimension errors on horizontal spatial dimension without axis", {
   expect_error(
     cube_dimension(type = "spatial", extent = c(0, 1)),
-    "'axis' must be one of 'x', 'y', or 'z'"
+    "@axis must be one of 'x', 'y', or 'z'"
   )
 })
 
 test_that("cube_dimension errors on horizontal spatial dimension without extent", {
   expect_error(
     cube_dimension(type = "spatial", axis = "x"),
-    "'extent' \\(length 2\\) is required for horizontal spatial dimensions"
+    "@extent \\(length 2\\) is required for horizontal spatial dimensions"
   )
 })
 
@@ -41,7 +41,7 @@ test_that("cube_dimension allows vertical spatial dimension with only values", {
 test_that("cube_dimension errors on vertical spatial dimension without extent or values", {
   expect_error(
     cube_dimension(type = "spatial", axis = "z"),
-    "Either 'extent' or 'values' is required for vertical"
+    "Either @extent or @values is required for vertical"
   )
 })
 
@@ -55,7 +55,7 @@ test_that("cube_dimension creates a geometry dimension", {
 test_that("cube_dimension errors on geometry dimension without bbox", {
   expect_error(
     cube_dimension(type = "geometry"),
-    "'bbox' is required when type = 'geometry'"
+    "@bbox is required when @type = 'geometry'"
   )
 })
 
@@ -72,7 +72,7 @@ test_that("cube_dimension creates a temporal dimension", {
 test_that("cube_dimension errors on temporal dimension without extent", {
   expect_error(
     cube_dimension(type = "temporal"),
-    "'extent' \\(length 2\\) is required when type = 'temporal'"
+    "@extent \\(length 2\\) is required when @type = 'temporal'"
   )
 })
 
@@ -86,7 +86,7 @@ test_that("cube_dimension creates an additional (custom) dimension", {
 test_that("cube_dimension errors on additional dimension without extent or values", {
   expect_error(
     cube_dimension(type = "bands"),
-    "Either 'extent' or 'values' is required for additional dimensions"
+    "Either @extent or @values is required for additional dimensions"
   )
 })
 
@@ -135,18 +135,28 @@ test_that("cube_variable stores all optional fields", {
 })
 
 test_that("cube_variable errors on missing or invalid type", {
-  expect_error(cube_variable(), "'type' must be a single character string")
+  expect_error(cube_variable(), "'type' is required")
   expect_error(
     cube_variable(type = "not-valid", dimensions = character(0)),
-    "'type' must be either 'data' or 'auxiliary'"
+    "either 'data' or 'auxiliary'"
   )
 })
 
 test_that("cube_variable errors when dimensions is not a character vector", {
   expect_error(
     cube_variable(type = "data", dimensions = 1:3),
-    "'dimensions' must be a character vector"
+    "character"
   )
+})
+
+test_that("datacube objects validate property modifications", {
+  dim <- cube_dimension(type = "spatial", axis = "x", extent = c(0, 1))
+  expect_error(dim@axis <- "invalid", "@axis must be one of")
+  expect_error(dim@extent <- NULL, "horizontal spatial dimensions")
+
+  variable <- cube_variable(type = "data", dimensions = c("x", "y"))
+  expect_error(variable@type <- "invalid", "either 'data' or 'auxiliary'")
+  expect_error(variable@dimensions <- 1:2, "character")
 })
 
 

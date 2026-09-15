@@ -586,23 +586,35 @@ S7::method(print, raster_statistics) <- function(x, ...) {
 raster_histogram <- S7::new_class(
   "raster_histogram",
   properties = list(
-    count = S7::class_integer,
-    min = S7::class_numeric,
-    max = S7::class_numeric,
+    count = S7::new_property(
+      S7::class_integer,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value)) {
+          "must be a single integer"
+        }
+      }
+    ),
+    min = S7::new_property(
+      S7::class_numeric,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value)) {
+          "must be a single number"
+        }
+      }
+    ),
+    max = S7::new_property(
+      S7::class_numeric,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value)) {
+          "must be a single number"
+        }
+      }
+    ),
     buckets = S7::class_integer
   ),
   constructor = function(count, min, max, buckets) {
     if (missing(count) || missing(min) || missing(max) || missing(buckets)) {
       cli::cli_abort("'count', 'min', 'max', and 'buckets' are all required")
-    }
-    if (length(count) != 1L || !is.numeric(count)) {
-      cli::cli_abort("'count' must be a single number")
-    }
-    if (length(min) != 1L || !is.numeric(min)) {
-      cli::cli_abort("'min' must be a single number")
-    }
-    if (length(max) != 1L || !is.numeric(max)) {
-      cli::cli_abort("'max' must be a single number")
     }
     S7::new_object(
       S7::S7_object(),
@@ -613,6 +625,16 @@ raster_histogram <- S7::new_class(
     )
   },
   validator = function(self) {
+    if (
+      length(self@count) != 1L ||
+        is.na(self@count) ||
+        length(self@min) != 1L ||
+        is.na(self@min) ||
+        length(self@max) != 1L ||
+        is.na(self@max)
+    ) {
+      return(NULL)
+    }
     if (self@min >= self@max) {
       return("'min' must be smaller than 'max'")
     }

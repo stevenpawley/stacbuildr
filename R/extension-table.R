@@ -251,14 +251,21 @@ add_table_extension <- function(
 table_column <- S7::new_class(
   "table_column",
   properties = list(
-    name = S7::class_character,
+    name = S7::new_property(
+      S7::class_character,
+      validator = function(value) {
+        if (length(value) != 1L) {
+          "must be a single character string"
+        }
+      }
+    ),
     description = S7::new_union(S7::class_character, NULL),
     type = S7::new_union(S7::class_character, NULL),
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
   constructor = function(name, description = NULL, type = NULL, ...) {
-    if (missing(name) || !is.character(name) || length(name) != 1) {
-      cli::cli_abort("'name' must be a single character string")
+    if (missing(name)) {
+      cli::cli_abort("'name' is required")
     }
 
     S7::new_object(

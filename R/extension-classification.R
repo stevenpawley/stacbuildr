@@ -263,14 +263,81 @@ add_classification_extension <- function(
 classification_class <- S7::new_class(
   "classification_class",
   properties = list(
-    value = S7::class_integer,
-    name = S7::new_union(S7::class_character, NULL),
+    value = S7::new_property(
+      S7::class_integer,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value)) {
+          "must be a single integer"
+        }
+      }
+    ),
+    name = S7::new_property(
+      S7::new_union(NULL, S7::class_character),
+      validator = function(value) {
+        if (
+          !is.null(value) &&
+            (
+              length(value) != 1L ||
+                is.na(value) ||
+                !grepl("^[A-Za-z0-9_-]+$", value)
+            )
+        ) {
+          "must consist only of letters, numbers, hyphens, and underscores"
+        }
+      }
+    ),
     title = S7::new_union(S7::class_character, NULL),
     description = S7::new_union(S7::class_character, NULL),
-    color_hint = S7::new_union(S7::class_character, NULL),
-    nodata = S7::new_union(S7::class_logical, NULL),
-    percentage = S7::new_union(S7::class_numeric, NULL),
-    count = S7::new_union(S7::class_integer, NULL)
+    color_hint = S7::new_property(
+      S7::new_union(NULL, S7::class_character),
+      validator = function(value) {
+        if (
+          !is.null(value) &&
+            (
+              length(value) != 1L ||
+                is.na(value) ||
+                !grepl("^[0-9A-F]{6}$", value)
+            )
+        ) {
+          paste(
+            "must be exactly 6 upper-case hexadecimal characters",
+            "(e.g., 'FF0000')"
+          )
+        }
+      }
+    ),
+    nodata = S7::new_property(
+      S7::new_union(NULL, S7::class_logical),
+      validator = function(value) {
+        if (!is.null(value) && (length(value) != 1L || is.na(value))) {
+          "must be TRUE or FALSE"
+        }
+      }
+    ),
+    percentage = S7::new_property(
+      S7::new_union(NULL, S7::class_numeric),
+      validator = function(value) {
+        if (
+          !is.null(value) &&
+            (
+              length(value) != 1L ||
+                is.na(value) ||
+                value < 0 ||
+                value > 100
+            )
+        ) {
+          "must be a number between 0 and 100"
+        }
+      }
+    ),
+    count = S7::new_property(
+      S7::new_union(NULL, S7::class_integer),
+      validator = function(value) {
+        if (!is.null(value) && (length(value) != 1L || is.na(value))) {
+          "must be a single integer"
+        }
+      }
+    )
   ),
   constructor = function(
     value,
@@ -284,32 +351,6 @@ classification_class <- S7::new_class(
   ) {
     if (missing(value)) {
       cli::cli_abort("'value' is required")
-    }
-    if (!is.numeric(value) || length(value) != 1) {
-      cli::cli_abort("'value' must be a single integer")
-    }
-
-    if (!is.null(name) && !grepl("^[A-Za-z0-9_-]+$", name)) {
-      cli::cli_abort(
-        "'name' must consist only of letters, numbers, hyphens, and underscores"
-      )
-    }
-
-    if (!is.null(color_hint) && !grepl("^[0-9A-F]{6}$", color_hint)) {
-      cli::cli_abort(
-        "'color_hint' must be exactly 6 upper-case hexadecimal characters (e.g., 'FF0000')"
-      )
-    }
-
-    if (
-      !is.null(percentage) &&
-        (!is.numeric(percentage) || percentage < 0 || percentage > 100)
-    ) {
-      cli::cli_abort("'percentage' must be a number between 0 and 100")
-    }
-
-    if (!is.null(nodata) && !is.logical(nodata)) {
-      cli::cli_abort("'nodata' must be TRUE or FALSE")
     }
 
     S7::new_object(
@@ -414,12 +455,28 @@ S7::method(as.list, classification_class) <- function(x, ...) {
 classification_bitfield <- S7::new_class(
   "classification_bitfield",
   properties = list(
-    offset = S7::class_integer,
-    length = S7::class_integer,
+    offset = S7::new_property(
+      S7::class_integer,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value) || value < 0L) {
+          "must be a non-negative integer"
+        }
+      }
+    ),
+    length = S7::new_property(
+      S7::class_integer,
+      validator = function(value) {
+        if (length(value) != 1L || is.na(value) || value < 1L) {
+          "must be a positive integer"
+        }
+      }
+    ),
     classes = S7::new_property(
       S7::class_list,
       validator = function(value) {
-        if (
+        if (length(value) == 0L) {
+          "must be a non-empty list of classification_class objects"
+        } else if (
           !all(vapply(
             value,
             S7::S7_inherits,
@@ -431,7 +488,21 @@ classification_bitfield <- S7::new_class(
         }
       }
     ),
-    name = S7::new_union(S7::class_character, NULL),
+    name = S7::new_property(
+      S7::new_union(NULL, S7::class_character),
+      validator = function(value) {
+        if (
+          !is.null(value) &&
+            (
+              length(value) != 1L ||
+                is.na(value) ||
+                !grepl("^[A-Za-z0-9_-]+$", value)
+            )
+        ) {
+          "must consist only of letters, numbers, hyphens, and underscores"
+        }
+      }
+    ),
     description = S7::new_union(S7::class_character, NULL),
     roles = S7::new_union(S7::class_character, NULL)
   ),
@@ -445,30 +516,6 @@ classification_bitfield <- S7::new_class(
   ) {
     if (missing(offset) || missing(length) || missing(classes)) {
       cli::cli_abort("'offset', 'length', and 'classes' are all required")
-    }
-
-    if (!is.numeric(offset) || length(offset) != 1 || offset < 0) {
-      cli::cli_abort("'offset' must be a non-negative integer")
-    }
-
-    if (!is.numeric(length) || length(length) != 1 || length < 1) {
-      cli::cli_abort("'length' must be a positive integer")
-    }
-
-    if (!is.list(classes) || length(classes) == 0) {
-      cli::cli_abort(
-        "'classes' must be a non-empty list of classification_class objects"
-      )
-    }
-
-    if (!is.null(name) && !grepl("^[A-Za-z0-9_-]+$", name)) {
-      cli::cli_abort(
-        "'name' must consist only of letters, numbers, hyphens, and underscores"
-      )
-    }
-
-    if (!is.null(roles) && !is.character(roles)) {
-      cli::cli_abort("'roles' must be a character vector")
     }
 
     S7::new_object(
