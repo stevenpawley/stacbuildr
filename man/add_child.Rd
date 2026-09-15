@@ -12,19 +12,21 @@ add_child(catalog, child, href = NULL, title = NULL)
 \item{child}{A STAC catalog or collection object to add as a child.}
 
 \item{href}{(character, optional) The URL or path to the child resource.
-If \code{NULL} (default), automatically generates a path using the pattern
-\code{"./<child_id>/catalog.json"}.}
+If \code{NULL}, uses \code{"./<child_id>/catalog.json"} for a Catalog or
+\code{"./<child_id>/collection.json"} for a Collection. \code{\link[=write_stac]{write_stac()}}
+regenerates this href for its output layout and \code{catalog_type}.}
 
 \item{title}{(character, optional) A title for the link. If \code{NULL}, uses
 the child's \code{title} field if available.}
 }
 \value{
-The modified parent catalog object with the child link added.
+The modified parent with the child link added and the complete child
+retained internally for \code{\link[=write_stac]{write_stac()}}.
 }
 \description{
-Adds a child STAC Catalog or Collection to a parent catalog by creating a
-link with relation type \code{"child"}. The child resource can be another catalog
-or a collection.
+Adds a child STAC Catalog or Collection to a parent. A \code{"child"} link is
+added immediately, and the complete child is retained internally so that
+\code{\link[=write_stac]{write_stac()}} can write it as part of the catalog tree.
 }
 \examples{
 parent <- stac_catalog(
@@ -38,29 +40,13 @@ child <- stac_catalog(
   description = "A child catalog"
 )
 
-# Add child with automatic href generation
 parent <- add_child(parent, child)
-
-# Add another child with a custom href and title. Each child needs its own
-# id, since the id becomes its directory when the catalog is written.
-other <- stac_catalog(
-  id = "other-catalog",
-  description = "Another child catalog"
-)
-
-parent <- add_child(
-  parent,
-  other,
-  href = "./children/custom-catalog.json",
-  title = "Custom Child"
-)
 
 }
 \seealso{
 \itemize{
 \item \code{\link[=add_link]{add_link()}} for adding arbitrary links
 \item \code{\link[=add_item]{add_item()}} for adding STAC Items
-\item \code{\link[=stac_catalog]{stac_catalog()}} for creating catalogs
-\item \code{\link[=stac_collection]{stac_collection()}} for creating collections
+\item See \code{vignette("stac-catalog")} for the recursive writing model
 }
 }

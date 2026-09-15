@@ -20,7 +20,9 @@ resolved against \code{base_path}. Default is \code{FALSE}.}
 A list of items, or NULL if none exist.
 }
 \description{
-Retrieves the stored items from a catalog or collection object.
+Retrieves complete Item objects retained in the internal \code{"stac_items"}
+attribute of a catalog or collection. The catalog's \code{links} property contains
+only links to those Items, not the Items themselves.
 When items are not in memory (e.g. after \code{read_stac()}), set
 \code{resolve = TRUE} to follow the \code{item} links and load them from disk.
 }

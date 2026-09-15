@@ -17,8 +17,9 @@ knitr::opts_chunk$set(
 This vignette demonstrates how to build a STAC catalog with `stacbuildr`, covering:
 
 1. Creating a catalog, collection, and item from a raster file
-2. Writing a static catalog to disk
-3. Loading into a PostgreSQL database and serving a STAC API *(requires infrastructure)*
+2. Understanding how linked objects are retained for recursive writing
+3. Writing a static catalog to disk
+4. Loading into a PostgreSQL database and serving a STAC API *(requires infrastructure)*
 
 ## Setup
 
@@ -125,6 +126,56 @@ catalog <- add_child(catalog, collection)
 
 print(catalog, expand = TRUE)
 ```
+
+## How links and attached objects work
+
+STAC Catalogs, Collections, and Items are separate JSON documents. A Catalog
+or Collection does not embed its Items; its `links` property contains only
+pointers to their JSON files. Accordingly, `add_item()` immediately adds an
+`"item"` link containing fields such as `rel`, `href`, `type`, and `title`:
+
+```{r}
+get_item_links(collection)
+```
+
+That link is enough for a STAC client to find an Item after the files have been
+written, but it does not contain the Item's geometry, properties, or assets.
+`write_stac()` needs those details to create the Item file. For that reason,
+`add_item()` also retains the complete Item object in an internal
+`"stac_items"` attribute. Use `get_items()` rather than accessing the internal
+attribute directly:
+
+```{r}
+get_items(collection)
+```
+
+`add_child()` does the same thing for child Catalogs and Collections, retaining
+them in an internal `"stac_children"` attribute. Together these attached
+objects form the in-memory tree that lets one call write the complete hierarchy:
+
+```r
+write_stac(catalog, "output")
+```
+
+The internal attributes are never included in the JSON. Each output Catalog or
+Collection contains only STAC links, and every attached child or Item is written
+as its own JSON document.
+
+The links created by `add_item()` and `add_child()` describe the relationship
+immediately, before anything is written. When `write_stac()` creates the output
+tree, it regenerates structural links from the attached objects so their hrefs
+match the selected `catalog_type` and final directory layout:
+
+| `catalog_type` | Structural links in the written JSON |
+| --- | --- |
+| `"self-contained"` | Relative; no `self` links |
+| `"relative"` | Relative, plus an absolute `self` link on the root |
+| `"absolute"` | Absolute URLs based on `base_url` |
+
+Consequently, a custom Item or child href supplied while building the in-memory
+catalog is not preserved by recursive `write_stac()`: the writer chooses the
+final structural href from the object's ID, hierarchy, and catalog type. Use
+`write_catalog()` when writing only one Catalog document with its existing links.
 
 ## Write a static catalog to disk
 
