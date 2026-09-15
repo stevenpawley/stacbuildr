@@ -23,8 +23,6 @@ pystac <- import("pystac")
 dt <- import("datetime")
 ```
 
-# Comparison with PySTAC
-
 This vignette compares stacbuildr with the Python
 [PySTAC](https://pystac.readthedocs.io/) library by writing equivalent catalog
 structures to disk and comparing the resulting JSON.
