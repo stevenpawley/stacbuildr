@@ -5,7 +5,7 @@
 \title{Create a Point Cloud Statistics Object}
 \usage{
 pc_statistic(
-  name,
+  name = cli::cli_abort("'name' is required"),
   position = NULL,
   average = NULL,
   count = NULL,

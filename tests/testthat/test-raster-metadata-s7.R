@@ -11,6 +11,9 @@ test_that("raster statistics use S7 properties", {
   expect_identical(stats@minimum, 0)
   expect_identical(stats@valid_percent, 99)
   expect_error(stats@minimum <- "zero", "minimum")
+  expect_warning(stats@valid_percent <- 101, "between 0 and 100")
+  expect_identical(stats@valid_percent, 101)
+  stats@valid_percent <- 99
   expect_identical(
     as.list(stats),
     list(minimum = 0, maximum = 100, mean = 42, stddev = 5, valid_percent = 99)
@@ -28,7 +31,13 @@ test_that("raster histograms use validated S7 properties", {
   expect_true(S7::S7_inherits(histogram, raster_histogram))
   expect_identical(histogram@count, 3L)
   expect_identical(histogram@buckets, c(4L, 5L, 6L))
+  histogram@count <- 3
+  histogram@buckets <- c(7, 8, 9)
+  expect_identical(histogram@count, 3L)
+  expect_identical(histogram@buckets, c(7L, 8L, 9L))
   expect_error(histogram@count <- c(1L, 2L), "single integer")
+  expect_error(histogram@buckets <- c(1, 2.5, 3), "only integers")
+  histogram@buckets <- c(4, 5, 6)
   expect_error(histogram@min <- c(0, 1), "single number")
   expect_error(histogram@max <- -1, "smaller than")
   expect_error(histogram@buckets <- 1L, "must equal")

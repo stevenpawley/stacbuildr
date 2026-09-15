@@ -282,6 +282,7 @@ pc_schema <- S7::new_class(
   properties = list(
     name = S7::new_property(
       S7::class_character,
+      default = quote(cli::cli_abort("'name' is required")),
       validator = function(value) {
         if (length(value) != 1L || is.na(value) || !nzchar(value)) {
           "must be a non-empty string"
@@ -290,6 +291,19 @@ pc_schema <- S7::new_class(
     ),
     size = S7::new_property(
       S7::class_integer,
+      default = quote(cli::cli_abort("'size' is required")),
+      setter = function(self, value) {
+        if (
+          !is.numeric(value) ||
+            length(value) != 1L ||
+            is.na(value) ||
+            value != trunc(value)
+        ) {
+          cli::cli_abort("'size' must be a whole number of bytes")
+        }
+        self@size <- as.integer(value)
+        self
+      },
       validator = function(value) {
         if (length(value) != 1L || is.na(value) || value <= 0L) {
           "must be greater than 0"
@@ -298,6 +312,7 @@ pc_schema <- S7::new_class(
     ),
     type = S7::new_property(
       S7::class_character,
+      default = quote(cli::cli_abort("'type' is required")),
       validator = function(value) {
         if (
           length(value) != 1L ||
@@ -308,29 +323,7 @@ pc_schema <- S7::new_class(
         }
       }
     )
-  ),
-  constructor = function(name, size, type) {
-    if (missing(name) || missing(size) || missing(type)) {
-      cli::cli_abort("'name', 'size', and 'type' are all required")
-    }
-
-    # Validate before coercion so fractional values are not silently truncated.
-    if (
-      !is.numeric(size) ||
-        length(size) != 1L ||
-        is.na(size) ||
-        size != trunc(size)
-    ) {
-      cli::cli_abort("'size' must be a whole number of bytes greater than 0")
-    }
-
-    S7::new_object(
-      S7::S7_object(),
-      name = name,
-      size = as.integer(size),
-      type = type
-    )
-  }
+  )
 )
 
 S7::method(as.list, pc_schema) <- function(x, ...) {
@@ -401,6 +394,7 @@ pc_statistic <- S7::new_class(
   properties = list(
     name = S7::new_property(
       S7::class_character,
+      default = quote(cli::cli_abort("'name' is required")),
       validator = function(value) {
         if (length(value) != 1L || is.na(value) || !nzchar(value)) {
           "must be a non-empty string"
@@ -409,6 +403,23 @@ pc_statistic <- S7::new_class(
     ),
     position = S7::new_property(
       S7::new_union(NULL, S7::class_integer),
+      setter = function(self, value) {
+        if (!is.null(value)) {
+          if (
+            !is.numeric(value) ||
+              length(value) != 1L ||
+              is.na(value) ||
+              value != trunc(value)
+          ) {
+            cli::cli_abort(
+              "'position' must be a whole number greater than or equal to 0"
+            )
+          }
+          value <- as.integer(value)
+        }
+        self@position <- value
+        self
+      },
       validator = function(value) {
         if (!is.null(value) && (length(value) != 1L || is.na(value) || value < 0L)) {
           "must be a whole number greater than or equal to 0"
@@ -418,6 +429,13 @@ pc_statistic <- S7::new_class(
     average = pc_statistic_number_property(),
     count = S7::new_property(
       S7::new_union(NULL, S7::class_numeric),
+      setter = function(self, value) {
+        if (!is.null(value)) {
+          value <- coerce_pc_count(value)
+        }
+        self@count <- value
+        self
+      },
       validator = function(value) {
         if (
           !is.null(value) &&
@@ -437,49 +455,6 @@ pc_statistic <- S7::new_class(
     stddev = pc_statistic_number_property(),
     variance = pc_statistic_number_property()
   ),
-  constructor = function(
-    name,
-    position = NULL,
-    average = NULL,
-    count = NULL,
-    maximum = NULL,
-    minimum = NULL,
-    stddev = NULL,
-    variance = NULL
-  ) {
-    if (missing(name)) {
-      cli::cli_abort("'name' is required")
-    }
-
-    # Validate before coercion so fractional values are not silently truncated.
-    if (
-      !is.null(position) &&
-        (!is.numeric(position) ||
-          length(position) != 1 ||
-          is.na(position) ||
-          position != trunc(position))
-    ) {
-      cli::cli_abort(
-        "'position' must be a whole number greater than or equal to 0"
-      )
-    }
-
-    if (!is.null(count)) {
-      count <- coerce_pc_count(count)
-    }
-
-    S7::new_object(
-      S7::S7_object(),
-      name = name,
-      position = if (is.null(position)) NULL else as.integer(position),
-      average = average,
-      count = count,
-      maximum = maximum,
-      minimum = minimum,
-      stddev = stddev,
-      variance = variance
-    )
-  },
   validator = function(self) {
     values <- list(
       self@average,

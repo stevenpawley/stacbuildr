@@ -435,6 +435,18 @@ S7::method(print, raster_band) <- function(x, ..., expand = NULL) {
 
 # raster_statistics ----
 
+raster_statistic_property <- function() {
+  S7::new_property(
+    S7::new_union(NULL, S7::class_numeric),
+    validator = function(value) {
+      if (!is.null(value) && (length(value) != 1L || is.na(value))) {
+        "must be a single number"
+      }
+    }
+  )
+}
+
+
 #' Create Raster Statistics Object
 #'
 #' @description
@@ -466,34 +478,31 @@ S7::method(print, raster_band) <- function(x, ..., expand = NULL) {
 raster_statistics <- S7::new_class(
   "raster_statistics",
   properties = list(
-    minimum = S7::new_union(S7::class_numeric, NULL),
-    maximum = S7::new_union(S7::class_numeric, NULL),
-    mean = S7::new_union(S7::class_numeric, NULL),
-    stddev = S7::new_union(S7::class_numeric, NULL),
-    valid_percent = S7::new_union(S7::class_numeric, NULL)
-  ),
-  constructor = function(
-    minimum = NULL,
-    maximum = NULL,
-    mean = NULL,
-    stddev = NULL,
-    valid_percent = NULL
-  ) {
-    if (
-      !is.null(valid_percent) &&
-        (valid_percent < 0 || valid_percent > 100)
-    ) {
-      cli::cli_warn("'valid_percent' should be between 0 and 100")
-    }
-    S7::new_object(
-      S7::S7_object(),
-      minimum = minimum,
-      maximum = maximum,
-      mean = mean,
-      stddev = stddev,
-      valid_percent = valid_percent
+    minimum = raster_statistic_property(),
+    maximum = raster_statistic_property(),
+    mean = raster_statistic_property(),
+    stddev = raster_statistic_property(),
+    valid_percent = S7::new_property(
+      S7::new_union(NULL, S7::class_numeric),
+      setter = function(self, value) {
+        if (
+          is.numeric(value) &&
+            length(value) == 1L &&
+            !is.na(value) &&
+            (value < 0 || value > 100)
+        ) {
+          cli::cli_warn("'valid_percent' should be between 0 and 100")
+        }
+        self@valid_percent <- value
+        self
+      },
+      validator = function(value) {
+        if (!is.null(value) && (length(value) != 1L || is.na(value))) {
+          "must be a single number"
+        }
+      }
     )
-  }
+  )
 )
 
 raster_statistics_fields <- function(x) {
@@ -588,14 +597,28 @@ raster_histogram <- S7::new_class(
   properties = list(
     count = S7::new_property(
       S7::class_integer,
+      default = quote(cli::cli_abort("'count' is required")),
+      setter = function(self, value) {
+        if (
+          !is.numeric(value) ||
+            length(value) != 1L ||
+            is.na(value) ||
+            value != trunc(value)
+        ) {
+          cli::cli_abort("'count' must be a single integer")
+        }
+        self@count <- as.integer(value)
+        self
+      },
       validator = function(value) {
-        if (length(value) != 1L || is.na(value)) {
-          "must be a single integer"
+        if (length(value) != 1L || is.na(value) || value < 0L) {
+          "must be a single non-negative integer"
         }
       }
     ),
     min = S7::new_property(
       S7::class_numeric,
+      default = quote(cli::cli_abort("'min' is required")),
       validator = function(value) {
         if (length(value) != 1L || is.na(value)) {
           "must be a single number"
@@ -604,26 +627,29 @@ raster_histogram <- S7::new_class(
     ),
     max = S7::new_property(
       S7::class_numeric,
+      default = quote(cli::cli_abort("'max' is required")),
       validator = function(value) {
         if (length(value) != 1L || is.na(value)) {
           "must be a single number"
         }
       }
     ),
-    buckets = S7::class_integer
-  ),
-  constructor = function(count, min, max, buckets) {
-    if (missing(count) || missing(min) || missing(max) || missing(buckets)) {
-      cli::cli_abort("'count', 'min', 'max', and 'buckets' are all required")
-    }
-    S7::new_object(
-      S7::S7_object(),
-      count = as.integer(count),
-      min = min,
-      max = max,
-      buckets = as.integer(buckets)
+    buckets = S7::new_property(
+      S7::class_integer,
+      default = quote(cli::cli_abort("'buckets' is required")),
+      setter = function(self, value) {
+        if (
+          !is.numeric(value) ||
+            anyNA(value) ||
+            !all(value == trunc(value))
+        ) {
+          cli::cli_abort("'buckets' must contain only integers")
+        }
+        self@buckets <- as.integer(value)
+        self
+      }
     )
-  },
+  ),
   validator = function(self) {
     if (
       length(self@count) != 1L ||

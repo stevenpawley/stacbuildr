@@ -265,6 +265,19 @@ classification_class <- S7::new_class(
   properties = list(
     value = S7::new_property(
       S7::class_integer,
+      default = quote(cli::cli_abort("'value' is required")),
+      setter = function(self, value) {
+        if (
+          !is.numeric(value) ||
+            length(value) != 1L ||
+            is.na(value) ||
+            value != trunc(value)
+        ) {
+          cli::cli_abort("'value' must be a single integer")
+        }
+        self@value <- as.integer(value)
+        self
+      },
       validator = function(value) {
         if (length(value) != 1L || is.na(value)) {
           "must be a single integer"
@@ -286,8 +299,8 @@ classification_class <- S7::new_class(
         }
       }
     ),
-    title = S7::new_union(S7::class_character, NULL),
-    description = S7::new_union(S7::class_character, NULL),
+    title = S7::new_union(NULL, S7::class_character),
+    description = S7::new_union(NULL, S7::class_character),
     color_hint = S7::new_property(
       S7::new_union(NULL, S7::class_character),
       validator = function(value) {
@@ -332,39 +345,28 @@ classification_class <- S7::new_class(
     ),
     count = S7::new_property(
       S7::new_union(NULL, S7::class_integer),
+      setter = function(self, value) {
+        if (!is.null(value)) {
+          if (
+            !is.numeric(value) ||
+              length(value) != 1L ||
+              is.na(value) ||
+              value != trunc(value)
+          ) {
+            cli::cli_abort("'count' must be a single integer")
+          }
+          value <- as.integer(value)
+        }
+        self@count <- value
+        self
+      },
       validator = function(value) {
         if (!is.null(value) && (length(value) != 1L || is.na(value))) {
           "must be a single integer"
         }
       }
     )
-  ),
-  constructor = function(
-    value,
-    name = NULL,
-    title = NULL,
-    description = NULL,
-    color_hint = NULL,
-    nodata = NULL,
-    percentage = NULL,
-    count = NULL
-  ) {
-    if (missing(value)) {
-      cli::cli_abort("'value' is required")
-    }
-
-    S7::new_object(
-      S7::S7_object(),
-      value = as.integer(value),
-      name = name,
-      title = title,
-      description = description,
-      color_hint = color_hint,
-      nodata = nodata,
-      percentage = percentage,
-      count = if (is.null(count)) NULL else as.integer(count)
-    )
-  }
+  )
 )
 
 S7::method(as.list, classification_class) <- function(x, ...) {
@@ -457,6 +459,19 @@ classification_bitfield <- S7::new_class(
   properties = list(
     offset = S7::new_property(
       S7::class_integer,
+      default = quote(cli::cli_abort("'offset' is required")),
+      setter = function(self, value) {
+        if (
+          !is.numeric(value) ||
+            length(value) != 1L ||
+            is.na(value) ||
+            value != trunc(value)
+        ) {
+          cli::cli_abort("'offset' must be a non-negative integer")
+        }
+        self@offset <- as.integer(value)
+        self
+      },
       validator = function(value) {
         if (length(value) != 1L || is.na(value) || value < 0L) {
           "must be a non-negative integer"
@@ -465,6 +480,19 @@ classification_bitfield <- S7::new_class(
     ),
     length = S7::new_property(
       S7::class_integer,
+      default = quote(cli::cli_abort("'length' is required")),
+      setter = function(self, value) {
+        if (
+          !is.numeric(value) ||
+            length(value) != 1L ||
+            is.na(value) ||
+            value != trunc(value)
+        ) {
+          cli::cli_abort("'length' must be a positive integer")
+        }
+        self@length <- as.integer(value)
+        self
+      },
       validator = function(value) {
         if (length(value) != 1L || is.na(value) || value < 1L) {
           "must be a positive integer"
@@ -473,6 +501,7 @@ classification_bitfield <- S7::new_class(
     ),
     classes = S7::new_property(
       S7::class_list,
+      default = quote(cli::cli_abort("'classes' is required")),
       validator = function(value) {
         if (length(value) == 0L) {
           "must be a non-empty list of classification_class objects"
@@ -503,31 +532,9 @@ classification_bitfield <- S7::new_class(
         }
       }
     ),
-    description = S7::new_union(S7::class_character, NULL),
-    roles = S7::new_union(S7::class_character, NULL)
-  ),
-  constructor = function(
-    offset,
-    length,
-    classes,
-    name = NULL,
-    description = NULL,
-    roles = NULL
-  ) {
-    if (missing(offset) || missing(length) || missing(classes)) {
-      cli::cli_abort("'offset', 'length', and 'classes' are all required")
-    }
-
-    S7::new_object(
-      S7::S7_object(),
-      offset = as.integer(offset),
-      length = as.integer(length),
-      classes = classes,
-      name = name,
-      description = description,
-      roles = roles
-    )
-  }
+    description = S7::new_union(NULL, S7::class_character),
+    roles = S7::new_union(NULL, S7::class_character)
+  )
 )
 
 S7::method(as.list, classification_bitfield) <- function(x, ...) {
