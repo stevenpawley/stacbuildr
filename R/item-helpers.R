@@ -285,7 +285,7 @@ add_item <- function(
 #'
 #' @return The first link object with the matching rel type, or NULL if not found.
 #'
-#' @keywords internal
+#' @noRd
 find_link <- function(stac_object, rel) {
   links <- if (S7::S7_inherits(stac_object)) stac_object@links else stac_object$links
   if (!is.list(links) || length(links) == 0) {

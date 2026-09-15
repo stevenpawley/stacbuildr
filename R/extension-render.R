@@ -68,69 +68,6 @@
 #' )
 #'
 #' @export
-render_object <- function(
-  assets,
-  title = NULL,
-  rescale = NULL,
-  nodata = NULL,
-  colormap_name = NULL,
-  colormap = NULL,
-  color_formula = NULL,
-  resampling = NULL,
-  expression = NULL,
-  minmax_zoom = NULL,
-  bidx = NULL,
-  ...
-) {
-  if (missing(assets) || !is.character(assets) || length(assets) == 0) {
-    cli::cli_abort("'assets' must be a non-empty character vector")
-  }
-
-  if (!is.null(title) && (!is.character(title) || length(title) != 1)) {
-    cli::cli_abort("'title' must be a single character string")
-  }
-
-  if (!is.null(rescale)) {
-    if (!is.list(rescale) || length(rescale) == 0) {
-      cli::cli_abort("'rescale' must be a non-empty list of numeric vectors")
-    }
-    valid_rescale <- vapply(rescale, function(x) {
-      is.numeric(x) && length(x) == 2
-    }, logical(1))
-    if (!all(valid_rescale)) {
-      cli::cli_abort(
-        "Each element of 'rescale' must be a numeric vector of length 2"
-      )
-    }
-  }
-
-  if (!is.null(minmax_zoom) && !(is.numeric(minmax_zoom) && length(minmax_zoom) == 2)) {
-    cli::cli_abort("'minmax_zoom' must be a numeric vector of length 2")
-  }
-
-  render <- list(assets = as_json_array(assets))
-
-  if (!is.null(title)) render$title <- title
-  if (!is.null(rescale)) render$rescale <- rescale
-  if (!is.null(nodata)) render$nodata <- nodata
-  if (!is.null(colormap_name)) render$colormap_name <- colormap_name
-  if (!is.null(colormap)) render$colormap <- colormap
-  if (!is.null(color_formula)) render$color_formula <- color_formula
-  if (!is.null(resampling)) render$resampling <- resampling
-  if (!is.null(expression)) render$expression <- expression
-  if (!is.null(minmax_zoom)) render$minmax_zoom <- minmax_zoom
-  if (!is.null(bidx)) render$bidx <- as_json_array(bidx)
-
-  extra_fields <- list(...)
-  if (length(extra_fields) > 0) {
-    render <- c(render, extra_fields)
-  }
-
-  render
-}
-
-.render_object_fields <- render_object
-
 render_object <- S7::new_class(
   "render_object",
   properties = list(
@@ -152,21 +89,47 @@ render_object <- S7::new_class(
                          color_formula = NULL, resampling = NULL,
                          expression = NULL, minmax_zoom = NULL, bidx = NULL,
                          ...) {
-    fields <- .render_object_fields(
-      assets, title, rescale, nodata, colormap_name, colormap, color_formula,
-      resampling, expression, minmax_zoom, bidx, ...
-    )
-    standard <- c("assets", "title", "rescale", "nodata", "colormap_name",
-                  "colormap", "color_formula", "resampling", "expression",
-                  "minmax_zoom", "bidx")
+    if (missing(assets) || !is.character(assets) || length(assets) == 0) {
+      cli::cli_abort("'assets' must be a non-empty character vector")
+    }
+
+    if (!is.null(title) && (!is.character(title) || length(title) != 1)) {
+      cli::cli_abort("'title' must be a single character string")
+    }
+
+    if (!is.null(rescale)) {
+      if (!is.list(rescale) || length(rescale) == 0) {
+        cli::cli_abort("'rescale' must be a non-empty list of numeric vectors")
+      }
+      valid_rescale <- vapply(rescale, function(x) {
+        is.numeric(x) && length(x) == 2
+      }, logical(1))
+      if (!all(valid_rescale)) {
+        cli::cli_abort(
+          "Each element of 'rescale' must be a numeric vector of length 2"
+        )
+      }
+    }
+
+    if (!is.null(minmax_zoom) &&
+        !(is.numeric(minmax_zoom) && length(minmax_zoom) == 2)) {
+      cli::cli_abort("'minmax_zoom' must be a numeric vector of length 2")
+    }
+
     S7::new_object(
-      S7::S7_object(), assets = unlist(fields$assets, use.names = FALSE),
-      title = fields$title, rescale = fields$rescale, nodata = fields$nodata,
-      colormap_name = fields$colormap_name, colormap = fields$colormap,
-      color_formula = fields$color_formula, resampling = fields$resampling,
-      expression = fields$expression, minmax_zoom = fields$minmax_zoom,
-      bidx = if (is.null(fields$bidx)) NULL else unlist(fields$bidx, use.names = FALSE),
-      extra_fields = fields[setdiff(names(fields), standard)]
+      S7::S7_object(),
+      assets = assets,
+      title = title,
+      rescale = rescale,
+      nodata = nodata,
+      colormap_name = colormap_name,
+      colormap = colormap,
+      color_formula = color_formula,
+      resampling = resampling,
+      expression = expression,
+      minmax_zoom = minmax_zoom,
+      bidx = if (is.null(bidx)) NULL else unlist(bidx, use.names = FALSE),
+      extra_fields = list(...)
     )
   }
 )
@@ -309,7 +272,6 @@ add_render_extension <- function(item, renders) {
 }
 
 
-#' @keywords internal
 #' @noRd
 validate_render_named_list <- function(x) {
   if (!is.list(x) || length(x) == 0) {

@@ -354,7 +354,7 @@ S7::method(as.list, raster_band) <- function(x, ...) {
   return(y)
 }
 
-#' @keywords internal
+#' @noRd
 S7::method(print, raster_band) <- function(x, ..., expand = NULL) {
   stac_print_header("Raster Band")
   width <- stac_print_list_fields(

@@ -321,83 +321,6 @@ add_eo_extension <- function(
 #' )
 #'
 #' @export
-eo_band <- function(
-  name = NULL,
-  common_name = NULL,
-  description = NULL,
-  center_wavelength = NULL,
-  full_width_half_max = NULL,
-  solar_illumination = NULL,
-  ...
-) {
-  band <- list()
-
-  # Common metadata fields (no prefix)
-  if (!is.null(name)) {
-    band$name <- name
-  }
-  if (!is.null(description)) {
-    band$description <- description
-  }
-
-  # Validate common_name
-  if (!is.null(common_name)) {
-    valid_common_names <- c(
-      "coastal",
-      "blue",
-      "green",
-      "red",
-      "rededge",
-      "rededge071",
-      "rededge075",
-      "rededge078",
-      "nir",
-      "nir08",
-      "nir09",
-      "cirrus",
-      "swir16",
-      "swir22",
-      "lwir",
-      "lwir11",
-      "lwir12",
-      "pan"
-    )
-
-    if (!common_name %in% valid_common_names) {
-      cli::cli_warn(c(
-        "'{common_name}' is not a standard common_name.",
-        "i" = "Standard names: {paste(valid_common_names, collapse = ', ')}"
-      ))
-    }
-
-    band$`eo:common_name` <- common_name
-  }
-
-  # EO-specific fields carry the `eo:` prefix in v2.0.0 of the extension
-  if (!is.null(center_wavelength)) {
-    band$`eo:center_wavelength` <- center_wavelength
-  }
-
-  if (!is.null(full_width_half_max)) {
-    band$`eo:full_width_half_max` <- full_width_half_max
-  }
-
-  if (!is.null(solar_illumination)) {
-    band$`eo:solar_illumination` <- solar_illumination
-  }
-
-  # Add any extra fields (e.g., from raster extension). c() drops attributes,
-  # so the class has to be set after the merge.
-  extra_fields <- list(...)
-  if (length(extra_fields) > 0) {
-    band <- c(band, extra_fields)
-  }
-
-  band
-}
-
-.eo_band_fields <- eo_band
-
 eo_band <- S7::new_class(
   "eo_band",
   properties = list(
@@ -413,23 +336,43 @@ eo_band <- S7::new_class(
                          center_wavelength = NULL,
                          full_width_half_max = NULL,
                          solar_illumination = NULL, ...) {
-    fields <- .eo_band_fields(
-      name, common_name, description, center_wavelength,
-      full_width_half_max, solar_illumination, ...
-    )
-    standard <- c(
-      "name", "description", "eo:common_name", "eo:center_wavelength",
+    extra_fields <- list(...)
+    common_name <- common_name %||% extra_fields$`eo:common_name`
+    center_wavelength <- center_wavelength %||%
+      extra_fields$`eo:center_wavelength`
+    full_width_half_max <- full_width_half_max %||%
+      extra_fields$`eo:full_width_half_max`
+    solar_illumination <- solar_illumination %||%
+      extra_fields$`eo:solar_illumination`
+    extra_fields[c(
+      "eo:common_name", "eo:center_wavelength",
       "eo:full_width_half_max", "eo:solar_illumination"
-    )
+    )] <- NULL
+
+    if (!is.null(common_name)) {
+      valid_common_names <- c(
+        "coastal", "blue", "green", "red", "rededge", "rededge071",
+        "rededge075", "rededge078", "nir", "nir08", "nir09", "cirrus",
+        "swir16", "swir22", "lwir", "lwir11", "lwir12", "pan"
+      )
+
+      if (!common_name %in% valid_common_names) {
+        cli::cli_warn(c(
+          "'{common_name}' is not a standard common_name.",
+          "i" = "Standard names: {paste(valid_common_names, collapse = ', ')}"
+        ))
+      }
+    }
+
     S7::new_object(
       S7::S7_object(),
-      name = fields$name %||% character(0),
-      common_name = fields$`eo:common_name` %||% character(0),
-      description = fields$description %||% character(0),
-      center_wavelength = fields$`eo:center_wavelength` %||% numeric(0),
-      full_width_half_max = fields$`eo:full_width_half_max` %||% numeric(0),
-      solar_illumination = fields$`eo:solar_illumination` %||% numeric(0),
-      extra_fields = fields[setdiff(names(fields), standard)]
+      name = name %||% character(0),
+      common_name = common_name %||% character(0),
+      description = description %||% character(0),
+      center_wavelength = center_wavelength %||% numeric(0),
+      full_width_half_max = full_width_half_max %||% numeric(0),
+      solar_illumination = solar_illumination %||% numeric(0),
+      extra_fields = extra_fields
     )
   }
 )

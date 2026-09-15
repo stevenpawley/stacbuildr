@@ -381,7 +381,7 @@ check_path_segment <- function(id, what) {
 #' Internal function to recursively write a catalog and all its children and items.
 #' Retrieves stored child and item objects and writes them to the appropriate locations.
 #'
-#' @keywords internal
+#' @noRd
 write_catalog_recursive <- function(
   catalog,
   path,
@@ -527,7 +527,7 @@ write_catalog_recursive <- function(
 #' @description
 #' Internal function to update links in a catalog to match the filesystem structure.
 #'
-#' @keywords internal
+#' @noRd
 update_catalog_links <- function(
   catalog,
   catalog_type,
@@ -632,7 +632,7 @@ update_catalog_links <- function(
 #' @description
 #' Internal function to update links in an item.
 #'
-#' @keywords internal
+#' @noRd
 update_item_links <- function(item, self_href, parent_href, root_href,
                               parent_is_collection = FALSE) {
   # Update self link. `self_href` is NULL for self-contained and relative
@@ -732,7 +732,7 @@ reconcile_item_collection <- function(item) {
 #' @return A relative path string, or `target` unchanged if it is a URL or
 #'   already relative.
 #'
-#' @keywords internal
+#' @noRd
 make_relative_href <- function(target, from_dir) {
   if (is.null(target) || grepl("://", target, fixed = TRUE) || !startsWith(target, "/")) {
     return(target)
@@ -766,7 +766,7 @@ make_relative_href <- function(target, from_dir) {
 #' @param rel Relative path, for example `"../data/dem.tif"`.
 #' @return An absolute URL string.
 #'
-#' @keywords internal
+#' @noRd
 url_join <- function(base, rel) {
   matched <- regmatches(
     base,
@@ -808,7 +808,7 @@ url_join <- function(base, rel) {
 #' `item_base_url`; absolute local filesystem paths cannot be mapped to a URL
 #' and are left unchanged with a warning.
 #'
-#' @keywords internal
+#' @noRd
 absolutize_asset_hrefs <- function(item, item_base_url) {
   if (is.null(item@assets) || length(item@assets) == 0) return(item)
 
@@ -844,7 +844,7 @@ absolutize_asset_hrefs <- function(item, item_base_url) {
 
 #' Relativize absolute local asset hrefs against an item directory
 #'
-#' @keywords internal
+#' @noRd
 relativize_asset_hrefs <- function(item, item_dir) {
   if (is.null(item@assets) || length(item@assets) == 0) return(item)
   item@assets <- lapply(item@assets, function(a) {
@@ -858,7 +858,7 @@ relativize_asset_hrefs <- function(item, item_dir) {
 #' Internal function to remove stored child/item objects before writing to JSON.
 #' This ensures only the standard STAC fields are written to the file.
 #'
-#' @keywords internal
+#' @noRd
 strip_stored_objects <- function(stac_obj) {
   # Remove stac_children and stac_items attributes
   attr(stac_obj, "stac_children") <- NULL
@@ -912,7 +912,7 @@ read_stac <- function(file) {
 
 #' Reconstruct a stac_item S7 Object from a Parsed JSON List
 #'
-#' @keywords internal
+#' @noRd
 parse_stac_item <- function(parsed) {
   props <- parsed$properties %||% list()
 
@@ -944,7 +944,7 @@ parse_stac_item <- function(parsed) {
 
 #' Reconstruct a stac_catalog S7 Object from a Parsed JSON List
 #'
-#' @keywords internal
+#' @noRd
 parse_stac_catalog <- function(parsed) {
   known <- c("type", "stac_version", "id", "description", "title",
              "stac_extensions", "conformsTo", "links")
@@ -971,7 +971,7 @@ parse_stac_catalog <- function(parsed) {
 
 #' Reconstruct a stac_collection S7 Object from a Parsed JSON List
 #'
-#' @keywords internal
+#' @noRd
 parse_stac_collection <- function(parsed) {
   known <- c("type", "stac_version", "id", "description", "title",
              "stac_extensions", "conformsTo", "links",

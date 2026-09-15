@@ -335,7 +335,7 @@ S7::method(print, stac_catalog) <- function(x, ..., expand = NULL) {
 #' STAC Link Object specification:
 #' \url{https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md#link-object}
 #'
-#' @keywords internal
+#' @noRd
 stac_link <- function(rel,
                       href,
                       type = NULL,
@@ -606,7 +606,7 @@ add_root_link <- function(catalog, href) {
 #' * [add_root_link()] for adding a root link
 #' * [add_link()] for adding arbitrary links
 #'
-#' @keywords internal
+#' @noRd
 add_parent_link <- function(catalog, href) {
   catalog <- add_link(catalog,
                       rel = "parent",
