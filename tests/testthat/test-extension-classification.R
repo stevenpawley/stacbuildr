@@ -36,6 +36,14 @@ test_that("classification_class coerces value and count to integer", {
 
   expect_identical(cls@value, 2L)
   expect_identical(cls@count, 500L)
+
+  cls@value <- 3
+  cls@count <- 600
+  expect_identical(cls@value, 3L)
+  expect_identical(cls@count, 600L)
+
+  expect_error(cls@value <- 1.5, "single integer")
+  expect_error(cls@count <- 1.5, "single integer")
 })
 
 test_that("classification_class errors when value is missing", {
@@ -158,6 +166,14 @@ test_that("classification_bitfield coerces offset and length to integer", {
 
   expect_identical(bf@offset, 2L)
   expect_identical(bf@length, 1L)
+
+  bf@offset <- 3
+  bf@length <- 2
+  expect_identical(bf@offset, 3L)
+  expect_identical(bf@length, 2L)
+
+  expect_error(bf@offset <- 1.5, "non-negative integer")
+  expect_error(bf@length <- 1.5, "positive integer")
 })
 
 test_that("classification_bitfield errors when required args are missing", {

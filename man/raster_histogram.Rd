@@ -4,7 +4,12 @@
 \alias{raster_histogram}
 \title{Create Raster Histogram Object}
 \usage{
-raster_histogram(count, min, max, buckets)
+raster_histogram(
+  count = cli::cli_abort("'count' is required"),
+  min = cli::cli_abort("'min' is required"),
+  max = cli::cli_abort("'max' is required"),
+  buckets = cli::cli_abort("'buckets' is required")
+)
 }
 \arguments{
 \item{count}{(integer, required) Number of buckets in the histogram.}

@@ -4,7 +4,11 @@
 \alias{pc_schema}
 \title{Create a Point Cloud Schema Object}
 \usage{
-pc_schema(name, size, type)
+pc_schema(
+  name = cli::cli_abort("'name' is required"),
+  size = cli::cli_abort("'size' is required"),
+  type = cli::cli_abort("'type' is required")
+)
 }
 \arguments{
 \item{name}{(character) \strong{Required.} The name of the dimension, e.g.
