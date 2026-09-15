@@ -163,23 +163,34 @@ stac_catalog <- S7::new_class(
   properties = list(
     id = property_id,
     description = property_description,
-    title = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
+    title = S7::new_property(
+      S7::new_union(S7::class_character, NULL),
+      default = NULL
+    ),
     stac_version = S7::new_property(S7::class_character, default = "1.1.0"),
     type = S7::new_property(S7::class_character, default = "Catalog"),
-    stac_extensions = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
-    conformsTo = S7::new_property(S7::new_union(S7::class_character, NULL), default = NULL),
+    stac_extensions = S7::new_property(
+      S7::new_union(S7::class_character, NULL),
+      default = NULL
+    ),
+    conformsTo = S7::new_property(
+      S7::new_union(S7::class_character, NULL),
+      default = NULL
+    ),
     links = S7::new_property(S7::class_list, default = list()),
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
-  constructor = function(id,
-                         description,
-                         title = NULL,
-                         stac_version = "1.1.0",
-                         type = "Catalog",
-                         stac_extensions = NULL,
-                         conformsTo = NULL,
-                         links = list(),
-                         ...) {
+  constructor = function(
+    id,
+    description,
+    title = NULL,
+    stac_version = "1.1.0",
+    type = "Catalog",
+    stac_extensions = NULL,
+    conformsTo = NULL,
+    links = list(),
+    ...
+  ) {
     S7::new_object(
       S7::S7_object(),
       type = type,
@@ -219,8 +230,10 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
   if (!is.null(x@title)) {
     out$title <- x@title
   }
-  if (!is.null(x@stac_extensions) &&
-      length(x@stac_extensions) > 0) {
+  if (
+    !is.null(x@stac_extensions) &&
+      length(x@stac_extensions) > 0
+  ) {
     out$stac_extensions <- as.list(x@stac_extensions)
   }
   if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
@@ -270,7 +283,11 @@ S7::method(print, stac_catalog) <- function(x, ..., expand = NULL) {
     stac_print_section(
       "links",
       length(x@links),
-      summary = stac_preview(vapply(x@links, function(l) l$rel %||% "", character(1))),
+      summary = stac_preview(vapply(
+        x@links,
+        function(l) l$rel %||% "",
+        character(1)
+      )),
       lines = function() stac_link_lines(x@links),
       expanded = stac_expanded(expand, "links")
     ),
@@ -336,14 +353,16 @@ S7::method(print, stac_catalog) <- function(x, ..., expand = NULL) {
 #' \url{https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md#link-object}
 #'
 #' @noRd
-stac_link <- function(rel,
-                      href,
-                      type = NULL,
-                      title = NULL,
-                      method = NULL,
-                      headers = NULL,
-                      body = NULL,
-                      merge = FALSE) {
+stac_link <- function(
+  rel,
+  href,
+  type = NULL,
+  title = NULL,
+  method = NULL,
+  headers = NULL,
+  body = NULL,
+  merge = FALSE
+) {
   link <- list(rel = rel, href = href)
 
   if (!is.null(type)) {
@@ -463,10 +482,7 @@ add_link <- function(catalog, rel, href, ...) {
 #' parent <- add_child(parent, child)
 #'
 #' @export
-add_child <- function(catalog,
-                      child,
-                      href = NULL,
-                      title = NULL) {
+add_child <- function(catalog, child, href = NULL, title = NULL) {
   if (!S7::S7_inherits(child, stac_catalog)) {
     cli::cli_abort("'child' must be a stac_catalog or stac_collection object")
   }
@@ -531,10 +547,12 @@ add_child <- function(catalog,
 #'
 #' @export
 add_self_link <- function(catalog, href) {
-  catalog <- add_link(catalog,
-                      rel = "self",
-                      href = href,
-                      type = "application/json")
+  catalog <- add_link(
+    catalog,
+    rel = "self",
+    href = href,
+    type = "application/json"
+  )
   catalog
 }
 
@@ -566,10 +584,12 @@ add_self_link <- function(catalog, href) {
 #'
 #' @export
 add_root_link <- function(catalog, href) {
-  catalog <- add_link(catalog,
-                      rel = "root",
-                      href = href,
-                      type = "application/json")
+  catalog <- add_link(
+    catalog,
+    rel = "root",
+    href = href,
+    type = "application/json"
+  )
   catalog
 }
 
@@ -594,9 +614,11 @@ add_root_link <- function(catalog, href) {
 #'
 #' @noRd
 add_parent_link <- function(catalog, href) {
-  catalog <- add_link(catalog,
-                      rel = "parent",
-                      href = href,
-                      type = "application/json")
+  catalog <- add_link(
+    catalog,
+    rel = "parent",
+    href = href,
+    type = "application/json"
+  )
   catalog
 }

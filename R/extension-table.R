@@ -186,11 +186,15 @@ add_table_extension <- function(
   # the item-level placement the Table Extension README describes.
   fields <- list()
 
-  if (!is.null(columns)) fields$`table:columns` <- columns
+  if (!is.null(columns)) {
+    fields$`table:columns` <- columns
+  }
   if (!is.null(primary_geometry)) {
     fields$`table:primary_geometry` <- primary_geometry
   }
-  if (!is.null(row_count)) fields$`table:row_count` <- row_count
+  if (!is.null(row_count)) {
+    fields$`table:row_count` <- row_count
+  }
 
   if (is.null(asset_key)) {
     for (field_name in names(fields)) {
@@ -198,13 +202,17 @@ add_table_extension <- function(
     }
   } else {
     for (field_name in names(fields)) {
-      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[field_name]]
+      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[
+        field_name
+      ]]
     }
   }
 
   # table:storage_options is always an asset-level field
   if (!is.null(storage_options)) {
-    item@assets[[asset_key]]@extra_fields$`table:storage_options` <- storage_options
+    item@assets[[
+      asset_key
+    ]]@extra_fields$`table:storage_options` <- storage_options
   }
 
   item
@@ -264,8 +272,14 @@ table_column <- S7::new_class(
 )
 
 S7::method(as.list, table_column) <- function(x, ...) {
-  c(compact_nulls(list(name = x@name, description = x@description,
-                       type = x@type)), x@extra_fields)
+  c(
+    compact_nulls(list(
+      name = x@name,
+      description = x@description,
+      type = x@type
+    )),
+    x@extra_fields
+  )
 }
 
 
@@ -278,8 +292,14 @@ S7::method(as.list, table_column) <- function(x, ...) {
 S7::method(print, table_column) <- function(x, ...) {
   stac_print_header("Table Column")
   stac_print_list_fields(
-    c(compact_nulls(list(name = x@name, description = x@description,
-                         type = x@type)), x@extra_fields),
+    c(
+      compact_nulls(list(
+        name = x@name,
+        description = x@description,
+        type = x@type
+      )),
+      x@extra_fields
+    ),
     styles = list(name = stac_style_id, type = stac_style_key)
   )
   invisible(x)

@@ -5,7 +5,12 @@ pc_test_item <- function() {
     bbox = c(0, 0, 0, 0),
     datetime = "2023-01-01T00:00:00Z"
   )
-  add_asset(item, "data", href = "./points.laz", type = "application/vnd.laszip")
+  add_asset(
+    item,
+    "data",
+    href = "./points.laz",
+    type = "application/vnd.laszip"
+  )
 }
 
 test_that("the extension writes its fields and schema URI", {
@@ -26,14 +31,29 @@ test_that("the extension writes its fields and schema URI", {
 })
 
 test_that("count and type are required", {
-  expect_error(add_pointcloud_extension(pc_test_item(), type = "lidar"), "'count' is required")
-  expect_error(add_pointcloud_extension(pc_test_item(), count = 10), "'type' is required")
+  expect_error(
+    add_pointcloud_extension(pc_test_item(), type = "lidar"),
+    "'count' is required"
+  )
+  expect_error(
+    add_pointcloud_extension(pc_test_item(), count = 10),
+    "'type' is required"
+  )
 })
 
 test_that("count must be a whole, non-negative number", {
-  expect_error(add_pointcloud_extension(pc_test_item(), count = 1.5, type = "lidar"), "whole number")
-  expect_error(add_pointcloud_extension(pc_test_item(), count = -1, type = "lidar"), "greater than or equal to 0")
-  expect_error(add_pointcloud_extension(pc_test_item(), count = "many", type = "lidar"), "single number")
+  expect_error(
+    add_pointcloud_extension(pc_test_item(), count = 1.5, type = "lidar"),
+    "whole number"
+  )
+  expect_error(
+    add_pointcloud_extension(pc_test_item(), count = -1, type = "lidar"),
+    "greater than or equal to 0"
+  )
+  expect_error(
+    add_pointcloud_extension(pc_test_item(), count = "many", type = "lidar"),
+    "single number"
+  )
 })
 
 test_that("counts beyond integer range survive as doubles", {
@@ -49,25 +69,43 @@ test_that("counts beyond integer range survive as doubles", {
 
 test_that("an unsuggested pc:type warns but is kept", {
   expect_warning(
-    item <- add_pointcloud_extension(pc_test_item(), count = 1, type = "photogrammetry"),
+    item <- add_pointcloud_extension(
+      pc_test_item(),
+      count = 1,
+      type = "photogrammetry"
+    ),
     "not one of the suggested values"
   )
   expect_equal(item@properties$`pc:type`, "photogrammetry")
 
-  expect_silent(add_pointcloud_extension(pc_test_item(), count = 1, type = "sonar"))
-  expect_error(add_pointcloud_extension(pc_test_item(), count = 1, type = ""), "empty string")
+  expect_silent(add_pointcloud_extension(
+    pc_test_item(),
+    count = 1,
+    type = "sonar"
+  ))
+  expect_error(
+    add_pointcloud_extension(pc_test_item(), count = 1, type = ""),
+    "empty string"
+  )
 })
 
 test_that("fields can go on an asset instead of properties", {
   item <- add_pointcloud_extension(
     pc_test_item(),
-    count = 10, type = "lidar", asset_key = "data"
+    count = 10,
+    type = "lidar",
+    asset_key = "data"
   )
 
   expect_equal(item@assets$data@extra_fields$`pc:count`, 10L)
   expect_null(item@properties$`pc:count`)
   expect_error(
-    add_pointcloud_extension(pc_test_item(), count = 1, type = "lidar", asset_key = "nope"),
+    add_pointcloud_extension(
+      pc_test_item(),
+      count = 1,
+      type = "lidar",
+      asset_key = "nope"
+    ),
     "does not exist"
   )
 })
@@ -77,7 +115,10 @@ test_that("pc_schema validates name, size and type", {
   expect_true(S7::S7_inherits(s, pc_schema))
   expect_equal(s@size, 8L)
 
-  expect_error(pc_schema("X", size = 8, type = "double"), "Invalid dimension type")
+  expect_error(
+    pc_schema("X", size = 8, type = "double"),
+    "Invalid dimension type"
+  )
   expect_error(pc_schema("X", size = 0, type = "floating"), "greater than 0")
   expect_error(pc_schema("X", size = 1.5, type = "floating"), "whole number")
   expect_error(pc_schema("", size = 1, type = "signed"), "empty string")
@@ -92,16 +133,29 @@ test_that("pc_statistic needs at least one statistic beside the name", {
   # fields follow the specification's order, not the argument order
   expect_equal(names(as.list(s)), c("name", "position", "maximum", "minimum"))
 
-  expect_error(pc_statistic("Z", position = -1, minimum = 1), "greater than or equal to 0")
+  expect_error(
+    pc_statistic("Z", position = -1, minimum = 1),
+    "greater than or equal to 0"
+  )
 })
 
 test_that("schemas and statistics must be lists of the right objects", {
   expect_error(
-    add_pointcloud_extension(pc_test_item(), count = 1, type = "lidar", schemas = list(list(size = 1))),
+    add_pointcloud_extension(
+      pc_test_item(),
+      count = 1,
+      type = "lidar",
+      schemas = list(list(size = 1))
+    ),
     "not a valid Schema object"
   )
   expect_error(
-    add_pointcloud_extension(pc_test_item(), count = 1, type = "lidar", statistics = list(list(minimum = 1))),
+    add_pointcloud_extension(
+      pc_test_item(),
+      count = 1,
+      type = "lidar",
+      statistics = list(list(minimum = 1))
+    ),
     "not a valid Stats object"
   )
 })

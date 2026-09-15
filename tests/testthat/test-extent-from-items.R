@@ -1,5 +1,11 @@
 # Helper to create a minimal stac_item for testing
-make_item <- function(id, bbox, datetime = NULL, start_datetime = NULL, end_datetime = NULL) {
+make_item <- function(
+  id,
+  bbox,
+  datetime = NULL,
+  start_datetime = NULL,
+  end_datetime = NULL
+) {
   stac_item(
     id = id,
     geometry = list(
@@ -59,9 +65,9 @@ test_that("extent_from_items returns single-point temporal extent for one item",
 
 test_that("extent_from_items unions bboxes across multiple items", {
   items <- list(
-    make_item("a", c(-10, -20,   0,   0), datetime = "2023-01-01T00:00:00Z"),
-    make_item("b", c(  0,   0,  10,  20), datetime = "2023-06-01T00:00:00Z"),
-    make_item("c", c(-5,  -5,   5,   5), datetime = "2023-03-01T00:00:00Z")
+    make_item("a", c(-10, -20, 0, 0), datetime = "2023-01-01T00:00:00Z"),
+    make_item("b", c(0, 0, 10, 20), datetime = "2023-06-01T00:00:00Z"),
+    make_item("c", c(-5, -5, 5, 5), datetime = "2023-03-01T00:00:00Z")
   )
 
   result <- extent_from_items(items)
@@ -69,8 +75,8 @@ test_that("extent_from_items unions bboxes across multiple items", {
 
   expect_equal(bbox[1], -10) # xmin
   expect_equal(bbox[2], -20) # ymin
-  expect_equal(bbox[3],  10) # xmax
-  expect_equal(bbox[4],  20) # ymax
+  expect_equal(bbox[3], 10) # xmax
+  expect_equal(bbox[4], 20) # ymax
 })
 
 test_that("extent_from_items sets temporal interval to min/max datetime", {
@@ -95,13 +101,13 @@ test_that("extent_from_items handles items using start_datetime and end_datetime
       "a",
       c(-10, -10, 10, 10),
       start_datetime = "2022-01-01T00:00:00Z",
-      end_datetime   = "2022-06-30T00:00:00Z"
+      end_datetime = "2022-06-30T00:00:00Z"
     ),
     make_item(
       "b",
       c(-10, -10, 10, 10),
       start_datetime = "2022-07-01T00:00:00Z",
-      end_datetime   = "2022-12-31T00:00:00Z"
+      end_datetime = "2022-12-31T00:00:00Z"
     )
   )
 
@@ -119,7 +125,7 @@ test_that("extent_from_items handles a mix of datetime and start/end_datetime it
       "b",
       c(-10, -10, 10, 10),
       start_datetime = "2023-01-01T00:00:00Z",
-      end_datetime   = "2023-12-31T00:00:00Z"
+      end_datetime = "2023-12-31T00:00:00Z"
     )
   )
 
@@ -136,7 +142,11 @@ test_that("extent_from_items returns an Extent S7 object", {
   item <- make_item("a", c(-10, -10, 10, 10), datetime = "2023-01-01T00:00:00Z")
   result <- extent_from_items(list(item))
 
-  expect_true(any(grepl("Extent",         class(result),           fixed = TRUE)))
-  expect_true(any(grepl("SpatialExtent",  class(result@spatial),   fixed = TRUE)))
-  expect_true(any(grepl("TemporalExtent", class(result@temporal),  fixed = TRUE)))
+  expect_true(any(grepl("Extent", class(result), fixed = TRUE)))
+  expect_true(any(grepl("SpatialExtent", class(result@spatial), fixed = TRUE)))
+  expect_true(any(grepl(
+    "TemporalExtent",
+    class(result@temporal),
+    fixed = TRUE
+  )))
 })

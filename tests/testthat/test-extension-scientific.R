@@ -2,7 +2,7 @@
 
 test_that("scientific_publication creates an object with both doi and citation", {
   pub <- scientific_publication(
-    doi      = "10.1000/abc456",
+    doi = "10.1000/abc456",
     citation = "Smith, J. (2022). My Paper. Journal of Examples."
   )
 
@@ -20,7 +20,9 @@ test_that("scientific_publication creates an object with only doi", {
 })
 
 test_that("scientific_publication creates an object with only citation", {
-  pub <- scientific_publication(citation = "Jones, A. (2020). Background Study.")
+  pub <- scientific_publication(
+    citation = "Jones, A. (2020). Background Study."
+  )
 
   expect_equal(pub@citation, "Jones, A. (2020). Background Study.")
   expect_null(pub@doi)
@@ -68,9 +70,9 @@ test_that("scientific_publication errors when citation is not a single string", 
 
 make_item <- function() {
   stac_item(
-    id       = "test-scientific",
+    id = "test-scientific",
     geometry = list(type = "Point", coordinates = c(-105, 40)),
-    bbox     = c(-105, 40, -105, 40),
+    bbox = c(-105, 40, -105, 40),
     datetime = "2023-06-15T00:00:00Z"
   )
 }
@@ -128,8 +130,8 @@ test_that("add_scientific_extension adds schema URI to stac_extensions", {
   item <- add_scientific_extension(make_item(), doi = "10.1000/xyz123")
 
   expect_true(
-    "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
-    %in% item@stac_extensions
+    "https://stac-extensions.github.io/scientific/v1.0.0/schema.json" %in%
+      item@stac_extensions
   )
 })
 
@@ -189,7 +191,11 @@ test_that("add_scientific_extension does not duplicate cite-as link on repeated 
     add_scientific_extension(doi = "10.1000/xyz123") |>
     add_scientific_extension(doi = "10.1000/xyz123")
 
-  cite_as_count <- sum(vapply(item@links, function(l) l$rel == "cite-as", logical(1)))
+  cite_as_count <- sum(vapply(
+    item@links,
+    function(l) l$rel == "cite-as",
+    logical(1)
+  ))
   expect_equal(cite_as_count, 1L)
 })
 
@@ -204,8 +210,8 @@ test_that("add_scientific_extension can set all three fields at once", {
   pubs <- list(scientific_publication(doi = "10.1000/ref"))
   item <- add_scientific_extension(
     make_item(),
-    doi          = "10.1000/xyz123",
-    citation     = "Smith (2023). Dataset.",
+    doi = "10.1000/xyz123",
+    citation = "Smith (2023). Dataset.",
     publications = pubs
   )
 

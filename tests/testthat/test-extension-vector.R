@@ -2,9 +2,9 @@
 
 make_item <- function() {
   stac_item(
-    id       = "test-vector",
+    id = "test-vector",
     geometry = list(type = "Point", coordinates = c(-105, 40)),
-    bbox     = c(-105, 40, -105, 40),
+    bbox = c(-105, 40, -105, 40),
     datetime = "2023-06-15T00:00:00Z"
   )
 }
@@ -83,8 +83,8 @@ test_that("add_vector_extension adds schema URI to stac_extensions", {
   item <- add_vector_extension(make_item(), mmu = 100)
 
   expect_true(
-    "https://stac-extensions.github.io/vector/v0.1.0/schema.json"
-    %in% item@stac_extensions
+    "https://stac-extensions.github.io/vector/v0.1.0/schema.json" %in%
+      item@stac_extensions
   )
 })
 
@@ -100,13 +100,16 @@ test_that("add_vector_extension does not duplicate schema URI", {
 test_that("add_vector_extension writes fields to item properties by default", {
   item <- add_vector_extension(
     make_item(),
-    geometry_types  = c("Polygon", "MultiPolygon"),
-    mmu             = 100,
-    mmw             = 5,
+    geometry_types = c("Polygon", "MultiPolygon"),
+    mmu = 100,
+    mmw = 5,
     reference_scale = 50000
   )
 
-  expect_equal(item@properties$`vector:geometry_types`, list("Polygon", "MultiPolygon"))
+  expect_equal(
+    item@properties$`vector:geometry_types`,
+    list("Polygon", "MultiPolygon")
+  )
   expect_equal(item@properties$`vector:mmu`, 100)
   expect_equal(item@properties$`vector:mmw`, 5)
   expect_equal(item@properties$`vector:reference_scale`, 50000)
@@ -120,7 +123,10 @@ test_that("add_vector_extension writes fields to the specified asset", {
     asset_key = "data"
   )
 
-  expect_equal(item@assets$data@extra_fields$`vector:geometry_types`, list("Point"))
+  expect_equal(
+    item@assets$data@extra_fields$`vector:geometry_types`,
+    list("Point")
+  )
   expect_equal(item@assets$data@extra_fields$`vector:mmu`, 10)
   expect_null(item@properties$`vector:geometry_types`)
   expect_null(item@properties$`vector:mmu`)

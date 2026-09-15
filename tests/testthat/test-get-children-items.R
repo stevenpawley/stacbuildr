@@ -5,36 +5,36 @@
 
 make_catalog_tree <- function() {
   asset <- stac_asset(
-    href  = "https://example.com/dem.tif",
-    type  = "image/tiff; application=geotiff",
+    href = "https://example.com/dem.tif",
+    type = "image/tiff; application=geotiff",
     title = "Digital Elevation Model",
     roles = c("data")
   )
 
   item <- stac_item(
-    id       = "dem-2023",
+    id = "dem-2023",
     geometry = list(type = "Point", coordinates = c(-114.0, 51.0)),
-    bbox     = c(-114.0, 51.0, -114.0, 51.0),
+    bbox = c(-114.0, 51.0, -114.0, 51.0),
     datetime = "2023-06-15T00:00:00Z"
   )
   item <- add_asset(item, key = "dem", asset)
 
   collection <- stac_collection(
-    id          = "elevation",
+    id = "elevation",
     description = "Elevation datasets",
-    license     = "OGL-Canada-2.0",
-    title       = "Elevation",
-    extent      = stac_extent(
-      spatial_bbox      = list(c(-114.0, 51.0, -114.0, 51.0)),
+    license = "OGL-Canada-2.0",
+    title = "Elevation",
+    extent = stac_extent(
+      spatial_bbox = list(c(-114.0, 51.0, -114.0, 51.0)),
       temporal_interval = list(list("2023-06-15T00:00:00Z", NULL))
     )
   )
   collection <- add_item(collection, item)
 
   catalog <- stac_catalog(
-    id          = "test-catalog",
+    id = "test-catalog",
     description = "A test catalog",
-    title       = "Test Catalog"
+    title = "Test Catalog"
   )
   catalog <- add_child(catalog, collection)
 
@@ -95,11 +95,11 @@ test_that("get_items item contains the expected asset in memory", {
 
 test_that("get_items returns NULL when no items added", {
   collection <- stac_collection(
-    id          = "empty",
+    id = "empty",
     description = "Empty collection",
-    license     = "CC0-1.0",
-    extent      = stac_extent(
-      spatial_bbox      = list(c(0, 0, 0, 0)),
+    license = "CC0-1.0",
+    extent = stac_extent(
+      spatial_bbox = list(c(0, 0, 0, 0)),
       temporal_interval = list(list("2023-01-01T00:00:00Z", NULL))
     )
   )
@@ -116,7 +116,7 @@ test_that("get_children with resolve = TRUE returns collections after round-trip
   write_stac(tree$catalog, dir)
 
   restored <- read_stac(file.path(dir, "catalog.json"))
-  children  <- get_children(restored, resolve = TRUE, base_path = dir)
+  children <- get_children(restored, resolve = TRUE, base_path = dir)
 
   expect_type(children, "list")
   expect_named(children, "elevation")

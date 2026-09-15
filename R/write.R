@@ -282,7 +282,11 @@ write_catalog_recursive <- function(
   depth = 0L,
   root_file = NULL
 ) {
-  catalog_file <- if (S7::S7_inherits(catalog, stac_collection)) "collection.json" else "catalog.json"
+  catalog_file <- if (S7::S7_inherits(catalog, stac_collection)) {
+    "collection.json"
+  } else {
+    "catalog.json"
+  }
 
   # For the root, establish root_href and the root filename once, then thread
   # both down through the children. Relative root hrefs are rebuilt at each
@@ -432,7 +436,9 @@ update_catalog_links <- function(
 
   # Build the self link. A self link must be absolute, so self-contained
   # catalogs get none at all and relative catalogs get one on the root only.
-  self_href <- if (catalog_type == "absolute" || (catalog_type == "relative" && is_root)) {
+  self_href <- if (
+    catalog_type == "absolute" || (catalog_type == "relative" && is_root)
+  ) {
     paste0(base_url, "/", catalog_file)
   } else {
     NULL
@@ -520,8 +526,13 @@ update_catalog_links <- function(
 #' Internal function to update links in an item.
 #'
 #' @noRd
-update_item_links <- function(item, self_href, parent_href, root_href,
-                              parent_is_collection = FALSE) {
+update_item_links <- function(
+  item,
+  self_href,
+  parent_href,
+  root_href,
+  parent_is_collection = FALSE
+) {
   # Update self link. `self_href` is NULL for self-contained and relative
   # catalogs, where items carry no self link because it would have to be
   # absolute.
@@ -621,15 +632,19 @@ reconcile_item_collection <- function(item) {
 #'
 #' @noRd
 make_relative_href <- function(target, from_dir) {
-  if (is.null(target) || grepl("://", target, fixed = TRUE) || !startsWith(target, "/")) {
+  if (
+    is.null(target) ||
+      grepl("://", target, fixed = TRUE) ||
+      !startsWith(target, "/")
+  ) {
     return(target)
   }
 
-  target   <- normalizePath(target,   mustWork = FALSE)
+  target <- normalizePath(target, mustWork = FALSE)
   from_dir <- normalizePath(from_dir, mustWork = FALSE)
 
-  target_parts <- Filter(nchar, strsplit(target,   "/")[[1]])
-  from_parts   <- Filter(nchar, strsplit(from_dir, "/")[[1]])
+  target_parts <- Filter(nchar, strsplit(target, "/")[[1]])
+  from_parts <- Filter(nchar, strsplit(from_dir, "/")[[1]])
 
   n <- min(length(target_parts), length(from_parts))
   common_len <- 0L
@@ -637,8 +652,8 @@ make_relative_href <- function(target, from_dir) {
     if (target_parts[i] == from_parts[i]) common_len <- i else break
   }
 
-  up    <- rep("..", length(from_parts) - common_len)
-  down  <- tail(target_parts, length(target_parts) - common_len)
+  up <- rep("..", length(from_parts) - common_len)
+  down <- tail(target_parts, length(target_parts) - common_len)
   parts <- c(up, down)
   if (length(parts) == 0) "." else paste(parts, collapse = "/")
 }
@@ -697,13 +712,19 @@ url_join <- function(base, rel) {
 #'
 #' @noRd
 absolutize_asset_hrefs <- function(item, item_base_url) {
-  if (is.null(item@assets) || length(item@assets) == 0) return(item)
+  if (is.null(item@assets) || length(item@assets) == 0) {
+    return(item)
+  }
 
   unresolved <- character(0)
 
   item@assets <- lapply(item@assets, function(a) {
-    if (is.null(a@href)) return(a)
-    if (grepl("://", a@href, fixed = TRUE)) return(a)
+    if (is.null(a@href)) {
+      return(a)
+    }
+    if (grepl("://", a@href, fixed = TRUE)) {
+      return(a)
+    }
 
     if (startsWith(a@href, "/")) {
       unresolved <<- c(unresolved, a@href)
@@ -733,9 +754,13 @@ absolutize_asset_hrefs <- function(item, item_base_url) {
 #'
 #' @noRd
 relativize_asset_hrefs <- function(item, item_dir) {
-  if (is.null(item@assets) || length(item@assets) == 0) return(item)
+  if (is.null(item@assets) || length(item@assets) == 0) {
+    return(item)
+  }
   item@assets <- lapply(item@assets, function(a) {
-    if (!is.null(a@href)) a@href <- make_relative_href(a@href, item_dir)
+    if (!is.null(a@href)) {
+      a@href <- make_relative_href(a@href, item_dir)
+    }
     a
   })
   item
@@ -785,9 +810,10 @@ read_stac <- function(file) {
     cli::cli_abort("Invalid STAC file: missing 'type' field")
   }
 
-  switch(parsed$type,
-    "Feature"    = parse_stac_item(parsed),
-    "Catalog"    = parse_stac_catalog(parsed),
+  switch(
+    parsed$type,
+    "Feature" = parse_stac_item(parsed),
+    "Catalog" = parse_stac_catalog(parsed),
     "Collection" = parse_stac_collection(parsed),
     {
       cli::cli_warn("Unknown STAC type: {parsed$type}")
@@ -804,27 +830,30 @@ parse_stac_item <- function(parsed) {
   props <- parsed$properties %||% list()
 
   # Extract datetime fields; constructor re-adds them to properties
-  dt       <- props$datetime
+  dt <- props$datetime
   start_dt <- props$start_datetime
-  end_dt   <- props$end_datetime
-  props$datetime        <- NULL
-  props$start_datetime  <- NULL
-  props$end_datetime    <- NULL
+  end_dt <- props$end_datetime
+  props$datetime <- NULL
+  props$start_datetime <- NULL
+  props$end_datetime <- NULL
 
   stac_item(
-    id              = parsed$id,
-    geometry        = parsed$geometry,
-    bbox            = if (!is.null(parsed$bbox)) unlist(parsed$bbox) else NULL,
-    datetime        = dt,
-    start_datetime  = start_dt,
-    end_datetime    = end_dt,
-    properties      = props,
-    assets          = parsed$assets %||% list(),
-    links           = parsed$links  %||% list(),
-    stac_version    = parsed$stac_version %||% "1.1.0",
-    stac_extensions = if (!is.null(parsed$stac_extensions))
-                        unlist(parsed$stac_extensions) else NULL,
-    collection      = parsed$collection
+    id = parsed$id,
+    geometry = parsed$geometry,
+    bbox = if (!is.null(parsed$bbox)) unlist(parsed$bbox) else NULL,
+    datetime = dt,
+    start_datetime = start_dt,
+    end_datetime = end_dt,
+    properties = props,
+    assets = parsed$assets %||% list(),
+    links = parsed$links %||% list(),
+    stac_version = parsed$stac_version %||% "1.1.0",
+    stac_extensions = if (!is.null(parsed$stac_extensions)) {
+      unlist(parsed$stac_extensions)
+    } else {
+      NULL
+    },
+    collection = parsed$collection
   )
 }
 
@@ -833,23 +862,40 @@ parse_stac_item <- function(parsed) {
 #'
 #' @noRd
 parse_stac_catalog <- function(parsed) {
-  known <- c("type", "stac_version", "id", "description", "title",
-             "stac_extensions", "conformsTo", "links")
+  known <- c(
+    "type",
+    "stac_version",
+    "id",
+    "description",
+    "title",
+    "stac_extensions",
+    "conformsTo",
+    "links"
+  )
   extra <- parsed[setdiff(names(parsed), known)]
 
-  catalog <- do.call(stac_catalog, c(
-    list(
-      id              = parsed$id,
-      description     = parsed$description,
-      title           = parsed$title,
-      stac_version    = parsed$stac_version %||% "1.1.0",
-      stac_extensions = if (!is.null(parsed$stac_extensions))
-                          unlist(parsed$stac_extensions) else NULL,
-      conformsTo      = if (!is.null(parsed$conformsTo))
-                          unlist(parsed$conformsTo) else NULL
-    ),
-    extra
-  ))
+  catalog <- do.call(
+    stac_catalog,
+    c(
+      list(
+        id = parsed$id,
+        description = parsed$description,
+        title = parsed$title,
+        stac_version = parsed$stac_version %||% "1.1.0",
+        stac_extensions = if (!is.null(parsed$stac_extensions)) {
+          unlist(parsed$stac_extensions)
+        } else {
+          NULL
+        },
+        conformsTo = if (!is.null(parsed$conformsTo)) {
+          unlist(parsed$conformsTo)
+        } else {
+          NULL
+        }
+      ),
+      extra
+    )
+  )
 
   catalog@links <- parsed$links %||% list()
   catalog
@@ -860,14 +906,27 @@ parse_stac_catalog <- function(parsed) {
 #'
 #' @noRd
 parse_stac_collection <- function(parsed) {
-  known <- c("type", "stac_version", "id", "description", "title",
-             "stac_extensions", "conformsTo", "links",
-             "license", "extent", "keywords", "providers", "summaries", "assets")
+  known <- c(
+    "type",
+    "stac_version",
+    "id",
+    "description",
+    "title",
+    "stac_extensions",
+    "conformsTo",
+    "links",
+    "license",
+    "extent",
+    "keywords",
+    "providers",
+    "summaries",
+    "assets"
+  )
   extra <- parsed[setdiff(names(parsed), known)]
 
   # Reconstruct extent: bbox arrays come back as lists and need unlist()
   extent_list <- list(
-    spatial  = list(
+    spatial = list(
       bbox = lapply(parsed$extent$spatial$bbox, unlist)
     ),
     temporal = list(
@@ -875,26 +934,38 @@ parse_stac_collection <- function(parsed) {
     )
   )
 
-  collection <- do.call(stac_collection, c(
-    list(
-      id              = parsed$id,
-      description     = parsed$description,
-      license         = parsed$license,
-      extent          = extent_list,
-      title           = parsed$title,
-      stac_version    = parsed$stac_version %||% "1.1.0",
-      stac_extensions = if (!is.null(parsed$stac_extensions))
-                          unlist(parsed$stac_extensions) else NULL,
-      keywords        = if (!is.null(parsed$keywords))
-                          unlist(parsed$keywords) else NULL,
-      providers       = parsed$providers,
-      summaries       = parsed$summaries,
-      assets          = parsed$assets,
-      conformsTo      = if (!is.null(parsed$conformsTo))
-                          unlist(parsed$conformsTo) else NULL
-    ),
-    extra
-  ))
+  collection <- do.call(
+    stac_collection,
+    c(
+      list(
+        id = parsed$id,
+        description = parsed$description,
+        license = parsed$license,
+        extent = extent_list,
+        title = parsed$title,
+        stac_version = parsed$stac_version %||% "1.1.0",
+        stac_extensions = if (!is.null(parsed$stac_extensions)) {
+          unlist(parsed$stac_extensions)
+        } else {
+          NULL
+        },
+        keywords = if (!is.null(parsed$keywords)) {
+          unlist(parsed$keywords)
+        } else {
+          NULL
+        },
+        providers = parsed$providers,
+        summaries = parsed$summaries,
+        assets = parsed$assets,
+        conformsTo = if (!is.null(parsed$conformsTo)) {
+          unlist(parsed$conformsTo)
+        } else {
+          NULL
+        }
+      ),
+      extra
+    )
+  )
 
   collection@links <- parsed$links %||% list()
   collection
@@ -937,14 +1008,18 @@ get_children <- function(catalog, resolve = FALSE, base_path = ".") {
   }
 
   stored <- attr(catalog, "stac_children")
-  if (!is.null(stored) || !resolve) return(stored)
+  if (!is.null(stored) || !resolve) {
+    return(stored)
+  }
 
   child_links <- Filter(
     function(link) !is.null(link$rel) && link$rel == "child",
     catalog@links
   )
 
-  if (length(child_links) == 0) return(NULL)
+  if (length(child_links) == 0) {
+    return(NULL)
+  }
 
   children <- lapply(child_links, function(link) {
     href <- link$href
@@ -999,14 +1074,18 @@ get_items <- function(catalog, resolve = FALSE, base_path = ".") {
   }
 
   stored <- attr(catalog, "stac_items")
-  if (!is.null(stored) || !resolve) return(stored)
+  if (!is.null(stored) || !resolve) {
+    return(stored)
+  }
 
   item_links <- Filter(
     function(link) !is.null(link$rel) && link$rel == "item",
     catalog@links
   )
 
-  if (length(item_links) == 0) return(NULL)
+  if (length(item_links) == 0) {
+    return(NULL)
+  }
 
   lapply(item_links, function(link) {
     href <- link$href

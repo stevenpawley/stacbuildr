@@ -1,7 +1,11 @@
 # --- cube_dimension() ---
 
 test_that("cube_dimension creates a horizontal spatial dimension", {
-  dim <- cube_dimension(type = "spatial", axis = "x", extent = c(-105.5, -104.5))
+  dim <- cube_dimension(
+    type = "spatial",
+    axis = "x",
+    extent = c(-105.5, -104.5)
+  )
 
   expect_equal(dim@type, "spatial")
   expect_equal(dim@axis, "x")
@@ -150,9 +154,9 @@ test_that("cube_variable errors when dimensions is not a character vector", {
 
 make_item <- function() {
   stac_item(
-    id       = "test-datacube",
+    id = "test-datacube",
     geometry = list(type = "Point", coordinates = c(-105, 40)),
-    bbox     = c(-105, 40, -105, 40),
+    bbox = c(-105, 40, -105, 40),
     datetime = "2023-06-15T00:00:00Z"
   )
 }
@@ -169,7 +173,11 @@ make_item_with_asset <- function() {
 
 make_dims <- function() {
   list(
-    x = cube_dimension(type = "spatial", axis = "x", extent = c(-105.5, -104.5)),
+    x = cube_dimension(
+      type = "spatial",
+      axis = "x",
+      extent = c(-105.5, -104.5)
+    ),
     y = cube_dimension(type = "spatial", axis = "y", extent = c(39.5, 40.5)),
     time = cube_dimension(
       type = "temporal",
@@ -194,10 +202,13 @@ test_that("add_datacube_extension errors when both dimensions and variables are 
 
 test_that("add_datacube_extension errors when dimensions is not fully named", {
   expect_error(
-    add_datacube_extension(make_item(), dimensions = list(cube_dimension(
-      type = "temporal",
-      extent = c("2023-06-01T00:00:00Z", NA)
-    ))),
+    add_datacube_extension(
+      make_item(),
+      dimensions = list(cube_dimension(
+        type = "temporal",
+        extent = c("2023-06-01T00:00:00Z", NA)
+      ))
+    ),
     "must be a fully named list"
   )
 })
@@ -214,14 +225,19 @@ test_that("add_datacube_extension errors on duplicate dimension names", {
 
 test_that("add_datacube_extension errors when elements are not cube_dimension objects", {
   expect_error(
-    add_datacube_extension(make_item(), dimensions = list(x = "not a dimension")),
+    add_datacube_extension(
+      make_item(),
+      dimensions = list(x = "not a dimension")
+    ),
     "must be cube_dimension objects"
   )
 })
 
 test_that("add_datacube_extension errors when dimensions and variables share a key", {
   dims <- make_dims()
-  vars <- list(x = cube_variable(type = "data", dimensions = c("x", "y", "time")))
+  vars <- list(
+    x = cube_variable(type = "data", dimensions = c("x", "y", "time"))
+  )
 
   expect_error(
     add_datacube_extension(make_item(), dimensions = dims, variables = vars),
@@ -231,7 +247,11 @@ test_that("add_datacube_extension errors when dimensions and variables share a k
 
 test_that("add_datacube_extension errors when asset_key does not exist", {
   expect_error(
-    add_datacube_extension(make_item(), dimensions = make_dims(), asset_key = "missing"),
+    add_datacube_extension(
+      make_item(),
+      dimensions = make_dims(),
+      asset_key = "missing"
+    ),
     "does not exist in item"
   )
 })
@@ -240,17 +260,22 @@ test_that("add_datacube_extension adds schema URI to stac_extensions", {
   item <- add_datacube_extension(make_item(), dimensions = make_dims())
 
   expect_true(
-    "https://stac-extensions.github.io/datacube/v2.3.0/schema.json"
-    %in% item@stac_extensions
+    "https://stac-extensions.github.io/datacube/v2.3.0/schema.json" %in%
+      item@stac_extensions
   )
 })
 
 test_that("add_datacube_extension does not duplicate schema URI", {
   item <- make_item() |>
     add_datacube_extension(dimensions = make_dims()) |>
-    add_datacube_extension(variables = list(
-      temperature = cube_variable(type = "data", dimensions = c("x", "y", "time"))
-    ))
+    add_datacube_extension(
+      variables = list(
+        temperature = cube_variable(
+          type = "data",
+          dimensions = c("x", "y", "time")
+        )
+      )
+    )
 
   n_datacube_uris <- sum(grepl("datacube", item@stac_extensions))
   expect_equal(n_datacube_uris, 1L)
@@ -260,7 +285,11 @@ test_that("add_datacube_extension writes fields to item properties by default", 
   vars <- list(
     temperature = cube_variable(type = "data", dimensions = c("x", "y", "time"))
   )
-  item <- add_datacube_extension(make_item(), dimensions = make_dims(), variables = vars)
+  item <- add_datacube_extension(
+    make_item(),
+    dimensions = make_dims(),
+    variables = vars
+  )
 
   expect_length(item@properties$`cube:dimensions`, 3)
   expect_equal(item@properties$`cube:dimensions`$x@axis, "x")

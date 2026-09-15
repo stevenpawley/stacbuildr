@@ -7,7 +7,10 @@ test_that("errors are raised as cli conditions", {
   )
 
   # cli_abort() produces an rlang error, not a bare simpleError
-  expect_error(add_asset(item, "k", asset = list(no_href = 1)), class = "rlang_error")
+  expect_error(
+    add_asset(item, "k", asset = list(no_href = 1)),
+    class = "rlang_error"
+  )
   expect_error(stac_asset(href = ""), "non-empty string")
   expect_error(add_item(item, item), class = "rlang_error")
 })
@@ -21,7 +24,11 @@ test_that("error messages keep their text and interpolate values", {
   )
 
   expect_error(
-    add_eo_extension(item, bands = list(eo_band(name = "B4")), asset_key = "nope"),
+    add_eo_extension(
+      item,
+      bands = list(eo_band(name = "B4")),
+      asset_key = "nope"
+    ),
     "Asset 'nope' does not exist in item",
     fixed = TRUE
   )
@@ -41,12 +48,17 @@ test_that("hints are carried as a separate bullet", {
       geometry = list(type = "Point", coordinates = c(0, 0)),
       bbox = c(0, 0, 0, 0),
       datetime = "2023-01-01T00:00:00Z"
-    ) |> add_asset("k", asset = list(no_href = 1)),
+    ) |>
+      add_asset("k", asset = list(no_href = 1)),
     error = function(e) e
   )
   msg <- conditionMessage(err)
 
-  expect_match(msg, "'asset' must be a stac_asset or a list with an 'href' field", fixed = TRUE)
+  expect_match(
+    msg,
+    "'asset' must be a stac_asset or a list with an 'href' field",
+    fixed = TRUE
+  )
   expect_match(msg, "Use stac_asset() to build one.", fixed = TRUE)
 })
 

@@ -216,7 +216,11 @@ add_item <- function(
 #'
 #' @noRd
 find_link <- function(stac_object, rel) {
-  links <- if (S7::S7_inherits(stac_object)) stac_object@links else stac_object$links
+  links <- if (S7::S7_inherits(stac_object)) {
+    stac_object@links
+  } else {
+    stac_object$links
+  }
   if (!is.list(links) || length(links) == 0) {
     return(NULL)
   }

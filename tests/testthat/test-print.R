@@ -67,7 +67,11 @@ test_that("collection and catalog print collapsed sections", {
 
   out <- capture.output(print(test_catalog()))
   expect_true(any(grepl("<STAC Catalog>", out, fixed = TRUE)))
-  expect_true(any(grepl("> children   : 1 [test-collection]", out, fixed = TRUE)))
+  expect_true(any(grepl(
+    "> children   : 1 [test-collection]",
+    out,
+    fixed = TRUE
+  )))
 })
 
 # Expansion -------------------------------------------------------------
@@ -149,7 +153,11 @@ test_that("an unrecognised extension URI is printed in full", {
   item@stac_extensions <- "https://example.com/my-extension.json"
 
   out <- capture.output(print(item, expand = "extensions"))
-  expect_true(any(grepl("https://example.com/my-extension.json", out, fixed = TRUE)))
+  expect_true(any(grepl(
+    "https://example.com/my-extension.json",
+    out,
+    fixed = TRUE
+  )))
 })
 
 test_that("item-level extension fields print in the properties section", {
@@ -189,8 +197,14 @@ test_that("asset-level extension fields print under their asset", {
   # the two extensions describe the same bands, so their fields merged
   expect_named(
     item@assets$B4@extra_fields$bands[[1]],
-    c("name", "eo:common_name", "nodata", "data_type", "raster:scale",
-      "raster:offset")
+    c(
+      "name",
+      "eo:common_name",
+      "nodata",
+      "data_type",
+      "raster:scale",
+      "raster:offset"
+    )
   )
 
   out <- capture.output(print(item, expand = "assets"))

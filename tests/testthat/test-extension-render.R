@@ -54,11 +54,17 @@ test_that("render_object errors when assets is missing", {
 })
 
 test_that("render_object errors when assets is empty", {
-  expect_error(render_object(assets = character(0)), "'assets' must be a non-empty character vector")
+  expect_error(
+    render_object(assets = character(0)),
+    "'assets' must be a non-empty character vector"
+  )
 })
 
 test_that("render_object errors when title is not a single string", {
-  expect_error(render_object(assets = "B4", title = c("a", "b")), "'title' must be a single character string")
+  expect_error(
+    render_object(assets = "B4", title = c("a", "b")),
+    "'title' must be a single character string"
+  )
 })
 
 test_that("render_object errors when rescale is malformed", {
@@ -84,15 +90,15 @@ test_that("render_object errors when minmax_zoom is not length 2", {
 
 make_item <- function() {
   stac_item(
-    id       = "render-test",
+    id = "render-test",
     geometry = list(type = "Point", coordinates = c(-105, 40)),
-    bbox     = c(-105, 40, -105, 40),
+    bbox = c(-105, 40, -105, 40),
     datetime = "2023-06-15T00:00:00Z"
   ) |>
     add_asset(
-      key   = "B4",
-      href  = "https://example.com/B4.tif",
-      type  = "image/tiff; application=geotiff",
+      key = "B4",
+      href = "https://example.com/B4.tif",
+      type = "image/tiff; application=geotiff",
       roles = c("data")
     )
 }
@@ -171,9 +177,11 @@ test_that("add_render_extension does not duplicate schema URI", {
 
 test_that("add_render_extension writes renders to item properties", {
   item <- make_item() |>
-    add_render_extension(renders = list(
-      rgb = render_object(assets = c("B4", "B3", "B2"))
-    ))
+    add_render_extension(
+      renders = list(
+        rgb = render_object(assets = c("B4", "B3", "B2"))
+      )
+    )
 
   expect_length(item@properties$renders, 1)
   expect_equal(item@properties$renders$rgb@assets, c("B4", "B3", "B2"))
@@ -181,9 +189,11 @@ test_that("add_render_extension writes renders to item properties", {
 
 test_that("add_render_extension writes renders to collection extra_fields", {
   collection <- make_collection() |>
-    add_render_extension(renders = list(
-      rgb = render_object(assets = c("B4", "B3", "B2"))
-    ))
+    add_render_extension(
+      renders = list(
+        rgb = render_object(assets = c("B4", "B3", "B2"))
+      )
+    )
 
   expect_length(collection@extra_fields$renders, 1)
   expect_equal(collection@extra_fields$renders$rgb@assets, c("B4", "B3", "B2"))
@@ -191,13 +201,17 @@ test_that("add_render_extension writes renders to collection extra_fields", {
 
 test_that("add_render_extension merges and overwrites render objects", {
   item <- make_item() |>
-    add_render_extension(renders = list(
-      rgb = render_object(assets = c("B4"))
-    )) |>
-    add_render_extension(renders = list(
-      rgb = render_object(assets = c("B4", "B3", "B2")),
-      ndvi = render_object(assets = c("B5", "B4"))
-    ))
+    add_render_extension(
+      renders = list(
+        rgb = render_object(assets = c("B4"))
+      )
+    ) |>
+    add_render_extension(
+      renders = list(
+        rgb = render_object(assets = c("B4", "B3", "B2")),
+        ndvi = render_object(assets = c("B5", "B4"))
+      )
+    )
 
   expect_length(item@properties$renders, 2)
   expect_equal(item@properties$renders$rgb@assets, c("B4", "B3", "B2"))

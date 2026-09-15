@@ -3,7 +3,9 @@
 # required by the STAC spec (UTC "Z" suffix or explicit ±HH:MM offset).
 # Used by TemporalExtent and stac_item validators.
 is_rfc3339 <- function(x) {
-  if (!is.character(x) || length(x) != 1L || is.na(x)) return(FALSE)
+  if (!is.character(x) || length(x) != 1L || is.na(x)) {
+    return(FALSE)
+  }
   grepl(
     "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
     x,
@@ -68,38 +70,85 @@ SpatialExtent <- S7::new_class(
       }
       if (length(bbox) == 4) {
         if (bbox[1] < -180 || bbox[1] > 180) {
-          return(sprintf("Bbox[%d]: west (%g) must be in [-180, 180]", i, bbox[1]))
+          return(sprintf(
+            "Bbox[%d]: west (%g) must be in [-180, 180]",
+            i,
+            bbox[1]
+          ))
         }
         if (bbox[3] < -180 || bbox[3] > 180) {
-          return(sprintf("Bbox[%d]: east (%g) must be in [-180, 180]", i, bbox[3]))
+          return(sprintf(
+            "Bbox[%d]: east (%g) must be in [-180, 180]",
+            i,
+            bbox[3]
+          ))
         }
         if (bbox[2] < -90 || bbox[2] > 90) {
-          return(sprintf("Bbox[%d]: south (%g) must be in [-90, 90]", i, bbox[2]))
+          return(sprintf(
+            "Bbox[%d]: south (%g) must be in [-90, 90]",
+            i,
+            bbox[2]
+          ))
         }
         if (bbox[4] < -90 || bbox[4] > 90) {
-          return(sprintf("Bbox[%d]: north (%g) must be in [-90, 90]", i, bbox[4]))
+          return(sprintf(
+            "Bbox[%d]: north (%g) must be in [-90, 90]",
+            i,
+            bbox[4]
+          ))
         }
         if (bbox[2] > bbox[4]) {
-          return(sprintf("Bbox[%d]: south (%g) must be <= north (%g)", i, bbox[2], bbox[4]))
+          return(sprintf(
+            "Bbox[%d]: south (%g) must be <= north (%g)",
+            i,
+            bbox[2],
+            bbox[4]
+          ))
         }
       } else {
         if (bbox[1] < -180 || bbox[1] > 180) {
-          return(sprintf("Bbox[%d]: west (%g) must be in [-180, 180]", i, bbox[1]))
+          return(sprintf(
+            "Bbox[%d]: west (%g) must be in [-180, 180]",
+            i,
+            bbox[1]
+          ))
         }
         if (bbox[4] < -180 || bbox[4] > 180) {
-          return(sprintf("Bbox[%d]: east (%g) must be in [-180, 180]", i, bbox[4]))
+          return(sprintf(
+            "Bbox[%d]: east (%g) must be in [-180, 180]",
+            i,
+            bbox[4]
+          ))
         }
         if (bbox[2] < -90 || bbox[2] > 90) {
-          return(sprintf("Bbox[%d]: south (%g) must be in [-90, 90]", i, bbox[2]))
+          return(sprintf(
+            "Bbox[%d]: south (%g) must be in [-90, 90]",
+            i,
+            bbox[2]
+          ))
         }
         if (bbox[5] < -90 || bbox[5] > 90) {
-          return(sprintf("Bbox[%d]: north (%g) must be in [-90, 90]", i, bbox[5]))
+          return(sprintf(
+            "Bbox[%d]: north (%g) must be in [-90, 90]",
+            i,
+            bbox[5]
+          ))
         }
         if (bbox[2] > bbox[5]) {
-          return(sprintf("Bbox[%d]: south (%g) must be <= north (%g)", i, bbox[2], bbox[5]))
+          return(sprintf(
+            "Bbox[%d]: south (%g) must be <= north (%g)",
+            i,
+            bbox[2],
+            bbox[5]
+          ))
         }
         if (bbox[3] > bbox[6]) {
-          return(sprintf("Bbox[%d]: min elevation (%g) must be <= max elevation (%g)", i, bbox[3], bbox[6]))
+          return(sprintf(
+            "Bbox[%d]: min elevation (%g) must be <= max elevation (%g)",
+            i,
+            bbox[3],
+            bbox[6]
+          ))
         }
       }
     }
@@ -127,19 +176,21 @@ TemporalExtent <- S7::new_class(
       }
 
       start_val <- interval[[1]]
-      end_val   <- interval[[2]]
+      end_val <- interval[[2]]
 
       # Each non-NULL endpoint must be a valid RFC 3339 datetime string
       if (!is.null(start_val) && !is_rfc3339(start_val)) {
         return(sprintf(
           "Interval[%d] start is not a valid RFC 3339 datetime: '%s'",
-          i, start_val
+          i,
+          start_val
         ))
       }
       if (!is.null(end_val) && !is_rfc3339(end_val)) {
         return(sprintf(
           "Interval[%d] end is not a valid RFC 3339 datetime: '%s'",
-          i, end_val
+          i,
+          end_val
         ))
       }
 
@@ -148,7 +199,9 @@ TemporalExtent <- S7::new_class(
       if (!is.null(start_val) && !is.null(end_val) && end_val < start_val) {
         return(sprintf(
           "Interval[%d]: end ('%s') must be >= start ('%s')",
-          i, end_val, start_val
+          i,
+          end_val,
+          start_val
         ))
       }
     }
@@ -203,18 +256,32 @@ stac_format_bbox <- function(bbox) {
   if (length(bbox) == 6L) {
     return(sprintf(
       "[%g, %g, %g, %g] elev [%g, %g]",
-      bbox[1], bbox[2], bbox[4], bbox[5], bbox[3], bbox[6]
+      bbox[1],
+      bbox[2],
+      bbox[4],
+      bbox[5],
+      bbox[3],
+      bbox[6]
     ))
   }
-  sprintf("[%s]", paste(vapply(bbox, function(v) sprintf("%g", v), character(1)),
-                        collapse = ", "))
+  sprintf(
+    "[%s]",
+    paste(
+      vapply(bbox, function(v) sprintf("%g", v), character(1)),
+      collapse = ", "
+    )
+  )
 }
 
 # Format one interval as "start / end", with ".." for an open end.
 stac_format_interval <- function(interval) {
-  ends <- vapply(interval, function(v) {
-    if (is.null(v) || length(v) == 0L || is.na(v)) ".." else as.character(v)
-  }, character(1))
+  ends <- vapply(
+    interval,
+    function(v) {
+      if (is.null(v) || length(v) == 0L || is.na(v)) ".." else as.character(v)
+    },
+    character(1)
+  )
   paste(ends, collapse = " / ")
 }
 
@@ -268,12 +335,16 @@ S7::method(print, Extent) <- function(x, ...) {
 
   if (length(bboxes) > 1L) {
     stac_print_field(
-      "sub-regions", stac_fmt_value(length(bboxes) - 1L), stac_style_count
+      "sub-regions",
+      stac_fmt_value(length(bboxes) - 1L),
+      stac_style_count
     )
   }
   if (length(intervals) > 1L) {
     stac_print_field(
-      "sub-periods", stac_fmt_value(length(intervals) - 1L), stac_style_count
+      "sub-periods",
+      stac_fmt_value(length(intervals) - 1L),
+      stac_style_count
     )
   }
 

@@ -7,7 +7,11 @@ test_that("an extent prints its overall bbox and interval", {
   out <- capture.output(print(ext))
 
   expect_identical(out[[1]], "<STAC Extent>")
-  expect_true(any(grepl("bbox         : [-180, -90, 180, 90]", out, fixed = TRUE)))
+  expect_true(any(grepl(
+    "bbox         : [-180, -90, 180, 90]",
+    out,
+    fixed = TRUE
+  )))
   expect_true(any(grepl("2013-01-01T00:00:00Z / ..", out, fixed = TRUE)))
   # no S7 internals
   expect_false(any(grepl("@ spatial", out, fixed = TRUE)))
@@ -44,7 +48,11 @@ test_that("spatial and temporal extents list their entries", {
 
   out <- capture.output(print(ext@temporal, expand = TRUE))
   expect_identical(out[[1]], "<Temporal Extent>")
-  expect_true(any(grepl("2020-01-01T00:00:00Z / 2021-01-01T00:00:00Z", out, fixed = TRUE)))
+  expect_true(any(grepl(
+    "2020-01-01T00:00:00Z / 2021-01-01T00:00:00Z",
+    out,
+    fixed = TRUE
+  )))
 
   # collapsed shows the first entry as a preview only
   out <- capture.output(print(ext@spatial))
@@ -55,7 +63,9 @@ test_that("spatial and temporal extents list their entries", {
 test_that("a 3D bbox reports its elevation pair separately", {
   local_reproducible_output(unicode = FALSE)
 
-  out <- capture.output(print(stacbuildr:::Bbox(coordinates = c(-1, -1, 0, 1, 1, 100))))
+  out <- capture.output(print(stacbuildr:::Bbox(
+    coordinates = c(-1, -1, 0, 1, 1, 100)
+  )))
   expect_identical(out[[1]], "<Bbox>")
   expect_true(any(grepl("3D", out, fixed = TRUE)))
   expect_true(any(grepl("[-1, -1, 1, 1] elev [0, 100]", out, fixed = TRUE)))

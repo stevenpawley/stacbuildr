@@ -1,6 +1,12 @@
-mk_result <- function(errors = character(), warnings = character(), valid = NULL) {
+mk_result <- function(
+  errors = character(),
+  warnings = character(),
+  valid = NULL
+) {
   stacbuildr:::new_stac_validation(
-    errors = errors, warnings = warnings, valid = valid
+    errors = errors,
+    warnings = warnings,
+    valid = valid
   )
 }
 
@@ -21,7 +27,8 @@ test_that("validators return an S7 validation result", {
 
   # the non-STAC branch uses the same result class
   expect_true(S7::S7_inherits(
-    validate_stac(list(a = 1)), stacbuildr:::stac_validation
+    validate_stac(list(a = 1)),
+    stacbuildr:::stac_validation
   ))
 })
 
@@ -35,7 +42,9 @@ test_that("a valid result prints a tick", {
 
 test_that("errors print as a numbered list", {
   local_reproducible_output(unicode = FALSE)
-  out <- capture.output(print(mk_result(errors = c("first problem", "second problem"))))
+  out <- capture.output(print(mk_result(
+    errors = c("first problem", "second problem")
+  )))
 
   expect_true(any(grepl("x 2 errors", out, fixed = TRUE)))
   expect_true(any(grepl("1. first problem", out, fixed = TRUE)))
@@ -59,7 +68,10 @@ test_that("warnings are reported whether or not the object is valid", {
   expect_true(any(grepl("i 1 warning", out, fixed = TRUE)))
   expect_true(any(grepl("1. a caution", out, fixed = TRUE)))
 
-  out <- capture.output(print(mk_result(errors = "a problem", warnings = "a caution")))
+  out <- capture.output(print(mk_result(
+    errors = "a problem",
+    warnings = "a caution"
+  )))
   expect_true(any(grepl("x 1 error", out, fixed = TRUE)))
   expect_true(any(grepl("i 1 warning", out, fixed = TRUE)))
 })

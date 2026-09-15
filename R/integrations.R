@@ -370,7 +370,10 @@ bbox_from_sf <- function(sf_obj) {
 #' @return A list with geometry and bbox.
 #'
 #' @noRd
-extract_terra_spatial_metadata <- function(terra_obj, reproject_to_wgs84 = TRUE) {
+extract_terra_spatial_metadata <- function(
+  terra_obj,
+  reproject_to_wgs84 = TRUE
+) {
   # terra reports a missing CRS as "", which st_crs() rejects outright, so
   # normalise it to an NA crs and let the check below report it properly.
   crs_wkt <- terra::crs(terra_obj)
@@ -463,12 +466,12 @@ add_projection_metadata_terra <- function(item, terra_obj) {
     bbox = as.vector(ext)[c(1, 3, 2, 4)],
     shape = c(terra::nrow(terra_obj), terra::ncol(terra_obj)),
     transform = c(
-      terra::xres(terra_obj),  # xscale
-      0,                       # row rotation
-      ext$xmin,                # top-left x
-      0,                       # column rotation
+      terra::xres(terra_obj), # xscale
+      0, # row rotation
+      ext$xmin, # top-left x
+      0, # column rotation
       -terra::yres(terra_obj), # pixel height (negative for north up)
-      ext$ymax                 # top-left y
+      ext$ymax # top-left y
     )
   )
 }
@@ -509,7 +512,8 @@ normalize_href <- function(href) {
 get_media_type <- function(file) {
   ext <- tolower(tools::file_ext(file))
 
-  base_type <- switch(ext,
+  base_type <- switch(
+    ext,
     "tif" = "image/tiff; application=geotiff",
     "tiff" = "image/tiff; application=geotiff",
     "nc" = "application/netcdf",
@@ -635,7 +639,9 @@ extent_from_items <- function(items) {
   datetimes <- character()
 
   for (item in items) {
-    if (!is.null(item@properties$datetime) && item@properties$datetime != "null") {
+    if (
+      !is.null(item@properties$datetime) && item@properties$datetime != "null"
+    ) {
       datetimes <- c(datetimes, item@properties$datetime)
     } else if (!is.null(item@properties$start_datetime)) {
       datetimes <- c(datetimes, item@properties$start_datetime)
@@ -681,7 +687,11 @@ extent_from_items <- function(items) {
 #' @return A list of raster band objects, one per band.
 #'
 #' @export
-bands_from_terra <- function(terra_obj, calculate_statistics = FALSE, sample_size = 1000L) {
+bands_from_terra <- function(
+  terra_obj,
+  calculate_statistics = FALSE,
+  sample_size = 1000L
+) {
   if (!requireNamespace("terra", quietly = TRUE)) {
     cli::cli_abort(c(
       "Package 'terra' is required.",
@@ -741,14 +751,15 @@ bands_from_terra <- function(terra_obj, calculate_statistics = FALSE, sample_siz
 #'
 #' @noRd
 terra_dtype <- function(dt) {
-  switch(dt,
-    "INT1U"  = "uint8",
-    "INT2U"  = "uint16",
-    "INT2S"  = "int16",
-    "INT4U"  = "uint32",
-    "INT4S"  = "int32",
-    "FLT4S"  = "float32",
-    "FLT8S"  = "float64",
+  switch(
+    dt,
+    "INT1U" = "uint8",
+    "INT2U" = "uint16",
+    "INT2S" = "int16",
+    "INT4U" = "uint32",
+    "INT4S" = "int32",
+    "FLT4S" = "float32",
+    "FLT8S" = "float64",
     "other"
   )
 }
@@ -758,12 +769,16 @@ terra_dtype <- function(dt) {
 #'
 #' @noRd
 gdal_nodata <- function(file) {
-  if (!file.exists(file)) return(NULL)
+  if (!file.exists(file)) {
+    return(NULL)
+  }
   tryCatch(
     {
       info <- sf::gdal_utils("info", source = file, quiet = TRUE)
       m <- regmatches(info, regexpr("NoData Value=([^\\n\\r]+)", info))
-      if (length(m) == 0) return(NULL)
+      if (length(m) == 0) {
+        return(NULL)
+      }
       val <- trimws(sub("NoData Value=", "", m[[1]]))
       as.numeric(val)
     },

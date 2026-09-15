@@ -23,7 +23,8 @@ expect_valid_stac <- function(object) {
   expect_true(
     result@valid,
     info = paste0(
-      "schema errors: ", paste(result@errors, collapse = "; ")
+      "schema errors: ",
+      paste(result@errors, collapse = "; ")
     )
   )
   invisible(result)
@@ -59,7 +60,10 @@ expect_valid_stac_file <- function(path) {
 test_extent <- function() {
   stac_extent(
     spatial_bbox = list(c(-120, 30, -100, 50)),
-    temporal_interval = list(list("2020-01-01T00:00:00Z", "2021-01-01T00:00:00Z"))
+    temporal_interval = list(list(
+      "2020-01-01T00:00:00Z",
+      "2021-01-01T00:00:00Z"
+    ))
   )
 }
 
@@ -69,7 +73,11 @@ test_item <- function(id = "item-1", ...) {
     geometry = list(
       type = "Polygon",
       coordinates = list(list(
-        c(-120, 30), c(-100, 30), c(-100, 50), c(-120, 50), c(-120, 30)
+        c(-120, 30),
+        c(-100, 30),
+        c(-100, 50),
+        c(-120, 50),
+        c(-120, 30)
       ))
     ),
     bbox = c(-120, 30, -100, 50),
@@ -257,7 +265,12 @@ for (layout in c("self-contained", "relative", "absolute")) {
         base_url = base_url
       )
 
-      files <- list.files(path, pattern = "[.]json$", recursive = TRUE, full.names = TRUE)
+      files <- list.files(
+        path,
+        pattern = "[.]json$",
+        recursive = TRUE,
+        full.names = TRUE
+      )
       expect_length(files, 4)
       for (file in files) {
         expect_valid_stac_file(file)
