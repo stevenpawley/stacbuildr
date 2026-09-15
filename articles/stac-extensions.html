@@ -436,8 +436,9 @@ the titles above carry the human-readable form), and
 no leading <code>#</code>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">11</span>, name <span class="op">=</span> <span class="st">"open water"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `classification_class()`:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> 'name' must consist only of letters, numbers, hyphens, and underscores</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;stacbuildr::classification_class&gt; object properties are invalid:</span></span>
+<span><span class="co">#&gt; - @name must consist only of letters, numbers, hyphens, and underscores</span></span></code></pre></div>
 <p><strong>Bitfields</strong> describe QA bands where several flags are
 packed into one integer. Each <code><a href="../reference/classification_bitfield.html">classification_bitfield()</a></code>
 names a bit range by <code>offset</code> and <code>length</code> and

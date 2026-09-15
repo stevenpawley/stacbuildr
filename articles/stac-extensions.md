@@ -421,8 +421,9 @@ upper-case hex digits with no leading `#`.
 ``` r
 
 classification_class(value = 11, name = "open water")
-#> Error in `classification_class()`:
-#> ! 'name' must consist only of letters, numbers, hyphens, and underscores
+#> Error:
+#> ! <stacbuildr::classification_class> object properties are invalid:
+#> - @name must consist only of letters, numbers, hyphens, and underscores
 ```
 
 **Bitfields** describe QA bands where several flags are packed into one
