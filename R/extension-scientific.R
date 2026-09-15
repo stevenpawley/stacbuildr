@@ -213,36 +213,31 @@ add_scientific_extension <- function(
 scientific_publication <- S7::new_class(
   "scientific_publication",
   properties = list(
-    doi = S7::new_union(S7::class_character, NULL),
-    citation = S7::new_union(S7::class_character, NULL)
+    doi = S7::new_property(
+      S7::new_union(NULL, S7::class_character),
+      validator = function(value) {
+        if (!is.null(value) && length(value) != 1L) {
+          return("must be a single character string")
+        }
+        if (!is.null(value) && grepl("^https?://", value)) {
+          return(
+            "must be a DOI name (e.g. '10.1000/abc456'), not a URL"
+          )
+        }
+      }
+    ),
+    citation = S7::new_property(
+      S7::new_union(NULL, S7::class_character),
+      validator = function(value) {
+        if (!is.null(value) && length(value) != 1L) {
+          "must be a single character string"
+        }
+      }
+    )
   ),
-  constructor = function(doi = NULL, citation = NULL) {
-    if (is.null(doi) && is.null(citation)) {
-      cli::cli_abort("At least one of 'doi' or 'citation' must be provided")
-    }
-
-    if (!is.null(doi)) {
-      if (!is.character(doi) || length(doi) != 1) {
-        cli::cli_abort("'doi' must be a single character string")
-      }
-      if (grepl("^https?://", doi)) {
-        cli::cli_abort(
-          "'doi' must be a DOI name (e.g. '10.1000/abc456'), not a URL"
-        )
-      }
-    }
-
-    if (!is.null(citation)) {
-      if (!is.character(citation) || length(citation) != 1) {
-        cli::cli_abort("'citation' must be a single character string")
-      }
-    }
-
-    S7::new_object(S7::S7_object(), doi = doi, citation = citation)
-  },
   validator = function(self) {
     if (is.null(self@doi) && is.null(self@citation)) {
-      "at least one of 'doi' or 'citation' must be provided"
+      "At least one of @doi or @citation must be provided"
     }
   }
 )

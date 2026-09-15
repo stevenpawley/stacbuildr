@@ -32,7 +32,7 @@ test_that("scientific_publication creates an object with only citation", {
 test_that("scientific_publication errors when neither doi nor citation is provided", {
   expect_error(
     scientific_publication(),
-    "At least one of 'doi' or 'citation'"
+    "At least one of @doi or @citation"
   )
 })
 
@@ -54,7 +54,7 @@ test_that("scientific_publication errors when doi is not a single string", {
   )
   expect_error(
     scientific_publication(doi = 123),
-    "single character string"
+    "NULL.*character"
   )
 })
 
@@ -62,6 +62,27 @@ test_that("scientific_publication errors when citation is not a single string", 
   expect_error(
     scientific_publication(citation = c("a", "b")),
     "single character string"
+  )
+})
+
+test_that("scientific_publication remains valid when properties are modified", {
+  pub <- scientific_publication(doi = "10.1000/abc456")
+
+  expect_error(
+    pub@doi <- "https://doi.org/10.1000/abc456",
+    "not a URL"
+  )
+  expect_error(
+    pub@doi <- c("10.1000/a", "10.1000/b"),
+    "single character string"
+  )
+  expect_error(
+    pub@citation <- c("a", "b"),
+    "single character string"
+  )
+  expect_error(
+    pub@doi <- NULL,
+    "At least one of @doi or @citation"
   )
 })
 
