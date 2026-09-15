@@ -230,6 +230,46 @@ write_stac <- function(
 }
 
 
+# Convert a STAC object to JSON using the package's single serialization
+# policy. Keeping these options in one place ensures standalone writers,
+# recursive writes, and schema validation all inspect the same representation.
+stac_to_json <- function(x, pretty = FALSE) {
+  x <- strip_stored_objects(x)
+
+  if (S7::S7_inherits(x)) {
+    x <- as.list(x)
+  }
+
+  jsonlite::toJSON(
+    x,
+    auto_unbox = TRUE,
+    pretty = pretty,
+    null = "null",
+    digits = 15
+  )
+}
+
+
+# Write one STAC object after applying the common overwrite, directory, and
+# serialization behavior. Type-specific preparation belongs in the public
+# writer before it reaches this helper.
+write_stac_file <- function(x, file, overwrite = FALSE, pretty = TRUE) {
+  if (file.exists(file) && !overwrite) {
+    cli::cli_abort(
+      "File '{file}' already exists. Use overwrite = TRUE to replace."
+    )
+  }
+
+  dir_path <- dirname(file)
+  if (!dir.exists(dir_path)) {
+    dir.create(dir_path, recursive = TRUE)
+  }
+
+  writeLines(stac_to_json(x, pretty = pretty), file)
+  invisible(file)
+}
+
+
 #' Write a Single STAC Catalog or Collection File
 #'
 #' @description
@@ -264,38 +304,7 @@ write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
     )
   }
 
-  if (file.exists(file) && !overwrite) {
-    cli::cli_abort(
-      "File '{file}' already exists. Use overwrite = TRUE to replace."
-    )
-  }
-
-  # Create parent directory if needed
-  dir_path <- dirname(file)
-  if (!dir.exists(dir_path)) {
-    dir.create(dir_path, recursive = TRUE)
-  }
-
-  # Remove stored objects before writing (keep only the JSON structure)
-  catalog_clean <- strip_stored_objects(catalog)
-
-  # Convert S7 objects to plain list for JSON serialization
-  if (S7::S7_inherits(catalog_clean)) {
-    catalog_clean <- as.list(catalog_clean)
-  }
-
-  # Write JSON — digits = 15 preserves full double precision for numeric
-  # fields such as raster scale/offset values (e.g. 2.75e-5)
-  json <- jsonlite::toJSON(
-    catalog_clean,
-    auto_unbox = TRUE,
-    pretty     = pretty,
-    null       = "null",
-    digits     = 15
-  )
-
-  writeLines(json, file)
-  invisible(file)
+  write_stac_file(catalog, file, overwrite, pretty)
 }
 
 
@@ -331,41 +340,11 @@ write_item <- function(item, file, overwrite = FALSE, pretty = TRUE) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
-  if (file.exists(file) && !overwrite) {
-    cli::cli_abort(
-      "File '{file}' already exists. Use overwrite = TRUE to replace."
-    )
-  }
-
-  # Create parent directory if needed
-  dir_path <- dirname(file)
-  if (!dir.exists(dir_path)) {
-    dir.create(dir_path, recursive = TRUE)
-  }
-
   # The `collection` field and the collection link are co-dependent in the
   # schema; drop or flag a half-specified pair before serialising.
   item <- reconcile_item_collection(item)
 
-  # Remove any stored attributes before writing
-  item_clean <- strip_stored_objects(item)
-
-  # Convert S7 objects to plain list for JSON serialization
-  if (S7::S7_inherits(item_clean)) {
-    item_clean <- as.list(item_clean)
-  }
-
-  # Write JSON — digits = 15 preserves full double precision
-  json <- jsonlite::toJSON(
-    item_clean,
-    auto_unbox = TRUE,
-    pretty     = pretty,
-    null       = "null",
-    digits     = 15
-  )
-
-  writeLines(json, file)
-  invisible(file)
+  write_stac_file(item, file, overwrite, pretty)
 }
 
 

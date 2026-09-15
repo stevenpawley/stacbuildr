@@ -824,7 +824,7 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
     ))
   }
 
-  json         <- stac_object_to_json_string(stac_object)
+  json         <- stac_to_json(stac_object)
   stac_version <- stac_object@stac_version %||% "1.0.0"
   core_url     <- stac_core_schema_url(stac_object, stac_version)
 
@@ -844,20 +844,6 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
   all_errors <- c(errors, ext_errors)
 
   new_stac_validation(errors = all_errors)
-}
-
-
-#' Serialise a STAC S7 object to a JSON string, mirroring the write_* pattern.
-#' 
-#' @param stac_object STAC object
-#'
-#' @keywords internal
-stac_object_to_json_string <- function(stac_object) {
-  obj <- strip_stored_objects(stac_object)
-  if (S7::S7_inherits(obj)) {
-    obj <- as.list(obj)
-  }
-  jsonlite::toJSON(obj, auto_unbox = TRUE, null = "null", digits = 15)
 }
 
 
