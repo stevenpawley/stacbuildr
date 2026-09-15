@@ -1,10 +1,16 @@
 demo_item <- function(id = "s01", i = 1, cloud = 7.5, geometry = "polygon") {
   geom <- switch(
     geometry,
-    polygon = list(type = "Polygon", coordinates = list(list(
-      c(-114 + i / 10, 51), c(-113 + i / 10, 51), c(-113 + i / 10, 52),
-      c(-114 + i / 10, 52), c(-114 + i / 10, 51)
-    ))),
+    polygon = list(
+      type = "Polygon",
+      coordinates = list(list(
+        c(-114 + i / 10, 51),
+        c(-113 + i / 10, 51),
+        c(-113 + i / 10, 52),
+        c(-114 + i / 10, 52),
+        c(-114 + i / 10, 51)
+      ))
+    ),
     point = list(type = "Point", coordinates = c(-114 + i / 10, 51)),
     none = NULL
   )
@@ -63,7 +69,10 @@ test_that("length() is 0 for a catalog with no items", {
 })
 
 test_that("length() counts links, so it survives a round trip to disk", {
-  root <- add_child(stac_catalog(id = "root", description = "d"), demo_collection(2))
+  root <- add_child(
+    stac_catalog(id = "root", description = "d"),
+    demo_collection(2)
+  )
   dir <- withr::local_tempdir()
   suppressMessages(write_stac(root, dir))
 
@@ -72,7 +81,10 @@ test_that("length() counts links, so it survives a round trip to disk", {
 })
 
 test_that("length() counts items, not child catalogs", {
-  root <- add_child(stac_catalog(id = "root", description = "d"), demo_collection(2))
+  root <- add_child(
+    stac_catalog(id = "root", description = "d"),
+    demo_collection(2)
+  )
   # The child's items are not the root's
   expect_equal(length(root), 0L)
   expect_length(get_children(root), 1L)
@@ -188,12 +200,19 @@ test_that("st_as_sf() gives a zero-row sf for an empty catalog", {
 # resolve -----------------------------------------------------------------
 
 test_that("resolve = TRUE reads items back from their links", {
-  root <- add_child(stac_catalog(id = "root", description = "d"), demo_collection(2))
+  root <- add_child(
+    stac_catalog(id = "root", description = "d"),
+    demo_collection(2)
+  )
   dir <- withr::local_tempdir()
   suppressMessages(write_stac(root, dir))
   back <- read_stac(file.path(dir, "scenes", "collection.json"))
 
-  df <- as.data.frame(back, resolve = TRUE, base_path = file.path(dir, "scenes"))
+  df <- as.data.frame(
+    back,
+    resolve = TRUE,
+    base_path = file.path(dir, "scenes")
+  )
   expect_equal(nrow(df), 2L)
   expect_equal(df$id, c("s01", "s02"))
 
@@ -203,7 +222,10 @@ test_that("resolve = TRUE reads items back from their links", {
 })
 
 test_that("linked-but-unresolved items warn rather than give a silent empty table", {
-  root <- add_child(stac_catalog(id = "root", description = "d"), demo_collection(2))
+  root <- add_child(
+    stac_catalog(id = "root", description = "d"),
+    demo_collection(2)
+  )
   dir <- withr::local_tempdir()
   suppressMessages(write_stac(root, dir))
   back <- read_stac(file.path(dir, "scenes", "collection.json"))
@@ -281,8 +303,10 @@ test_that("[ returns a list of items, by position or id", {
   coll <- demo_collection(3)
   expect_type(coll[1:2], "list")
   expect_length(coll[1:2], 2L)
-  expect_equal(vapply(coll[c("s01", "s03")], function(i) i@id, character(1)),
-               c("s01", "s03"))
+  expect_equal(
+    vapply(coll[c("s01", "s03")], function(i) i@id, character(1)),
+    c("s01", "s03")
+  )
 })
 
 test_that("subsetting by an unknown id errors and lists what is available", {

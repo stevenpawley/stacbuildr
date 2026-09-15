@@ -24,24 +24,24 @@ stac_sym <- function(name) {
   syms <- if (utf8) {
     c(
       collapsed = "\u25b8",
-      expanded  = "\u25be",
-      branch    = "\u251c\u2500",
-      last      = "\u2514\u2500",
-      info      = cli::symbol$info,
-      tick      = cli::symbol$tick,
-      cross     = cli::symbol$cross,
-      ellipsis  = "\u2026"
+      expanded = "\u25be",
+      branch = "\u251c\u2500",
+      last = "\u2514\u2500",
+      info = cli::symbol$info,
+      tick = cli::symbol$tick,
+      cross = cli::symbol$cross,
+      ellipsis = "\u2026"
     )
   } else {
     c(
       collapsed = ">",
-      expanded  = "v",
-      branch    = "|-",
-      last      = "`-",
-      info      = "i",
-      tick      = "v",
-      cross     = "x",
-      ellipsis  = "..."
+      expanded = "v",
+      branch = "|-",
+      last = "`-",
+      info = "i",
+      tick = "v",
+      cross = "x",
+      ellipsis = "..."
     )
   }
   unname(syms[[name]])
@@ -49,17 +49,17 @@ stac_sym <- function(name) {
 
 # Styles -----------------------------------------------------------------
 
-stac_style_type  <- function(x) cli::style_bold(cli::col_cyan(x))
-stac_style_id    <- function(x) cli::style_bold(cli::col_green(x))
+stac_style_type <- function(x) cli::style_bold(cli::col_cyan(x))
+stac_style_id <- function(x) cli::style_bold(cli::col_green(x))
 stac_style_label <- function(x) cli::col_silver(x)
 stac_style_count <- function(x) cli::col_yellow(x)
-stac_style_key   <- function(x) cli::col_magenta(x)
-stac_style_url   <- function(x) cli::col_blue(x)
+stac_style_key <- function(x) cli::col_magenta(x)
+stac_style_url <- function(x) cli::col_blue(x)
 stac_style_muted <- function(x) cli::col_silver(x)
 stac_style_arrow <- function(x) cli::col_blue(x)
-stac_style_ok    <- function(x) cli::col_green(x)
-stac_style_bad   <- function(x) cli::col_red(x)
-stac_style_warn  <- function(x) cli::col_yellow(x)
+stac_style_ok <- function(x) cli::col_green(x)
+stac_style_bad <- function(x) cli::col_red(x)
+stac_style_warn <- function(x) cli::col_yellow(x)
 stac_style_value <- function(x) x
 
 # Value formatting -------------------------------------------------------
@@ -90,12 +90,16 @@ stac_fmt_value <- function(x, width = stac_avail(20L)) {
   if (is.list(x)) {
     if (!is.null(names(x))) {
       return(stac_truncate(
-        sprintf("{%s}", paste(names(x), collapse = ", ")), width
+        sprintf("{%s}", paste(names(x), collapse = ", ")),
+        width
       ))
     }
-    if (all(vapply(x, function(el) is.atomic(el) && length(el) == 1L, logical(1)))) {
+    if (
+      all(vapply(x, function(el) is.atomic(el) && length(el) == 1L, logical(1)))
+    ) {
       return(stac_truncate(
-        sprintf("[%s]", paste(unlist(x), collapse = ", ")), width
+        sprintf("[%s]", paste(unlist(x), collapse = ", ")),
+        width
       ))
     }
     # Extension fields are usually arrays of objects (bands,
@@ -103,10 +107,15 @@ stac_fmt_value <- function(x, width = stac_avail(20L)) {
     # each object where there is one, and by a count otherwise.
     labels <- stac_object_labels(x)
     if (!is.null(labels)) {
-      return(stac_truncate(sprintf("[%s]", paste(labels, collapse = ", ")), width))
+      return(stac_truncate(
+        sprintf("[%s]", paste(labels, collapse = ", ")),
+        width
+      ))
     }
     return(sprintf(
-      "<%d %s>", length(x), if (length(x) == 1L) "item" else "items"
+      "<%d %s>",
+      length(x),
+      if (length(x) == 1L) "item" else "items"
     ))
   }
   if (length(x) > 1L) {
@@ -119,7 +128,13 @@ stac_fmt_value <- function(x, width = stac_avail(20L)) {
 # the class names in `classification:classes`. Returns NULL when the elements
 # carry no obvious label.
 stac_object_labels <- function(x) {
-  for (field in c("name", "eo:common_name", "common_name", "value", "data_type")) {
+  for (field in c(
+    "name",
+    "eo:common_name",
+    "common_name",
+    "value",
+    "data_type"
+  )) {
     labels <- lapply(x, function(el) {
       if (inherits(el, "S7_object")) {
         property <- if (field == "eo:common_name") "common_name" else field
@@ -130,7 +145,13 @@ stac_object_labels <- function(x) {
         NULL
       }
     })
-    if (all(vapply(labels, function(l) length(l) == 1L && is.atomic(l), logical(1)))) {
+    if (
+      all(vapply(
+        labels,
+        function(l) length(l) == 1L && is.atomic(l),
+        logical(1)
+      ))
+    ) {
       return(as.character(unlist(labels)))
     }
   }
@@ -165,10 +186,12 @@ stac_print_header <- function(title) {
 }
 
 # A plain "label : value" line, with the value trimmed to fit the console.
-stac_print_field <- function(label,
-                             value,
-                             style = stac_style_value,
-                             width = stac_label_width) {
+stac_print_field <- function(
+  label,
+  value,
+  style = stac_style_value,
+  width = stac_label_width
+) {
   cat(sprintf(
     "  %s : %s\n",
     stac_style_label(stac_pad(label, width)),
@@ -181,10 +204,12 @@ stac_print_field <- function(label,
 # unconditionally. `units` appends a unit to named fields, `styles` overrides
 # the value style, and `skip` leaves fields for the caller to render itself
 # (as a collapsible section, say).
-stac_print_list_fields <- function(x,
-                                   units = character(0),
-                                   styles = list(),
-                                   skip = character(0)) {
+stac_print_list_fields <- function(
+  x,
+  units = character(0),
+  styles = list(),
+  skip = character(0)
+) {
   keep <- !names(x) %in% skip &
     !vapply(x, function(v) is.null(v) || length(v) == 0L, logical(1))
   fields <- x[keep]
@@ -222,12 +247,14 @@ stac_print_empty <- function() {
 #' @param expanded Whether to show `lines`.
 #' @return Invisibly, `TRUE` if a non-empty section was left collapsed.
 #' @noRd
-stac_print_section <- function(label,
-                               n,
-                               summary = NULL,
-                               lines = NULL,
-                               expanded = FALSE,
-                               width = stac_label_width) {
+stac_print_section <- function(
+  label,
+  n,
+  summary = NULL,
+  lines = NULL,
+  expanded = FALSE,
+  width = stac_label_width
+) {
   expanded <- expanded && n > 0L
   arrow <- if (n == 0L) {
     " "
@@ -301,16 +328,22 @@ stac_print_hint <- function(n_collapsed) {
 
 # One entry line: a styled label followed by muted detail, truncated to fit
 # the console. Truncation happens before styling so ANSI codes stay intact.
-stac_entry <- function(label,
-                       label_width,
-                       detail = "",
-                       style = stac_style_key,
-                       indent = 9L) {
+stac_entry <- function(
+  label,
+  label_width,
+  detail = "",
+  style = stac_style_key,
+  indent = 9L
+) {
   line <- style(stac_pad(label, label_width))
   if (nzchar(detail)) {
-    line <- paste0(line, " ", stac_style_muted(
-      stac_truncate(detail, stac_avail(indent + label_width + 1L))
-    ))
+    line <- paste0(
+      line,
+      " ",
+      stac_style_muted(
+        stac_truncate(detail, stac_avail(indent + label_width + 1L))
+      )
+    )
   }
   line
 }
@@ -322,10 +355,13 @@ stac_asset_lines <- function(assets) {
   unname(lapply(names(assets), function(key) {
     asset <- assets[[key]]
     roles <- asset@roles %||% character(0)
-    detail <- paste(c(
-      asset@type,
-      if (length(roles) > 0) sprintf("[%s]", paste(roles, collapse = ", "))
-    ), collapse = " ")
+    detail <- paste(
+      c(
+        asset@type,
+        if (length(roles) > 0) sprintf("[%s]", paste(roles, collapse = ", "))
+      ),
+      collapse = " "
+    )
     c(
       stac_entry(key, key_width, detail),
       stac_style_url(stac_truncate(asset@href, stac_avail(11L))),
@@ -340,109 +376,162 @@ stac_asset_lines <- function(assets) {
 }
 
 stac_link_lines <- function(links) {
-  vapply(links, function(link) {
-    paste0(
-      stac_style_key(stac_pad(link$rel %||% "", 10L)),
-      " ",
-      stac_style_url(stac_truncate(link$href %||% "", stac_avail(20L)))
-    )
-  }, character(1), USE.NAMES = FALSE)
+  vapply(
+    links,
+    function(link) {
+      paste0(
+        stac_style_key(stac_pad(link$rel %||% "", 10L)),
+        " ",
+        stac_style_url(stac_truncate(link$href %||% "", stac_avail(20L)))
+      )
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 # Short name of an extension, e.g. "eo" for
 # "https://stac-extensions.github.io/eo/v1.1.0/schema.json".
 stac_extension_names <- function(extensions) {
-  vapply(extensions, function(ext) {
-    parts <- strsplit(sub("^https?://", "", ext), "/", fixed = TRUE)[[1]]
-    parts <- parts[nzchar(parts)]
-    if (length(parts) >= 2L) parts[[2]] else ext
-  }, character(1), USE.NAMES = FALSE)
+  vapply(
+    extensions,
+    function(ext) {
+      parts <- strsplit(sub("^https?://", "", ext), "/", fixed = TRUE)[[1]]
+      parts <- parts[nzchar(parts)]
+      if (length(parts) >= 2L) parts[[2]] else ext
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 # Version of an extension, e.g. "v1.1.0" for
 # "https://stac-extensions.github.io/eo/v1.1.0/schema.json".
 stac_extension_versions <- function(extensions) {
-  vapply(extensions, function(ext) {
-    parts <- strsplit(sub("^https?://", "", ext), "/", fixed = TRUE)[[1]]
-    parts <- parts[nzchar(parts)]
-    if (length(parts) >= 3L && grepl("^v?[0-9]", parts[[3]])) parts[[3]] else ""
-  }, character(1), USE.NAMES = FALSE)
+  vapply(
+    extensions,
+    function(ext) {
+      parts <- strsplit(sub("^https?://", "", ext), "/", fixed = TRUE)[[1]]
+      parts <- parts[nzchar(parts)]
+      if (length(parts) >= 3L && grepl("^v?[0-9]", parts[[3]])) {
+        parts[[3]]
+      } else {
+        ""
+      }
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 stac_extension_lines <- function(extensions) {
   names_ <- stac_extension_names(extensions)
   versions <- stac_extension_versions(extensions)
   name_width <- max(nchar(names_), 0L)
-  vapply(seq_along(extensions), function(i) {
-    # Fall back to the full URI for anything that does not follow the
-    # stac-extensions.github.io layout.
-    if (!nzchar(versions[[i]])) {
-      return(stac_style_url(stac_truncate(extensions[[i]], stac_avail(9L))))
-    }
-    stac_entry(names_[[i]], name_width, versions[[i]])
-  }, character(1), USE.NAMES = FALSE)
+  vapply(
+    seq_along(extensions),
+    function(i) {
+      # Fall back to the full URI for anything that does not follow the
+      # stac-extensions.github.io layout.
+      if (!nzchar(versions[[i]])) {
+        return(stac_style_url(stac_truncate(extensions[[i]], stac_avail(9L))))
+      }
+      stac_entry(names_[[i]], name_width, versions[[i]])
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 stac_child_lines <- function(children) {
   id_width <- max(nchar(names(children)), 0L)
-  vapply(names(children), function(id) {
-    child <- children[[id]]
-    stac_entry(
-      id,
-      id_width,
-      paste(c(child@type, child@title), collapse = " "),
-      style = stac_style_id
-    )
-  }, character(1), USE.NAMES = FALSE)
+  vapply(
+    names(children),
+    function(id) {
+      child <- children[[id]]
+      stac_entry(
+        id,
+        id_width,
+        paste(c(child@type, child@title), collapse = " "),
+        style = stac_style_id
+      )
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 stac_item_lines <- function(items) {
   id_width <- max(nchar(vapply(items, function(i) i@id, character(1))), 0L)
-  vapply(items, function(item) {
-    dt <- item@properties$datetime %||% item@properties$start_datetime
-    stac_entry(item@id, id_width, dt %||% "", style = stac_style_id)
-  }, character(1), USE.NAMES = FALSE)
+  vapply(
+    items,
+    function(item) {
+      dt <- item@properties$datetime %||% item@properties$start_datetime
+      stac_entry(item@id, id_width, dt %||% "", style = stac_style_id)
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 # Named list of arbitrary fields (item properties, collection summaries).
 stac_field_lines <- function(x, width = 10L, indent = 9L) {
   key_width <- max(width, nchar(names(x)))
   value_width <- stac_avail(indent + key_width + 1L)
-  vapply(names(x), function(key) {
-    paste0(
-      stac_style_key(stac_pad(key, key_width)),
-      " ",
-      stac_fmt_value(x[[key]], value_width)
-    )
-  }, character(1), USE.NAMES = FALSE)
+  vapply(
+    names(x),
+    function(key) {
+      paste0(
+        stac_style_key(stac_pad(key, key_width)),
+        " ",
+        stac_fmt_value(x[[key]], value_width)
+      )
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 # Classification classes -> "value  label" entries.
 stac_classification_lines <- function(classes) {
   values <- vapply(classes, function(cls) as.character(cls@value), character(1))
   value_width <- max(nchar(values), 0L)
-  vapply(seq_along(classes), function(i) {
-    cls <- classes[[i]]
-    stac_entry(
-      values[[i]],
-      value_width,
-      cls@title %||% cls@name %||% "",
-      style = stac_style_count
-    )
-  }, character(1), USE.NAMES = FALSE)
+  vapply(
+    seq_along(classes),
+    function(i) {
+      cls <- classes[[i]]
+      stac_entry(
+        values[[i]],
+        value_width,
+        cls@title %||% cls@name %||% "",
+        style = stac_style_count
+      )
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 stac_provider_lines <- function(providers) {
   names_ <- vapply(providers, function(p) p@name, character(1))
   name_width <- max(nchar(names_), 0L)
-  vapply(providers, function(p) {
-    roles <- p@roles %||% character(0)
-    stac_entry(
-      p@name,
-      name_width,
-      if (length(roles) > 0) sprintf("[%s]", paste(roles, collapse = ", ")) else ""
-    )
-  }, character(1), USE.NAMES = FALSE)
+  vapply(
+    providers,
+    function(p) {
+      roles <- p@roles %||% character(0)
+      stac_entry(
+        p@name,
+        name_width,
+        if (length(roles) > 0) {
+          sprintf("[%s]", paste(roles, collapse = ", "))
+        } else {
+          ""
+        }
+      )
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 # Short inline previews shown when a section is collapsed.

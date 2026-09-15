@@ -25,14 +25,19 @@ test_that("collection with providers matches pystac", {
   )
 
   # Create Python collection with providers
-  spatial_extent <- pystac$SpatialExtent(bboxes = list(list(-180, -90, 180, 90)))
+  spatial_extent <- pystac$SpatialExtent(
+    bboxes = list(list(-180, -90, 180, 90))
+  )
   temporal_extent <- pystac$TemporalExtent(intervals = list(list(NULL, NULL)))
 
   py_collection <- pystac$Collection(
     id = collection_id,
     description = "Test collection with providers",
     license = "CC-BY-4.0",
-    extent = pystac$Extent(spatial = spatial_extent, temporal = temporal_extent),
+    extent = pystac$Extent(
+      spatial = spatial_extent,
+      temporal = temporal_extent
+    ),
     providers = list(
       pystac$Provider(
         name = "Example Provider",
@@ -75,14 +80,19 @@ test_that("collection with summaries matches pystac", {
   )
 
   # Create Python collection with summaries
-  spatial_extent <- pystac$SpatialExtent(bboxes = list(list(-180, -90, 180, 90)))
+  spatial_extent <- pystac$SpatialExtent(
+    bboxes = list(list(-180, -90, 180, 90))
+  )
   temporal_extent <- pystac$TemporalExtent(intervals = list(list(NULL, NULL)))
 
   py_collection <- pystac$Collection(
     id = collection_id,
     description = "Test collection with summaries",
     license = "CC-BY-4.0",
-    extent = pystac$Extent(spatial = spatial_extent, temporal = temporal_extent),
+    extent = pystac$Extent(
+      spatial = spatial_extent,
+      temporal = temporal_extent
+    ),
     summaries = pystac$Summaries(reticulate::dict(
       platform = list("landsat-8", "landsat-9"),
       instruments = list("oli", "tirs"),

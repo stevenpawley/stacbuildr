@@ -193,7 +193,13 @@ test_that("item_from_terra records the CRS authority in proj:code", {
 
   make <- function(crs) {
     r <- terra::rast(
-      nrows = 4, ncols = 4, xmin = 0, xmax = 1, ymin = 0, ymax = 1, crs = crs
+      nrows = 4,
+      ncols = 4,
+      xmin = 0,
+      xmax = 1,
+      ymin = 0,
+      ymax = 1,
+      crs = crs
     )
     terra::values(r) <- 1
     r
@@ -202,13 +208,21 @@ test_that("item_from_terra records the CRS authority in proj:code", {
   # OGC:CRS84 is WGS84 lon/lat and has no EPSG code; proj:code carries the
   # authority alongside the code, so it is recorded as-is
   item <- expect_no_warning(
-    item_from_terra(make("OGC:CRS84"), id = "crs84", datetime = "2020-01-01T00:00:00Z")
+    item_from_terra(
+      make("OGC:CRS84"),
+      id = "crs84",
+      datetime = "2020-01-01T00:00:00Z"
+    )
   )
   expect_equal(item@properties$`proj:code`, "OGC:CRS84")
   expect_equal(item@bbox, c(0, 0, 1, 1), ignore_attr = TRUE)
 
   # An EPSG code is recorded with its authority prefix
-  utm <- item_from_terra(make("EPSG:32633"), id = "utm", datetime = "2020-01-01T00:00:00Z")
+  utm <- item_from_terra(
+    make("EPSG:32633"),
+    id = "utm",
+    datetime = "2020-01-01T00:00:00Z"
+  )
   expect_equal(utm@properties$`proj:code`, "EPSG:32633")
 })
 
@@ -216,7 +230,13 @@ test_that("item_from_terra reports a missing CRS instead of failing in st_crs", 
   skip_if_not_installed("terra")
 
   r <- terra::rast(
-    nrows = 4, ncols = 4, xmin = 0, xmax = 1, ymin = 0, ymax = 1, crs = ""
+    nrows = 4,
+    ncols = 4,
+    xmin = 0,
+    xmax = 1,
+    ymin = 0,
+    ymax = 1,
+    crs = ""
   )
   terra::values(r) <- 1
 
@@ -229,7 +249,9 @@ test_that("item_from_terra reports a missing CRS instead of failing in st_crs", 
   # reproject_to_wgs84 = FALSE is the escape hatch for lon/lat with no CRS set
   expect_no_error(
     item_from_terra(
-      r, id = "none", datetime = "2020-01-01T00:00:00Z",
+      r,
+      id = "none",
+      datetime = "2020-01-01T00:00:00Z",
       reproject_to_wgs84 = FALSE
     )
   )
@@ -277,7 +299,11 @@ test_that("band_from_file output attaches to an item as raster bands", {
     datetime = "2023-06-15T10:30:00Z"
   )
   item <- add_asset(item, key = "data", href = tif, type = "image/tiff")
-  item <- add_raster_extension(item, bands = band_from_file(tif), asset_key = "data")
+  item <- add_raster_extension(
+    item,
+    bands = band_from_file(tif),
+    asset_key = "data"
+  )
 
   expect_length(item@assets$data@extra_fields$bands, 6)
   expect_equal(item@assets$data@extra_fields$bands[[1]]@data_type, "uint8")

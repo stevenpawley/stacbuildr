@@ -15,14 +15,20 @@ test_that("print dispatches for sub-object classes", {
     stac_summaries = stac_summaries(platform = list("landsat-8")),
     classification_class = classification_class(value = 1, name = "water"),
     classification_bitfield = classification_bitfield(
-      offset = 2, length = 2,
+      offset = 2,
+      length = 2,
       classes = list(classification_class(value = 0, name = "none"))
     ),
     render_object = render_object(assets = "B4"),
     scientific_publication = scientific_publication(
-      doi = "10.1000/xyz", citation = "Someone et al."
+      doi = "10.1000/xyz",
+      citation = "Someone et al."
     ),
-    cube_dimension = cube_dimension(type = "spatial", axis = "x", extent = list(0, 1)),
+    cube_dimension = cube_dimension(
+      type = "spatial",
+      axis = "x",
+      extent = list(0, 1)
+    ),
     cube_variable = cube_variable(dimensions = c("x", "y"), type = "data"),
     table_column = table_column(name = "geom", type = "geometry")
   )
@@ -51,19 +57,36 @@ test_that("every sub-object prints in the shared style", {
   local_reproducible_output(unicode = FALSE)
 
   cases <- list(
-    "EO Band" = eo_band(name = "B4", common_name = "red", center_wavelength = 0.665),
+    "EO Band" = eo_band(
+      name = "B4",
+      common_name = "red",
+      center_wavelength = 0.665
+    ),
     "Raster Band" = raster_band(data_type = "uint16", scale = 1, offset = 0),
     "Raster Statistics" = raster_statistics(minimum = 0, maximum = 1),
-    "Raster Histogram" = raster_histogram(count = 1, min = 0, max = 1, buckets = 1),
+    "Raster Histogram" = raster_histogram(
+      count = 1,
+      min = 0,
+      max = 1,
+      buckets = 1
+    ),
     "Classification Class" = classification_class(value = 1, name = "water"),
     "Classification Bitfield" = classification_bitfield(
-      offset = 1, length = 1,
+      offset = 1,
+      length = 1,
       classes = list(classification_class(value = 0, name = "none"))
     ),
-    "Datacube Dimension" = cube_dimension(type = "spatial", axis = "x", extent = list(0, 1)),
+    "Datacube Dimension" = cube_dimension(
+      type = "spatial",
+      axis = "x",
+      extent = list(0, 1)
+    ),
     "Datacube Variable" = cube_variable(dimensions = "x", type = "data"),
     "Render Object" = render_object(assets = "B4"),
-    "Scientific Publication" = scientific_publication(doi = "10.1/x", citation = "c"),
+    "Scientific Publication" = scientific_publication(
+      doi = "10.1/x",
+      citation = "c"
+    ),
     "Table Column" = table_column(name = "g", type = "geometry"),
     "STAC Asset" = stac_asset(href = "./b4.tif"),
     "STAC Provider" = stac_provider(name = "USGS"),
@@ -84,17 +107,26 @@ test_that("sub-object fields keep their units and formatting", {
   out <- capture.output(print(eo_band(name = "B4", center_wavelength = 0.665)))
   expect_true(any(grepl("0.665 micrometres", out, fixed = TRUE)))
 
-  out <- capture.output(print(classification_class(value = 1, color_hint = "0000FF", percentage = 12.5)))
+  out <- capture.output(print(classification_class(
+    value = 1,
+    color_hint = "0000FF",
+    percentage = 12.5
+  )))
   expect_true(any(grepl("#0000FF", out, fixed = TRUE)))
   expect_true(any(grepl("12.5%", out, fixed = TRUE)))
 
   out <- capture.output(print(classification_bitfield(
-    offset = 1, length = 2,
+    offset = 1,
+    length = 2,
     classes = list(classification_class(value = 0, name = "none"))
   )))
   expect_true(any(grepl("2 bit(s)", out, fixed = TRUE)))
 
-  out <- capture.output(print(raster_band(data_type = "uint16", scale = 0.5, offset = 2)))
+  out <- capture.output(print(raster_band(
+    data_type = "uint16",
+    scale = 0.5,
+    offset = 2
+  )))
   expect_true(any(grepl("value = 0.5 * DN + 2", out, fixed = TRUE)))
 })
 
@@ -102,7 +134,8 @@ test_that("sub-object sections expand", {
   local_reproducible_output(unicode = FALSE)
 
   bf <- classification_bitfield(
-    offset = 1, length = 1,
+    offset = 1,
+    length = 1,
     classes = list(
       classification_class(value = 0, name = "none"),
       classification_class(value = 1, name = "low")
@@ -120,7 +153,9 @@ test_that("sub-object sections expand", {
   expect_true(any(grepl("`- 1 low", out, fixed = TRUE)))
 
   band <- raster_band(
-    data_type = "uint16", scale = 1, offset = 0,
+    data_type = "uint16",
+    scale = 1,
+    offset = 0,
     statistics = raster_statistics(minimum = 1, maximum = 10)
   )
   out <- capture.output(print(band, expand = "statistics"))
@@ -170,8 +205,11 @@ test_that("the new classes do not leak into JSON", {
     datetime = "2023-01-01T00:00:00Z"
   )
   item <- add_asset(
-    item, "B4",
-    href = "./b4.tif", type = "image/tiff", roles = "data"
+    item,
+    "B4",
+    href = "./b4.tif",
+    type = "image/tiff",
+    roles = "data"
   )
   path <- withr::local_tempfile(fileext = ".json")
   write_item(item, path)

@@ -29,8 +29,14 @@
 #' }
 #'
 #' @export
-preview_from_terra <- function(terra_obj, path, width = 256, height = 256,
-                               title = NULL, ...) {
+preview_from_terra <- function(
+  terra_obj,
+  path,
+  width = 256,
+  height = 256,
+  title = NULL,
+  ...
+) {
   if (!requireNamespace("terra", quietly = TRUE)) {
     cli::cli_abort(c(
       "Package 'terra' is required.",
@@ -46,17 +52,20 @@ preview_from_terra <- function(terra_obj, path, width = 256, height = 256,
 
   grDevices::png(path, width = width, height = height)
 
-  tryCatch({
-    n_bands <- terra::nlyr(terra_obj)
+  tryCatch(
+    {
+      n_bands <- terra::nlyr(terra_obj)
 
-    if (n_bands >= 3L) {
-      terra::plotRGB(terra_obj[[1:3]], ...)
-    } else {
-      terra::plot(terra_obj[[1]], axes = FALSE, legend = FALSE, ...)
+      if (n_bands >= 3L) {
+        terra::plotRGB(terra_obj[[1:3]], ...)
+      } else {
+        terra::plot(terra_obj[[1]], axes = FALSE, legend = FALSE, ...)
+      }
+    },
+    finally = {
+      grDevices::dev.off()
     }
-  }, finally = {
-    grDevices::dev.off()
-  })
+  )
 
   stac_asset(
     href = normalize_href(path),
@@ -95,8 +104,14 @@ preview_from_terra <- function(terra_obj, path, width = 256, height = 256,
 #' }
 #'
 #' @export
-thumbnail_from_sf <- function(sf_obj, path, width = 256, height = 256,
-                              title = NULL, ...) {
+thumbnail_from_sf <- function(
+  sf_obj,
+  path,
+  width = 256,
+  height = 256,
+  title = NULL,
+  ...
+) {
   if (!inherits(sf_obj, "sf")) {
     cli::cli_abort("'sf_obj' must be an sf object")
   }
@@ -105,11 +120,14 @@ thumbnail_from_sf <- function(sf_obj, path, width = 256, height = 256,
   }
 
   grDevices::png(path, width = width, height = height)
-  tryCatch({
-    plot(sf::st_geometry(sf_obj), axes = FALSE, ...)
-  }, finally = {
-    grDevices::dev.off()
-  })
+  tryCatch(
+    {
+      plot(sf::st_geometry(sf_obj), axes = FALSE, ...)
+    },
+    finally = {
+      grDevices::dev.off()
+    }
+  )
 
   stac_asset(
     href = normalize_href(path),

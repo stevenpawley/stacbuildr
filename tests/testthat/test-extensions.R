@@ -58,7 +58,8 @@ test_that("add_eo_extension writes bands to item properties matching pystac", {
   skip_if_not_installed("reticulate")
   reticulate::py_require("pystac")
 
-  reticulate::py_run_string("
+  reticulate::py_run_string(
+    "
 import pystac, datetime
 from pystac.extensions.eo import EOExtension, Band
 
@@ -73,12 +74,15 @@ py_item = pystac.Item(
 eo = EOExtension.ext(py_item, add_if_missing=True)
 eo.bands = [Band.create(name='wv3', center_wavelength=0.5)]
 py_eo_result = py_item.to_dict()
-")
+"
+  )
 
   py_json <- py_to_r_json(reticulate::py$py_eo_result)
 
   r_item <- make_r_item() |>
-    add_eo_extension(bands = list(eo_band(name = "wv3", center_wavelength = 0.5)))
+    add_eo_extension(
+      bands = list(eo_band(name = "wv3", center_wavelength = 0.5))
+    )
   r_json <- r_to_r_json(r_item)
 
   # bands in properties (not assets)
@@ -99,15 +103,22 @@ py_eo_result = py_item.to_dict()
   )
 
   # Extension URI registered
-  expect_true(any(grepl("stac-extensions.github.io/eo/", r_json$stac_extensions)))
-  expect_true(any(grepl("stac-extensions.github.io/eo/", py_json$stac_extensions)))
+  expect_true(any(grepl(
+    "stac-extensions.github.io/eo/",
+    r_json$stac_extensions
+  )))
+  expect_true(any(grepl(
+    "stac-extensions.github.io/eo/",
+    py_json$stac_extensions
+  )))
 })
 
 test_that("add_eo_extension writes bands to asset matching pystac", {
   skip_if_not_installed("reticulate")
   reticulate::py_require("pystac")
 
-  reticulate::py_run_string("
+  reticulate::py_run_string(
+    "
 import pystac, datetime
 from pystac.extensions.eo import EOExtension, Band
 
@@ -133,18 +144,22 @@ eo.apply(
     ])
 
 py_asset_eo_result = py_item.to_dict()
-")
+"
+  )
 
   py_json <- py_to_r_json(reticulate::py$py_asset_eo_result)
 
   r_item <- make_r_item() |>
-    add_asset("data", href = "https://example.com/image.tif",
-              type = "image/tiff; application=geotiff") |>
+    add_asset(
+      "data",
+      href = "https://example.com/image.tif",
+      type = "image/tiff; application=geotiff"
+    ) |>
     add_eo_extension(
       bands = list(
-        eo_band(name = "B4", common_name = "red",   center_wavelength = 0.665),
+        eo_band(name = "B4", common_name = "red", center_wavelength = 0.665),
         eo_band(name = "B3", common_name = "green", center_wavelength = 0.560),
-        eo_band(name = "B2", common_name = "blue",  center_wavelength = 0.490)
+        eo_band(name = "B2", common_name = "blue", center_wavelength = 0.490)
       ),
       asset_key = "data"
     )
@@ -183,7 +198,8 @@ test_that("add_raster_extension places bands on asset matching pystac", {
   skip_if_not_installed("reticulate")
   reticulate::py_require("pystac")
 
-  reticulate::py_run_string("
+  reticulate::py_run_string(
+    "
 import pystac, datetime
 from pystac.extensions.raster import RasterExtension, RasterBand
 
@@ -204,15 +220,24 @@ py_item.add_asset('test', asset)
 raster = RasterExtension.ext(asset, add_if_missing=True)
 raster.bands = [RasterBand.create(nodata=0, sampling='point', spatial_resolution=10)]
 py_raster_result = py_item.to_dict()
-")
+"
+  )
 
   py_json <- py_to_r_json(reticulate::py$py_raster_result)
 
   r_item <- make_r_item() |>
-    add_asset("test", href = "https://example.com/image.tif",
-              type = "image/tiff; application=geotiff", title = "RGB Image") |>
+    add_asset(
+      "test",
+      href = "https://example.com/image.tif",
+      type = "image/tiff; application=geotiff",
+      title = "RGB Image"
+    ) |>
     add_raster_extension(
-      bands    = list(raster_band(nodata = 0, sampling = "point", spatial_resolution = 10)),
+      bands = list(raster_band(
+        nodata = 0,
+        sampling = "point",
+        spatial_resolution = 10
+      )),
       asset_key = "test"
     )
   r_json <- r_to_r_json(r_item)
@@ -234,15 +259,22 @@ py_raster_result = py_item.to_dict()
   )
 
   # Extension URI registered
-  expect_true(any(grepl("stac-extensions.github.io/raster/", r_json$stac_extensions)))
-  expect_true(any(grepl("stac-extensions.github.io/raster/", py_json$stac_extensions)))
+  expect_true(any(grepl(
+    "stac-extensions.github.io/raster/",
+    r_json$stac_extensions
+  )))
+  expect_true(any(grepl(
+    "stac-extensions.github.io/raster/",
+    py_json$stac_extensions
+  )))
 })
 
 test_that("add_raster_extension places bands on the asset it was given", {
   skip_if_not_installed("reticulate")
   reticulate::py_require("pystac")
 
-  reticulate::py_run_string("
+  reticulate::py_run_string(
+    "
 import pystac, datetime
 from pystac.extensions.raster import RasterExtension, RasterBand
 
@@ -265,7 +297,8 @@ raster = RasterExtension.ext(py_asset, add_if_missing=True)
 raster.bands = [RasterBand.create(data_type='uint16', nodata=0, spatial_resolution=30)]
 
 py_raster_props_result = py_item.to_dict()
-")
+"
+  )
 
   py_json <- py_to_r_json(reticulate::py$py_raster_props_result)
 
@@ -286,7 +319,10 @@ py_raster_props_result = py_item.to_dict()
   py_band <- bands_of(py_json$assets$test)[[1]]
 
   expect_equal(band_field(r_band, "nodata"), band_field(py_band, "nodata"))
-  expect_equal(band_field(r_band, "data_type"), band_field(py_band, "data_type"))
+  expect_equal(
+    band_field(r_band, "data_type"),
+    band_field(py_band, "data_type")
+  )
   expect_equal(
     band_field(r_band, "spatial_resolution"),
     band_field(py_band, "spatial_resolution")
@@ -299,7 +335,8 @@ test_that("combined EO and raster extensions match pystac structure", {
   skip_if_not_installed("reticulate")
   reticulate::py_require("pystac")
 
-  reticulate::py_run_string("
+  reticulate::py_run_string(
+    "
 import pystac, datetime
 from pystac.extensions.eo import EOExtension, Band
 from pystac.extensions.raster import RasterExtension, RasterBand
@@ -326,27 +363,48 @@ raster = RasterExtension.ext(asset, add_if_missing=True)
 raster.bands = [RasterBand.create(nodata=0, sampling='point', spatial_resolution=10)]
 
 py_combined_result = py_item.to_dict()
-")
+"
+  )
 
   py_json <- py_to_r_json(reticulate::py$py_combined_result)
 
   r_item <- make_r_item() |>
-    add_asset("test", href = "https://example.com/image.tif",
-              type = "image/tiff; application=geotiff", title = "RGB Image") |>
+    add_asset(
+      "test",
+      href = "https://example.com/image.tif",
+      type = "image/tiff; application=geotiff",
+      title = "RGB Image"
+    ) |>
     add_eo_extension(
       bands = list(eo_band(name = "wv3", center_wavelength = 0.5))
     ) |>
     add_raster_extension(
-      bands     = list(raster_band(nodata = 0, sampling = "point", spatial_resolution = 10)),
+      bands = list(raster_band(
+        nodata = 0,
+        sampling = "point",
+        spatial_resolution = 10
+      )),
       asset_key = "test"
     )
   r_json <- r_to_r_json(r_item)
 
   # Both extensions registered
-  expect_true(any(grepl("stac-extensions.github.io/eo/",     r_json$stac_extensions)))
-  expect_true(any(grepl("stac-extensions.github.io/raster/", r_json$stac_extensions)))
-  expect_true(any(grepl("stac-extensions.github.io/eo/",     py_json$stac_extensions)))
-  expect_true(any(grepl("stac-extensions.github.io/raster/", py_json$stac_extensions)))
+  expect_true(any(grepl(
+    "stac-extensions.github.io/eo/",
+    r_json$stac_extensions
+  )))
+  expect_true(any(grepl(
+    "stac-extensions.github.io/raster/",
+    r_json$stac_extensions
+  )))
+  expect_true(any(grepl(
+    "stac-extensions.github.io/eo/",
+    py_json$stac_extensions
+  )))
+  expect_true(any(grepl(
+    "stac-extensions.github.io/raster/",
+    py_json$stac_extensions
+  )))
 
   # EO bands in item properties
   expect_true("bands" %in% names(r_json$properties))
@@ -366,5 +424,8 @@ py_combined_result = py_item.to_dict()
 
   # The two calls target different places, so neither leaks into the other
   expect_null(band_field(bands_of(r_json$properties)[[1]], "nodata"))
-  expect_null(band_field(bands_of(r_json$assets$test)[[1]], "center_wavelength"))
+  expect_null(band_field(
+    bands_of(r_json$assets$test)[[1]],
+    "center_wavelength"
+  ))
 })

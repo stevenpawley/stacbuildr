@@ -146,7 +146,11 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
 
   # Detect double-wrapping: band_from_file() returns a list, so
   # list(band_from_file(...)) produces list(list(band, ...))
-  if (length(bands) == 1 && is.list(bands[[1]]) && !S7::S7_inherits(bands[[1]], raster_band)) {
+  if (
+    length(bands) == 1 &&
+      is.list(bands[[1]]) &&
+      !S7::S7_inherits(bands[[1]], raster_band)
+  ) {
     cli::cli_abort(c(
       "'bands' appears to be double-wrapped.",
       "i" = "Use bands = band_from_file(...), not bands = list(band_from_file(...))."
@@ -258,18 +262,22 @@ raster_band <- S7::new_class(
     sampling = S7::new_property(
       S7::class_character,
       validator = function(value) {
-        if (length(value) > 0)
-          if (!value %in% c("area", "point"))
+        if (length(value) > 0) {
+          if (!value %in% c("area", "point")) {
             "'sampling' must be either 'area' or 'point'"
+          }
+        }
       }
     ),
     bits_per_sample = S7::class_integer,
     spatial_resolution = S7::new_property(
       S7::class_numeric,
       validator = function(value) {
-        if (length(value) > 0)
-          if (value <= 0)
+        if (length(value) > 0) {
+          if (value <= 0) {
             "'spatial_resolution' must be greater than zero"
+          }
+        }
       }
     ),
     scale = S7::new_property(S7::class_numeric, default = 1),
@@ -284,17 +292,19 @@ raster_band <- S7::new_class(
     ),
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
-  constructor = function(nodata = NULL,
-                         data_type = NULL,
-                         unit = NULL,
-                         statistics = NULL,
-                         sampling = NULL,
-                         bits_per_sample = NULL,
-                         spatial_resolution = NULL,
-                         scale = 1,
-                         offset = 0,
-                         histogram = NULL,
-                         ...) {
+  constructor = function(
+    nodata = NULL,
+    data_type = NULL,
+    unit = NULL,
+    statistics = NULL,
+    sampling = NULL,
+    bits_per_sample = NULL,
+    spatial_resolution = NULL,
+    scale = 1,
+    offset = 0,
+    histogram = NULL,
+    ...
+  ) {
     S7::new_object(
       S7::S7_object(),
       nodata = nodata %||% numeric(0),
@@ -302,7 +312,11 @@ raster_band <- S7::new_class(
       unit = unit %||% character(0),
       statistics = as_raster_statistics(statistics),
       sampling = sampling %||% character(0),
-      bits_per_sample = if (is.null(bits_per_sample)) integer(0) else as.integer(bits_per_sample),
+      bits_per_sample = if (is.null(bits_per_sample)) {
+        integer(0)
+      } else {
+        as.integer(bits_per_sample)
+      },
       spatial_resolution = spatial_resolution %||% numeric(0),
       scale = scale,
       offset = offset,
@@ -315,41 +329,52 @@ raster_band <- S7::new_class(
 S7::method(as.list, raster_band) <- function(x, ...) {
   y <- list()
 
-  if (length(x@nodata) > 0)
+  if (length(x@nodata) > 0) {
     y$nodata <- x@nodata
+  }
 
-  if (length(x@data_type) > 0)
+  if (length(x@data_type) > 0) {
     y$data_type <- x@data_type
+  }
 
-  if (length(x@unit) > 0)
+  if (length(x@unit) > 0) {
     y$unit <- x@unit
+  }
 
-  if (!is.null(x@statistics) && length(x@statistics) > 0)
+  if (!is.null(x@statistics) && length(x@statistics) > 0) {
     y$statistics <- as.list(x@statistics)
+  }
 
   # nodata, data_type, unit and statistics are STAC Common Metadata and keep
   # their bare names; everything below is raster-specific and, since v2.0.0 of
   # the extension, is written with a `raster:` prefix.
-  if (length(x@sampling) > 0)
+  if (length(x@sampling) > 0) {
     y$`raster:sampling` <- x@sampling
+  }
 
-  if (length(x@bits_per_sample) > 0)
+  if (length(x@bits_per_sample) > 0) {
     y$`raster:bits_per_sample` <- x@bits_per_sample
+  }
 
-  if (length(x@spatial_resolution) > 0)
+  if (length(x@spatial_resolution) > 0) {
     y$`raster:spatial_resolution` <- x@spatial_resolution
+  }
 
-  if (length(x@scale) > 0)
+  if (length(x@scale) > 0) {
     y$`raster:scale` <- x@scale
+  }
 
-  if (length(x@offset) > 0)
+  if (length(x@offset) > 0) {
     y$`raster:offset` <- x@offset
+  }
 
-  if (!is.null(x@histogram) && length(x@histogram) > 0)
+  if (!is.null(x@histogram) && length(x@histogram) > 0) {
     y$`raster:histogram` <- as.list(x@histogram)
+  }
 
-  if (length(x@extra_fields) > 0)
+  if (length(x@extra_fields) > 0) {
     y <- c(y, x@extra_fields)
+  }
 
   return(y)
 }
@@ -447,10 +472,17 @@ raster_statistics <- S7::new_class(
     stddev = S7::new_union(S7::class_numeric, NULL),
     valid_percent = S7::new_union(S7::class_numeric, NULL)
   ),
-  constructor = function(minimum = NULL, maximum = NULL, mean = NULL,
-                         stddev = NULL, valid_percent = NULL) {
-    if (!is.null(valid_percent) &&
-        (valid_percent < 0 || valid_percent > 100)) {
+  constructor = function(
+    minimum = NULL,
+    maximum = NULL,
+    mean = NULL,
+    stddev = NULL,
+    valid_percent = NULL
+  ) {
+    if (
+      !is.null(valid_percent) &&
+        (valid_percent < 0 || valid_percent > 100)
+    ) {
       cli::cli_warn("'valid_percent' should be between 0 and 100")
     }
     S7::new_object(
@@ -510,7 +542,12 @@ S7::method(print, raster_statistics) <- function(x, ...) {
   # "valid_percent" is wider than the default label column
   width <- max(stac_label_width, nchar(names(fields)))
   for (key in names(fields)) {
-    stac_print_field(key, stac_fmt_value(fields[[key]]), stac_style_value, width)
+    stac_print_field(
+      key,
+      stac_fmt_value(fields[[key]]),
+      stac_style_value,
+      width
+    )
   }
 
   invisible(x)
@@ -582,7 +619,8 @@ raster_histogram <- S7::new_class(
     if (length(self@buckets) != self@count) {
       return(sprintf(
         "'buckets' length (%d) must equal 'count' (%d)",
-        length(self@buckets), self@count
+        length(self@buckets),
+        self@count
       ))
     }
     NULL
@@ -663,9 +701,11 @@ S7::method(print, raster_histogram) <- function(x, ...) {
 #' }
 #'
 #' @export
-band_from_file <- function(file,
-                             calculate_statistics = FALSE,
-                             sample_size = 1000L) {
+band_from_file <- function(
+  file,
+  calculate_statistics = FALSE,
+  sample_size = 1000L
+) {
   if (!requireNamespace("terra", quietly = TRUE)) {
     cli::cli_abort(c(
       "Package 'terra' is required.",
@@ -674,5 +714,9 @@ band_from_file <- function(file,
   }
 
   r <- terra::rast(file)
-  bands_from_terra(r, calculate_statistics = calculate_statistics, sample_size = sample_size)
+  bands_from_terra(
+    r,
+    calculate_statistics = calculate_statistics,
+    sample_size = sample_size
+  )
 }

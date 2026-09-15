@@ -33,15 +33,15 @@ test_that("raster_band stores all optional fields", {
 # --- add_raster_extension() ---
 make_item <- function() {
   stac_item(
-    id       = "raster-test",
+    id = "raster-test",
     geometry = list(type = "Point", coordinates = c(-105, 40)),
-    bbox     = c(-105, 40, -105, 40),
+    bbox = c(-105, 40, -105, 40),
     datetime = "2023-06-15T00:00:00Z"
   ) |>
     add_asset(
-      key   = "B4",
-      href  = "https://example.com/B4.tif",
-      type  = "image/tiff; application=geotiff; profile=cloud-optimized",
+      key = "B4",
+      href = "https://example.com/B4.tif",
+      type = "image/tiff; application=geotiff; profile=cloud-optimized",
       roles = c("data")
     )
 }
@@ -53,8 +53,8 @@ test_that("add_raster_extension adds schema URI to stac_extensions", {
     )
 
   expect_true(
-    "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
-    %in% item@stac_extensions
+    "https://stac-extensions.github.io/raster/v2.0.0/schema.json" %in%
+      item@stac_extensions
   )
 })
 
@@ -72,7 +72,7 @@ test_that("add_raster_extension writes bands to item properties", {
 
 test_that("add_raster_extension writes bands to a named asset", {
   bands <- list(raster_band(data_type = "uint16"))
-  item  <- make_item() |>
+  item <- make_item() |>
     add_raster_extension(bands = bands, asset_key = "B4")
 
   expect_length(item@assets$B4@extra_fields$bands, 1L)
@@ -99,15 +99,17 @@ test_that("add_raster_extension errors on missing asset_key", {
 
 test_that("raster:scale survives write/read round-trip precision", {
   item <- make_item() |>
-    add_raster_extension(bands = list(
-      raster_band(
-        nodata = 0,
-        data_type = "uint16",
-        spatial_resolution = 30,
-        scale = 2.75e-5,
-        offset = -0.2
+    add_raster_extension(
+      bands = list(
+        raster_band(
+          nodata = 0,
+          data_type = "uint16",
+          spatial_resolution = 30,
+          scale = 2.75e-5,
+          offset = -0.2
+        )
       )
-    ))
+    )
 
   path <- tempfile(fileext = ".json")
   on.exit(unlink(path))
@@ -144,11 +146,13 @@ test_that("raster:scale is not rounded to zero in raw JSON output", {
 
 test_that("very small raster:offset survives write/read with full precision", {
   item <- make_item() |>
-    add_raster_extension(bands = list(raster_band(
-      data_type = "float32",
-      scale = 1e-8,
-      offset = -1e-6
-    )))
+    add_raster_extension(
+      bands = list(raster_band(
+        data_type = "float32",
+        scale = 1e-8,
+        offset = -1e-6
+      ))
+    )
 
   path <- tempfile(fileext = ".json")
   on.exit(unlink(path))
@@ -171,5 +175,8 @@ test_that("raster:scale precision holds when bands are on an asset, not item", {
   write_item(item, path)
 
   restored <- read_stac(path)
-  expect_equal(restored@assets$B4@extra_fields$bands[[1]]$`raster:scale`, 2.75e-5)
+  expect_equal(
+    restored@assets$B4@extra_fields$bands[[1]]$`raster:scale`,
+    2.75e-5
+  )
 })

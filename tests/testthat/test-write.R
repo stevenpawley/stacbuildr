@@ -53,7 +53,10 @@ test_that("write_stac output is readable and valid according to pystac", {
   catalog_file <- file.path(r_dir, "catalog.json")
   collection_file <- file.path(r_dir, collection_id, "collection.json")
   item_file <- file.path(
-    r_dir, collection_id, item_id, paste0(item_id, ".json")
+    r_dir,
+    collection_id,
+    item_id,
+    paste0(item_id, ".json")
   )
 
   expect_true(file.exists(catalog_file))
@@ -393,7 +396,9 @@ test_that("write_stac drops a stale collection field under a plain catalog", {
   )
   expect_null(written$collection)
   expect_false(any(vapply(
-    written$links, function(l) identical(l$rel, "collection"), logical(1)
+    written$links,
+    function(l) identical(l$rel, "collection"),
+    logical(1)
   )))
 })
 
@@ -426,7 +431,9 @@ test_that("write_stac keeps the collection pair intact under a collection", {
   )
   expect_equal(written$collection, "colroot")
   expect_true(any(vapply(
-    written$links, function(l) identical(l$rel, "collection"), logical(1)
+    written$links,
+    function(l) identical(l$rel, "collection"),
+    logical(1)
   )))
 })
 

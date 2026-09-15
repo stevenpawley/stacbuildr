@@ -261,14 +261,30 @@ add_projection_extension <- function(
   # (an extent carries xmin/ymin/xmax/ymax names), so names are dropped here
   # rather than left to the writer to ignore.
   fields <- list()
-  if (!is.null(code)) fields$`proj:code` <- code
-  if (!is.null(wkt2)) fields$`proj:wkt2` <- wkt2
-  if (!is.null(projjson)) fields$`proj:projjson` <- projjson
-  if (!is.null(geometry)) fields$`proj:geometry` <- geometry
-  if (!is.null(bbox)) fields$`proj:bbox` <- unname(bbox)
-  if (!is.null(centroid)) fields$`proj:centroid` <- centroid
-  if (!is.null(shape)) fields$`proj:shape` <- unname(shape)
-  if (!is.null(transform)) fields$`proj:transform` <- unname(transform)
+  if (!is.null(code)) {
+    fields$`proj:code` <- code
+  }
+  if (!is.null(wkt2)) {
+    fields$`proj:wkt2` <- wkt2
+  }
+  if (!is.null(projjson)) {
+    fields$`proj:projjson` <- projjson
+  }
+  if (!is.null(geometry)) {
+    fields$`proj:geometry` <- geometry
+  }
+  if (!is.null(bbox)) {
+    fields$`proj:bbox` <- unname(bbox)
+  }
+  if (!is.null(centroid)) {
+    fields$`proj:centroid` <- centroid
+  }
+  if (!is.null(shape)) {
+    fields$`proj:shape` <- unname(shape)
+  }
+  if (!is.null(transform)) {
+    fields$`proj:transform` <- unname(transform)
+  }
 
   if (is.null(asset_key)) {
     for (field_name in names(fields)) {
@@ -276,7 +292,9 @@ add_projection_extension <- function(
     }
   } else {
     for (field_name in names(fields)) {
-      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[field_name]]
+      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[
+        field_name
+      ]]
     }
   }
 

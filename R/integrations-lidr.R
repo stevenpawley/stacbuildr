@@ -34,16 +34,30 @@ las_dimension_sizes <- list(
 )
 
 las_base_dimensions <- c(
-  "X", "Y", "Z", "Intensity", "ReturnNumber", "NumberOfReturns",
-  "ScanDirectionFlag", "EdgeOfFlightLine", "Classification", "ScanAngleRank",
-  "UserData", "PointSourceId"
+  "X",
+  "Y",
+  "Z",
+  "Intensity",
+  "ReturnNumber",
+  "NumberOfReturns",
+  "ScanDirectionFlag",
+  "EdgeOfFlightLine",
+  "Classification",
+  "ScanAngleRank",
+  "UserData",
+  "PointSourceId"
 )
 
 las_rgb_dimensions <- c("Red", "Green", "Blue")
 
 las_wave_dimensions <- c(
-  "WavePacketDescriptorIndex", "WaveformDataOffset", "WaveformPacketSize",
-  "WaveformLocation", "WaveformXt", "WaveformYt", "WaveformZt"
+  "WavePacketDescriptorIndex",
+  "WaveformDataOffset",
+  "WaveformPacketSize",
+  "WaveformLocation",
+  "WaveformXt",
+  "WaveformYt",
+  "WaveformZt"
 )
 
 # Which dimensions each LAS point data record format carries. Formats 6-10 are
@@ -176,7 +190,9 @@ extra_byte_schemas <- function(header) {
   for (descriptor in extra) {
     name <- descriptor[["name"]]
     code <- descriptor[["data_type"]]
-    if (is.null(name) || is.null(code)) next
+    if (is.null(name) || is.null(code)) {
+      next
+    }
 
     spec <- las_extra_byte_types[[as.character(code)]]
     if (is.null(spec)) {
@@ -245,7 +261,9 @@ header_statistics <- function(header, schemas) {
   for (axis in c("X", "Y", "Z")) {
     minimum <- phb[[paste("Min", axis)]]
     maximum <- phb[[paste("Max", axis)]]
-    if (is.null(minimum) || is.null(maximum)) next
+    if (is.null(minimum) || is.null(maximum)) {
+      next
+    }
 
     stats_list[[length(stats_list) + 1]] <- pc_statistic(
       axis,
@@ -273,11 +291,15 @@ point_statistics <- function(las, schemas) {
     # Logical columns are lidR's unpacked classification flag bits, which all
     # come from the single ClassFlags byte; summarising them as separate
     # channels would put several identically named entries in pc:statistics.
-    if (!is.numeric(values)) next
+    if (!is.numeric(values)) {
+      next
+    }
 
     values <- as.numeric(values)
     values <- values[!is.na(values)]
-    if (length(values) == 0) next
+    if (length(values) == 0) {
+      next
+    }
 
     name <- pc_lookup(lidr_dimension_names, column) %||% column
     variance <- if (length(values) > 1) stats::var(values) else NULL
@@ -344,9 +366,12 @@ datetime_from_lidr <- function(header) {
   doy <- header@PHB[["File Creation Day of Year"]]
 
   if (
-    is.null(year) || is.null(doy) ||
-      is.na(year) || is.na(doy) ||
-      year <= 0 || doy <= 0
+    is.null(year) ||
+      is.null(doy) ||
+      is.na(year) ||
+      is.na(doy) ||
+      year <= 0 ||
+      doy <= 0
   ) {
     return(NULL)
   }
@@ -390,8 +415,12 @@ add_projection_metadata_lidr <- function(item, header, crs) {
     code = code,
     wkt2 = wkt2,
     bbox = c(
-      phb[["Min X"]], phb[["Min Y"]], phb[["Min Z"]],
-      phb[["Max X"]], phb[["Max Y"]], phb[["Max Z"]]
+      phb[["Min X"]],
+      phb[["Min Y"]],
+      phb[["Min Z"]],
+      phb[["Max X"]],
+      phb[["Max Y"]],
+      phb[["Max Z"]]
     )
   )
 }

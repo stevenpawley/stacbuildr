@@ -47,14 +47,25 @@ test_that("a single keyword serialises as an array", {
 test_that("a single conformsTo URI serialises as an array", {
   uri <- "https://api.stacspec.org/v1.0.0/core"
 
-  expect_equal(as_json(stac_catalog(
-    id = "c", description = "d", conformsTo = uri
-  ))$conformsTo, list(uri))
+  expect_equal(
+    as_json(stac_catalog(
+      id = "c",
+      description = "d",
+      conformsTo = uri
+    ))$conformsTo,
+    list(uri)
+  )
 
-  expect_equal(as_json(stac_collection(
-    id = "c", description = "d", license = "MIT",
-    extent = single_extent(), conformsTo = uri
-  ))$conformsTo, list(uri))
+  expect_equal(
+    as_json(stac_collection(
+      id = "c",
+      description = "d",
+      license = "MIT",
+      extent = single_extent(),
+      conformsTo = uri
+    ))$conformsTo,
+    list(uri)
+  )
 })
 
 test_that("a single provider role serialises as an array", {
@@ -88,7 +99,10 @@ test_that("single-valued common metadata arrays survive on items and assets", {
 
 test_that("a single vector:geometry_types value serialises as an array", {
   item <- add_vector_extension(single_item(), geometry_types = "Polygon")
-  expect_equal(as_json(item)$properties$`vector:geometry_types`, list("Polygon"))
+  expect_equal(
+    as_json(item)$properties$`vector:geometry_types`,
+    list("Polygon")
+  )
 })
 
 test_that("single-valued render fields serialise as arrays", {

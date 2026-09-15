@@ -124,7 +124,10 @@ add_scientific_extension <- function(
       )
     }
     not_pub <- !vapply(
-      publications, S7::S7_inherits, logical(1), scientific_publication
+      publications,
+      S7::S7_inherits,
+      logical(1),
+      scientific_publication
     )
     if (any(not_pub)) {
       cli::cli_abort(
@@ -148,14 +151,18 @@ add_scientific_extension <- function(
 
     # Add cite-as link per RFC 8574
     doi_link <- list(
-      rel  = "cite-as",
+      rel = "cite-as",
       href = paste0("https://doi.org/", doi)
     )
     if (is.null(item@links)) {
       item@links <- list()
     }
     # Only add if the link is not already present
-    existing_hrefs <- vapply(item@links, function(l) l$href %||% "", character(1))
+    existing_hrefs <- vapply(
+      item@links,
+      function(l) l$href %||% "",
+      character(1)
+    )
     if (!doi_link$href %in% existing_hrefs) {
       item@links <- c(item@links, list(doi_link))
     }
@@ -234,8 +241,9 @@ scientific_publication <- S7::new_class(
     S7::new_object(S7::S7_object(), doi = doi, citation = citation)
   },
   validator = function(self) {
-    if (is.null(self@doi) && is.null(self@citation))
+    if (is.null(self@doi) && is.null(self@citation)) {
       "at least one of 'doi' or 'citation' must be provided"
+    }
   }
 )
 

@@ -40,7 +40,10 @@ test_that("preview_from_terra accepts custom dimensions", {
 
 test_that("preview_from_terra errors on non-SpatRaster input", {
   path <- tempfile(fileext = ".png")
-  expect_error(preview_from_terra(list(), path = path), "must be a SpatRaster object")
+  expect_error(
+    preview_from_terra(list(), path = path),
+    "must be a SpatRaster object"
+  )
 })
 
 test_that("preview_from_terra errors when path is missing", {

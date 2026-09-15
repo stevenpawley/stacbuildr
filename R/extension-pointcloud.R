@@ -169,9 +169,15 @@ add_pointcloud_extension <- function(
   fields <- list()
   fields$`pc:count` <- count
   fields$`pc:type` <- type
-  if (!is.null(schemas)) fields$`pc:schemas` <- unname(schemas)
-  if (!is.null(density)) fields$`pc:density` <- density
-  if (!is.null(statistics)) fields$`pc:statistics` <- unname(statistics)
+  if (!is.null(schemas)) {
+    fields$`pc:schemas` <- unname(schemas)
+  }
+  if (!is.null(density)) {
+    fields$`pc:density` <- density
+  }
+  if (!is.null(statistics)) {
+    fields$`pc:statistics` <- unname(statistics)
+  }
 
   if (!is.null(asset_key)) {
     if (is.null(item@assets[[asset_key]])) {
@@ -179,7 +185,9 @@ add_pointcloud_extension <- function(
     }
 
     for (field_name in names(fields)) {
-      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[field_name]]
+      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[
+        field_name
+      ]]
     }
   } else {
     for (field_name in names(fields)) {
@@ -272,16 +280,18 @@ pc_schema <- S7::new_class(
     type = S7::class_character
   ),
   constructor = function(name, size, type) {
-    if (missing(name) || !is.character(name) ||
-        length(name) != 1 || is.na(name)) {
+    if (
+      missing(name) || !is.character(name) || length(name) != 1 || is.na(name)
+    ) {
       cli::cli_abort("'name' must be a single character string")
     }
     if (!nzchar(name)) {
       cli::cli_abort("'name' must not be an empty string")
     }
 
-    if (missing(size) || !is.numeric(size) ||
-        length(size) != 1 || is.na(size)) {
+    if (
+      missing(size) || !is.numeric(size) || length(size) != 1 || is.na(size)
+    ) {
       cli::cli_abort("'size' must be a single number")
     }
     if (size != trunc(size) || size <= 0) {
@@ -289,8 +299,9 @@ pc_schema <- S7::new_class(
     }
 
     valid_types <- c("floating", "unsigned", "signed")
-    if (missing(type) || !is.character(type) ||
-        length(type) != 1 || is.na(type)) {
+    if (
+      missing(type) || !is.character(type) || length(type) != 1 || is.na(type)
+    ) {
       cli::cli_abort("'type' must be a single character string")
     }
     if (!type %in% valid_types) {
@@ -301,16 +312,22 @@ pc_schema <- S7::new_class(
     }
 
     S7::new_object(
-      S7::S7_object(), name = name, size = as.integer(size), type = type
+      S7::S7_object(),
+      name = name,
+      size = as.integer(size),
+      type = type
     )
   },
   validator = function(self) {
-    if (length(self@name) != 1L || is.na(self@name) || !nzchar(self@name))
+    if (length(self@name) != 1L || is.na(self@name) || !nzchar(self@name)) {
       return("'name' must be a non-empty string")
-    if (length(self@size) != 1L || self@size <= 0L)
+    }
+    if (length(self@size) != 1L || self@size <= 0L) {
       return("'size' must be greater than 0")
-    if (!self@type %in% c("floating", "unsigned", "signed"))
+    }
+    if (!self@type %in% c("floating", "unsigned", "signed")) {
       return("'type' must be floating, unsigned, or signed")
+    }
   }
 )
 
@@ -377,24 +394,33 @@ pc_statistic <- S7::new_class(
     stddev = S7::new_union(S7::class_numeric, NULL),
     variance = S7::new_union(S7::class_numeric, NULL)
   ),
-  constructor = function(name, position = NULL, average = NULL, count = NULL,
-                         maximum = NULL, minimum = NULL, stddev = NULL,
-                         variance = NULL) {
-    if (missing(name) || !is.character(name) ||
-        length(name) != 1 || is.na(name)) {
+  constructor = function(
+    name,
+    position = NULL,
+    average = NULL,
+    count = NULL,
+    maximum = NULL,
+    minimum = NULL,
+    stddev = NULL,
+    variance = NULL
+  ) {
+    if (
+      missing(name) || !is.character(name) || length(name) != 1 || is.na(name)
+    ) {
       cli::cli_abort("'name' must be a single character string")
     }
     if (!nzchar(name)) {
       cli::cli_abort("'name' must not be an empty string")
     }
 
-    if (!is.null(position) && (
-      !is.numeric(position) ||
-        length(position) != 1 ||
-        is.na(position) ||
-        position != trunc(position) ||
-        position < 0
-    )) {
+    if (
+      !is.null(position) &&
+        (!is.numeric(position) ||
+          length(position) != 1 ||
+          is.na(position) ||
+          position != trunc(position) ||
+          position < 0)
+    ) {
       cli::cli_abort(
         "'position' must be a whole number greater than or equal to 0"
       )
@@ -409,8 +435,10 @@ pc_statistic <- S7::new_class(
     )
     for (field in names(numeric_stats)) {
       value <- numeric_stats[[field]]
-      if (!is.null(value) &&
-          (!is.numeric(value) || length(value) != 1 || is.na(value))) {
+      if (
+        !is.null(value) &&
+          (!is.numeric(value) || length(value) != 1 || is.na(value))
+      ) {
         cli::cli_abort("'{field}' must be a single number")
       }
     }
@@ -419,7 +447,9 @@ pc_statistic <- S7::new_class(
       count <- validate_pc_count(count)
     }
 
-    if (all(vapply(c(numeric_stats, list(count = count)), is.null, logical(1)))) {
+    if (
+      all(vapply(c(numeric_stats, list(count = count)), is.null, logical(1)))
+    ) {
       cli::cli_abort(c(
         "A Stats object needs the channel name and at least one statistic",
         "i" = "Supply one or more of 'average', 'count', 'maximum', 'minimum',
@@ -440,19 +470,34 @@ pc_statistic <- S7::new_class(
     )
   },
   validator = function(self) {
-    if (length(self@name) != 1L || is.na(self@name) || !nzchar(self@name))
+    if (length(self@name) != 1L || is.na(self@name) || !nzchar(self@name)) {
       return("'name' must be a non-empty string")
-    values <- list(self@average, self@count, self@maximum, self@minimum,
-                   self@stddev, self@variance)
-    if (all(vapply(values, is.null, logical(1))))
+    }
+    values <- list(
+      self@average,
+      self@count,
+      self@maximum,
+      self@minimum,
+      self@stddev,
+      self@variance
+    )
+    if (all(vapply(values, is.null, logical(1)))) {
       return("at least one statistic must be provided")
+    }
   }
 )
 
 S7::method(as.list, pc_statistic) <- function(x, ...) {
-  compact_nulls(list(name = x@name, position = x@position,
-    average = x@average, count = x@count, maximum = x@maximum,
-    minimum = x@minimum, stddev = x@stddev, variance = x@variance))
+  compact_nulls(list(
+    name = x@name,
+    position = x@position,
+    average = x@average,
+    count = x@count,
+    maximum = x@maximum,
+    minimum = x@minimum,
+    stddev = x@stddev,
+    variance = x@variance
+  ))
 }
 
 
@@ -466,9 +511,14 @@ S7::method(print, pc_statistic) <- function(x, ...) {
   stac_print_header("Point Cloud Statistics")
   stac_print_list_fields(
     compact_nulls(list(
-      name = x@name, position = x@position, average = x@average,
-      count = x@count, maximum = x@maximum, minimum = x@minimum,
-      stddev = x@stddev, variance = x@variance
+      name = x@name,
+      position = x@position,
+      average = x@average,
+      count = x@count,
+      maximum = x@maximum,
+      minimum = x@minimum,
+      stddev = x@stddev,
+      variance = x@variance
     )),
     styles = list(name = stac_style_id)
   )

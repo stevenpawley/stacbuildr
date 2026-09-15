@@ -14,12 +14,15 @@ stocked_catalog <- function(n = 3, type = c("catalog", "collection")) {
     )
   }
   for (i in seq_len(n)) {
-    cat_obj <- add_item(cat_obj, stac_item(
-      id = sprintf("item%d", i),
-      geometry = list(type = "Point", coordinates = c(0, 0)),
-      bbox = c(0, 0, 0, 0),
-      datetime = "2024-01-01T00:00:00Z"
-    ))
+    cat_obj <- add_item(
+      cat_obj,
+      stac_item(
+        id = sprintf("item%d", i),
+        geometry = list(type = "Point", coordinates = c(0, 0)),
+        bbox = c(0, 0, 0, 0),
+        datetime = "2024-01-01T00:00:00Z"
+      )
+    )
   }
   cat_obj
 }
@@ -113,7 +116,10 @@ test_that("remove_item requires something to remove", {
 })
 
 test_that("remove_item rejects a non-catalog", {
-  expect_error(remove_item(list(id = "x"), all = TRUE), "must be a stac_catalog")
+  expect_error(
+    remove_item(list(id = "x"), all = TRUE),
+    "must be a stac_catalog"
+  )
 })
 
 test_that("remove_item on an empty catalog is a no-op", {

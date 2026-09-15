@@ -77,7 +77,11 @@ test_that("add_projection_extension writes to an asset when given asset_key", {
 
 test_that("add_projection_extension rejects a missing asset", {
   expect_error(
-    add_projection_extension(proj_item(), code = "EPSG:4326", asset_key = "nope"),
+    add_projection_extension(
+      proj_item(),
+      code = "EPSG:4326",
+      asset_key = "nope"
+    ),
     "does not exist"
   )
 })
@@ -91,12 +95,21 @@ test_that("add_projection_extension requires at least one field", {
 
 test_that("add_projection_extension requires an authority on proj:code", {
   # proj:epsg was replaced by proj:code in v2.0.0, so a bare number is wrong
-  expect_error(add_projection_extension(proj_item(), code = "32612"), "AUTHORITY:CODE")
-  expect_error(add_projection_extension(proj_item(), code = "EPSG"), "AUTHORITY:CODE")
+  expect_error(
+    add_projection_extension(proj_item(), code = "32612"),
+    "AUTHORITY:CODE"
+  )
+  expect_error(
+    add_projection_extension(proj_item(), code = "EPSG"),
+    "AUTHORITY:CODE"
+  )
   expect_error(add_projection_extension(proj_item(), code = ""), "non-empty")
 
   expect_no_error(add_projection_extension(proj_item(), code = "OGC:CRS84"))
-  expect_no_error(add_projection_extension(proj_item(), code = "IAU_2015:49900"))
+  expect_no_error(add_projection_extension(
+    proj_item(),
+    code = "IAU_2015:49900"
+  ))
 })
 
 test_that("add_projection_extension accepts 2D and 3D bboxes only", {
@@ -131,9 +144,18 @@ test_that("add_projection_extension accepts 6- and 9-element transforms only", {
 })
 
 test_that("add_projection_extension requires shape to be two positive integers", {
-  expect_error(add_projection_extension(proj_item(), shape = c(10, 10, 10)), "length 2")
-  expect_error(add_projection_extension(proj_item(), shape = c(0, 10)), "positive whole")
-  expect_error(add_projection_extension(proj_item(), shape = c(1.5, 10)), "positive whole")
+  expect_error(
+    add_projection_extension(proj_item(), shape = c(10, 10, 10)),
+    "length 2"
+  )
+  expect_error(
+    add_projection_extension(proj_item(), shape = c(0, 10)),
+    "positive whole"
+  )
+  expect_error(
+    add_projection_extension(proj_item(), shape = c(1.5, 10)),
+    "positive whole"
+  )
 })
 
 test_that("add_projection_extension validates the centroid", {
@@ -159,7 +181,10 @@ test_that("add_projection_extension validates the centroid", {
 
 test_that("add_projection_extension validates geometry and item type", {
   expect_error(
-    add_projection_extension(proj_item(), geometry = list(coordinates = c(1, 2))),
+    add_projection_extension(
+      proj_item(),
+      geometry = list(coordinates = c(1, 2))
+    ),
     "'type' field"
   )
   expect_error(

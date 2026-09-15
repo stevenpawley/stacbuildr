@@ -23,7 +23,11 @@ test_that("item with assets matches pystac", {
   geometry <- list(
     type = "Polygon",
     coordinates = list(list(
-      c(-105, 40), c(-104, 40), c(-104, 41), c(-105, 41), c(-105, 40)
+      c(-105, 40),
+      c(-104, 40),
+      c(-104, 41),
+      c(-105, 41),
+      c(-105, 40)
     ))
   )
 
@@ -91,7 +95,10 @@ test_that("item with assets matches pystac", {
 
   py_dict <- py_item$to_dict()
   py_json <- jsonlite::fromJSON(
-    reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(py_dict, auto_unbox = TRUE))),
+    reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(
+      py_dict,
+      auto_unbox = TRUE
+    ))),
     simplifyVector = FALSE
   )
 
@@ -174,8 +181,16 @@ test_that("item with links matches pystac", {
 
   expect_true("links" %in% names(r_json))
   expect_length(r_json$links, 2)
-  expect_true(any(vapply(r_json$links, function(l) l$rel == "self", logical(1))))
-  expect_true(any(vapply(r_json$links, function(l) l$rel == "parent", logical(1))))
+  expect_true(any(vapply(
+    r_json$links,
+    function(l) l$rel == "self",
+    logical(1)
+  )))
+  expect_true(any(vapply(
+    r_json$links,
+    function(l) l$rel == "parent",
+    logical(1)
+  )))
 })
 
 test_that("item with assets matches pystac", {
@@ -190,7 +205,11 @@ test_that("item with assets matches pystac", {
   geometry <- list(
     type = "Polygon",
     coordinates = list(list(
-      c(-105, 40), c(-104, 40), c(-104, 41), c(-105, 41), c(-105, 40)
+      c(-105, 40),
+      c(-104, 40),
+      c(-104, 41),
+      c(-105, 41),
+      c(-105, 40)
     ))
   )
 
@@ -258,7 +277,10 @@ test_that("item with assets matches pystac", {
 
   py_dict <- py_item$to_dict()
   py_json <- jsonlite::fromJSON(
-    reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(py_dict, auto_unbox = TRUE))),
+    reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(
+      py_dict,
+      auto_unbox = TRUE
+    ))),
     simplifyVector = FALSE
   )
 
@@ -341,8 +363,16 @@ test_that("item with links matches pystac", {
 
   expect_true("links" %in% names(r_json))
   expect_length(r_json$links, 2)
-  expect_true(any(vapply(r_json$links, function(l) l$rel == "self", logical(1))))
-  expect_true(any(vapply(r_json$links, function(l) l$rel == "parent", logical(1))))
+  expect_true(any(vapply(
+    r_json$links,
+    function(l) l$rel == "self",
+    logical(1)
+  )))
+  expect_true(any(vapply(
+    r_json$links,
+    function(l) l$rel == "parent",
+    logical(1)
+  )))
 })
 
 test_that("collection with items matches pystac", {
@@ -366,7 +396,9 @@ test_that("collection with items matches pystac", {
   )
 
   # Create Python collection
-  spatial_extent <- pystac$SpatialExtent(bboxes = list(list(-180, -90, 180, 90)))
+  spatial_extent <- pystac$SpatialExtent(
+    bboxes = list(list(-180, -90, 180, 90))
+  )
   temporal_extent <- pystac$TemporalExtent(intervals = list(list(NULL, NULL)))
 
   py_collection <- pystac$Collection(
@@ -431,7 +463,11 @@ test_that("items with different geometry types match pystac", {
     polygon = list(
       type = "Polygon",
       coordinates = list(list(
-        c(-105, 40), c(-104, 40), c(-104, 41), c(-105, 41), c(-105, 40)
+        c(-105, 40),
+        c(-104, 40),
+        c(-104, 41),
+        c(-105, 41),
+        c(-105, 40)
       )),
       bbox = c(-105, 40, -104, 41)
     )
@@ -443,7 +479,10 @@ test_that("items with different geometry types match pystac", {
     # Create R item
     r_item <- stac_item(
       id = paste0("test-", geom_name),
-      geometry = list(type = geom_data$type, coordinates = geom_data$coordinates),
+      geometry = list(
+        type = geom_data$type,
+        coordinates = geom_data$coordinates
+      ),
       bbox = geom_data$bbox,
       datetime = "2023-06-15T17:30:00Z",
       properties = list()
@@ -452,7 +491,10 @@ test_that("items with different geometry types match pystac", {
     # Create Python item
     py_item <- pystac$Item(
       id = paste0("test-", geom_name),
-      geometry = list(type = geom_data$type, coordinates = geom_data$coordinates),
+      geometry = list(
+        type = geom_data$type,
+        coordinates = geom_data$coordinates
+      ),
       bbox = geom_data$bbox,
       datetime = datetime$datetime$fromisoformat("2023-06-15T17:30:00Z"),
       properties = reticulate::dict()
@@ -470,11 +512,16 @@ test_that("items with different geometry types match pystac", {
 
     py_dict <- py_item$to_dict()
     py_json <- jsonlite::fromJSON(
-      reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(py_dict, auto_unbox = TRUE))),
+      reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(
+        py_dict,
+        auto_unbox = TRUE
+      ))),
       simplifyVector = FALSE
     )
 
-    expect_equal(r_json$geometry$type, py_json$geometry$type,
+    expect_equal(
+      r_json$geometry$type,
+      py_json$geometry$type,
       info = paste("Geometry type:", geom_name)
     )
   }
@@ -519,7 +566,10 @@ test_that("item with null geometry matches pystac", {
 
   py_dict <- py_item$to_dict()
   py_json <- jsonlite::fromJSON(
-    reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(py_dict, auto_unbox = TRUE))),
+    reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(
+      py_dict,
+      auto_unbox = TRUE
+    ))),
     simplifyVector = FALSE
   )
 
@@ -588,15 +638,15 @@ test_that("add_asset works with inline parameters and pre-built asset", {
 
 test_that("single asset role is stored as a character vector in S7", {
   item <- stac_item(
-    id       = "roles-test",
+    id = "roles-test",
     geometry = list(type = "Point", coordinates = c(0, 0)),
-    bbox     = c(0, 0, 0, 0),
+    bbox = c(0, 0, 0, 0),
     datetime = "2024-01-01T00:00:00Z"
   ) |>
     add_asset(
-      key   = "data",
-      href  = "https://example.com/data.tif",
-      type  = "image/tiff; application=geotiff",
+      key = "data",
+      href = "https://example.com/data.tif",
+      type = "image/tiff; application=geotiff",
       roles = c("data")
     )
 
@@ -606,19 +656,19 @@ test_that("single asset role is stored as a character vector in S7", {
 
 test_that("single asset role serialises to a JSON array, not a scalar string", {
   item <- stac_item(
-    id       = "roles-json-test",
+    id = "roles-json-test",
     geometry = list(type = "Point", coordinates = c(0, 0)),
-    bbox     = c(0, 0, 0, 0),
+    bbox = c(0, 0, 0, 0),
     datetime = "2024-01-01T00:00:00Z"
   ) |>
     add_asset(
-      key   = "B1",
-      href  = "https://example.com/B1.tif",
-      type  = "image/tiff; application=geotiff",
+      key = "B1",
+      href = "https://example.com/B1.tif",
+      type = "image/tiff; application=geotiff",
       roles = c("data")
     )
 
-  json   <- jsonlite::toJSON(as.list(item), auto_unbox = TRUE, null = "null")
+  json <- jsonlite::toJSON(as.list(item), auto_unbox = TRUE, null = "null")
   parsed <- jsonlite::fromJSON(json, simplifyVector = FALSE)
 
   # Must be a list (JSON array), not a plain character string
@@ -629,19 +679,19 @@ test_that("single asset role serialises to a JSON array, not a scalar string", {
 
 test_that("multiple asset roles serialise to a JSON array", {
   item <- stac_item(
-    id       = "multi-roles-test",
+    id = "multi-roles-test",
     geometry = list(type = "Point", coordinates = c(0, 0)),
-    bbox     = c(0, 0, 0, 0),
+    bbox = c(0, 0, 0, 0),
     datetime = "2024-01-01T00:00:00Z"
   ) |>
     add_asset(
-      key   = "overview",
-      href  = "https://example.com/overview.tif",
-      type  = "image/tiff; application=geotiff",
+      key = "overview",
+      href = "https://example.com/overview.tif",
+      type = "image/tiff; application=geotiff",
       roles = c("data", "overview")
     )
 
-  json   <- jsonlite::toJSON(as.list(item), auto_unbox = TRUE, null = "null")
+  json <- jsonlite::toJSON(as.list(item), auto_unbox = TRUE, null = "null")
   parsed <- jsonlite::fromJSON(json, simplifyVector = FALSE)
 
   expect_type(parsed$assets$overview$roles, "list")
@@ -652,21 +702,21 @@ test_that("multiple asset roles serialise to a JSON array", {
 
 test_that("asset roles survive a write/read round-trip as a list", {
   item <- stac_item(
-    id       = "roles-roundtrip",
+    id = "roles-roundtrip",
     geometry = list(type = "Point", coordinates = c(0, 0)),
-    bbox     = c(0, 0, 0, 0),
+    bbox = c(0, 0, 0, 0),
     datetime = "2024-01-01T00:00:00Z"
   ) |>
     add_asset(
-      key   = "data",
-      href  = "https://example.com/data.tif",
-      type  = "image/tiff; application=geotiff",
+      key = "data",
+      href = "https://example.com/data.tif",
+      type = "image/tiff; application=geotiff",
       roles = c("data")
     ) |>
     add_asset(
-      key   = "thumbnail",
-      href  = "https://example.com/thumb.jpg",
-      type  = "image/jpeg",
+      key = "thumbnail",
+      href = "https://example.com/thumb.jpg",
+      type = "image/jpeg",
       roles = c("thumbnail")
     )
 
@@ -676,14 +726,14 @@ test_that("asset roles survive a write/read round-trip as a list", {
 
   # Verify raw JSON uses arrays, not scalars
   raw_json <- paste(readLines(path, warn = FALSE), collapse = "\n")
-  expect_match(raw_json, '"roles":\\s*\\[',         perl = TRUE)
-  expect_no_match(raw_json, '"roles":\\s*"',        perl = TRUE)
+  expect_match(raw_json, '"roles":\\s*\\[', perl = TRUE)
+  expect_no_match(raw_json, '"roles":\\s*"', perl = TRUE)
 
   # Verify restored object has list roles
   restored <- read_stac(path)
-  expect_type(restored@assets$data@roles,      "character")
+  expect_type(restored@assets$data@roles, "character")
   expect_type(restored@assets$thumbnail@roles, "character")
-  expect_equal(restored@assets$data@roles,      "data")
+  expect_equal(restored@assets$data@roles, "data")
   expect_equal(restored@assets$thumbnail@roles, "thumbnail")
 })
 

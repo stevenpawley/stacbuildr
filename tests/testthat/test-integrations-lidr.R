@@ -35,8 +35,14 @@ test_that("the point cloud asset gets the LAZ media type", {
 })
 
 test_that("COPC files are recognised by name", {
-  expect_equal(get_media_type("tiles/a.copc.laz"), "application/vnd.laszip+copc")
-  expect_equal(get_media_type("https://x.test/a.copc.laz"), "application/vnd.laszip+copc")
+  expect_equal(
+    get_media_type("tiles/a.copc.laz"),
+    "application/vnd.laszip+copc"
+  )
+  expect_equal(
+    get_media_type("https://x.test/a.copc.laz"),
+    "application/vnd.laszip+copc"
+  )
   expect_equal(get_media_type("a.laz"), "application/vnd.laszip")
   expect_equal(get_media_type("a.las"), "application/vnd.las")
 
@@ -109,7 +115,10 @@ test_that("header-only statistics carry the X/Y/Z bounds", {
   stats <- item@properties$`pc:statistics`
 
   expect_length(stats, 3)
-  expect_equal(vapply(stats, function(s) s@name, character(1)), c("X", "Y", "Z"))
+  expect_equal(
+    vapply(stats, function(s) s@name, character(1)),
+    c("X", "Y", "Z")
+  )
   # position indexes into pc:schemas and is zero-based
   expect_equal(vapply(stats, function(s) s@position, integer(1)), 0:2)
   expect_equal(stats[[3]]@minimum, 0)
@@ -158,7 +167,11 @@ test_that("a header creation date becomes the item datetime", {
   expect_equal(item@properties$datetime, "2023-06-15T00:00:00Z")
 
   # an explicit datetime still wins
-  item <- item_from_lidr(header, href = "megaplot.laz", datetime = "2020-01-01T00:00:00Z")
+  item <- item_from_lidr(
+    header,
+    href = "megaplot.laz",
+    datetime = "2020-01-01T00:00:00Z"
+  )
   expect_equal(item@properties$datetime, "2020-01-01T00:00:00Z")
 })
 
@@ -181,9 +194,18 @@ test_that("a file with no CRS is reported rather than silently mislocated", {
     "longitudes must be in"
   )
 
-  header@PHB[c("Min X", "Max X", "Min Y", "Max Y")] <- list(-105.5, -104.5, 39.5, 40.5)
+  header@PHB[c("Min X", "Max X", "Min Y", "Max Y")] <- list(
+    -105.5,
+    -104.5,
+    39.5,
+    40.5
+  )
   suppressWarnings(
-    item <- item_from_lidr(header, href = "megaplot.laz", reproject_to_wgs84 = FALSE)
+    item <- item_from_lidr(
+      header,
+      href = "megaplot.laz",
+      reproject_to_wgs84 = FALSE
+    )
   )
   expect_equal(unname(item@bbox), c(-105.5, 39.5, -104.5, 40.5))
 })

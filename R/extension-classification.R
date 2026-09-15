@@ -140,19 +140,29 @@ add_classification_extension <- function(
     )
   }
 
-  if (!is.null(classes) && (
-    !is.list(classes) ||
-      !all(vapply(classes, S7::S7_inherits, logical(1), classification_class))
-  )) {
+  if (
+    !is.null(classes) &&
+      (!is.list(classes) ||
+        !all(vapply(
+          classes,
+          S7::S7_inherits,
+          logical(1),
+          classification_class
+        )))
+  ) {
     cli::cli_abort("'classes' must be a list of classification_class objects")
   }
 
-  if (!is.null(bitfields) && (
-    !is.list(bitfields) ||
-      !all(vapply(
-        bitfields, S7::S7_inherits, logical(1), classification_bitfield
-      ))
-  )) {
+  if (
+    !is.null(bitfields) &&
+      (!is.list(bitfields) ||
+        !all(vapply(
+          bitfields,
+          S7::S7_inherits,
+          logical(1),
+          classification_bitfield
+        )))
+  ) {
     cli::cli_abort(
       "'bitfields' must be a list of classification_bitfield objects"
     )
@@ -176,7 +186,9 @@ add_classification_extension <- function(
     if (!is.null(classes)) {
       item@assets[[asset_key]]@extra_fields$`classification:classes` <- classes
     } else {
-      item@assets[[asset_key]]@extra_fields$`classification:bitfields` <- bitfields
+      item@assets[[
+        asset_key
+      ]]@extra_fields$`classification:bitfields` <- bitfields
     }
   } else {
     if (!is.null(classes)) {
@@ -260,9 +272,16 @@ classification_class <- S7::new_class(
     percentage = S7::new_union(S7::class_numeric, NULL),
     count = S7::new_union(S7::class_integer, NULL)
   ),
-  constructor = function(value, name = NULL, title = NULL, description = NULL,
-                         color_hint = NULL, nodata = NULL, percentage = NULL,
-                         count = NULL) {
+  constructor = function(
+    value,
+    name = NULL,
+    title = NULL,
+    description = NULL,
+    color_hint = NULL,
+    nodata = NULL,
+    percentage = NULL,
+    count = NULL
+  ) {
     if (missing(value)) {
       cli::cli_abort("'value' is required")
     }
@@ -282,8 +301,10 @@ classification_class <- S7::new_class(
       )
     }
 
-    if (!is.null(percentage) &&
-        (!is.numeric(percentage) || percentage < 0 || percentage > 100)) {
+    if (
+      !is.null(percentage) &&
+        (!is.numeric(percentage) || percentage < 0 || percentage > 100)
+    ) {
       cli::cli_abort("'percentage' must be a number between 0 and 100")
     }
 
@@ -307,9 +328,14 @@ classification_class <- S7::new_class(
 
 S7::method(as.list, classification_class) <- function(x, ...) {
   compact_nulls(list(
-    value = x@value, name = x@name, title = x@title,
-    description = x@description, color_hint = x@color_hint,
-    nodata = x@nodata, percentage = x@percentage, count = x@count
+    value = x@value,
+    name = x@name,
+    title = x@title,
+    description = x@description,
+    color_hint = x@color_hint,
+    nodata = x@nodata,
+    percentage = x@percentage,
+    count = x@count
   ))
 }
 
@@ -393,17 +419,30 @@ classification_bitfield <- S7::new_class(
     classes = S7::new_property(
       S7::class_list,
       validator = function(value) {
-        if (!all(vapply(
-          value, S7::S7_inherits, logical(1), classification_class
-        ))) "must contain only classification_class objects"
+        if (
+          !all(vapply(
+            value,
+            S7::S7_inherits,
+            logical(1),
+            classification_class
+          ))
+        ) {
+          "must contain only classification_class objects"
+        }
       }
     ),
     name = S7::new_union(S7::class_character, NULL),
     description = S7::new_union(S7::class_character, NULL),
     roles = S7::new_union(S7::class_character, NULL)
   ),
-  constructor = function(offset, length, classes, name = NULL,
-                         description = NULL, roles = NULL) {
+  constructor = function(
+    offset,
+    length,
+    classes,
+    name = NULL,
+    description = NULL,
+    roles = NULL
+  ) {
     if (missing(offset) || missing(length) || missing(classes)) {
       cli::cli_abort("'offset', 'length', and 'classes' are all required")
     }
@@ -446,8 +485,10 @@ classification_bitfield <- S7::new_class(
 
 S7::method(as.list, classification_bitfield) <- function(x, ...) {
   compact_nulls(list(
-    offset = x@offset, length = x@length,
-    classes = stac_json_value(x@classes), name = x@name,
+    offset = x@offset,
+    length = x@length,
+    classes = stac_json_value(x@classes),
+    name = x@name,
     description = x@description,
     roles = if (is.null(x@roles)) NULL else as_json_array(x@roles)
   ))
@@ -464,9 +505,14 @@ S7::method(print, classification_class) <- function(x, ...) {
   stac_print_header("Classification Class")
 
   fields <- compact_nulls(list(
-    value = x@value, name = x@name, title = x@title,
-    description = x@description, color_hint = x@color_hint,
-    nodata = x@nodata, percentage = x@percentage, count = x@count
+    value = x@value,
+    name = x@name,
+    title = x@title,
+    description = x@description,
+    color_hint = x@color_hint,
+    nodata = x@nodata,
+    percentage = x@percentage,
+    count = x@count
   ))
   if (!is.null(fields$color_hint)) {
     fields$color_hint <- paste0("#", fields$color_hint)
@@ -497,8 +543,11 @@ S7::method(print, classification_class) <- function(x, ...) {
 S7::method(print, classification_bitfield) <- function(x, ..., expand = NULL) {
   stac_print_header("Classification Bitfield")
   fields <- compact_nulls(list(
-    offset = x@offset, length = x@length, name = x@name,
-    description = x@description, roles = x@roles
+    offset = x@offset,
+    length = x@length,
+    name = x@name,
+    description = x@description,
+    roles = x@roles
   ))
   width <- stac_print_list_fields(
     fields,

@@ -166,17 +166,17 @@ test_that("read_stac restores collection links", {
 
 test_that("stac_item survives a write/read round-trip", {
   original <- stac_item(
-    id       = "round-trip-item",
+    id = "round-trip-item",
     geometry = list(type = "Point", coordinates = c(-105.0, 40.0)),
-    bbox     = c(-105.0, 40.0, -105.0, 40.0),
+    bbox = c(-105.0, 40.0, -105.0, 40.0),
     datetime = "2023-06-15T10:30:00Z",
     properties = list(platform = "landsat-8", gsd = 30)
   )
   original <- add_asset(
     original,
-    key   = "visual",
-    href  = "https://example.com/visual.tif",
-    type  = "image/tiff; application=geotiff",
+    key = "visual",
+    href = "https://example.com/visual.tif",
+    type = "image/tiff; application=geotiff",
     roles = c("visual")
   )
 
@@ -196,12 +196,12 @@ test_that("stac_item survives a write/read round-trip", {
 
 test_that("stac_item with time range survives a write/read round-trip", {
   original <- stac_item(
-    id             = "range-item",
-    geometry       = list(type = "Point", coordinates = c(0.0, 0.0)),
-    bbox           = c(0.0, 0.0, 0.0, 0.0),
-    datetime       = NULL,
+    id = "range-item",
+    geometry = list(type = "Point", coordinates = c(0.0, 0.0)),
+    bbox = c(0.0, 0.0, 0.0, 0.0),
+    datetime = NULL,
     start_datetime = "2023-01-01T00:00:00Z",
-    end_datetime   = "2023-06-30T23:59:59Z"
+    end_datetime = "2023-06-30T23:59:59Z"
   )
 
   path <- tempfile(fileext = ".json")
@@ -211,14 +211,14 @@ test_that("stac_item with time range survives a write/read round-trip", {
 
   expect_null(restored@properties$datetime)
   expect_equal(restored@properties$start_datetime, "2023-01-01T00:00:00Z")
-  expect_equal(restored@properties$end_datetime,   "2023-06-30T23:59:59Z")
+  expect_equal(restored@properties$end_datetime, "2023-06-30T23:59:59Z")
 })
 
 test_that("stac_catalog survives a write/read round-trip", {
   original <- stac_catalog(
-    id          = "my-catalog",
+    id = "my-catalog",
     description = "A test catalog",
-    title       = "Test Catalog"
+    title = "Test Catalog"
   ) |>
     add_root_link("./catalog.json") |>
     add_link("child", "./sub/collection.json", type = "application/json")
@@ -238,14 +238,14 @@ test_that("stac_catalog survives a write/read round-trip", {
 
 test_that("stac_collection survives a write/read round-trip", {
   original <- stac_collection(
-    id          = "my-collection",
+    id = "my-collection",
     description = "A test collection",
-    license     = "CC0-1.0",
-    title       = "Test Collection",
-    keywords    = c("test", "example"),
+    license = "CC0-1.0",
+    title = "Test Collection",
+    keywords = c("test", "example"),
     stac_extensions = "https://stac-extensions.github.io/eo/v2.0.0/schema.json",
     extent = stac_extent(
-      spatial_bbox      = list(c(-180, -90, 180, 90)),
+      spatial_bbox = list(c(-180, -90, 180, 90)),
       temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
     )
   ) |>
@@ -260,8 +260,10 @@ test_that("stac_collection survives a write/read round-trip", {
   expect_equal(restored@id, "my-collection")
   expect_equal(restored@license, "CC0-1.0")
   expect_equal(restored@keywords, c("test", "example"))
-  expect_equal(restored@stac_extensions,
-               "https://stac-extensions.github.io/eo/v2.0.0/schema.json")
+  expect_equal(
+    restored@stac_extensions,
+    "https://stac-extensions.github.io/eo/v2.0.0/schema.json"
+  )
 
   bbox <- restored@extent@spatial@bbox[[1]]
   expect_equal(bbox, c(-180, -90, 180, 90))

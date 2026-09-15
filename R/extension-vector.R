@@ -168,9 +168,15 @@ add_vector_extension <- function(
   if (!is.null(geometry_types)) {
     fields$`vector:geometry_types` <- as_json_array(geometry_types)
   }
-  if (!is.null(mmu)) fields$`vector:mmu` <- mmu
-  if (!is.null(mmw)) fields$`vector:mmw` <- mmw
-  if (!is.null(reference_scale)) fields$`vector:reference_scale` <- reference_scale
+  if (!is.null(mmu)) {
+    fields$`vector:mmu` <- mmu
+  }
+  if (!is.null(mmw)) {
+    fields$`vector:mmw` <- mmw
+  }
+  if (!is.null(reference_scale)) {
+    fields$`vector:reference_scale` <- reference_scale
+  }
 
   if (!is.null(asset_key)) {
     # Add to specific asset
@@ -179,7 +185,9 @@ add_vector_extension <- function(
     }
 
     for (field_name in names(fields)) {
-      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[field_name]]
+      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[
+        field_name
+      ]]
     }
   } else {
     # Add to item properties

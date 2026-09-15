@@ -13,8 +13,7 @@ test_that("raster statistics use S7 properties", {
   expect_error(stats@minimum <- "zero", "minimum")
   expect_identical(
     as.list(stats),
-    list(minimum = 0, maximum = 100, mean = 42, stddev = 5,
-         valid_percent = 99)
+    list(minimum = 0, maximum = 100, mean = 42, stddev = 5, valid_percent = 99)
   )
 })
 

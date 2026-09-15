@@ -322,26 +322,30 @@ stac_item <- S7::new_class(
 
     # 2D bbox coordinate ranges (WGS84)
     if (!is.null(self@bbox) && length(self@bbox) == 4L) {
-      west  <- self@bbox[1]; east  <- self@bbox[3]
-      south <- self@bbox[2]; north <- self@bbox[4]
+      west <- self@bbox[1]
+      east <- self@bbox[3]
+      south <- self@bbox[2]
+      north <- self@bbox[4]
       if (west < -180 || east > 180) {
         return(sprintf(
           "'bbox' longitudes must be in [-180, 180] (got west = %g, east = %g)",
-          west, east
+          west,
+          east
         ))
       }
       if (south < -90 || north > 90) {
         return(sprintf(
           "'bbox' latitudes must be in [-90, 90] (got south = %g, north = %g)",
-          south, north
+          south,
+          north
         ))
       }
     }
 
     # datetime presence
-    dt       <- self@properties$datetime
+    dt <- self@properties$datetime
     start_dt <- self@properties$start_datetime
-    end_dt   <- self@properties$end_datetime
+    end_dt <- self@properties$end_datetime
 
     if (is.null(dt) && !((!is.null(start_dt)) && (!is.null(end_dt)))) {
       return(
@@ -373,7 +377,8 @@ stac_item <- S7::new_class(
     if (!is.null(start_dt) && !is.null(end_dt) && end_dt < start_dt) {
       return(sprintf(
         "'end_datetime' ('%s') must be >= 'start_datetime' ('%s')",
-        end_dt, start_dt
+        end_dt,
+        start_dt
       ))
     }
 
@@ -390,7 +395,11 @@ S7::method(as.list, stac_item) <- function(x, ...) {
     properties = stac_json_value(x@properties),
     links = x@links,
     # Ensure assets serializes as {} not [] when empty
-    assets = if (length(x@assets) == 0) setNames(list(), character(0)) else stac_json_value(x@assets)
+    assets = if (length(x@assets) == 0) {
+      setNames(list(), character(0))
+    } else {
+      stac_json_value(x@assets)
+    }
   )
   if (!is.null(x@bbox)) {
     out$bbox <- x@bbox
@@ -428,11 +437,14 @@ S7::method(print, stac_item) <- function(x, ..., expand = NULL) {
   if (!is.null(x@properties$datetime)) {
     stac_print_field("datetime", x@properties$datetime)
   } else if (!is.null(x@properties$start_datetime)) {
-    stac_print_field("datetime", sprintf(
-      "%s / %s",
-      x@properties$start_datetime,
-      x@properties$end_datetime %||% ".."
-    ))
+    stac_print_field(
+      "datetime",
+      sprintf(
+        "%s / %s",
+        x@properties$start_datetime,
+        x@properties$end_datetime %||% ".."
+      )
+    )
   }
 
   # Geometry type and bbox
@@ -443,10 +455,16 @@ S7::method(print, stac_item) <- function(x, ..., expand = NULL) {
   }
 
   if (!is.null(x@bbox)) {
-    stac_print_field("bbox", sprintf(
-      "[%.4f, %.4f, %.4f, %.4f]",
-      x@bbox[1], x@bbox[2], x@bbox[3], x@bbox[4]
-    ))
+    stac_print_field(
+      "bbox",
+      sprintf(
+        "[%.4f, %.4f, %.4f, %.4f]",
+        x@bbox[1],
+        x@bbox[2],
+        x@bbox[3],
+        x@bbox[4]
+      )
+    )
   }
 
   # Properties other than the datetime fields already shown above
@@ -484,7 +502,11 @@ S7::method(print, stac_item) <- function(x, ..., expand = NULL) {
     stac_print_section(
       "links",
       length(x@links),
-      summary = stac_preview(vapply(x@links, function(l) l$rel %||% "", character(1))),
+      summary = stac_preview(vapply(
+        x@links,
+        function(l) l$rel %||% "",
+        character(1)
+      )),
       lines = function() stac_link_lines(x@links),
       expanded = stac_expanded(expand, "links")
     )

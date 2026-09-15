@@ -1,9 +1,10 @@
 # Helper operator for NULL coalescing
 `%||%` <- function(a, b) {
-  if (is.null(a))
+  if (is.null(a)) {
     b
-  else
+  } else {
     a
+  }
 }
 
 
@@ -106,12 +107,16 @@ merge_bands <- function(existing, bands) {
     return(bands)
   }
 
-  Map(function(old, new) {
-    old <- stac_json_value(old)
-    new <- stac_json_value(new)
-    old[names(new)] <- new
-    old
-  }, existing, bands)
+  Map(
+    function(old, new) {
+      old <- stac_json_value(old)
+      new <- stac_json_value(new)
+      old[names(new)] <- new
+      old
+    },
+    existing,
+    bands
+  )
 }
 
 

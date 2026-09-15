@@ -51,7 +51,10 @@ test_that("item_from_sf adds a source asset when href is provided", {
   )
 
   expect_true("source" %in% names(item@assets))
-  expect_equal(item@assets$source@href, gsub("\\\\", "/", normalizePath(sf_file)))
+  expect_equal(
+    item@assets$source@href,
+    gsub("\\\\", "/", normalizePath(sf_file))
+  )
   expect_equal(item@assets$source@roles, "data")
 })
 
@@ -109,7 +112,9 @@ test_that("geometry_from_sf returns a bare geometry, not a Feature", {
   expect_false("properties" %in% names(geometry))
 
   # geometry-only input keeps working
-  geometry_only <- geometry_from_sf(sf::st_sf(geometry = sf::st_geometry(nc[1, ])))
+  geometry_only <- geometry_from_sf(sf::st_sf(
+    geometry = sf::st_geometry(nc[1, ])
+  ))
   expect_setequal(names(geometry_only), c("type", "coordinates"))
 })
 

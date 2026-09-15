@@ -332,10 +332,15 @@ eo_band <- S7::new_class(
     solar_illumination = S7::class_numeric,
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
-  constructor = function(name = NULL, common_name = NULL, description = NULL,
-                         center_wavelength = NULL,
-                         full_width_half_max = NULL,
-                         solar_illumination = NULL, ...) {
+  constructor = function(
+    name = NULL,
+    common_name = NULL,
+    description = NULL,
+    center_wavelength = NULL,
+    full_width_half_max = NULL,
+    solar_illumination = NULL,
+    ...
+  ) {
     extra_fields <- list(...)
     common_name <- common_name %||% extra_fields$`eo:common_name`
     center_wavelength <- center_wavelength %||%
@@ -345,15 +350,32 @@ eo_band <- S7::new_class(
     solar_illumination <- solar_illumination %||%
       extra_fields$`eo:solar_illumination`
     extra_fields[c(
-      "eo:common_name", "eo:center_wavelength",
-      "eo:full_width_half_max", "eo:solar_illumination"
+      "eo:common_name",
+      "eo:center_wavelength",
+      "eo:full_width_half_max",
+      "eo:solar_illumination"
     )] <- NULL
 
     if (!is.null(common_name)) {
       valid_common_names <- c(
-        "coastal", "blue", "green", "red", "rededge", "rededge071",
-        "rededge075", "rededge078", "nir", "nir08", "nir09", "cirrus",
-        "swir16", "swir22", "lwir", "lwir11", "lwir12", "pan"
+        "coastal",
+        "blue",
+        "green",
+        "red",
+        "rededge",
+        "rededge071",
+        "rededge075",
+        "rededge078",
+        "nir",
+        "nir08",
+        "nir09",
+        "cirrus",
+        "swir16",
+        "swir22",
+        "lwir",
+        "lwir11",
+        "lwir12",
+        "pan"
       )
 
       if (!common_name %in% valid_common_names) {
@@ -379,15 +401,24 @@ eo_band <- S7::new_class(
 
 S7::method(as.list, eo_band) <- function(x, ...) {
   fields <- list()
-  if (length(x@name) > 0L) fields$name <- x@name
-  if (length(x@description) > 0L) fields$description <- x@description
-  if (length(x@common_name) > 0L) fields$`eo:common_name` <- x@common_name
-  if (length(x@center_wavelength) > 0L)
+  if (length(x@name) > 0L) {
+    fields$name <- x@name
+  }
+  if (length(x@description) > 0L) {
+    fields$description <- x@description
+  }
+  if (length(x@common_name) > 0L) {
+    fields$`eo:common_name` <- x@common_name
+  }
+  if (length(x@center_wavelength) > 0L) {
     fields$`eo:center_wavelength` <- x@center_wavelength
-  if (length(x@full_width_half_max) > 0L)
+  }
+  if (length(x@full_width_half_max) > 0L) {
     fields$`eo:full_width_half_max` <- x@full_width_half_max
-  if (length(x@solar_illumination) > 0L)
+  }
+  if (length(x@solar_illumination) > 0L) {
     fields$`eo:solar_illumination` <- x@solar_illumination
+  }
   c(fields, x@extra_fields)
 }
 
@@ -856,14 +887,29 @@ planetscope_bands <- function() {
 #' @noRd
 S7::method(print, eo_band) <- function(x, ...) {
   stac_print_header("EO Band")
-  fields <- c(compact_nulls(list(
-    name = if (length(x@name)) x@name else NULL,
-    description = if (length(x@description)) x@description else NULL,
-    "eo:common_name" = if (length(x@common_name)) x@common_name else NULL,
-    "eo:center_wavelength" = if (length(x@center_wavelength)) x@center_wavelength else NULL,
-    "eo:full_width_half_max" = if (length(x@full_width_half_max)) x@full_width_half_max else NULL,
-    "eo:solar_illumination" = if (length(x@solar_illumination)) x@solar_illumination else NULL
-  )), x@extra_fields)
+  fields <- c(
+    compact_nulls(list(
+      name = if (length(x@name)) x@name else NULL,
+      description = if (length(x@description)) x@description else NULL,
+      "eo:common_name" = if (length(x@common_name)) x@common_name else NULL,
+      "eo:center_wavelength" = if (length(x@center_wavelength)) {
+        x@center_wavelength
+      } else {
+        NULL
+      },
+      "eo:full_width_half_max" = if (length(x@full_width_half_max)) {
+        x@full_width_half_max
+      } else {
+        NULL
+      },
+      "eo:solar_illumination" = if (length(x@solar_illumination)) {
+        x@solar_illumination
+      } else {
+        NULL
+      }
+    )),
+    x@extra_fields
+  )
   stac_print_list_fields(
     fields,
     units = c(

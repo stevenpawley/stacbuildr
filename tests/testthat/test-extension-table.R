@@ -11,9 +11,9 @@ test_that("table_column creates a minimal object with just name", {
 
 test_that("table_column stores all optional fields", {
   col <- table_column(
-    name        = "elevation",
+    name = "elevation",
     description = "Elevation in meters",
-    type        = "double"
+    type = "double"
   )
 
   expect_equal(col@name, "elevation")
@@ -33,7 +33,10 @@ test_that("table_column errors when name is missing or invalid", {
     table_column(name = c("a", "b")),
     "'name' must be a single character string"
   )
-  expect_error(table_column(name = 123), "'name' must be a single character string")
+  expect_error(
+    table_column(name = 123),
+    "'name' must be a single character string"
+  )
 })
 
 
@@ -41,9 +44,9 @@ test_that("table_column errors when name is missing or invalid", {
 
 make_item <- function() {
   stac_item(
-    id       = "test-table",
+    id = "test-table",
     geometry = list(type = "Point", coordinates = c(-105, 40)),
-    bbox     = c(-105, 40, -105, 40),
+    bbox = c(-105, 40, -105, 40),
     datetime = "2023-06-15T00:00:00Z"
   )
 }
@@ -130,8 +133,8 @@ test_that("add_table_extension adds schema URI to stac_extensions", {
   item <- add_table_extension(make_item(), row_count = 100)
 
   expect_true(
-    "https://stac-extensions.github.io/table/v1.2.0/schema.json"
-    %in% item@stac_extensions
+    "https://stac-extensions.github.io/table/v1.2.0/schema.json" %in%
+      item@stac_extensions
   )
 })
 
@@ -175,7 +178,10 @@ test_that("add_table_extension writes table:storage_options to the specified ass
     asset_key = "data"
   )
 
-  expect_equal(item@assets$data@extra_fields$`table:storage_options`, list(anon = TRUE))
+  expect_equal(
+    item@assets$data@extra_fields$`table:storage_options`,
+    list(anon = TRUE)
+  )
   expect_null(item@properties$`table:storage_options`)
 })
 
@@ -183,18 +189,24 @@ test_that("add_table_extension can set all fields at once", {
   cols <- list(table_column(name = "geometry", type = "binary"))
   item <- add_table_extension(
     make_item_with_asset(),
-    columns          = cols,
+    columns = cols,
     primary_geometry = "geometry",
-    row_count        = 42,
-    storage_options  = list(anon = TRUE),
-    asset_key        = "data"
+    row_count = 42,
+    storage_options = list(anon = TRUE),
+    asset_key = "data"
   )
 
   # asset_key routes every field it can, as in the other extensions
   expect_length(item@assets$data@extra_fields$`table:columns`, 1)
-  expect_equal(item@assets$data@extra_fields$`table:primary_geometry`, "geometry")
+  expect_equal(
+    item@assets$data@extra_fields$`table:primary_geometry`,
+    "geometry"
+  )
   expect_equal(item@assets$data@extra_fields$`table:row_count`, 42)
-  expect_equal(item@assets$data@extra_fields$`table:storage_options`, list(anon = TRUE))
+  expect_equal(
+    item@assets$data@extra_fields$`table:storage_options`,
+    list(anon = TRUE)
+  )
 
   expect_null(item@properties$`table:columns`)
   expect_null(item@properties$`table:primary_geometry`)
@@ -219,9 +231,9 @@ test_that("add_table_extension routes columns to an asset when asset_key is give
 test_that("add_table_extension keeps item-level placement when asset_key is omitted", {
   item <- add_table_extension(
     make_item_with_asset(),
-    columns          = list(table_column(name = "geometry")),
+    columns = list(table_column(name = "geometry")),
     primary_geometry = "geometry",
-    row_count        = 42
+    row_count = 42
   )
 
   expect_length(item@properties$`table:columns`, 1)

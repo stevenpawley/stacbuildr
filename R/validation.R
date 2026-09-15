@@ -43,11 +43,16 @@ stac_validation <- S7::new_class(
     errors = S7::class_character,
     warnings = S7::class_character
   ),
-  constructor = function(errors = character(), warnings = character(),
-                         valid = NULL) {
+  constructor = function(
+    errors = character(),
+    warnings = character(),
+    valid = NULL
+  ) {
     S7::new_object(
-      S7::S7_object(), valid = valid %||% (length(errors) == 0L),
-      errors = errors, warnings = warnings
+      S7::S7_object(),
+      valid = valid %||% (length(errors) == 0L),
+      errors = errors,
+      warnings = warnings
     )
   }
 )
@@ -56,9 +61,11 @@ S7::method(as.list, stac_validation) <- function(x, ...) {
   list(valid = x@valid, errors = x@errors, warnings = x@warnings)
 }
 
-new_stac_validation <- function(errors = character(),
-                                warnings = character(),
-                                valid = NULL) {
+new_stac_validation <- function(
+  errors = character(),
+  warnings = character(),
+  valid = NULL
+) {
   stac_validation(errors = errors, warnings = warnings, valid = valid)
 }
 
@@ -101,7 +108,10 @@ stac_print_issues <- function(issues, label, symbol, style) {
     "  %s %s\n",
     style(symbol),
     style(sprintf(
-      "%d %s%s", length(issues), label, if (length(issues) == 1L) "" else "s"
+      "%d %s%s",
+      length(issues),
+      label,
+      if (length(issues) == 1L) "" else "s"
     ))
   ))
 
@@ -355,7 +365,10 @@ validate_assets <- function(assets) {
     asset <- assets[[key]]
 
     if (!S7::S7_inherits(asset, stac_asset)) {
-      errors <- c(errors, paste0("Asset '", key, "' must be a stac_asset object"))
+      errors <- c(
+        errors,
+        paste0("Asset '", key, "' must be a stac_asset object")
+      )
       next
     }
 
@@ -515,15 +528,20 @@ validate_geometry <- function(geometry) {
   }
 
   valid_types <- c(
-    "Point", "LineString", "Polygon",
-    "MultiPoint", "MultiLineString", "MultiPolygon",
+    "Point",
+    "LineString",
+    "Polygon",
+    "MultiPoint",
+    "MultiLineString",
+    "MultiPolygon",
     "GeometryCollection"
   )
 
   if (!geometry$type %in% valid_types) {
     return(sprintf(
       "Geometry type '%s' is not valid. Must be one of: %s",
-      geometry$type, paste(valid_types, collapse = ", ")
+      geometry$type,
+      paste(valid_types, collapse = ", ")
     ))
   }
 
@@ -532,16 +550,20 @@ validate_geometry <- function(geometry) {
   }
 
   if (is.null(geometry$coordinates)) {
-    return(sprintf("Geometry type '%s' must have a 'coordinates' field", geometry$type))
+    return(sprintf(
+      "Geometry type '%s' must have a 'coordinates' field",
+      geometry$type
+    ))
   }
 
-  switch(geometry$type,
-    Point           = validate_point_coords(geometry$coordinates),
-    LineString      = validate_linestring_coords(geometry$coordinates),
-    Polygon         = validate_polygon_coords(geometry$coordinates),
-    MultiPoint      = validate_multipoint_coords(geometry$coordinates),
+  switch(
+    geometry$type,
+    Point = validate_point_coords(geometry$coordinates),
+    LineString = validate_linestring_coords(geometry$coordinates),
+    Polygon = validate_polygon_coords(geometry$coordinates),
+    MultiPoint = validate_multipoint_coords(geometry$coordinates),
     MultiLineString = validate_multilinestring_coords(geometry$coordinates),
-    MultiPolygon    = validate_multipolygon_coords(geometry$coordinates),
+    MultiPolygon = validate_multipolygon_coords(geometry$coordinates),
     character()
   )
 }
@@ -554,22 +576,31 @@ validate_geometry <- function(geometry) {
 # vector form is the natural R idiom; the list form appears after
 # jsonlite::fromJSON(..., simplifyVector = FALSE).
 is_geojson_position <- function(x) {
-  if (is.numeric(x)) return(length(x) %in% 2:3)
+  if (is.numeric(x)) {
+    return(length(x) %in% 2:3)
+  }
   if (is.list(x)) {
-    return(length(x) %in% 2:3 && all(vapply(x, function(v) is.numeric(v) && length(v) == 1L, logical(1))))
+    return(
+      length(x) %in%
+        2:3 &&
+        all(vapply(x, function(v) is.numeric(v) && length(v) == 1L, logical(1)))
+    )
   }
   FALSE
 }
 
 # Extract [lon, lat] from a position, normalised to a numeric pair.
 position_lon_lat <- function(x) {
-  if (is.numeric(x)) return(x[1:2])
+  if (is.numeric(x)) {
+    return(x[1:2])
+  }
   c(as.numeric(x[[1]]), as.numeric(x[[2]]))
 }
 
 # Positions must be equal within floating-point tolerance (ring-closure check).
 positions_equal <- function(a, b) {
-  pa <- position_lon_lat(a); pb <- position_lon_lat(b)
+  pa <- position_lon_lat(a)
+  pb <- position_lon_lat(b)
   isTRUE(all.equal(pa, pb, tolerance = 1e-10, check.names = FALSE))
 }
 
@@ -585,10 +616,16 @@ validate_geojson_position <- function(pos, label) {
   ll <- position_lon_lat(pos)
   errors <- character()
   if (!is.na(ll[1]) && (ll[1] < -180 || ll[1] > 180)) {
-    errors <- c(errors, sprintf("%s longitude %g is outside [-180, 180]", label, ll[1]))
+    errors <- c(
+      errors,
+      sprintf("%s longitude %g is outside [-180, 180]", label, ll[1])
+    )
   }
   if (!is.na(ll[2]) && (ll[2] < -90 || ll[2] > 90)) {
-    errors <- c(errors, sprintf("%s latitude %g is outside [-90, 90]",  label, ll[2]))
+    errors <- c(
+      errors,
+      sprintf("%s latitude %g is outside [-90, 90]", label, ll[2])
+    )
   }
   errors
 }
@@ -599,27 +636,43 @@ validate_geojson_position <- function(pos, label) {
 validate_linear_ring <- function(ring, label) {
   errors <- character()
   if (!is.list(ring)) {
-    return(sprintf("%s must be a list of positions, got %s", label, class(ring)[1]))
+    return(sprintf(
+      "%s must be a list of positions, got %s",
+      label,
+      class(ring)[1]
+    ))
   }
   n <- length(ring)
   if (n < 4L) {
-    errors <- c(errors, sprintf(
-      "%s must have at least 4 positions (got %d); the first and last must be identical",
-      label, n
-    ))
+    errors <- c(
+      errors,
+      sprintf(
+        "%s must have at least 4 positions (got %d); the first and last must be identical",
+        label,
+        n
+      )
+    )
     # Can't do closure or per-position checks without enough points; return early
     return(errors)
   }
   for (i in seq_len(n)) {
-    errors <- c(errors, validate_geojson_position(ring[[i]], sprintf("%s position[%d]", label, i)))
+    errors <- c(
+      errors,
+      validate_geojson_position(ring[[i]], sprintf("%s position[%d]", label, i))
+    )
   }
   if (!positions_equal(ring[[1]], ring[[n]])) {
-    first <- paste(round(position_lon_lat(ring[[1]]),  6), collapse = ", ")
-    last  <- paste(round(position_lon_lat(ring[[n]]), 6), collapse = ", ")
-    errors <- c(errors, sprintf(
-      "%s is not closed: first position [%s] != last position [%s]",
-      label, first, last
-    ))
+    first <- paste(round(position_lon_lat(ring[[1]]), 6), collapse = ", ")
+    last <- paste(round(position_lon_lat(ring[[n]]), 6), collapse = ", ")
+    errors <- c(
+      errors,
+      sprintf(
+        "%s is not closed: first position [%s] != last position [%s]",
+        label,
+        first,
+        last
+      )
+    )
   }
   errors
 }
@@ -636,12 +689,22 @@ validate_linestring_coords <- function(coords) {
     return("LineString coordinates must be a list of positions")
   }
   if (length(coords) < 2L) {
-    errors <- c(errors, sprintf(
-      "LineString must have at least 2 positions, got %d", length(coords)
-    ))
+    errors <- c(
+      errors,
+      sprintf(
+        "LineString must have at least 2 positions, got %d",
+        length(coords)
+      )
+    )
   }
   for (i in seq_along(coords)) {
-    errors <- c(errors, validate_geojson_position(coords[[i]], sprintf("LineString position[%d]", i)))
+    errors <- c(
+      errors,
+      validate_geojson_position(
+        coords[[i]],
+        sprintf("LineString position[%d]", i)
+      )
+    )
   }
   errors
 }
@@ -655,7 +718,11 @@ validate_polygon_coords <- function(coords) {
     return("Polygon must have at least one ring")
   }
   for (i in seq_along(coords)) {
-    label <- if (i == 1L) "Polygon outer ring" else sprintf("Polygon hole[%d]", i - 1L)
+    label <- if (i == 1L) {
+      "Polygon outer ring"
+    } else {
+      sprintf("Polygon hole[%d]", i - 1L)
+    }
     errors <- c(errors, validate_linear_ring(coords[[i]], label))
   }
   errors
@@ -667,7 +734,13 @@ validate_multipoint_coords <- function(coords) {
     return("MultiPoint coordinates must be a list of positions")
   }
   for (i in seq_along(coords)) {
-    errors <- c(errors, validate_geojson_position(coords[[i]], sprintf("MultiPoint position[%d]", i)))
+    errors <- c(
+      errors,
+      validate_geojson_position(
+        coords[[i]],
+        sprintf("MultiPoint position[%d]", i)
+      )
+    )
   }
   errors
 }
@@ -675,11 +748,15 @@ validate_multipoint_coords <- function(coords) {
 validate_multilinestring_coords <- function(coords) {
   errors <- character()
   if (!is.list(coords)) {
-    return("MultiLineString coordinates must be a list of line coordinate arrays")
+    return(
+      "MultiLineString coordinates must be a list of line coordinate arrays"
+    )
   }
   for (i in seq_along(coords)) {
     errs <- validate_linestring_coords(coords[[i]])
-    if (length(errs)) errors <- c(errors, sprintf("MultiLineString[%d]: %s", i, errs))
+    if (length(errs)) {
+      errors <- c(errors, sprintf("MultiLineString[%d]: %s", i, errs))
+    }
   }
   errors
 }
@@ -687,11 +764,15 @@ validate_multilinestring_coords <- function(coords) {
 validate_multipolygon_coords <- function(coords) {
   errors <- character()
   if (!is.list(coords)) {
-    return("MultiPolygon coordinates must be a list of polygon coordinate arrays")
+    return(
+      "MultiPolygon coordinates must be a list of polygon coordinate arrays"
+    )
   }
   for (i in seq_along(coords)) {
     errs <- validate_polygon_coords(coords[[i]])
-    if (length(errs)) errors <- c(errors, sprintf("MultiPolygon[%d]: %s", i, errs))
+    if (length(errs)) {
+      errors <- c(errors, sprintf("MultiPolygon[%d]: %s", i, errs))
+    }
   }
   errors
 }
@@ -706,7 +787,9 @@ validate_geometry_collection <- function(geometry) {
   }
   for (i in seq_along(geometry$geometries)) {
     errs <- validate_geometry(geometry$geometries[[i]])
-    if (length(errs)) errors <- c(errors, sprintf("geometries[%d]: %s", i, errs))
+    if (length(errs)) {
+      errors <- c(errors, sprintf("geometries[%d]: %s", i, errs))
+    }
   }
   errors
 }
@@ -824,9 +907,9 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
     ))
   }
 
-  json         <- stac_to_json(stac_object)
+  json <- stac_to_json(stac_object)
   stac_version <- stac_object@stac_version %||% "1.0.0"
-  core_url     <- stac_core_schema_url(stac_object, stac_version)
+  core_url <- stac_core_schema_url(stac_object, stac_version)
 
   errors <- run_schema_validation(json, core_url)
 
@@ -903,42 +986,53 @@ suppress_unknown_format_warnings <- function(expr) {
 }
 
 run_schema_validation <- function(json, schema_url) {
-  tryCatch({
-    local_path <- bundle_schema_url(schema_url)
+  tryCatch(
+    {
+      local_path <- bundle_schema_url(schema_url)
 
-    result <- suppress_unknown_format_warnings(
-      jsonvalidate::json_validate(
-        json,
-        local_path,
-        verbose = TRUE,
-        greedy  = TRUE,
-        engine  = "ajv"
+      result <- suppress_unknown_format_warnings(
+        jsonvalidate::json_validate(
+          json,
+          local_path,
+          verbose = TRUE,
+          greedy = TRUE,
+          engine = "ajv"
+        )
       )
-    )
 
-    if (isTRUE(result)) {
-      return(character())
+      if (isTRUE(result)) {
+        return(character())
+      }
+
+      errs <- attr(result, "errors")
+      if (is.null(errs) || nrow(errs) == 0) {
+        return("Schema validation failed (no details available)")
+      }
+
+      # Column name changed between jsonvalidate versions: dataPath -> instancePath
+      path_col <- if ("instancePath" %in% names(errs)) {
+        "instancePath"
+      } else {
+        "dataPath"
+      }
+      paths <- errs[[path_col]]
+
+      msgs <- ifelse(
+        nchar(paths) > 0,
+        paste0(paths, ": ", errs$message),
+        errs$message
+      )
+      unique(msgs)
+    },
+    error = function(e) {
+      paste0(
+        "Could not fetch or parse schema '",
+        schema_url,
+        "': ",
+        conditionMessage(e)
+      )
     }
-
-    errs <- attr(result, "errors")
-    if (is.null(errs) || nrow(errs) == 0) {
-      return("Schema validation failed (no details available)")
-    }
-
-    # Column name changed between jsonvalidate versions: dataPath -> instancePath
-    path_col <- if ("instancePath" %in% names(errs)) "instancePath" else "dataPath"
-    paths    <- errs[[path_col]]
-
-    msgs <- ifelse(
-      nchar(paths) > 0,
-      paste0(paths, ": ", errs$message),
-      errs$message
-    )
-    unique(msgs)
-
-  }, error = function(e) {
-    paste0("Could not fetch or parse schema '", schema_url, "': ", conditionMessage(e))
-  })
+  )
 }
 
 
@@ -961,28 +1055,40 @@ bundle_schema_url <- function(schema_url) {
     local_path <- url_to_cached_schema_path(url, cache_dir)
 
     # Already cached from a previous call this session
-    if (file.exists(local_path)) return(local_path)
+    if (file.exists(local_path)) {
+      return(local_path)
+    }
     # Cycle guard (shouldn't happen in valid schemas, but be safe)
-    if (exists(url, envir = visited)) return(local_path)
+    if (exists(url, envir = visited)) {
+      return(local_path)
+    }
     assign(url, TRUE, envir = visited)
 
-    txt <- tryCatch({
-      con <- url(url, open = "r")
-      on.exit(close(con), add = TRUE)
-      paste(readLines(con, warn = FALSE), collapse = "\n")
-    }, error = function(e) {
-      cli::cli_abort(
-        "Failed to download schema '{url}': {conditionMessage(e)}"
-      )
-    })
+    txt <- tryCatch(
+      {
+        con <- url(url, open = "r")
+        on.exit(close(con), add = TRUE)
+        paste(readLines(con, warn = FALSE), collapse = "\n")
+      },
+      error = function(e) {
+        cli::cli_abort(
+          "Failed to download schema '{url}': {conditionMessage(e)}"
+        )
+      }
+    )
 
-    parsed    <- tryCatch(jsonlite::fromJSON(txt, simplifyVector = FALSE), error = function(e) NULL)
-    this_base <- sub("[^/]*$", "", url)   # trailing-slash base URL directory
+    parsed <- tryCatch(
+      jsonlite::fromJSON(txt, simplifyVector = FALSE),
+      error = function(e) NULL
+    )
+    this_base <- sub("[^/]*$", "", url) # trailing-slash base URL directory
 
     if (!is.null(parsed)) {
       for (ref in find_schema_refs(parsed)) {
         # Fragment-only refs (#/definitions/...) are local — leave them alone
-        if (grepl("^#", ref)) next
+        if (grepl("^#", ref)) {
+          next
+        }
 
         # JSON Schema meta-schema URLs (json-schema.org) are self-describing
         # schemas whose own "$ref" property is an object, not a string. They
@@ -1008,7 +1114,9 @@ bundle_schema_url <- function(schema_url) {
           fragment <- ""
         }
 
-        if (!nzchar(ref_path)) next  # bare fragment — already guarded above
+        if (!nzchar(ref_path)) {
+          next
+        } # bare fragment — already guarded above
 
         # Resolve to an absolute URL, collapsing any ../ segments
         if (grepl("^https?://", ref_path)) {
@@ -1024,7 +1132,8 @@ bundle_schema_url <- function(schema_url) {
         txt <- gsub(
           paste0('"', ref, '"'),
           paste0('"', new_ref, '"'),
-          txt, fixed = TRUE
+          txt,
+          fixed = TRUE
         )
       }
     }
@@ -1054,9 +1163,9 @@ url_to_cached_schema_path <- function(url, cache_dir) {
 # @keywords internal
 normalize_schema_url <- function(url) {
   # Split on "/" but preserve the protocol prefix
-  proto  <- regmatches(url, regexpr("^https?://", url))
-  rest   <- sub("^https?://", "", url)
-  parts  <- strsplit(rest, "/", fixed = TRUE)[[1]]
+  proto <- regmatches(url, regexpr("^https?://", url))
+  rest <- sub("^https?://", "", url)
+  parts <- strsplit(rest, "/", fixed = TRUE)[[1]]
 
   stack <- character()
   for (p in parts) {
@@ -1077,11 +1186,17 @@ normalize_schema_url <- function(url) {
 #
 # @keywords internal
 find_schema_refs <- function(x) {
-  if (!is.list(x)) return(character())
+  if (!is.list(x)) {
+    return(character())
+  }
   refs <- character()
   ref_val <- x[["$ref"]]
-  if (is.character(ref_val) && length(ref_val) == 1L) refs <- ref_val
-  for (child in x) refs <- c(refs, find_schema_refs(child))
+  if (is.character(ref_val) && length(ref_val) == 1L) {
+    refs <- ref_val
+  }
+  for (child in x) {
+    refs <- c(refs, find_schema_refs(child))
+  }
   unique(refs)
 }
 
@@ -1100,12 +1215,18 @@ validate_providers <- function(providers) {
     provider <- providers[[i]]
 
     if (!S7::S7_inherits(provider, stac_provider)) {
-      errors <- c(errors, paste0("Provider[", i, "] must be a stac_provider object"))
+      errors <- c(
+        errors,
+        paste0("Provider[", i, "] must be a stac_provider object")
+      )
       next
     }
 
-    if (length(provider@name) != 1L || is.na(provider@name) ||
-        !nzchar(provider@name)) {
+    if (
+      length(provider@name) != 1L ||
+        is.na(provider@name) ||
+        !nzchar(provider@name)
+    ) {
       errors <- c(errors, paste0("Provider[", i, "] must have 'name' field"))
     }
 

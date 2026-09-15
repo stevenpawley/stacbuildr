@@ -11,14 +11,14 @@ test_that("classification_class creates a minimal object with just value", {
 
 test_that("classification_class stores all optional fields", {
   cls <- classification_class(
-    value       = 3,
-    name        = "forest",
-    title       = "Forest",
+    value = 3,
+    name = "forest",
+    title = "Forest",
     description = "Dense forest canopy",
-    color_hint  = "00FF00",
-    nodata      = FALSE,
-    percentage  = 45.2,
-    count       = 9040L
+    color_hint = "00FF00",
+    nodata = FALSE,
+    percentage = 45.2,
+    count = 9040L
   )
 
   expect_equal(cls@value, 3L)
@@ -91,7 +91,11 @@ make_classes <- function() {
 }
 
 test_that("classification_bitfield creates a valid object", {
-  bf <- classification_bitfield(offset = 0, length = 1, classes = make_classes())
+  bf <- classification_bitfield(
+    offset = 0,
+    length = 1,
+    classes = make_classes()
+  )
 
   expect_equal(bf@offset, 0L)
   expect_equal(bf@length, 1L)
@@ -101,12 +105,12 @@ test_that("classification_bitfield creates a valid object", {
 
 test_that("classification_bitfield stores optional fields", {
   bf <- classification_bitfield(
-    offset      = 3,
-    length      = 2,
-    classes     = make_classes(),
-    name        = "cloud_conf",
+    offset = 3,
+    length = 2,
+    classes = make_classes(),
+    name = "cloud_conf",
     description = "Cloud confidence",
-    roles       = c("data", "cloud")
+    roles = c("data", "cloud")
   )
 
   expect_equal(bf@offset, 3L)
@@ -117,7 +121,11 @@ test_that("classification_bitfield stores optional fields", {
 })
 
 test_that("classification_bitfield coerces offset and length to integer", {
-  bf <- classification_bitfield(offset = 2.0, length = 1.0, classes = make_classes())
+  bf <- classification_bitfield(
+    offset = 2.0,
+    length = 1.0,
+    classes = make_classes()
+  )
 
   expect_identical(bf@offset, 2L)
   expect_identical(bf@length, 1L)
@@ -162,7 +170,10 @@ test_that("classification_bitfield errors on empty classes list", {
 test_that("classification_bitfield errors on invalid name", {
   expect_error(
     classification_bitfield(
-      offset = 0, length = 1, classes = make_classes(), name = "bad name!"
+      offset = 0,
+      length = 1,
+      classes = make_classes(),
+      name = "bad name!"
     ),
     "letters, numbers, hyphens, and underscores"
   )
@@ -173,9 +184,9 @@ test_that("classification_bitfield errors on invalid name", {
 
 make_item <- function() {
   stac_item(
-    id       = "test-classification",
+    id = "test-classification",
     geometry = list(type = "Point", coordinates = c(-105, 40)),
-    bbox     = c(-105, 40, -105, 40),
+    bbox = c(-105, 40, -105, 40),
     datetime = "2023-06-15T00:00:00Z"
   )
 }
@@ -185,8 +196,8 @@ test_that("add_classification_extension adds schema URI to stac_extensions", {
   item <- add_classification_extension(make_item(), classes = classes)
 
   expect_true(
-    "https://stac-extensions.github.io/classification/v2.0.0/schema.json"
-    %in% item@stac_extensions
+    "https://stac-extensions.github.io/classification/v2.0.0/schema.json" %in%
+      item@stac_extensions
   )
 })
 
@@ -215,7 +226,12 @@ test_that("add_classification_extension writes classes to item properties", {
 
 test_that("add_classification_extension writes bitfields to item properties", {
   bfs <- list(
-    classification_bitfield(offset = 0, length = 1, classes = make_classes(), name = "fill")
+    classification_bitfield(
+      offset = 0,
+      length = 1,
+      classes = make_classes(),
+      name = "fill"
+    )
   )
 
   item <- add_classification_extension(make_item(), bitfields = bfs)
@@ -229,44 +245,63 @@ test_that("add_classification_extension writes classes to a named asset", {
 
   item <- make_item() |>
     add_asset(
-      key   = "landcover",
-      href  = "https://example.com/lc.tif",
-      type  = "image/tiff; application=geotiff",
+      key = "landcover",
+      href = "https://example.com/lc.tif",
+      type = "image/tiff; application=geotiff",
       roles = c("data")
     ) |>
     add_classification_extension(classes = classes, asset_key = "landcover")
 
   expect_length(item@assets$landcover@extra_fields$`classification:classes`, 1)
-  expect_equal(item@assets$landcover@extra_fields$`classification:classes`[[1]]@name, "forest")
+  expect_equal(
+    item@assets$landcover@extra_fields$`classification:classes`[[1]]@name,
+    "forest"
+  )
   # should NOT be in item properties
   expect_null(item@properties$`classification:classes`)
 })
 
 test_that("add_classification_extension writes bitfields to a named asset", {
   bfs <- list(
-    classification_bitfield(offset = 3, length = 1, classes = make_classes(), name = "cloud")
+    classification_bitfield(
+      offset = 3,
+      length = 1,
+      classes = make_classes(),
+      name = "cloud"
+    )
   )
 
   item <- make_item() |>
     add_asset(
-      key   = "qa",
-      href  = "https://example.com/qa.tif",
-      type  = "image/tiff; application=geotiff",
+      key = "qa",
+      href = "https://example.com/qa.tif",
+      type = "image/tiff; application=geotiff",
       roles = c("data")
     ) |>
     add_classification_extension(bitfields = bfs, asset_key = "qa")
 
   expect_length(item@assets$qa@extra_fields$`classification:bitfields`, 1)
-  expect_equal(item@assets$qa@extra_fields$`classification:bitfields`[[1]]@name, "cloud")
+  expect_equal(
+    item@assets$qa@extra_fields$`classification:bitfields`[[1]]@name,
+    "cloud"
+  )
   expect_null(item@properties$`classification:bitfields`)
 })
 
 test_that("add_classification_extension errors when both classes and bitfields given", {
-  classes  <- list(classification_class(value = 1, name = "water"))
-  bfs      <- list(classification_bitfield(offset = 0, length = 1, classes = make_classes()))
+  classes <- list(classification_class(value = 1, name = "water"))
+  bfs <- list(classification_bitfield(
+    offset = 0,
+    length = 1,
+    classes = make_classes()
+  ))
 
   expect_error(
-    add_classification_extension(make_item(), classes = classes, bitfields = bfs),
+    add_classification_extension(
+      make_item(),
+      classes = classes,
+      bitfields = bfs
+    ),
     "not both"
   )
 })
@@ -289,7 +324,11 @@ test_that("add_classification_extension errors on missing asset_key", {
   classes <- list(classification_class(value = 1, name = "water"))
 
   expect_error(
-    add_classification_extension(make_item(), classes = classes, asset_key = "nonexistent"),
+    add_classification_extension(
+      make_item(),
+      classes = classes,
+      asset_key = "nonexistent"
+    ),
     "does not exist"
   )
 })

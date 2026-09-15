@@ -84,11 +84,20 @@ render_object <- S7::new_class(
     bidx = S7::class_any,
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
-  constructor = function(assets, title = NULL, rescale = NULL, nodata = NULL,
-                         colormap_name = NULL, colormap = NULL,
-                         color_formula = NULL, resampling = NULL,
-                         expression = NULL, minmax_zoom = NULL, bidx = NULL,
-                         ...) {
+  constructor = function(
+    assets,
+    title = NULL,
+    rescale = NULL,
+    nodata = NULL,
+    colormap_name = NULL,
+    colormap = NULL,
+    color_formula = NULL,
+    resampling = NULL,
+    expression = NULL,
+    minmax_zoom = NULL,
+    bidx = NULL,
+    ...
+  ) {
     if (missing(assets) || !is.character(assets) || length(assets) == 0) {
       cli::cli_abort("'assets' must be a non-empty character vector")
     }
@@ -101,9 +110,13 @@ render_object <- S7::new_class(
       if (!is.list(rescale) || length(rescale) == 0) {
         cli::cli_abort("'rescale' must be a non-empty list of numeric vectors")
       }
-      valid_rescale <- vapply(rescale, function(x) {
-        is.numeric(x) && length(x) == 2
-      }, logical(1))
+      valid_rescale <- vapply(
+        rescale,
+        function(x) {
+          is.numeric(x) && length(x) == 2
+        },
+        logical(1)
+      )
       if (!all(valid_rescale)) {
         cli::cli_abort(
           "Each element of 'rescale' must be a numeric vector of length 2"
@@ -111,8 +124,10 @@ render_object <- S7::new_class(
       }
     }
 
-    if (!is.null(minmax_zoom) &&
-        !(is.numeric(minmax_zoom) && length(minmax_zoom) == 2)) {
+    if (
+      !is.null(minmax_zoom) &&
+        !(is.numeric(minmax_zoom) && length(minmax_zoom) == 2)
+    ) {
       cli::cli_abort("'minmax_zoom' must be a numeric vector of length 2")
     }
 
@@ -136,10 +151,15 @@ render_object <- S7::new_class(
 
 S7::method(as.list, render_object) <- function(x, ...) {
   fields <- compact_nulls(list(
-    assets = as_json_array(x@assets), title = x@title, rescale = x@rescale,
-    nodata = x@nodata, colormap_name = x@colormap_name,
-    colormap = x@colormap, color_formula = x@color_formula,
-    resampling = x@resampling, expression = x@expression,
+    assets = as_json_array(x@assets),
+    title = x@title,
+    rescale = x@rescale,
+    nodata = x@nodata,
+    colormap_name = x@colormap_name,
+    colormap = x@colormap,
+    color_formula = x@color_formula,
+    resampling = x@resampling,
+    expression = x@expression,
     minmax_zoom = x@minmax_zoom,
     bidx = if (is.null(x@bidx)) NULL else as_json_array(x@bidx)
   ))
@@ -261,7 +281,9 @@ add_render_extension <- function(item, renders) {
   }
 
   if (S7::S7_inherits(item, stac_item)) {
-    item@properties$renders <- merge_renders(item@properties$renders %||% list())
+    item@properties$renders <- merge_renders(
+      item@properties$renders %||% list()
+    )
   } else {
     item@extra_fields$renders <- merge_renders(
       item@extra_fields$renders %||% list()
@@ -304,13 +326,22 @@ validate_render_named_list <- function(x) {
 #' @noRd
 S7::method(print, render_object) <- function(x, ...) {
   stac_print_header("Render Object")
-  fields <- c(compact_nulls(list(
-    assets = x@assets, title = x@title, rescale = x@rescale,
-    nodata = x@nodata, colormap_name = x@colormap_name,
-    colormap = x@colormap, color_formula = x@color_formula,
-    resampling = x@resampling, expression = x@expression,
-    minmax_zoom = x@minmax_zoom, bidx = x@bidx
-  )), x@extra_fields)
+  fields <- c(
+    compact_nulls(list(
+      assets = x@assets,
+      title = x@title,
+      rescale = x@rescale,
+      nodata = x@nodata,
+      colormap_name = x@colormap_name,
+      colormap = x@colormap,
+      color_formula = x@color_formula,
+      resampling = x@resampling,
+      expression = x@expression,
+      minmax_zoom = x@minmax_zoom,
+      bidx = x@bidx
+    )),
+    x@extra_fields
+  )
   stac_print_list_fields(fields, styles = list(assets = stac_style_key))
   invisible(x)
 }

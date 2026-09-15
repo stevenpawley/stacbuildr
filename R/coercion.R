@@ -13,7 +13,10 @@ item_row <- function(item) {
 
   # datetime is the property a reader looks for first, so it leads the
   # properties rather than sitting wherever it happens to be stored.
-  lead <- intersect(c("datetime", "start_datetime", "end_datetime"), names(props))
+  lead <- intersect(
+    c("datetime", "start_datetime", "end_datetime"),
+    names(props)
+  )
 
   c(
     list(
