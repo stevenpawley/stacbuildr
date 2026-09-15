@@ -226,12 +226,38 @@ as_lidr_header <- function(x, arg = "header") {
     return(x@header)
   }
   if (is.character(x) && length(x) == 1) {
+    validate_las_signature(x)
     return(lidR::readLASheader(x))
   }
 
   cli::cli_abort(
     "'{arg}' must be a LASheader, a LAS object, or a path to a LAS/LAZ file"
   )
+}
+
+
+# Avoid passing an obviously invalid file to LASlib. Its native reader writes
+# diagnostics directly to stderr before raising an R error, so those messages
+# cannot be muffled by callers such as items_from_lascatalog().
+validate_las_signature <- function(path) {
+  if (!file.exists(path)) {
+    cli::cli_abort("LAS/LAZ file does not exist: {.path {path}}")
+  }
+
+  signature <- tryCatch(
+    {
+      connection <- file(path, open = "rb")
+      on.exit(close(connection))
+      readBin(connection, what = "raw", n = 4L)
+    },
+    error = function(e) raw()
+  )
+
+  if (!identical(signature, charToRaw("LASF"))) {
+    cli::cli_abort("Not a valid LAS/LAZ file (missing LASF signature): {.path {path}}")
+  }
+
+  invisible(TRUE)
 }
 
 
