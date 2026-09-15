@@ -421,7 +421,9 @@ pc_statistic <- S7::new_class(
         self
       },
       validator = function(value) {
-        if (!is.null(value) && (length(value) != 1L || is.na(value) || value < 0L)) {
+        if (
+          !is.null(value) && (length(value) != 1L || is.na(value) || value < 0L)
+        ) {
           "must be a whole number greater than or equal to 0"
         }
       }
@@ -439,12 +441,10 @@ pc_statistic <- S7::new_class(
       validator = function(value) {
         if (
           !is.null(value) &&
-            (
-              length(value) != 1L ||
-                is.na(value) ||
-                value != trunc(value) ||
-                value < 0
-            )
+            (length(value) != 1L ||
+              is.na(value) ||
+              value != trunc(value) ||
+              value < 0)
         ) {
           "must be a whole number greater than or equal to 0"
         }
