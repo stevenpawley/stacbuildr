@@ -27,7 +27,6 @@ reference:
     contents:
       - stac_asset
       - add_asset
-      - print.stac_asset
 
   - title: "Links"
     desc: "Build and manage the link graph between STAC objects."
@@ -51,8 +50,6 @@ reference:
       - stac_summaries
       - extent_from_items
       - add_item_assets
-      - print.stac_provider
-      - print.stac_summaries
 
   - title: "terra Integration"
     desc: >
@@ -89,8 +86,6 @@ reference:
       - raster_statistics
       - raster_histogram
       - band_from_file
-      - print.raster_statistics
-      - print.raster_histogram
 
   - title: "EO Extension"
     desc: >
@@ -99,7 +94,6 @@ reference:
     contents:
       - add_eo_extension
       - eo_band
-      - print.eo_band
       - landsat_oli_bands
       - sentinel2_msi_bands
       - worldview3_bands
@@ -113,8 +107,6 @@ reference:
       - add_classification_extension
       - classification_class
       - classification_bitfield
-      - print.classification_class
-      - print.classification_bitfield
 
   - title: "Scientific Citation Extension"
     desc: >
@@ -123,7 +115,6 @@ reference:
     contents:
       - add_scientific_extension
       - scientific_publication
-      - print.scientific_publication
 
   - title: "Table Extension"
     desc: >
@@ -132,7 +123,6 @@ reference:
     contents:
       - add_table_extension
       - table_column
-      - print.table_column
 
   - title: "Vector Extension"
     desc: >
@@ -159,8 +149,6 @@ reference:
       - add_pointcloud_extension
       - pc_schema
       - pc_statistic
-      - print.pc_schema
-      - print.pc_statistic
 
   - title: "Datacube Extension"
     desc: >
@@ -171,8 +159,6 @@ reference:
       - add_datacube_extension
       - cube_dimension
       - cube_variable
-      - print.cube_dimension
-      - print.cube_variable
     
   - title: "Render Extension"
     desc: >
@@ -182,7 +168,6 @@ reference:
     contents:
       - render_object
       - add_render_extension
-      - print.render_object
 
   - title: "Read / Write"
     desc: "Serialise STAC objects to JSON on disk and read them back."
@@ -203,7 +188,7 @@ reference:
       - as.data.frame.stac_catalog
       - st_as_sf.stac_catalog
       - stac_item_sf_accessors
-      - "`[.stac_catalog`"
+      - sub-.stac_catalog
 
   - title: "Validation"
     desc: >
@@ -214,4 +199,3 @@ reference:
     contents:
       - validate_stac
       - validate_stac_schema
-      - print.stac_validation
