@@ -117,11 +117,25 @@ test_that("pc_schema validates name, size and type", {
 
   expect_error(
     pc_schema("X", size = 8, type = "double"),
-    "Invalid dimension type"
+    "floating, unsigned, or signed"
   )
   expect_error(pc_schema("X", size = 0, type = "floating"), "greater than 0")
   expect_error(pc_schema("X", size = 1.5, type = "floating"), "whole number")
   expect_error(pc_schema("", size = 1, type = "signed"), "empty string")
+})
+
+test_that("pointcloud sub-objects validate property modifications", {
+  schema <- pc_schema("X", size = 8, type = "floating")
+  expect_error(schema@name <- "", "non-empty string")
+  expect_error(schema@size <- 0L, "greater than 0")
+  expect_error(schema@type <- "double", "floating, unsigned, or signed")
+
+  statistic <- pc_statistic("Z", minimum = 0)
+  expect_error(statistic@name <- "", "non-empty string")
+  expect_error(statistic@position <- -1L, "greater than or equal to 0")
+  expect_error(statistic@minimum <- c(0, 1), "single number")
+  expect_error(statistic@count <- 1.5, "whole number")
+  expect_error(statistic@minimum <- NULL, "at least one statistic")
 })
 
 test_that("pc_statistic needs at least one statistic beside the name", {

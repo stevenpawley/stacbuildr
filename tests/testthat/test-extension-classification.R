@@ -76,7 +76,36 @@ test_that("classification_class errors on out-of-range percentage", {
 test_that("classification_class errors on non-logical nodata", {
   expect_error(
     classification_class(value = 1, nodata = "yes"),
+    "logical"
+  )
+})
+
+test_that("classification_class validates property modifications", {
+  cls <- classification_class(value = 1, name = "forest")
+
+  expect_error(
+    cls@value <- c(1L, 2L),
+    "single integer"
+  )
+  expect_error(
+    cls@name <- "bad name!",
+    "letters, numbers, hyphens, and underscores"
+  )
+  expect_error(
+    cls@color_hint <- "ff0000",
+    "upper-case hexadecimal"
+  )
+  expect_error(
+    cls@percentage <- 101,
+    "0 and 100"
+  )
+  expect_error(
+    cls@nodata <- NA,
     "TRUE or FALSE"
+  )
+  expect_error(
+    cls@count <- c(1L, 2L),
+    "single integer"
   )
 })
 
@@ -177,6 +206,27 @@ test_that("classification_bitfield errors on invalid name", {
     ),
     "letters, numbers, hyphens, and underscores"
   )
+})
+
+test_that("classification_bitfield validates property modifications", {
+  bf <- classification_bitfield(
+    offset = 0,
+    length = 1,
+    classes = make_classes()
+  )
+
+  expect_error(bf@offset <- -1L, "non-negative")
+  expect_error(bf@length <- 0L, "positive integer")
+  expect_error(bf@classes <- list(), "non-empty")
+  expect_error(
+    bf@classes <- list(classification_class(value = 0), "invalid"),
+    "only classification_class objects"
+  )
+  expect_error(
+    bf@name <- "bad name!",
+    "letters, numbers, hyphens, and underscores"
+  )
+  expect_error(bf@roles <- 1, "character")
 })
 
 

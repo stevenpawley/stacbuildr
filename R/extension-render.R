@@ -71,16 +71,54 @@
 render_object <- S7::new_class(
   "render_object",
   properties = list(
-    assets = S7::class_character,
-    title = S7::class_any,
-    rescale = S7::class_any,
+    assets = S7::new_property(
+      S7::class_character,
+      validator = function(value) {
+        if (length(value) == 0L) {
+          "must be a non-empty character vector"
+        }
+      }
+    ),
+    title = S7::new_property(
+      S7::class_any,
+      validator = function(value) {
+        if (!is.null(value) && (!is.character(value) || length(value) != 1L)) {
+          "must be a single character string"
+        }
+      }
+    ),
+    rescale = S7::new_property(
+      S7::class_any,
+      validator = function(value) {
+        if (!is.null(value) && (!is.list(value) || length(value) == 0L)) {
+          return("must be a non-empty list of numeric vectors")
+        }
+        if (
+          !is.null(value) &&
+            !all(vapply(
+              value,
+              function(x) is.numeric(x) && length(x) == 2L,
+              logical(1)
+            ))
+        ) {
+          "must contain only numeric vectors of length 2"
+        }
+      }
+    ),
     nodata = S7::class_any,
     colormap_name = S7::class_any,
     colormap = S7::class_any,
     color_formula = S7::class_any,
     resampling = S7::class_any,
     expression = S7::class_any,
-    minmax_zoom = S7::class_any,
+    minmax_zoom = S7::new_property(
+      S7::class_any,
+      validator = function(value) {
+        if (!is.null(value) && (!is.numeric(value) || length(value) != 2L)) {
+          "must be a numeric vector of length 2"
+        }
+      }
+    ),
     bidx = S7::class_any,
     extra_fields = S7::new_property(S7::class_list, default = list())
   ),
@@ -98,37 +136,8 @@ render_object <- S7::new_class(
     bidx = NULL,
     ...
   ) {
-    if (missing(assets) || !is.character(assets) || length(assets) == 0) {
-      cli::cli_abort("'assets' must be a non-empty character vector")
-    }
-
-    if (!is.null(title) && (!is.character(title) || length(title) != 1)) {
-      cli::cli_abort("'title' must be a single character string")
-    }
-
-    if (!is.null(rescale)) {
-      if (!is.list(rescale) || length(rescale) == 0) {
-        cli::cli_abort("'rescale' must be a non-empty list of numeric vectors")
-      }
-      valid_rescale <- vapply(
-        rescale,
-        function(x) {
-          is.numeric(x) && length(x) == 2
-        },
-        logical(1)
-      )
-      if (!all(valid_rescale)) {
-        cli::cli_abort(
-          "Each element of 'rescale' must be a numeric vector of length 2"
-        )
-      }
-    }
-
-    if (
-      !is.null(minmax_zoom) &&
-        !(is.numeric(minmax_zoom) && length(minmax_zoom) == 2)
-    ) {
-      cli::cli_abort("'minmax_zoom' must be a numeric vector of length 2")
+    if (missing(assets)) {
+      cli::cli_abort("'assets' is required")
     }
 
     S7::new_object(

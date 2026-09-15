@@ -50,39 +50,48 @@ test_that("render_object stores extra fields via ...", {
 })
 
 test_that("render_object errors when assets is missing", {
-  expect_error(render_object(), "'assets' must be a non-empty character vector")
+  expect_error(render_object(), "'assets' is required")
 })
 
 test_that("render_object errors when assets is empty", {
   expect_error(
     render_object(assets = character(0)),
-    "'assets' must be a non-empty character vector"
+    "non-empty character vector"
   )
 })
 
 test_that("render_object errors when title is not a single string", {
   expect_error(
     render_object(assets = "B4", title = c("a", "b")),
-    "'title' must be a single character string"
+    "single character string"
   )
 })
 
 test_that("render_object errors when rescale is malformed", {
   expect_error(
     render_object(assets = "B4", rescale = list(c(0, 1, 2))),
-    "Each element of 'rescale' must be a numeric vector of length 2"
+    "numeric vectors of length 2"
   )
   expect_error(
     render_object(assets = "B4", rescale = c(0, 1)),
-    "'rescale' must be a non-empty list of numeric vectors"
+    "non-empty list of numeric vectors"
   )
 })
 
 test_that("render_object errors when minmax_zoom is not length 2", {
   expect_error(
     render_object(assets = "B4", minmax_zoom = c(0, 10, 20)),
-    "'minmax_zoom' must be a numeric vector of length 2"
+    "numeric vector of length 2"
   )
+})
+
+test_that("render_object validates property modifications", {
+  render <- render_object("B4")
+
+  expect_error(render@assets <- character(), "non-empty character vector")
+  expect_error(render@title <- c("a", "b"), "single character string")
+  expect_error(render@rescale <- list(c(0, 1, 2)), "numeric vectors of length 2")
+  expect_error(render@minmax_zoom <- 0:2, "numeric vector of length 2")
 })
 
 

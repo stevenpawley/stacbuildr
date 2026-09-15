@@ -28,6 +28,8 @@ test_that("raster histograms use validated S7 properties", {
   expect_true(S7::S7_inherits(histogram, raster_histogram))
   expect_identical(histogram@count, 3L)
   expect_identical(histogram@buckets, c(4L, 5L, 6L))
+  expect_error(histogram@count <- c(1L, 2L), "single integer")
+  expect_error(histogram@min <- c(0, 1), "single number")
   expect_error(histogram@max <- -1, "smaller than")
   expect_error(histogram@buckets <- 1L, "must equal")
   expect_identical(

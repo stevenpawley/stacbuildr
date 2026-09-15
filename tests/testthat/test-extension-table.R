@@ -28,15 +28,20 @@ test_that("table_column stores extra fields via ...", {
 })
 
 test_that("table_column errors when name is missing or invalid", {
-  expect_error(table_column(), "'name' must be a single character string")
+  expect_error(table_column(), "'name' is required")
   expect_error(
     table_column(name = c("a", "b")),
-    "'name' must be a single character string"
+    "single character string"
   )
   expect_error(
     table_column(name = 123),
-    "'name' must be a single character string"
+    "character"
   )
+})
+
+test_that("table_column validates name modifications", {
+  col <- table_column("geometry")
+  expect_error(col@name <- c("a", "b"), "single character string")
 })
 
 
