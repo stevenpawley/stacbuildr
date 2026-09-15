@@ -85,7 +85,7 @@ render_object(
 
 ## Value
 
-A named list of class `"render_object"`.
+A `render_object` S7 object. Access fields with `@`.
 
 ## Details
 

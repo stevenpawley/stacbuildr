@@ -54,7 +54,18 @@ stac_asset(
 
 ## Value
 
-A list representing a STAC asset object.
+An S7 asset. Access core fields with `asset@href` and arbitrary metadata
+with `asset@extra_fields`.
+
+## Details
+
+`roles` is a character vector in memory and a JSON array when
+serialized. Assets retain their S7 class when attached to Items or
+Collections and when restored with
+[`read_stac()`](https://stevenpawley.github.io/stacbuildr/reference/read_stac.md).
+The assets dictionary remains a named list: use
+`item@assets[["data"]]@href` to access an asset's URL. Use
+`as.list(asset)` to obtain the JSON-ready representation.
 
 ## Examples
 
@@ -73,6 +84,10 @@ asset <- stac_asset(
   type = "image/tiff; application=geotiff",
   roles = c("data", "reflectance")
 )
+asset@href
+#> [1] "./data/LC08_B4.tif"
+asset@roles
+#> [1] "data"        "reflectance"
 
 # Asset with extension properties
 asset <- stac_asset(

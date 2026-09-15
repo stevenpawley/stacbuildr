@@ -31,7 +31,8 @@ raster_histogram(count, min, max, buckets)
 
 ## Value
 
-A list representing a histogram object.
+An S7 raster histogram object. Access its properties with `@`, for
+example `hist@count` and `hist@buckets`.
 
 ## Examples
 
@@ -43,4 +44,8 @@ hist <- raster_histogram(
   max = 100,
   buckets = c(1500, 3200, 4100, 2800, 1400)
 )
+hist@count
+#> [1] 5
+hist@buckets
+#> [1] 1500 3200 4100 2800 1400
 ```

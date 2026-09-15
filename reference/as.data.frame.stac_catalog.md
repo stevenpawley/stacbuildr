@@ -11,23 +11,6 @@ and objects (`bands`). Use
 instead to get the same table with the Item footprints attached as a
 geometry column.
 
-## Usage
-
-``` r
-# S3 method for class 'stac_catalog'
-as.data.frame(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  ...,
-  resolve = FALSE,
-  base_path = "."
-)
-
-# S3 method for class 'stac_item'
-as.data.frame(x, row.names = NULL, optional = FALSE, ...)
-```
-
 ## Arguments
 
 - x:

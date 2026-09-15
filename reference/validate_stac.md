@@ -23,7 +23,7 @@ validate_stac(stac_object, strict = FALSE)
 
 ## Value
 
-A list with elements:
+A `stac_validation` S7 object with properties:
 
 - `valid`: Logical indicating if the object is valid
 

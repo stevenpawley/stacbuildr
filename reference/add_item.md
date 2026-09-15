@@ -1,10 +1,10 @@
 # Add an Item to a STAC Catalog or Collection
 
-Adds a STAC Item to a Catalog or Collection by creating the appropriate
-link relationship. This function modifies the catalog/collection object
-to include an `"item"` link pointing to the Item. Optionally, it can
-also modify the Item to include links back to the parent (`"parent"`,
-`"collection"`, and `"root"`).
+Adds one or more STAC Items to a Catalog or Collection. An `"item"` link
+is added immediately, and the complete Item is retained internally so
+that
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+can write it as part of the catalog tree.
 
 ## Usage
 
@@ -36,18 +36,16 @@ add_item(
 
 - href:
 
-  (character, optional) The relative or absolute path where the Item
-  JSON file will be located. If `NULL` (default), generates a path based
-  on the item's ID: `"./items/{item@id}.json"`. Can be a vector of paths
-  when `item` is a list.
+  (character, optional) Href for each Item link. If `NULL`, uses
+  `"./{item@id}/{item@id}.json"`. Supply one href per Item.
+  [`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+  regenerates these hrefs for its output layout and `catalog_type`.
 
 - add_parent_links:
 
-  (logical, optional) If `TRUE`, modifies the Item(s) to include
-  reciprocal links back to the parent catalog. Adds `"parent"` and
-  `"root"` links. If the parent is a Collection, also adds a
-  `"collection"` link. Default is `FALSE` to avoid modifying the
-  original Item object.
+  (logical, optional) If `TRUE`, add `"parent"` and `"root"` links to
+  each retained Item. Items added to a Collection also get a
+  `"collection"` link and `collection` field. Default is `FALSE`.
 
 - parent_href:
 
@@ -63,70 +61,24 @@ add_item(
 
 ## Value
 
-The modified catalog/collection object with the Item link(s) added. If
-`add_parent_links = TRUE`, also returns the Item(s) with updated links
-as an attribute named `"items"` (accessible via
-`attr(result, "items")`).
+The modified catalog/collection object with the Item link(s) added and
+the complete Item object(s) retained internally for
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md).
 
 ## Details
 
-### Link Relations
-
-This function creates an `"item"` link in the catalog that points to the
-Item. Based on the STAC specification, Items are strongly recommended to
-provide a link to a STAC Collection, so when adding Items to a
-Collection, consider setting `add_parent_links = TRUE`.
-
-When `add_parent_links = TRUE`:
-
-- Adds `"parent"` link to the Item pointing to the catalog/collection
-
-- Adds `"root"` link to the Item pointing to the root catalog
-
-- If parent is a Collection, adds `"collection"` link and sets the
-  `collection` property in the Item (required when collection link is
-  present)
-
-### Multiple Items
-
-You can add multiple items at once by passing a list of Item objects. In
-this case, `href` should be either:
-
-- `NULL` to auto-generate paths for all items
-
-- A vector of the same length as the number of items
-
-### Item Requirements
-
-Based on the STAC Item specification, each Item must have the following
-fields:
-
-- `type`: "Feature"
-
-- `stac_version`: e.g., "1.1.0"
-
-- `id`: Unique identifier within the collection
-
-- `geometry`: GeoJSON geometry or null
-
-- `bbox`: Bounding box (required if geometry is not null)
-
-- `properties`: Object with metadata (must include `datetime`)
-
-- `links`: Array of links
-
-- `assets`: Object describing available data files
+A Catalog's `links` property contains links to Items, not the Items
+themselves. Complete Items are retained in the internal `"stac_items"`
+attribute, which is excluded from Catalog JSON. Use
+[`get_items()`](https://stevenpawley.github.io/stacbuildr/reference/get_items.md)
+to retrieve them. See
+[`vignette("stac-catalog")`](https://stevenpawley.github.io/stacbuildr/articles/stac-catalog.md)
+for the full writing model.
 
 ## See also
 
 - [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md)
   for creating STAC Items
-
-- [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md)
-  for creating STAC Catalogs
-
-- [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md)
-  for creating STAC Collections
 
 - [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
   for adding links to STAC objects
@@ -137,55 +89,35 @@ fields:
 ## Examples
 
 ``` r
-# Create a collection
-collection <- stac_collection(
-  id = "landsat-8",
-  description = "Landsat 8 imagery",
-  license = "CC0-1.0",
-  extent = stac_extent(
-    spatial_bbox = list(c(-180, -90, 180, 90)),
-    temporal_interval = list(list("2013-04-11T00:00:00Z", NULL))
-  )
+catalog <- stac_catalog(id = "example", description = "Example catalog")
+item <- stac_item(
+  id = "item-1",
+  geometry = NULL,
+  bbox = NULL,
+  datetime = "2020-01-01T00:00:00Z"
 )
 
-# Create an item. Every id in a catalog must be unique, so this helper
-# varies it per scene.
-make_item <- function(id) {
-  stac_item(
-    id = id,
-    geometry = list(
-      type = "Polygon",
-      coordinates = list(list(
-        c(-180, -90), c(180, -90), c(180, 90), c(-180, 90), c(-180, -90)
-      ))
-    ),
-    bbox = c(-180, -90, 180, 90),
-    datetime = "2020-01-01T00:00:00Z",
-    properties = list()
-  )
-}
-
-# Add a single item to the collection
-collection <- add_item(collection, make_item("LC08_20200101"))
-
-# Add an item with parent links
-collection <- add_item(
-  collection,
-  make_item("LC08_20200102"),
-  add_parent_links = TRUE,
-  parent_href = "./collection.json",
-  root_href = "../catalog.json"
-)
-
-# Add multiple items at once
-items <- lapply(c("LC08_20200103", "LC08_20200104"), make_item)
-collection <- add_item(collection, items)
-
-# Add multiple items with custom hrefs
-more_items <- lapply(c("LC08_20200105", "LC08_20200106"), make_item)
-collection <- add_item(
-  collection,
-  more_items,
-  href = c("./2020/item5.json", "./2020/item6.json")
-)
+catalog <- add_item(catalog, item)
+get_item_links(catalog)
+#> [[1]]
+#> [[1]]$rel
+#> [1] "item"
+#> 
+#> [[1]]$href
+#> [1] "./item-1/item-1.json"
+#> 
+#> [[1]]$type
+#> [1] "application/geo+json"
+#> 
+#> 
+get_items(catalog)
+#> [[1]]
+#> <STAC Item>
+#>   id           : item-1
+#>   stac_version : 1.1.0
+#>   datetime     : 2020-01-01T00:00:00Z
+#>   geometry     : NULL (non-spatial)
+#>     assets     : 0
+#>     links      : 0
+#> 
 ```

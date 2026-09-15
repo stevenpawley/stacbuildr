@@ -200,19 +200,13 @@ optional scene-level <code>cloud_cover</code> and
 <span></span>
 <span><span class="va">item</span><span class="op">@</span><span class="va">properties</span><span class="op">$</span><span class="va">`eo:cloud_cover`</span></span>
 <span><span class="co">#&gt; [1] 12.5</span></span>
-<span><span class="va">item</span><span class="op">@</span><span class="va">assets</span><span class="op">$</span><span class="va">red</span><span class="op">$</span><span class="va">bands</span></span>
+<span><span class="va">item</span><span class="op">@</span><span class="va">assets</span><span class="op">$</span><span class="va">red</span><span class="op">@</span><span class="va">extra_fields</span><span class="op">$</span><span class="va">bands</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
-<span><span class="co">#&gt; [[1]]$name</span></span>
-<span><span class="co">#&gt; [1] "B4"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; [[1]]$`eo:common_name`</span></span>
-<span><span class="co">#&gt; [1] "red"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; [[1]]$`eo:center_wavelength`</span></span>
-<span><span class="co">#&gt; [1] 0.655</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; [[1]]$`eo:full_width_half_max`</span></span>
-<span><span class="co">#&gt; [1] 0.037</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">&lt;EO Band&gt;</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">name                  </span> : <span style="color: #00BB00; font-weight: bold;">B4</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">eo:common_name        </span> : <span style="color: #BB00BB;">red</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">eo:center_wavelength  </span> : 0.655 micrometres</span></span>
+<span><span class="co">#&gt;   <span style="color: #555555;">eo:full_width_half_max</span> : 0.037 micrometres</span></span></code></pre></div>
 <p>Note the pattern above: calling <code><a href="../reference/add_eo_extension.html">add_eo_extension()</a></code>
 several times is fine. The schema URI is only added once, and each call
 writes to a different place.</p>
@@ -238,7 +232,11 @@ easy to get wrong, so the package ships presets:</p>
 <code class="sourceCode R"><span><span class="va">bands</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/landsat_oli_bands.html">landsat_oli_bands</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bands</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 9</span></span>
-<span><span class="va">bands</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"name"</span>, <span class="st">"eo:common_name"</span>, <span class="st">"eo:center_wavelength"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  name <span class="op">=</span> <span class="va">bands</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span><span class="op">@</span><span class="va">name</span>,</span>
+<span>  `eo:common_name` <span class="op">=</span> <span class="va">bands</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span><span class="op">@</span><span class="va">common_name</span>,</span>
+<span>  `eo:center_wavelength` <span class="op">=</span> <span class="va">bands</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span><span class="op">@</span><span class="va">center_wavelength</span></span>
+<span><span class="op">)</span></span>
 <span><span class="co">#&gt; $name</span></span>
 <span><span class="co">#&gt; [1] "B4"</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -281,7 +279,7 @@ so typos in <code>data_type</code> are caught as they are written.</p>
 <span></span>
 <span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_raster_extension.html">add_raster_extension</a></span><span class="op">(</span><span class="va">item</span>, bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">red_band</span><span class="op">)</span>, asset_key <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">item</span><span class="op">@</span><span class="va">assets</span><span class="op">$</span><span class="va">red</span><span class="op">$</span><span class="va">bands</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">`raster:scale`</span></span>
+<span><span class="va">item</span><span class="op">@</span><span class="va">assets</span><span class="op">$</span><span class="va">red</span><span class="op">@</span><span class="va">extra_fields</span><span class="op">$</span><span class="va">bands</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">`raster:scale`</span></span>
 <span><span class="co">#&gt; [1] 2.75e-05</span></span></code></pre></div>
 <p>Raster v2.0.0 made the same move as EO: the band objects go in the
 shared <code>bands</code> array, <code>nodata</code>,
@@ -311,8 +309,12 @@ populate the statistics block.</p>
 <span><span class="co">#&gt;  @ nodata            : num(0) </span></span>
 <span><span class="co">#&gt;  @ data_type         : chr "int16"</span></span>
 <span><span class="co">#&gt;  @ unit              : chr(0) </span></span>
-<span><span class="co">#&gt;  @ statistics        :List of 5</span></span>
-<span><span class="co">#&gt;  .. - attr(*, "class")= chr [1:2] "raster_statistics" "list"</span></span>
+<span><span class="co">#&gt;  @ statistics        : &lt;stacbuildr::raster_statistics&gt;</span></span>
+<span><span class="co">#&gt;  .. @ minimum      : num 146</span></span>
+<span><span class="co">#&gt;  .. @ maximum      : num 543</span></span>
+<span><span class="co">#&gt;  .. @ mean         : num 348</span></span>
+<span><span class="co">#&gt;  .. @ stddev       : num 79.4</span></span>
+<span><span class="co">#&gt;  .. @ valid_percent: num 51.8</span></span>
 <span><span class="co">#&gt;  @ sampling          : chr(0) </span></span>
 <span><span class="co">#&gt;  @ bits_per_sample   : int(0) </span></span>
 <span><span class="co">#&gt;  @ spatial_resolution: num 0.00833</span></span>
@@ -356,7 +358,7 @@ bands:</p>
 <span>    asset_key <span class="op">=</span> <span class="st">"red"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">combined_item</span><span class="op">@</span><span class="va">assets</span><span class="op">$</span><span class="va">red</span><span class="op">$</span><span class="va">bands</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">combined_item</span><span class="op">@</span><span class="va">assets</span><span class="op">$</span><span class="va">red</span><span class="op">@</span><span class="va">extra_fields</span><span class="op">$</span><span class="va">bands</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "name"                      "eo:common_name"           </span></span>
 <span><span class="co">#&gt;  [3] "eo:center_wavelength"      "eo:full_width_half_max"   </span></span>
 <span><span class="co">#&gt;  [5] "nodata"                    "data_type"                </span></span>
@@ -379,10 +381,7 @@ to write a single band object yourself, passing the raster fields to
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">combined</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "name"                      "eo:common_name"           </span></span>
-<span><span class="co">#&gt; [3] "eo:center_wavelength"      "nodata"                   </span></span>
-<span><span class="co">#&gt; [5] "data_type"                 "raster:spatial_resolution"</span></span>
-<span><span class="co">#&gt; [7] "raster:scale"</span></span></code></pre></div>
+<span><span class="co">#&gt; NULL</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -466,7 +465,11 @@ carries its own classes:</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">qa_item</span><span class="op">@</span><span class="va">properties</span><span class="op">$</span><span class="va">`classification:bitfields`</span>, <span class="va">`[[`</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="st">"name"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span></span>
+<span>  <span class="va">qa_item</span><span class="op">@</span><span class="va">properties</span><span class="op">$</span><span class="va">`classification:bitfields`</span>,</span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">bitfield</span><span class="op">)</span> <span class="va">bitfield</span><span class="op">@</span><span class="va">name</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "fill"  "cloud"</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -612,9 +615,10 @@ opening one specific file, so it has no meaning at item level.</p>
 <span>    asset_key <span class="op">=</span> <span class="st">"data"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">parcels</span><span class="op">@</span><span class="va">properties</span><span class="op">$</span><span class="va">`table:columns`</span>, <span class="va">`[[`</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="st">"name"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">parcels</span><span class="op">@</span><span class="va">properties</span><span class="op">$</span><span class="va">`table:columns`</span>, <span class="kw">function</span><span class="op">(</span><span class="va">column</span><span class="op">)</span> <span class="va">column</span><span class="op">@</span><span class="va">name</span>,</span>
+<span>       <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "geometry"  "parcel_id" "area_ha"   "zoning"</span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">parcels</span><span class="op">@</span><span class="va">assets</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">`table:storage_options`</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">parcels</span><span class="op">@</span><span class="va">assets</span><span class="op">$</span><span class="va">data</span><span class="op">@</span><span class="va">extra_fields</span><span class="op">$</span><span class="va">`table:storage_options`</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "account_name"</span></span></code></pre></div>
 <p>When one item bundles several tables with different schemas, pass
 <code>asset_key</code> and each asset carries its own column list:</p>
@@ -642,7 +646,8 @@ opening one specific file, so it has no meaning at item level.</p>
 <span>    asset_key <span class="op">=</span> <span class="st">"persons"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">multi</span><span class="op">@</span><span class="va">assets</span><span class="op">$</span><span class="va">persons</span><span class="op">$</span><span class="va">`table:columns`</span>, <span class="va">`[[`</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="st">"name"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">multi</span><span class="op">@</span><span class="va">assets</span><span class="op">$</span><span class="va">persons</span><span class="op">@</span><span class="va">extra_fields</span><span class="op">$</span><span class="va">`table:columns`</span>,</span>
+<span>       <span class="kw">function</span><span class="op">(</span><span class="va">column</span><span class="op">)</span> <span class="va">column</span><span class="op">@</span><span class="va">name</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "person_id" "age"</span></span></code></pre></div>
 <p>One caveat on how much the spec backs any of this. The item/asset
 split is stated only in the README’s field tables; the extension’s JSON
@@ -866,7 +871,7 @@ the cost does not grow with the size of the file:</p>
 <p>The dimension schema is derived from the file’s point data record
 format and from any Extra Bytes record it declares:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">tile</span><span class="op">@</span><span class="va">properties</span><span class="op">$</span><span class="va">`pc:schemas`</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="va">s</span><span class="op">$</span><span class="va">name</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">tile</span><span class="op">@</span><span class="va">properties</span><span class="op">$</span><span class="va">`pc:schemas`</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="va">s</span><span class="op">@</span><span class="va">name</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "X"                 "Y"                 "Z"                </span></span>
 <span><span class="co">#&gt;  [4] "Intensity"         "ReturnNumber"      "NumberOfReturns"  </span></span>
 <span><span class="co">#&gt;  [7] "ScanDirectionFlag" "EdgeOfFlightLine"  "Classification"   </span></span>
@@ -882,7 +887,7 @@ read, which <code>calculate_statistics = TRUE</code> opts into.</p>
 of paths) and returns one item per file, skipping any tile it cannot
 read rather than abandoning the run. Pass the result to
 <code><a href="../reference/extent_from_items.html">extent_from_items()</a></code> to derive the collection extent.</p>
-<p>A note on media types: <code><a href="../reference/get_media_type.html">get_media_type()</a></code> recognises
+<p>A note on media types: <code>get_media_type()</code> recognises
 <code>.las</code> and <code>.laz</code>, and maps the
 <code>.copc.laz</code> convention to
 <code>application/vnd.laszip+copc</code>. Only the COPC type is listed
@@ -948,7 +953,7 @@ runs the package’s own structural rules and needs no extra
 dependencies:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate_stac.html">validate_stac</a></span><span class="op">(</span><span class="va">item</span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">valid</span></span>
+<span><span class="va">result</span><span class="op">@</span><span class="va">valid</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 <p><code><a href="../reference/validate_stac_schema.html">validate_stac_schema()</a></code> goes further, fetching the
 official JSON schemas and validating the serialized item against the

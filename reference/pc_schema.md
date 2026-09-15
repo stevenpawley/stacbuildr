@@ -30,7 +30,7 @@ pc_schema(name, size, type)
 
 ## Value
 
-A `pc_schema` object (a list with a print method).
+A `pc_schema` S7 object. Access fields with `@`.
 
 ## Details
 

@@ -25,8 +25,6 @@ Create and attach data assets to STAC Items and Collections.
   : Create a STAC Asset
 - [`add_asset()`](https://stevenpawley.github.io/stacbuildr/reference/add_asset.md)
   : Add an Asset to a STAC Item
-- [`print(`*`<stac_asset>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.stac_asset.md)
-  : Print method for STAC assets
 
 ## Links
 
@@ -67,10 +65,6 @@ Helper constructors for Collection fields.
   : Create Collection Extent from Multiple Items
 - [`add_item_assets()`](https://stevenpawley.github.io/stacbuildr/reference/add_item_assets.md)
   : Add Item Asset Definitions to a Collection
-- [`print(`*`<stac_provider>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.stac_provider.md)
-  : Print method for STAC providers
-- [`print(`*`<stac_summaries>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.stac_summaries.md)
-  : Print method for STAC summaries
 
 ## terra Integration
 
@@ -124,10 +118,6 @@ objects.
   : Create Raster Histogram Object
 - [`band_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/band_from_file.md)
   : Extract Raster Band Metadata from a File
-- [`print(`*`<raster_statistics>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.raster_statistics.md)
-  : Print method for raster statistics
-- [`print(`*`<raster_histogram>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.raster_histogram.md)
-  : Print method for raster histograms
 
 ## EO Extension
 
@@ -138,8 +128,6 @@ definitions for common sensors.
   : Add EO Extension to a STAC Item
 - [`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md)
   : Create an EO Band Object
-- [`print(`*`<eo_band>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.eo_band.md)
-  : Print method for EO band objects
 - [`landsat_oli_bands()`](https://stevenpawley.github.io/stacbuildr/reference/landsat_oli_bands.md)
   : Create Standard Landsat 8/9 OLI Bands
 - [`sentinel2_msi_bands()`](https://stevenpawley.github.io/stacbuildr/reference/sentinel2_msi_bands.md)
@@ -161,10 +149,6 @@ Add the STAC Classification Extension to Items
   : Create a Classification Class Object
 - [`classification_bitfield()`](https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.md)
   : Create a Classification Bitfield Object
-- [`print(`*`<classification_class>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.classification_class.md)
-  : Print method for classification_class objects
-- [`print(`*`<classification_bitfield>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.classification_bitfield.md)
-  : Print method for classification_bitfield objects
 
 ## Scientific Citation Extension
 
@@ -175,8 +159,6 @@ human-readable citation, and related publications for a dataset.
   : Add Scientific Citation Extension to a STAC Item
 - [`scientific_publication()`](https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.md)
   : Create a Scientific Publication Object
-- [`print(`*`<scientific_publication>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.scientific_publication.md)
-  : Print method for scientific_publication objects
 
 ## Table Extension
 
@@ -187,8 +169,6 @@ Add the STAC Table Extension to Items, describing tabular datasets
   : Add Table Extension to a STAC Item
 - [`table_column()`](https://stevenpawley.github.io/stacbuildr/reference/table_column.md)
   : Create a Table Column Object
-- [`print(`*`<table_column>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.table_column.md)
-  : Print method for table_column objects
 
 ## Vector Extension
 
@@ -220,10 +200,6 @@ statistics of point cloud datasets.
   : Create a Point Cloud Schema Object
 - [`pc_statistic()`](https://stevenpawley.github.io/stacbuildr/reference/pc_statistic.md)
   : Create a Point Cloud Statistics Object
-- [`print(`*`<pc_schema>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.pc_schema.md)
-  : Print method for pc_schema objects
-- [`print(`*`<pc_statistic>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.pc_statistic.md)
-  : Print method for pc_statistic objects
 
 ## Datacube Extension
 
@@ -237,10 +213,6 @@ variables.
   : Create a Datacube Dimension Object
 - [`cube_variable()`](https://stevenpawley.github.io/stacbuildr/reference/cube_variable.md)
   : Create a Datacube Variable Object
-- [`print(`*`<cube_dimension>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.cube_dimension.md)
-  : Print method for cube_dimension objects
-- [`print(`*`<cube_variable>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.cube_variable.md)
-  : Print method for cube_variable objects
 
 ## Render Extension
 
@@ -252,8 +224,6 @@ colour ramps, nodata values, and band scaling.
   : Create a STAC Render Object
 - [`add_render_extension()`](https://stevenpawley.github.io/stacbuildr/reference/add_render_extension.md)
   : Add Render Extension to a STAC Item or Collection
-- [`print(`*`<render_object>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.render_object.md)
-  : Print method for render_object objects
 
 ## Read / Write
 
@@ -279,20 +249,21 @@ gives one row per Item and
 the same table with footprints attached. The `sf` accessors work on an
 Item directly.
 
-- [`length(`*`<stac_catalog>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/length.stac_catalog.md)
+- [`length.stac_catalog`](https://stevenpawley.github.io/stacbuildr/reference/length.stac_catalog.md)
   : Number of Items in a STAC Catalog or Collection
-- [`as.data.frame(`*`<stac_catalog>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.md)
-  [`as.data.frame(`*`<stac_item>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.md)
+- [`as.data.frame.stac_catalog`](https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.md)
+  [`as.data.frame,stacbuildr::stac_item-method`](https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.md)
   : Coerce a STAC Catalog, Collection or Item to a Data Frame
-- [`st_as_sf(`*`<stac_catalog>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/st_as_sf.stac_catalog.md)
-  [`st_as_sf(`*`<stac_item>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/st_as_sf.stac_catalog.md)
+- [`st_as_sf.stac_catalog`](https://stevenpawley.github.io/stacbuildr/reference/st_as_sf.stac_catalog.md)
+  [`st_as_sf,stacbuildr::stac_item-method`](https://stevenpawley.github.io/stacbuildr/reference/st_as_sf.stac_catalog.md)
   : Coerce a STAC Catalog, Collection or Item to an sf Object
-- [`st_geometry(`*`<stac_item>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
-  [`st_bbox(`*`<stac_item>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
-  [`st_crs(`*`<stac_item>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
+- [`stac_item_sf_accessors`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
+  [`st_geometry,stacbuildr::stac_item-method`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
+  [`st_bbox,stacbuildr::stac_item-method`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
+  [`st_crs,stacbuildr::stac_item-method`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
   : sf Accessors for a STAC Item
-- [`` `[`( ``*`<stac_catalog>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/sub-.stac_catalog.md)
-  [`` `[[`( ``*`<stac_catalog>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/sub-.stac_catalog.md)
+- [`sub-.stac_catalog`](https://stevenpawley.github.io/stacbuildr/reference/sub-.stac_catalog.md)
+  [`[[,stacbuildr::stac_catalog-method`](https://stevenpawley.github.io/stacbuildr/reference/sub-.stac_catalog.md)
   : Extract Items from a STAC Catalog or Collection
 
 ## Validation
@@ -309,5 +280,3 @@ package).
   : Validate a STAC Object
 - [`validate_stac_schema()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac_schema.md)
   : Validate a STAC Object Against the Official JSON Schema
-- [`print(`*`<stac_validation>`*`)`](https://stevenpawley.github.io/stacbuildr/reference/print.stac_validation.md)
-  : Print method for STAC validation results

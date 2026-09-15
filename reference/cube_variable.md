@@ -70,7 +70,7 @@ cube_variable(
 
 ## Value
 
-A named list of class `"cube_variable"`.
+A `cube_variable` S7 object. Access fields with `@`.
 
 ## Examples
 

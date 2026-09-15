@@ -1,8 +1,9 @@
 # Add a child catalog or collection
 
-Adds a child STAC Catalog or Collection to a parent catalog by creating
-a link with relation type `"child"`. The child resource can be another
-catalog or a collection.
+Adds a child STAC Catalog or Collection to a parent. A `"child"` link is
+added immediately, and the complete child is retained internally so that
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+can write it as part of the catalog tree.
 
 ## Usage
 
@@ -22,9 +23,11 @@ add_child(catalog, child, href = NULL, title = NULL)
 
 - href:
 
-  (character, optional) The URL or path to the child resource. If `NULL`
-  (default), automatically generates a path using the pattern
-  `"./<child_id>/catalog.json"`.
+  (character, optional) The URL or path to the child resource. If
+  `NULL`, uses `"./<child_id>/catalog.json"` for a Catalog or
+  `"./<child_id>/collection.json"` for a Collection.
+  [`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+  regenerates this href for its output layout and `catalog_type`.
 
 - title:
 
@@ -33,7 +36,9 @@ add_child(catalog, child, href = NULL, title = NULL)
 
 ## Value
 
-The modified parent catalog object with the child link added.
+The modified parent with the child link added and the complete child
+retained internally for
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md).
 
 ## See also
 
@@ -43,11 +48,9 @@ The modified parent catalog object with the child link added.
 - [`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
   for adding STAC Items
 
-- [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md)
-  for creating catalogs
-
-- [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md)
-  for creating collections
+- See
+  [`vignette("stac-catalog")`](https://stevenpawley.github.io/stacbuildr/articles/stac-catalog.md)
+  for the recursive writing model
 
 ## Examples
 
@@ -63,20 +66,5 @@ child <- stac_catalog(
   description = "A child catalog"
 )
 
-# Add child with automatic href generation
 parent <- add_child(parent, child)
-
-# Add another child with a custom href and title. Each child needs its own
-# id, since the id becomes its directory when the catalog is written.
-other <- stac_catalog(
-  id = "other-catalog",
-  description = "Another child catalog"
-)
-
-parent <- add_child(
-  parent,
-  other,
-  href = "./children/custom-catalog.json",
-  title = "Custom Child"
-)
 ```

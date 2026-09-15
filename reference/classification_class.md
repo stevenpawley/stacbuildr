@@ -64,7 +64,7 @@ classification_class(
 
 ## Value
 
-A named list representing a Classification class object.
+A `classification_class` S7 object. Access fields with `@`.
 
 ## Details
 

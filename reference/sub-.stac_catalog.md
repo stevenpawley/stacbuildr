@@ -16,16 +16,6 @@ Use
 [`get_items()`](https://stevenpawley.github.io/stacbuildr/reference/get_items.md)
 with `resolve = TRUE` for that.
 
-## Usage
-
-``` r
-# S3 method for class 'stac_catalog'
-x[i]
-
-# S3 method for class 'stac_catalog'
-x[[i]]
-```
-
 ## Arguments
 
 - x:

@@ -16,19 +16,6 @@ directly.
   specification whatever projection the underlying data uses; the native
   CRS, when recorded, is in the `proj:code` property.
 
-## Usage
-
-``` r
-# S3 method for class 'stac_item'
-st_geometry(obj, ...)
-
-# S3 method for class 'stac_item'
-st_bbox(obj, ...)
-
-# S3 method for class 'stac_item'
-st_crs(x, ...)
-```
-
 ## Arguments
 
 - obj:

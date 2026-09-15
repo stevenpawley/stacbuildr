@@ -49,7 +49,7 @@ preview_from_terra(
 
 ## Value
 
-A STAC asset list with `href`, `type = "image/png"`, and
+An S7 STAC asset with `href`, `type = "image/png"`, and
 `roles = c("overview")`.
 
 ## Examples

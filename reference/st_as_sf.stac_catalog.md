@@ -1,7 +1,7 @@
 # Coerce a STAC Catalog, Collection or Item to an sf Object
 
 Returns the table that
-[as.data.frame()](https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.md)
+[`base::as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html)
 gives, with the Item footprints attached as a geometry column. This is
 the shape most spatial work in R wants: filter on properties, plot the
 footprints, join against other layers.
@@ -14,16 +14,6 @@ see
 
 An Item with a null geometry, which STAC allows for non-spatial data,
 gets an empty geometry rather than being dropped.
-
-## Usage
-
-``` r
-# S3 method for class 'stac_catalog'
-st_as_sf(x, ..., resolve = FALSE, base_path = ".")
-
-# S3 method for class 'stac_item'
-st_as_sf(x, ...)
-```
 
 ## Arguments
 

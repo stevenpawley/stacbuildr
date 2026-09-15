@@ -143,19 +143,13 @@ item <- item |>
 
 item@properties$`eo:cloud_cover`
 #> [1] 12.5
-item@assets$red$bands
+item@assets$red@extra_fields$bands
 #> [[1]]
-#> [[1]]$name
-#> [1] "B4"
-#> 
-#> [[1]]$`eo:common_name`
-#> [1] "red"
-#> 
-#> [[1]]$`eo:center_wavelength`
-#> [1] 0.655
-#> 
-#> [[1]]$`eo:full_width_half_max`
-#> [1] 0.037
+#> <EO Band>
+#>   name                   : B4
+#>   eo:common_name         : red
+#>   eo:center_wavelength   : 0.655 micrometres
+#>   eo:full_width_half_max : 0.037 micrometres
 ```
 
 Note the pattern above: calling
@@ -187,7 +181,11 @@ to get wrong, so the package ships presets:
 bands <- landsat_oli_bands()
 length(bands)
 #> [1] 9
-bands[[4]][c("name", "eo:common_name", "eo:center_wavelength")]
+list(
+  name = bands[[4]]@name,
+  `eo:common_name` = bands[[4]]@common_name,
+  `eo:center_wavelength` = bands[[4]]@center_wavelength
+)
 #> $name
 #> [1] "B4"
 #> 
@@ -238,7 +236,7 @@ red_band <- raster_band(
 
 item <- add_raster_extension(item, bands = list(red_band), asset_key = "red")
 
-item@assets$red$bands[[1]]$`raster:scale`
+item@assets$red@extra_fields$bands[[1]]$`raster:scale`
 #> [1] 2.75e-05
 ```
 
@@ -275,8 +273,12 @@ if (requireNamespace("terra", quietly = TRUE) && nzchar(tif)) {
 #>  @ nodata            : num(0) 
 #>  @ data_type         : chr "int16"
 #>  @ unit              : chr(0) 
-#>  @ statistics        :List of 5
-#>  .. - attr(*, "class")= chr [1:2] "raster_statistics" "list"
+#>  @ statistics        : <stacbuildr::raster_statistics>
+#>  .. @ minimum      : num 146
+#>  .. @ maximum      : num 543
+#>  .. @ mean         : num 348
+#>  .. @ stddev       : num 79.4
+#>  .. @ valid_percent: num 51.8
 #>  @ sampling          : chr(0) 
 #>  @ bits_per_sample   : int(0) 
 #>  @ spatial_resolution: num 0.00833
@@ -330,7 +332,7 @@ combined_item <- item |>
     asset_key = "red"
   )
 
-names(combined_item@assets$red$bands[[1]])
+names(combined_item@assets$red@extra_fields$bands[[1]])
 #>  [1] "name"                      "eo:common_name"           
 #>  [3] "eo:center_wavelength"      "eo:full_width_half_max"   
 #>  [5] "nodata"                    "data_type"                
@@ -358,10 +360,7 @@ combined <- eo_band(
 )
 
 names(combined)
-#> [1] "name"                      "eo:common_name"           
-#> [3] "eo:center_wavelength"      "nodata"                   
-#> [5] "data_type"                 "raster:spatial_resolution"
-#> [7] "raster:scale"
+#> NULL
 ```
 
 ## Classification
@@ -455,7 +454,11 @@ qa_item <- add_classification_extension(
   )
 )
 
-vapply(qa_item@properties$`classification:bitfields`, `[[`, character(1), "name")
+vapply(
+  qa_item@properties$`classification:bitfields`,
+  function(bitfield) bitfield@name,
+  character(1)
+)
 #> [1] "fill"  "cloud"
 ```
 
@@ -616,9 +619,10 @@ parcels <- stac_item(
     asset_key = "data"
   )
 
-vapply(parcels@properties$`table:columns`, `[[`, character(1), "name")
+vapply(parcels@properties$`table:columns`, function(column) column@name,
+       character(1))
 #> [1] "geometry"  "parcel_id" "area_ha"   "zoning"
-names(parcels@assets$data$`table:storage_options`)
+names(parcels@assets$data@extra_fields$`table:storage_options`)
 #> [1] "account_name"
 ```
 
@@ -650,7 +654,8 @@ multi <- stac_item(
     asset_key = "persons"
   )
 
-vapply(multi@assets$persons$`table:columns`, `[[`, character(1), "name")
+vapply(multi@assets$persons@extra_fields$`table:columns`,
+       function(column) column@name, character(1))
 #> [1] "person_id" "age"
 ```
 
@@ -888,7 +893,7 @@ and from any Extra Bytes record it declares:
 
 ``` r
 
-vapply(tile@properties$`pc:schemas`, function(s) s$name, character(1))
+vapply(tile@properties$`pc:schemas`, function(s) s@name, character(1))
 #>  [1] "X"                 "Y"                 "Z"                
 #>  [4] "Intensity"         "ReturnNumber"      "NumberOfReturns"  
 #>  [7] "ScanDirectionFlag" "EdgeOfFlightLine"  "Classification"   
@@ -909,12 +914,11 @@ abandoning the run. Pass the result to
 [`extent_from_items()`](https://stevenpawley.github.io/stacbuildr/reference/extent_from_items.md)
 to derive the collection extent.
 
-A note on media types:
-[`get_media_type()`](https://stevenpawley.github.io/stacbuildr/reference/get_media_type.md)
-recognises `.las` and `.laz`, and maps the `.copc.laz` convention to
-`application/vnd.laszip+copc`. Only the COPC type is listed in the STAC
-best practices — it is the cloud-optimized point cloud format, and the
-one worth reaching for if the data will be read over HTTP.
+A note on media types: `get_media_type()` recognises `.las` and `.laz`,
+and maps the `.copc.laz` convention to `application/vnd.laszip+copc`.
+Only the COPC type is listed in the STAC best practices — it is the
+cloud-optimized point cloud format, and the one worth reaching for if
+the data will be read over HTTP.
 
 ## Projection
 
@@ -980,7 +984,7 @@ runs the package’s own structural rules and needs no extra dependencies:
 ``` r
 
 result <- validate_stac(item)
-result$valid
+result@valid
 #> [1] TRUE
 ```
 

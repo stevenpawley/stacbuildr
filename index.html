@@ -367,9 +367,9 @@
 </h3>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/validate_stac.html">validate_stac</a></span><span class="op">(</span><span class="va">collection</span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">valid</span>    <span class="co"># TRUE / FALSE</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">errors</span>   <span class="co"># character vector of errors</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">warnings</span> <span class="co"># character vector of warnings for missing recommended fields</span></span>
+<span><span class="va">result</span><span class="op">@</span><span class="va">valid</span>    <span class="co"># TRUE / FALSE</span></span>
+<span><span class="va">result</span><span class="op">@</span><span class="va">errors</span>   <span class="co"># character vector of errors</span></span>
+<span><span class="va">result</span><span class="op">@</span><span class="va">warnings</span> <span class="co"># character vector of warnings for missing recommended fields</span></span>
 <span></span>
 <span><span class="co"># Strict mode also checks recommended fields</span></span>
 <span><span class="fu"><a href="reference/validate_stac.html">validate_stac</a></span><span class="op">(</span><span class="va">item</span>, strict <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>

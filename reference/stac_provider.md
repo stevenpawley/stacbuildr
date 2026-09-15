@@ -30,7 +30,8 @@ stac_provider(name, description = NULL, roles = NULL, url = NULL)
 
 ## Value
 
-A list representing a STAC Provider.
+An S7 object representing a STAC Provider. Access its properties with
+`@`, for example `provider@name` and `provider@roles`.
 
 ## Examples
 
@@ -41,4 +42,8 @@ provider <- stac_provider(
   roles = c("producer", "licensor", "host"),
   url = "https://www.usgs.gov"
 )
+provider@name
+#> [1] "USGS"
+provider@roles
+#> [1] "producer" "licensor" "host"    
 ```

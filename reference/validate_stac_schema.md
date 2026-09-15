@@ -38,7 +38,8 @@ validate_stac_schema(stac_object, validate_extensions = TRUE)
 
 ## Value
 
-A named list with elements `valid`, `errors`, and `warnings`.
+A `stac_validation` S7 object with `valid`, `errors`, and `warnings`
+properties.
 
 ## Details
 
@@ -95,7 +96,7 @@ item <- stac_item(
 
 if (FALSE) { # \dontrun{
 result <- validate_stac_schema(item)
-result$valid
-result$errors
+result@valid
+result@errors
 } # }
 ```

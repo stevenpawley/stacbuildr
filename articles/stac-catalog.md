@@ -4,8 +4,9 @@ This vignette demonstrates how to build a STAC catalog with
 `stacbuildr`, covering:
 
 1.  Creating a catalog, collection, and item from a raster file
-2.  Writing a static catalog to disk
-3.  Loading into a PostgreSQL database and serving a STAC API *(requires
+2.  Understanding how linked objects are retained for recursive writing
+3.  Writing a static catalog to disk
+4.  Loading into a PostgreSQL database and serving a STAC API *(requires
     infrastructure)*
 
 ## Setup
@@ -93,7 +94,7 @@ item
 #> <STAC Item>
 #>   id           : dem-001
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-09-14T05:02:44Z
+#>   datetime     : 2026-09-15T03:01:59Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -154,6 +155,98 @@ print(catalog, expand = TRUE)
 #>       └─ terrain Collection Terrain Collection
 ```
 
+## How links and attached objects work
+
+STAC Catalogs, Collections, and Items are separate JSON documents. A
+Catalog or Collection does not embed its Items; its `links` property
+contains only pointers to their JSON files. Accordingly,
+[`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
+immediately adds an `"item"` link containing fields such as `rel`,
+`href`, `type`, and `title`:
+
+``` r
+
+get_item_links(collection)
+#> [[1]]
+#> [[1]]$rel
+#> [1] "item"
+#> 
+#> [[1]]$href
+#> [1] "./dem-001/dem-001.json"
+#> 
+#> [[1]]$type
+#> [1] "application/geo+json"
+```
+
+That link is enough for a STAC client to find an Item after the files
+have been written, but it does not contain the Item’s geometry,
+properties, or assets.
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+needs those details to create the Item file. For that reason,
+[`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
+also retains the complete Item object in an internal `"stac_items"`
+attribute. Use
+[`get_items()`](https://stevenpawley.github.io/stacbuildr/reference/get_items.md)
+rather than accessing the internal attribute directly:
+
+``` r
+
+get_items(collection)
+#> [[1]]
+#> <STAC Item>
+#>   id           : dem-001
+#>   collection   : terrain
+#>   stac_version : 1.1.0
+#>   datetime     : 2026-09-15T03:01:59Z
+#>   geometry     : Polygon
+#>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
+#>   ▸ properties : 1 [bands]
+#>   ▸ assets     : 1 [dem]
+#>   ▸ extensions : 1 [raster]
+#>     links      : 0
+#>   ℹ 3 collapsed sections - use print(x, expand = TRUE) to show
+#> 
+```
+
+[`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md)
+does the same thing for child Catalogs and Collections, retaining them
+in an internal `"stac_children"` attribute. Together these attached
+objects form the in-memory tree that lets one call write the complete
+hierarchy:
+
+``` r
+
+write_stac(catalog, "output")
+```
+
+The internal attributes are never included in the JSON. Each output
+Catalog or Collection contains only STAC links, and every attached child
+or Item is written as its own JSON document.
+
+The links created by
+[`add_item()`](https://stevenpawley.github.io/stacbuildr/reference/add_item.md)
+and
+[`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md)
+describe the relationship immediately, before anything is written. When
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+creates the output tree, it regenerates structural links from the
+attached objects so their hrefs match the selected `catalog_type` and
+final directory layout:
+
+| `catalog_type`     | Structural links in the written JSON               |
+|--------------------|----------------------------------------------------|
+| `"self-contained"` | Relative; no `self` links                          |
+| `"relative"`       | Relative, plus an absolute `self` link on the root |
+| `"absolute"`       | Absolute URLs based on `base_url`                  |
+
+Consequently, a custom Item or child href supplied while building the
+in-memory catalog is not preserved by recursive
+[`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md):
+the writer chooses the final structural href from the object’s ID,
+hierarchy, and catalog type. Use
+[`write_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/write_catalog.md)
+when writing only one Catalog document with its existing links.
+
 ## Write a static catalog to disk
 
 [`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
@@ -212,7 +305,7 @@ write_stac(
   catalog_type = "self-contained",
   overwrite = TRUE
 )
-#> ✔ STAC catalog written to /tmp/Rtmpu2GjbI/catalog
+#> ✔ STAC catalog written to /tmp/RtmpjID4rm/catalog
 ```
 
 The resulting directory structure looks like:
@@ -242,7 +335,7 @@ item_read
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-09-14T05:02:44Z
+#>   datetime     : 2026-09-15T03:01:59Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]

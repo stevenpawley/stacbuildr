@@ -397,9 +397,18 @@ cat(collection_json)
 #>     }
 #>   ],
 #>   "summaries": {
-#>     "platform": ["sentinel-2a", "sentinel-2b"],
-#>     "instruments": "msi",
-#>     "gsd": [10, 20, 60],
+#>     "platform": [
+#>       "sentinel-2a",
+#>       "sentinel-2b"
+#>     ],
+#>     "instruments": [
+#>       "msi"
+#>     ],
+#>     "gsd": [
+#>       10,
+#>       20,
+#>       60
+#>     ],
 #>     "bands": [
 #>       {
 #>         "name": "B01",

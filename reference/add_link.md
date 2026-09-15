@@ -29,9 +29,8 @@ add_link(catalog, rel, href, ...)
 
 - ...:
 
-  Additional link properties passed to
-  [`stac_link()`](https://stevenpawley.github.io/stacbuildr/reference/stac_link.md),
-  such as `type`, `title`, `method`, `headers`, `body`, or `merge`.
+  Additional link properties passed to `stac_link()`, such as `type`,
+  `title`, `method`, `headers`, `body`, or `merge`.
 
 ## Value
 

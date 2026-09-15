@@ -1,7 +1,9 @@
 # Get Stored Items from Catalog or Collection
 
-Retrieves the stored items from a catalog or collection object. When
-items are not in memory (e.g. after
+Retrieves complete Item objects retained in the internal `"stac_items"`
+attribute of a catalog or collection. The catalog's `links` property
+contains only links to those Items, not the Items themselves. When items
+are not in memory (e.g. after
 [`read_stac()`](https://stevenpawley.github.io/stacbuildr/reference/read_stac.md)),
 set `resolve = TRUE` to follow the `item` links and load them from disk.
 

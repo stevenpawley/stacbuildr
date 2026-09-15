@@ -6,50 +6,41 @@ common STAC extensions (Raster, EO, Classification, Scientific).
 
 ### Object Types
 
-The package uses two kinds of objects: **S7 classes** for the core STAC
-structures, and **plain lists** for lightweight sub-objects.
+The package uses **S7 classes** for core STAC structures and metadata
+helper objects.
 
 #### S7 Classes (use `@` to access properties)
 
-The primary STAC document types, `raster_band` and the extent objects
-are S7 objects. Use the `@` operator to read or modify their properties:
+The primary STAC document types and most extension helper objects are S7
+objects. Use the `@` operator to read or modify their properties:
 
 |  |  |  |
 |----|----|----|
 | Constructor | Class | Example access |
+| [`stac_asset()`](https://stevenpawley.github.io/stacbuildr/reference/stac_asset.md) | `stac_asset` | `asset@href`, `asset@extra_fields` |
+| [`stac_provider()`](https://stevenpawley.github.io/stacbuildr/reference/stac_provider.md) | `stac_provider` | `provider@name`, `provider@roles` |
 | [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md) | `stac_item` | `item@id`, `item@assets` |
 | [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md) | `stac_catalog` | `catalog@title` |
 | [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md) | `stac_collection` | `collection@description` |
 | [`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md) | `raster_band` | `band@data_type`, `band@scale` |
+| [`raster_statistics()`](https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.md) | `raster_statistics` | `stats@minimum` |
+| [`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md) | `raster_histogram` | `hist@buckets` |
+| [`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md) | `eo_band` | `band@common_name` |
+| [`scientific_publication()`](https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.md) | `scientific_publication` | `publication@doi` |
+| [`table_column()`](https://stevenpawley.github.io/stacbuildr/reference/table_column.md) | `table_column` | `column@name` |
+| [`pc_schema()`](https://stevenpawley.github.io/stacbuildr/reference/pc_schema.md) | `pc_schema` | `schema@size` |
+| [`pc_statistic()`](https://stevenpawley.github.io/stacbuildr/reference/pc_statistic.md) | `pc_statistic` | `statistic@minimum` |
+| [`render_object()`](https://stevenpawley.github.io/stacbuildr/reference/render_object.md) | `render_object` | `render@assets` |
+| [`cube_dimension()`](https://stevenpawley.github.io/stacbuildr/reference/cube_dimension.md) | `cube_dimension` | `dimension@axis` |
+| [`cube_variable()`](https://stevenpawley.github.io/stacbuildr/reference/cube_variable.md) | `cube_variable` | `variable@dimensions` |
+| [`classification_class()`](https://stevenpawley.github.io/stacbuildr/reference/classification_class.md) | `classification_class` | `class@value` |
+| [`classification_bitfield()`](https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.md) | `classification_bitfield` | `bitfield@classes` |
+| [`stac_summaries()`](https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.md) | `stac_summaries` | `summaries@extra_fields` |
+| [`validate_stac()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac.md) | `stac_validation` | `result@valid`, `result@errors` |
 | [`stac_extent()`](https://stevenpawley.github.io/stacbuildr/reference/stac_extent.md) | `Extent` | `extent@spatial`, `extent@temporal` |
 
-Note that `stac_collection` extends `stac_catalog`, so a Collection
-satisfies `inherits(x, "stac_catalog")` as well.
-
-#### Classed Lists (use `$` to access fields)
-
-The remaining constructors return ordinary R lists carrying an S3 class.
-They are embedded inside S7 objects but are not S7 classes themselves.
-The class exists so that each object prints as itself; fields are
-reached with `$` as for any list, and the class is dropped on
-serialisation so it never reaches the written JSON.
-
-|  |  |  |
-|----|----|----|
-| Constructor | Class | Typically used in |
-| [`stac_asset()`](https://stevenpawley.github.io/stacbuildr/reference/stac_asset.md) | `stac_asset` | `item@assets` |
-| [`raster_statistics()`](https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.md) | `raster_statistics` | `band@statistics` |
-| [`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md) | `raster_histogram` | `band@histogram` |
-| [`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md) | `eo_band` | asset `"bands"` field |
-| [`stac_provider()`](https://stevenpawley.github.io/stacbuildr/reference/stac_provider.md) | `stac_provider` | `collection@providers` |
-| [`stac_summaries()`](https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.md) | `stac_summaries` | `collection@summaries` |
-| [`classification_class()`](https://stevenpawley.github.io/stacbuildr/reference/classification_class.md) | `classification_class` | classification extension |
-| [`classification_bitfield()`](https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.md) | `classification_bitfield` | classification extension |
-| [`scientific_publication()`](https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.md) | `scientific_publication` | scientific extension |
-| [`table_column()`](https://stevenpawley.github.io/stacbuildr/reference/table_column.md) | `table_column` | table extension |
-| [`render_object()`](https://stevenpawley.github.io/stacbuildr/reference/render_object.md) | `render_object` | render extension |
-| [`cube_dimension()`](https://stevenpawley.github.io/stacbuildr/reference/cube_dimension.md) | `cube_dimension` | datacube extension |
-| [`cube_variable()`](https://stevenpawley.github.io/stacbuildr/reference/cube_variable.md) | `cube_variable` | datacube extension |
+Note that `stac_collection` extends `stac_catalog`, so
+`S7::S7_inherits(x, stac_catalog)` is also true for a Collection.
 
 ### Printing
 
@@ -95,7 +86,7 @@ automatically when the console does not support them (log files, knitr,
       datetime = "2024-06-01T00:00:00Z"
     )
 
-    # 2. Add an asset (plain list embedded in the item)
+    # 2. Add an asset (S7 object embedded in the item)
     item <- add_asset(
       item,
       key   = "B4",

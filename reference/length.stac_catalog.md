@@ -10,13 +10,6 @@ in the session.
 
 Child catalogs are not counted; use `length(get_children(x))` for those.
 
-## Usage
-
-``` r
-# S3 method for class 'stac_catalog'
-length(x)
-```
-
 ## Arguments
 
 - x:

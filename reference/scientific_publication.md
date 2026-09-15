@@ -28,7 +28,7 @@ scientific_publication(doi = NULL, citation = NULL)
 
 ## Value
 
-A named list of class `"scientific_publication"`.
+A `scientific_publication` S7 object. Access fields with `@`.
 
 ## Examples
 

@@ -59,7 +59,7 @@ classification_bitfield(
 
 ## Value
 
-A named list representing a Classification bitfield object.
+A `classification_bitfield` S7 object. Access fields with `@`.
 
 ## Details
 

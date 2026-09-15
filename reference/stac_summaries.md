@@ -24,7 +24,8 @@ stac_summaries(...)
 
 ## Value
 
-A list of property summaries.
+A `stac_summaries` S7 object. Summary fields are stored in
+`summaries@extra_fields`.
 
 ## Examples
 

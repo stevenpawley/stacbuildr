@@ -99,7 +99,7 @@ cube_dimension(
 
 ## Value
 
-A named list of class `"cube_dimension"`.
+A `cube_dimension` S7 object. Access fields with `@`.
 
 ## Details
 

@@ -33,7 +33,7 @@ table_column(name, description = NULL, type = NULL, ...)
 
 ## Value
 
-A named list of class `"table_column"`.
+A `table_column` S7 object. Access fields with `@`.
 
 ## Examples
 

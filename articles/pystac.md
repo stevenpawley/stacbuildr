@@ -11,15 +11,13 @@ pystac <- import("pystac")
 dt <- import("datetime")
 ```
 
-## Comparison with PySTAC
-
 This vignette compares stacbuildr with the Python
 [PySTAC](https://pystac.readthedocs.io/) library by writing equivalent
 catalog structures to disk and comparing the resulting JSON.
 
-### Building a catalog with an item
+## Building a catalog with an item
 
-#### stacbuildr
+### stacbuildr
 
 ``` r
 
@@ -43,7 +41,7 @@ catalog <- catalog |>
   add_item(item)
 ```
 
-#### PySTAC
+### PySTAC
 
 ``` r
 
@@ -69,7 +67,7 @@ catalog_py$add_item(item_py)
 #> <Link rel=item target=<Item id=temperature>>
 ```
 
-### Writing to disk and comparing
+## Writing to disk and comparing
 
 Both libraries are asked to write a self-contained catalog. stacbuildr’s
 `catalog_type` values line up one-to-one with PySTAC’s `CatalogType`,
@@ -94,7 +92,7 @@ online home.
 
 r_path <- file.path(tempdir(), "r-stac")
 write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
-#> ✔ STAC catalog written to /tmp/Rtmp7UxKKN/r-stac
+#> ✔ STAC catalog written to /tmp/Rtmpl4zrDn/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 py_path <- file.path(tempdir(), "py-stac")
@@ -103,7 +101,7 @@ catalog_py$save(dest_href = py_path)
 catalog_pyjson <- jsonlite::read_json(file.path(py_path, "catalog.json"))
 ```
 
-#### Catalog JSON
+### Catalog JSON
 
 ``` r
 
@@ -156,7 +154,7 @@ jsonlite::toJSON(catalog_pyjson, pretty = TRUE, auto_unbox = TRUE)
 #> }
 ```
 
-#### Item JSON
+### Item JSON
 
 ``` r
 
@@ -240,7 +238,7 @@ jsonlite::toJSON(py_item, pretty = TRUE, auto_unbox = TRUE)
 #> }
 ```
 
-### Assets
+## Assets
 
 The item assets are functionally equivalent, with the same fields and
 values.
@@ -295,7 +293,7 @@ JSON:
 ``` r
 
 write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
-#> ✔ STAC catalog written to /tmp/Rtmp7UxKKN/r-stac
+#> ✔ STAC catalog written to /tmp/Rtmpl4zrDn/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 catalog_py$normalize_hrefs(py_path)

@@ -59,7 +59,7 @@ pc_statistic(
 
 ## Value
 
-A `pc_statistic` object (a list with a print method).
+A `pc_statistic` S7 object. Access fields with `@`.
 
 ## Details
 
