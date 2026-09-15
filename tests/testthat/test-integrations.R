@@ -279,7 +279,7 @@ test_that("band_from_file calculates statistics when asked", {
 
 test_that("band_from_file passes sample_size through to the statistics", {
   # A sample cannot report a wider range than the full pass over the raster
-  full <- band_from_file(tif, calculate_statistics = TRUE)
+  full <- band_from_file(tif, calculate_statistics = TRUE, sample_size = NULL)
   sampled <- band_from_file(tif, calculate_statistics = TRUE, sample_size = 50L)
 
   expect_length(sampled, 6)

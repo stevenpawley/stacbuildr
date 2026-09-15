@@ -252,6 +252,8 @@ test_that("an unreadable tile is skipped rather than fatal", {
 
   suppressWarnings(items <- items_from_lascatalog(c(f, bad)))
   expect_length(items, 1)
+
+  expect_error(item_from_lidr(bad), "missing LASF signature")
 })
 
 test_that("extra byte data type codes map to whole-byte dimensions", {
