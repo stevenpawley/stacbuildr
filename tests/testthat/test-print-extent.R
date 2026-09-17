@@ -13,7 +13,7 @@ test_that("an extent prints its overall bbox and interval", {
     fixed = TRUE
   )))
   expect_true(any(grepl("2013-01-01T00:00:00Z / ..", out, fixed = TRUE)))
-  # no S7 internals
+  # no S3 internals
   expect_false(any(grepl("@ spatial", out, fixed = TRUE)))
 })
 
@@ -42,11 +42,11 @@ test_that("spatial and temporal extents list their entries", {
     )
   )
 
-  out <- capture.output(print(ext@spatial, expand = TRUE))
+  out <- capture.output(print(ext$spatial, expand = TRUE))
   expect_identical(out[[1]], "<Spatial Extent>")
   expect_true(any(grepl("[-10, -10, 10, 10]", out, fixed = TRUE)))
 
-  out <- capture.output(print(ext@temporal, expand = TRUE))
+  out <- capture.output(print(ext$temporal, expand = TRUE))
   expect_identical(out[[1]], "<Temporal Extent>")
   expect_true(any(grepl(
     "2020-01-01T00:00:00Z / 2021-01-01T00:00:00Z",
@@ -55,7 +55,7 @@ test_that("spatial and temporal extents list their entries", {
   )))
 
   # collapsed shows the first entry as a preview only
-  out <- capture.output(print(ext@spatial))
+  out <- capture.output(print(ext$spatial))
   expect_true(any(grepl("> bbox       : 2", out, fixed = TRUE)))
   expect_false(any(grepl("[-10, -10, 10, 10]", out, fixed = TRUE)))
 })
@@ -77,7 +77,7 @@ test_that("a 3D bbox reports its elevation pair separately", {
 test_that("geometry coordinates are summarised by position count", {
   local_reproducible_output(unicode = FALSE)
 
-  poly <- stacbuildr:::Geometry(
+  poly <- stac_geometry(
     type = "Polygon",
     coordinates = list(list(c(0, 0), c(1, 0), c(1, 1), c(0, 0)))
   )
@@ -86,7 +86,7 @@ test_that("geometry coordinates are summarised by position count", {
   expect_true(any(grepl("Polygon", out, fixed = TRUE)))
   expect_true(any(grepl("4 positions", out, fixed = TRUE)))
 
-  pt <- stacbuildr:::Geometry(type = "Point", coordinates = c(-105, 40))
+  pt <- stac_geometry(type = "Point", coordinates = c(-105, 40))
   out <- capture.output(print(pt))
   expect_true(any(grepl("[-105, 40]", out, fixed = TRUE)))
 })

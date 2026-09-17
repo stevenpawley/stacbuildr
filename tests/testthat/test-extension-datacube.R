@@ -7,10 +7,10 @@ test_that("cube_dimension creates a horizontal spatial dimension", {
     extent = c(-105.5, -104.5)
   )
 
-  expect_equal(dim@type, "spatial")
-  expect_equal(dim@axis, "x")
-  expect_equal(dim@extent, c(-105.5, -104.5))
-  expect_true(S7::S7_inherits(dim, cube_dimension))
+  expect_equal(dim$type, "spatial")
+  expect_equal(dim$axis, "x")
+  expect_equal(dim$extent, c(-105.5, -104.5))
+  expect_true(inherits(dim, "cube_dimension"))
 })
 
 test_that("cube_dimension errors on missing type", {
@@ -34,8 +34,8 @@ test_that("cube_dimension errors on horizontal spatial dimension without extent"
 test_that("cube_dimension allows vertical spatial dimension with only values", {
   dim <- cube_dimension(type = "spatial", axis = "z", values = c(0, 10, 20))
 
-  expect_equal(dim@axis, "z")
-  expect_equal(dim@values, c(0, 10, 20))
+  expect_equal(dim$axis, "z")
+  expect_equal(dim$values, c(0, 10, 20))
 })
 
 test_that("cube_dimension errors on vertical spatial dimension without extent or values", {
@@ -48,8 +48,8 @@ test_that("cube_dimension errors on vertical spatial dimension without extent or
 test_that("cube_dimension creates a geometry dimension", {
   dim <- cube_dimension(type = "geometry", bbox = c(-105.5, 39.5, -104.5, 40.5))
 
-  expect_equal(dim@type, "geometry")
-  expect_equal(dim@bbox, c(-105.5, 39.5, -104.5, 40.5))
+  expect_equal(dim$type, "geometry")
+  expect_equal(dim$bbox, c(-105.5, 39.5, -104.5, 40.5))
 })
 
 test_that("cube_dimension errors on geometry dimension without bbox", {
@@ -65,8 +65,8 @@ test_that("cube_dimension creates a temporal dimension", {
     extent = c("2023-06-01T00:00:00Z", "2023-06-30T00:00:00Z")
   )
 
-  expect_equal(dim@type, "temporal")
-  expect_length(dim@extent, 2)
+  expect_equal(dim$type, "temporal")
+  expect_length(dim$extent, 2)
 })
 
 test_that("cube_dimension errors on temporal dimension without extent", {
@@ -79,8 +79,8 @@ test_that("cube_dimension errors on temporal dimension without extent", {
 test_that("cube_dimension creates an additional (custom) dimension", {
   dim <- cube_dimension(type = "bands", values = c("B02", "B03", "B04"))
 
-  expect_equal(dim@type, "bands")
-  expect_equal(dim@values, c("B02", "B03", "B04"))
+  expect_equal(dim$type, "bands")
+  expect_equal(dim$values, c("B02", "B03", "B04"))
 })
 
 test_that("cube_dimension errors on additional dimension without extent or values", {
@@ -98,7 +98,7 @@ test_that("cube_dimension stores extra fields via ...", {
   )
 
   # reference_system is only kept for spatial/geometry dimensions
-  expect_null(dim@reference_system)
+  expect_null(dim$reference_system)
 })
 
 
@@ -107,15 +107,15 @@ test_that("cube_dimension stores extra fields via ...", {
 test_that("cube_variable creates a minimal data variable", {
   var <- cube_variable(type = "data", dimensions = c("x", "y", "time"))
 
-  expect_equal(var@type, "data")
-  expect_equal(var@dimensions, c("x", "y", "time"))
-  expect_true(S7::S7_inherits(var, cube_variable))
+  expect_equal(var$type, "data")
+  expect_equal(var$dimensions, c("x", "y", "time"))
+  expect_true(inherits(var, "cube_variable"))
 })
 
 test_that("cube_variable allows an empty dimensions vector", {
   var <- cube_variable(type = "auxiliary", dimensions = character(0))
 
-  expect_equal(var@dimensions, character(0))
+  expect_equal(var$dimensions, character(0))
 })
 
 test_that("cube_variable stores all optional fields", {
@@ -128,10 +128,10 @@ test_that("cube_variable stores all optional fields", {
     description = "Air temperature"
   )
 
-  expect_equal(var@unit, "degC")
-  expect_equal(var@data_type, "float32")
-  expect_equal(var@nodata, -9999)
-  expect_equal(var@description, "Air temperature")
+  expect_equal(var$unit, "degC")
+  expect_equal(var$data_type, "float32")
+  expect_equal(var$nodata, -9999)
+  expect_equal(var$description, "Air temperature")
 })
 
 test_that("cube_variable errors on missing or invalid type", {
@@ -151,12 +151,12 @@ test_that("cube_variable errors when dimensions is not a character vector", {
 
 test_that("datacube objects validate property modifications", {
   dim <- cube_dimension(type = "spatial", axis = "x", extent = c(0, 1))
-  expect_error(dim@axis <- "invalid", "@axis must be one of")
-  expect_error(dim@extent <- NULL, "horizontal spatial dimensions")
+  expect_error(dim$axis <- "invalid", "@axis must be one of")
+  expect_error(dim$extent <- NULL, "horizontal spatial dimensions")
 
   variable <- cube_variable(type = "data", dimensions = c("x", "y"))
-  expect_error(variable@type <- "invalid", "either 'data' or 'auxiliary'")
-  expect_error(variable@dimensions <- 1:2, "character")
+  expect_error(variable$type <- "invalid", "either 'data' or 'auxiliary'")
+  expect_error(variable$dimensions <- 1:2, "character")
 })
 
 
@@ -271,7 +271,7 @@ test_that("add_datacube_extension adds schema URI to stac_extensions", {
 
   expect_true(
     "https://stac-extensions.github.io/datacube/v2.3.0/schema.json" %in%
-      item@stac_extensions
+      item$stac_extensions
   )
 })
 
@@ -287,7 +287,7 @@ test_that("add_datacube_extension does not duplicate schema URI", {
       )
     )
 
-  n_datacube_uris <- sum(grepl("datacube", item@stac_extensions))
+  n_datacube_uris <- sum(grepl("datacube", item$stac_extensions))
   expect_equal(n_datacube_uris, 1L)
 })
 
@@ -301,10 +301,10 @@ test_that("add_datacube_extension writes fields to item properties by default", 
     variables = vars
   )
 
-  expect_length(item@properties$`cube:dimensions`, 3)
-  expect_equal(item@properties$`cube:dimensions`$x@axis, "x")
-  expect_length(item@properties$`cube:variables`, 1)
-  expect_equal(item@properties$`cube:variables`$temperature@type, "data")
+  expect_length(item$properties$`cube:dimensions`, 3)
+  expect_equal(item$properties$`cube:dimensions`$x$axis, "x")
+  expect_length(item$properties$`cube:variables`, 1)
+  expect_equal(item$properties$`cube:variables`$temperature$type, "data")
 })
 
 test_that("add_datacube_extension writes fields to the specified asset", {
@@ -314,6 +314,6 @@ test_that("add_datacube_extension writes fields to the specified asset", {
     asset_key = "data"
   )
 
-  expect_length(item@assets$data@extra_fields$`cube:dimensions`, 3)
-  expect_null(item@properties$`cube:dimensions`)
+  expect_length(item$assets$data$extra_fields$`cube:dimensions`, 3)
+  expect_null(item$properties$`cube:dimensions`)
 })

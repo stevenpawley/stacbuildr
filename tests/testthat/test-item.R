@@ -6,10 +6,56 @@ test_that("STAC Item creation works", {
     datetime = "2023-06-15T10:30:00Z"
   )
 
-  expect_true(S7::S7_inherits(item, stac_item))
-  expect_equal(item@type, "Feature")
-  expect_equal(item@stac_version, "1.1.0")
-  expect_true(validate_stac(item)@valid)
+  expect_true(inherits(item, "stac_item"))
+  expect_equal(item$type, "Feature")
+  expect_equal(item$stac_version, "1.1.0")
+  expect_true(validate_stac(item)$valid)
+})
+
+test_that("plain geometry and link lists normalize to S3 objects", {
+  item <- stac_item(
+    id = "normalized-item",
+    geometry = list(type = "Point", coordinates = c(-105, 40)),
+    bbox = c(-105, 40, -105, 40),
+    datetime = "2023-06-15T10:30:00Z",
+    links = list(list(rel = "self", href = "https://example.com/item.json"))
+  )
+
+  expect_true(inherits(item$geometry, "stac_geometry"))
+  expect_equal(item$geometry$type, "Point")
+  expect_true(inherits(item$links[[1]], "stac_link"))
+  expect_equal(item$links[[1]]$href, "https://example.com/item.json")
+  expect_equal(item$properties[["datetime"]], "2023-06-15T10:30:00Z")
+})
+
+test_that("geometry collections normalize recursively and serialize", {
+  geometry <- stac_geometry(
+    "GeometryCollection",
+    geometries = list(
+      list(type = "Point", coordinates = c(-105, 40)),
+      stac_geometry("Point", coordinates = c(-104, 41))
+    )
+  )
+
+  expect_true(inherits(geometry$geometries[[1]], "stac_geometry"))
+  json <- as.list(geometry)
+  expect_equal(json[["type"]], "GeometryCollection")
+  expect_equal(json[["geometries"]][[2]][["coordinates"]], c(-104, 41))
+})
+
+test_that("link serialization retains standard and additional fields", {
+  link <- stac_link(
+    "search",
+    "https://example.com/search",
+    method = "POST",
+    body = list(limit = 10),
+    custom = "value"
+  )
+
+  json <- as.list(link)
+  expect_equal(json[["method"]], "POST")
+  expect_equal(json[["body"]][["limit"]], 10)
+  expect_equal(json[["custom"]], "value")
 })
 
 test_that("item with assets matches pystac", {
@@ -40,7 +86,7 @@ test_that("item with assets matches pystac", {
     properties = list()
   )
 
-  r_item@assets <- list(
+  r_item$assets <- list(
     thumbnail = stac_asset(
       href = "https://example.com/thumbnail.png",
       type = "image/png",
@@ -84,8 +130,8 @@ test_that("item with assets matches pystac", {
 
   # Validate both
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation@valid)
-  expect_length(r_validation@errors, 0)
+  expect_true(r_validation$valid)
+  expect_length(r_validation$errors, 0)
 
   # Check assets exist and match
   r_json <- jsonlite::fromJSON(
@@ -131,13 +177,13 @@ test_that("item with links matches pystac", {
     properties = list()
   )
 
-  r_item@links <- list(
-    list(
+  r_item$links <- list(
+    stac_link(
       rel = "self",
       href = "https://example.com/item.json",
       type = "application/json"
     ),
-    list(
+    stac_link(
       rel = "parent",
       href = "https://example.com/collection.json",
       type = "application/json"
@@ -171,7 +217,7 @@ test_that("item with links matches pystac", {
 
   # Validate
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation@valid)
+  expect_true(r_validation$valid)
 
   # Check links structure
   r_json <- jsonlite::fromJSON(
@@ -222,7 +268,7 @@ test_that("item with assets matches pystac", {
     properties = list()
   )
 
-  r_item@assets <- list(
+  r_item$assets <- list(
     thumbnail = stac_asset(
       href = "https://example.com/thumbnail.png",
       type = "image/png",
@@ -266,8 +312,8 @@ test_that("item with assets matches pystac", {
 
   # Validate both
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation@valid)
-  expect_length(r_validation@errors, 0)
+  expect_true(r_validation$valid)
+  expect_length(r_validation$errors, 0)
 
   # Check assets exist and match
   r_json <- jsonlite::fromJSON(
@@ -313,13 +359,13 @@ test_that("item with links matches pystac", {
     properties = list()
   )
 
-  r_item@links <- list(
-    list(
+  r_item$links <- list(
+    stac_link(
       rel = "self",
       href = "https://example.com/item.json",
       type = "application/json"
     ),
-    list(
+    stac_link(
       rel = "parent",
       href = "https://example.com/collection.json",
       type = "application/json"
@@ -353,7 +399,7 @@ test_that("item with links matches pystac", {
 
   # Validate
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation@valid)
+  expect_true(r_validation$valid)
 
   # Check links structure
   r_json <- jsonlite::fromJSON(
@@ -435,11 +481,11 @@ test_that("collection with items matches pystac", {
   r_validation_coll <- validate_stac(r_collection)
   r_validation_item <- validate_stac(r_item)
 
-  expect_true(r_validation_coll@valid)
-  expect_true(r_validation_item@valid)
+  expect_true(r_validation_coll$valid)
+  expect_true(r_validation_item$valid)
 
   # Check collection field
-  expect_equal(r_item@collection, py_item$collection_id)
+  expect_equal(r_item$collection, py_item$collection_id)
 })
 
 test_that("items with different geometry types match pystac", {
@@ -502,7 +548,7 @@ test_that("items with different geometry types match pystac", {
 
     # Validate
     r_validation <- validate_stac(r_item)
-    expect_true(r_validation@valid, info = paste("Geometry type:", geom_name))
+    expect_true(r_validation$valid, info = paste("Geometry type:", geom_name))
 
     # Compare structure
     r_json <- jsonlite::fromJSON(
@@ -556,7 +602,7 @@ test_that("item with null geometry matches pystac", {
 
   # Validate
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation@valid)
+  expect_true(r_validation$valid)
 
   # Compare
   r_json <- jsonlite::fromJSON(
@@ -596,10 +642,10 @@ test_that("add_asset works with inline parameters and pre-built asset", {
     roles = c("thumbnail")
   )
 
-  expect_true("thumbnail" %in% names(item@assets))
-  expect_equal(item@assets$thumbnail@href, "https://example.com/thumb.png")
-  expect_equal(item@assets$thumbnail@title, "Thumbnail")
-  expect_equal(item@assets$thumbnail@type, "image/png")
+  expect_true("thumbnail" %in% names(item$assets))
+  expect_equal(item$assets$thumbnail$href, "https://example.com/thumb.png")
+  expect_equal(item$assets$thumbnail$title, "Thumbnail")
+  expect_equal(item$assets$thumbnail$type, "image/png")
 
   # Add asset using a pre-built stac_asset()
   data_asset <- stac_asset(
@@ -610,16 +656,16 @@ test_that("add_asset works with inline parameters and pre-built asset", {
 
   item <- add_asset(item, key = "data", asset = data_asset)
 
-  expect_true("data" %in% names(item@assets))
-  expect_equal(item@assets$data@href, "https://example.com/data.tif")
-  expect_equal(item@assets$data@type, "image/tiff; application=geotiff")
+  expect_true("data" %in% names(item$assets))
+  expect_equal(item$assets$data$href, "https://example.com/data.tif")
+  expect_equal(item$assets$data$type, "image/tiff; application=geotiff")
   # roles are stored as a list so jsonlite serialises them as a JSON array
   # regardless of how many roles are present (regression: single-element
   # character vectors were previously auto-unboxed to a string scalar)
-  expect_equal(item@assets$data@roles, "data")
+  expect_equal(item$assets$data$roles, "data")
 
   # Both assets present
-  expect_length(item@assets, 2)
+  expect_length(item$assets, 2)
 
   # Error on invalid asset
   expect_error(
@@ -636,7 +682,7 @@ test_that("add_asset works with inline parameters and pre-built asset", {
 # than an array (["data"]). Serialization converts roles to a list() so jsonlite
 # always emits an array.  These tests guard against that regression.
 
-test_that("single asset role is stored as a character vector in S7", {
+test_that("single asset role is stored as a character vector in S3", {
   item <- stac_item(
     id = "roles-test",
     geometry = list(type = "Point", coordinates = c(0, 0)),
@@ -650,8 +696,8 @@ test_that("single asset role is stored as a character vector in S7", {
       roles = c("data")
     )
 
-  expect_type(item@assets$data@roles, "character")
-  expect_equal(item@assets$data@roles, "data")
+  expect_type(item$assets$data$roles, "character")
+  expect_equal(item$assets$data$roles, "data")
 })
 
 test_that("single asset role serialises to a JSON array, not a scalar string", {
@@ -731,10 +777,10 @@ test_that("asset roles survive a write/read round-trip as a list", {
 
   # Verify restored object has list roles
   restored <- read_stac(path)
-  expect_type(restored@assets$data@roles, "character")
-  expect_type(restored@assets$thumbnail@roles, "character")
-  expect_equal(restored@assets$data@roles, "data")
-  expect_equal(restored@assets$thumbnail@roles, "thumbnail")
+  expect_type(restored$assets$data$roles, "character")
+  expect_type(restored$assets$thumbnail$roles, "character")
+  expect_equal(restored$assets$data$roles, "data")
+  expect_equal(restored$assets$thumbnail$roles, "thumbnail")
 })
 
 
@@ -772,11 +818,11 @@ test_that("item with temporal range matches pystac", {
 
   # Validate
   r_validation <- validate_stac(r_item)
-  expect_true(r_validation@valid)
+  expect_true(r_validation$valid)
 
   # Check both have temporal properties
-  expect_true(!is.null(r_item@properties$start_datetime))
-  expect_true(!is.null(r_item@properties$end_datetime))
+  expect_true(!is.null(r_item$properties$start_datetime))
+  expect_true(!is.null(r_item$properties$end_datetime))
 })
 
 test_that("items with a datetime range keep a null datetime property", {
@@ -791,8 +837,8 @@ test_that("items with a datetime range keep a null datetime property", {
   # The STAC Item spec requires 'datetime' to be present even for a range,
   # where it is null. Assigning NULL to a list element drops it in R, so the
   # key has to survive both the object and the serialised JSON.
-  expect_true("datetime" %in% names(item@properties))
-  expect_null(item@properties$datetime)
+  expect_true("datetime" %in% names(item$properties))
+  expect_null(item$properties$datetime)
 
   json <- jsonlite::toJSON(
     as.list(item),

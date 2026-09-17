@@ -15,8 +15,8 @@ stac_summaries(...)
 }}
 }
 \value{
-A \code{stac_summaries} S7 object. Summary fields are stored in
-\code{summaries@extra_fields}.
+A \code{stac_summaries} S3 object. Summary fields are stored in
+\code{summaries$extra_fields}.
 }
 \description{
 Helper function to create property summaries for STAC Collections. Summaries

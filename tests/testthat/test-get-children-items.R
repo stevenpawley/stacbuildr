@@ -55,9 +55,9 @@ test_that("get_children returns the correct collection in memory", {
   tree <- make_catalog_tree()
   children <- get_children(tree$catalog)
 
-  expect_true(S7::S7_inherits(children[["elevation"]], stac_collection))
-  expect_equal(children[["elevation"]]@id, "elevation")
-  expect_equal(children[["elevation"]]@title, "Elevation")
+  expect_true(inherits(children[["elevation"]], "stac_collection"))
+  expect_equal(children[["elevation"]]$id, "elevation")
+  expect_equal(children[["elevation"]]$title, "Elevation")
 })
 
 test_that("get_children returns NULL when no children added", {
@@ -79,18 +79,18 @@ test_that("get_items returns the correct item in memory", {
   tree <- make_catalog_tree()
   items <- get_items(tree$collection)
 
-  expect_true(S7::S7_inherits(items[[1]], stac_item))
-  expect_equal(items[[1]]@id, "dem-2023")
-  expect_equal(items[[1]]@properties$datetime, "2023-06-15T00:00:00Z")
+  expect_true(inherits(items[[1]], "stac_item"))
+  expect_equal(items[[1]]$id, "dem-2023")
+  expect_equal(items[[1]]$properties$datetime, "2023-06-15T00:00:00Z")
 })
 
 test_that("get_items item contains the expected asset in memory", {
   tree <- make_catalog_tree()
   items <- get_items(tree$collection)
 
-  expect_true("dem" %in% names(items[[1]]@assets))
-  expect_equal(items[[1]]@assets$dem@href, "https://example.com/dem.tif")
-  expect_equal(items[[1]]@assets$dem@type, "image/tiff; application=geotiff")
+  expect_true("dem" %in% names(items[[1]]$assets))
+  expect_equal(items[[1]]$assets$dem$href, "https://example.com/dem.tif")
+  expect_equal(items[[1]]$assets$dem$type, "image/tiff; application=geotiff")
 })
 
 test_that("get_items returns NULL when no items added", {
@@ -120,9 +120,9 @@ test_that("get_children with resolve = TRUE returns collections after round-trip
 
   expect_type(children, "list")
   expect_named(children, "elevation")
-  expect_true(S7::S7_inherits(children[["elevation"]], stac_collection))
-  expect_equal(children[["elevation"]]@id, "elevation")
-  expect_equal(children[["elevation"]]@title, "Elevation")
+  expect_true(inherits(children[["elevation"]], "stac_collection"))
+  expect_equal(children[["elevation"]]$id, "elevation")
+  expect_equal(children[["elevation"]]$title, "Elevation")
 })
 
 test_that("get_items with resolve = TRUE returns items after round-trip", {
@@ -138,9 +138,9 @@ test_that("get_items with resolve = TRUE returns items after round-trip", {
 
   expect_type(items, "list")
   expect_length(items, 1L)
-  expect_true(S7::S7_inherits(items[[1]], stac_item))
-  expect_equal(items[[1]]@id, "dem-2023")
-  expect_equal(items[[1]]@properties$datetime, "2023-06-15T00:00:00Z")
+  expect_true(inherits(items[[1]], "stac_item"))
+  expect_equal(items[[1]]$id, "dem-2023")
+  expect_equal(items[[1]]$properties$datetime, "2023-06-15T00:00:00Z")
 })
 
 test_that("resolved item contains the expected asset after round-trip", {
@@ -154,9 +154,9 @@ test_that("resolved item contains the expected asset after round-trip", {
   collection <- read_stac(file.path(collection_path, "collection.json"))
   items <- get_items(collection, resolve = TRUE, base_path = collection_path)
 
-  expect_true("dem" %in% names(items[[1]]@assets))
-  expect_equal(items[[1]]@assets$dem@href, "https://example.com/dem.tif")
-  expect_equal(items[[1]]@assets$dem@type, "image/tiff; application=geotiff")
+  expect_true("dem" %in% names(items[[1]]$assets))
+  expect_equal(items[[1]]$assets$dem$href, "https://example.com/dem.tif")
+  expect_equal(items[[1]]$assets$dem$type, "image/tiff; application=geotiff")
 })
 
 test_that("get_children returns NULL without resolve after round-trip", {

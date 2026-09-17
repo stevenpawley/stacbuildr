@@ -48,7 +48,7 @@ item <- stac_item(
   datetime = "2023-07-06T08:00:00Z"
 )
 
-catalog <- catalog |> 
+catalog <- catalog |>
   add_item(item)
 ```
 
@@ -153,10 +153,10 @@ asset <- stac_asset(
   type = "image/tiff; application=geotiff"
 )
 
-item <- item |> 
+item <- item |>
   add_asset("temperature", asset)
 
-catalog <- catalog |> 
+catalog <- catalog |>
   add_item(item)
 ```
 

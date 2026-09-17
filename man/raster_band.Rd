@@ -63,9 +63,9 @@ pixel values: \code{physical_value = scale * DN + offset}. Default is 1.}
 other extensions like \code{"common_name"}, \code{"center_wavelength"}.}
 }
 \value{
-An S7 class representing a raster band object.
+An S3 class representing a raster band object.
 }
 \description{
-\code{raster_band()} is an S7 object that is used to construct an entry in the
+\code{raster_band()} is an S3 object that is used to construct an entry in the
 \code{bands} array, carrying the Raster extension's fields
 }

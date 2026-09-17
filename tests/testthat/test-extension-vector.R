@@ -84,7 +84,7 @@ test_that("add_vector_extension adds schema URI to stac_extensions", {
 
   expect_true(
     "https://stac-extensions.github.io/vector/v0.1.0/schema.json" %in%
-      item@stac_extensions
+      item$stac_extensions
   )
 })
 
@@ -93,7 +93,7 @@ test_that("add_vector_extension does not duplicate schema URI", {
     add_vector_extension(mmu = 100) |>
     add_vector_extension(mmw = 5)
 
-  n_vector_uris <- sum(grepl("vector", item@stac_extensions))
+  n_vector_uris <- sum(grepl("vector", item$stac_extensions))
   expect_equal(n_vector_uris, 1L)
 })
 
@@ -107,12 +107,12 @@ test_that("add_vector_extension writes fields to item properties by default", {
   )
 
   expect_equal(
-    item@properties$`vector:geometry_types`,
+    item$properties$`vector:geometry_types`,
     list("Polygon", "MultiPolygon")
   )
-  expect_equal(item@properties$`vector:mmu`, 100)
-  expect_equal(item@properties$`vector:mmw`, 5)
-  expect_equal(item@properties$`vector:reference_scale`, 50000)
+  expect_equal(item$properties$`vector:mmu`, 100)
+  expect_equal(item$properties$`vector:mmw`, 5)
+  expect_equal(item$properties$`vector:reference_scale`, 50000)
 })
 
 test_that("add_vector_extension writes fields to the specified asset", {
@@ -124,10 +124,10 @@ test_that("add_vector_extension writes fields to the specified asset", {
   )
 
   expect_equal(
-    item@assets$data@extra_fields$`vector:geometry_types`,
+    item$assets$data$extra_fields$`vector:geometry_types`,
     list("Point")
   )
-  expect_equal(item@assets$data@extra_fields$`vector:mmu`, 10)
-  expect_null(item@properties$`vector:geometry_types`)
-  expect_null(item@properties$`vector:mmu`)
+  expect_equal(item$assets$data$extra_fields$`vector:mmu`, 10)
+  expect_null(item$properties$`vector:geometry_types`)
+  expect_null(item$properties$`vector:mmu`)
 })

@@ -137,7 +137,7 @@ item_from_terra <- function(
     if (length(src) > 0 && nchar(src[1]) > 0 && file.exists(src[1])) {
       nodata_val <- gdal_nodata(src[1])
       if (!is.null(nodata_val)) {
-        item@assets[[asset_key]]@extra_fields$nodata <- nodata_val
+        item$assets[[asset_key]]$extra_fields[["nodata"]] <- nodata_val
       }
     }
   }
@@ -149,10 +149,10 @@ item_from_terra <- function(
       item <- add_asset(
         item,
         key = asset_name,
-        href = asset@href,
-        title = asset@title,
-        type = asset@type,
-        roles = asset@roles
+        href = asset$href,
+        title = asset$title,
+        type = asset$type,
+        roles = asset$roles
       )
     }
   }
@@ -289,20 +289,21 @@ item_from_sf <- function(
 #' Convert sf Geometry to GeoJSON
 #'
 #' @description
-#' Converts an sf object's geometry to a GeoJSON-compatible list structure.
+#' Converts an sf object's geometry to a [stac_geometry()] S3 object.
 #' If the sf object contains multiple features, they are unioned into a single
 #' geometry, since a STAC item has one geometry.
 #'
 #' @param sf_obj An sf object.
 #'
-#' @return A GeoJSON geometry object (list).
+#' @return A `stac_geometry` S3 object.
 #'
 #' @examples
 #' \dontrun{
 #' library(sf)
 #'
 #' polygon <- st_read("boundary.shp")
-#' geojson <- geometry_from_sf(polygon)
+#' geometry <- geometry_from_sf(polygon)
+#' geometry$type
 #' }
 #'
 #' @export
@@ -334,7 +335,7 @@ geometry_from_sf <- function(sf_obj) {
   }
 
   geojson_str <- geojsonsf::sfc_geojson(geom)
-  jsonlite::fromJSON(geojson_str, simplifyVector = FALSE)
+  as_stac_geometry(jsonlite::fromJSON(geojson_str, simplifyVector = FALSE))
 }
 
 
@@ -620,7 +621,7 @@ extent_from_items <- function(items) {
   }
 
   # Extract all bboxes
-  bboxes <- lapply(items, function(item) item@bbox)
+  bboxes <- lapply(items, function(item) item$bbox)
 
   # Calculate overall spatial extent
   xmins <- sapply(bboxes, function(b) b[1])
@@ -640,15 +641,16 @@ extent_from_items <- function(items) {
 
   for (item in items) {
     if (
-      !is.null(item@properties$datetime) && item@properties$datetime != "null"
+      !is.null(item$properties[["datetime"]]) &&
+        item$properties[["datetime"]] != "null"
     ) {
-      datetimes <- c(datetimes, item@properties$datetime)
-    } else if (!is.null(item@properties$start_datetime)) {
-      datetimes <- c(datetimes, item@properties$start_datetime)
+      datetimes <- c(datetimes, item$properties[["datetime"]])
+    } else if (!is.null(item$properties[["start_datetime"]])) {
+      datetimes <- c(datetimes, item$properties[["start_datetime"]])
     }
 
-    if (!is.null(item@properties$end_datetime)) {
-      datetimes <- c(datetimes, item@properties$end_datetime)
+    if (!is.null(item$properties[["end_datetime"]])) {
+      datetimes <- c(datetimes, item$properties[["end_datetime"]])
     }
   }
 
@@ -730,7 +732,7 @@ bands_from_terra <- function(
       }
 
       if (length(vals) > 0) {
-        band@statistics <- raster_statistics(
+        band$statistics <- raster_statistics(
           minimum = min(vals, na.rm = TRUE),
           maximum = max(vals, na.rm = TRUE),
           mean = mean(vals, na.rm = TRUE),

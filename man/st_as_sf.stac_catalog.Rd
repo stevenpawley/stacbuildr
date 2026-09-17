@@ -2,7 +2,7 @@
 % Please edit documentation in R/coercion.R
 \name{st_as_sf.stac_catalog}
 \alias{st_as_sf.stac_catalog}
-\alias{st_as_sf,stacbuildr::stac_item-method}
+\alias{st_as_sf.stac_item}
 \title{Coerce a STAC Catalog, Collection or Item to an sf Object}
 \arguments{
 \item{x}{A \code{stac_catalog}, \code{stac_collection} or \code{stac_item} object.}

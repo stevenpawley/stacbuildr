@@ -3,8 +3,8 @@
 test_that("render_object creates a minimal render object", {
   render <- render_object(assets = c("B4", "B3", "B2"))
 
-  expect_equal(render@assets, c("B4", "B3", "B2"))
-  expect_true(S7::S7_inherits(render, render_object))
+  expect_equal(render$assets, c("B4", "B3", "B2"))
+  expect_true(inherits(render, "render_object"))
 })
 
 test_that("render_object stores all optional fields", {
@@ -24,16 +24,16 @@ test_that("render_object stores all optional fields", {
     bidx = c(1, 2)
   )
 
-  expect_equal(render@title, "NDVI")
-  expect_equal(render@rescale, list(c(-1, 1)))
-  expect_equal(render@nodata, 0)
-  expect_equal(render@colormap_name, "ylgn")
-  expect_equal(render@colormap, cmap)
-  expect_equal(render@color_formula, "gamma R 1.2")
-  expect_equal(render@resampling, "average")
-  expect_equal(render@expression, "(B5-B4)/(B5+B4)")
-  expect_equal(render@minmax_zoom, c(0, 18))
-  expect_equal(render@bidx, c(1, 2))
+  expect_equal(render$title, "NDVI")
+  expect_equal(render$rescale, list(c(-1, 1)))
+  expect_equal(render$nodata, 0)
+  expect_equal(render$colormap_name, "ylgn")
+  expect_equal(render$colormap, cmap)
+  expect_equal(render$color_formula, "gamma R 1.2")
+  expect_equal(render$resampling, "average")
+  expect_equal(render$expression, "(B5-B4)/(B5+B4)")
+  expect_equal(render$minmax_zoom, c(0, 18))
+  expect_equal(render$bidx, c(1, 2))
 })
 
 test_that("render_object stores extra fields via ...", {
@@ -44,9 +44,9 @@ test_that("render_object stores extra fields via ...", {
     bands = c("B4")
   )
 
-  expect_equal(render@extra_fields$width, 1024)
-  expect_equal(render@extra_fields$height, 1024)
-  expect_equal(render@extra_fields$bands, c("B4"))
+  expect_equal(render$extra_fields$width, 1024)
+  expect_equal(render$extra_fields$height, 1024)
+  expect_equal(render$extra_fields$bands, c("B4"))
 })
 
 test_that("render_object errors when assets is missing", {
@@ -88,13 +88,13 @@ test_that("render_object errors when minmax_zoom is not length 2", {
 test_that("render_object validates property modifications", {
   render <- render_object("B4")
 
-  expect_error(render@assets <- character(), "non-empty character vector")
-  expect_error(render@title <- c("a", "b"), "single character string")
+  expect_error(render$assets <- character(), "non-empty character vector")
+  expect_error(render$title <- c("a", "b"), "single character string")
   expect_error(
-    render@rescale <- list(c(0, 1, 2)),
+    render$rescale <- list(c(0, 1, 2)),
     "numeric vectors of length 2"
   )
-  expect_error(render@minmax_zoom <- 0:2, "numeric vector of length 2")
+  expect_error(render$minmax_zoom <- 0:2, "numeric vector of length 2")
 })
 
 
@@ -164,7 +164,7 @@ test_that("add_render_extension adds schema URI to item stac_extensions", {
 
   expect_true(
     "https://stac-extensions.github.io/render/v2.0.0/schema.json" %in%
-      item@stac_extensions
+      item$stac_extensions
   )
 })
 
@@ -174,7 +174,7 @@ test_that("add_render_extension adds schema URI to collection stac_extensions", 
 
   expect_true(
     "https://stac-extensions.github.io/render/v2.0.0/schema.json" %in%
-      collection@stac_extensions
+      collection$stac_extensions
   )
 })
 
@@ -183,7 +183,7 @@ test_that("add_render_extension does not duplicate schema URI", {
     add_render_extension(renders = list(rgb = render_object("B4"))) |>
     add_render_extension(renders = list(ndvi = render_object("B5")))
 
-  n_render_uris <- sum(grepl("render", item@stac_extensions))
+  n_render_uris <- sum(grepl("render", item$stac_extensions))
   expect_equal(n_render_uris, 1L)
 })
 
@@ -195,8 +195,8 @@ test_that("add_render_extension writes renders to item properties", {
       )
     )
 
-  expect_length(item@properties$renders, 1)
-  expect_equal(item@properties$renders$rgb@assets, c("B4", "B3", "B2"))
+  expect_length(item$properties$renders, 1)
+  expect_equal(item$properties$renders$rgb$assets, c("B4", "B3", "B2"))
 })
 
 test_that("add_render_extension writes renders to collection extra_fields", {
@@ -207,8 +207,8 @@ test_that("add_render_extension writes renders to collection extra_fields", {
       )
     )
 
-  expect_length(collection@extra_fields$renders, 1)
-  expect_equal(collection@extra_fields$renders$rgb@assets, c("B4", "B3", "B2"))
+  expect_length(collection$extra_fields$renders, 1)
+  expect_equal(collection$extra_fields$renders$rgb$assets, c("B4", "B3", "B2"))
 })
 
 test_that("add_render_extension merges and overwrites render objects", {
@@ -225,7 +225,7 @@ test_that("add_render_extension merges and overwrites render objects", {
       )
     )
 
-  expect_length(item@properties$renders, 2)
-  expect_equal(item@properties$renders$rgb@assets, c("B4", "B3", "B2"))
-  expect_equal(item@properties$renders$ndvi@assets, c("B5", "B4"))
+  expect_length(item$properties$renders, 2)
+  expect_equal(item$properties$renders$rgb$assets, c("B4", "B3", "B2"))
+  expect_equal(item$properties$renders$ndvi$assets, c("B5", "B4"))
 })

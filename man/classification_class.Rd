@@ -42,7 +42,7 @@ that belong to this class (0–100).}
 \item{count}{(integer, optional) Number of pixels that belong to this class.}
 }
 \value{
-A \code{classification_class} S7 object. Access fields with \code{@}.
+A \code{classification_class} S3 object. Access fields with \code{$}.
 }
 \description{
 Creates a class object for use with the Classification Extension. Each class

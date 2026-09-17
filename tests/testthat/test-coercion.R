@@ -39,19 +39,19 @@ demo_collection <- function(n = 3) {
   coll
 }
 
-test_that("core objects retain only their qualified S7 class hierarchy", {
+test_that("core objects retain their S3 class hierarchy", {
   item <- demo_item()
   catalog <- stac_catalog(id = "c", description = "d")
   collection <- demo_collection(0)
 
-  expect_identical(class(item), c("stacbuildr::stac_item", "S7_object"))
-  expect_identical(class(catalog), c("stacbuildr::stac_catalog", "S7_object"))
+  expect_identical(class(item), c("stac_item", "stac_object"))
+  expect_identical(class(catalog), c("stac_catalog", "stac_object"))
   expect_identical(
     class(collection),
     c(
-      "stacbuildr::stac_collection",
-      "stacbuildr::stac_catalog",
-      "S7_object"
+      "stac_collection",
+      "stac_catalog",
+      "stac_object"
     )
   )
 })
@@ -294,9 +294,9 @@ test_that("st_bbox() gives an empty bbox for a non-spatial item", {
 
 test_that("[[ returns a single item, by position or id", {
   coll <- demo_collection(3)
-  expect_equal(coll[[2]]@id, "s02")
-  expect_equal(coll[["s03"]]@id, "s03")
-  expect_true(S7::S7_inherits(coll[[1]], stac_item))
+  expect_equal(coll[[2]]$id, "s02")
+  expect_equal(coll[["s03"]]$id, "s03")
+  expect_true(inherits(coll[[1]], "stac_item"))
 })
 
 test_that("[ returns a list of items, by position or id", {
@@ -304,7 +304,7 @@ test_that("[ returns a list of items, by position or id", {
   expect_type(coll[1:2], "list")
   expect_length(coll[1:2], 2L)
   expect_equal(
-    vapply(coll[c("s01", "s03")], function(i) i@id, character(1)),
+    vapply(coll[c("s01", "s03")], function(i) i$id, character(1)),
     c("s01", "s03")
   )
 })

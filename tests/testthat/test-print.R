@@ -150,7 +150,7 @@ test_that("extensions print as name and version", {
 test_that("an unrecognised extension URI is printed in full", {
   local_reproducible_output(unicode = FALSE)
   item <- test_item()
-  item@stac_extensions <- "https://example.com/my-extension.json"
+  item$stac_extensions <- "https://example.com/my-extension.json"
 
   out <- capture.output(print(item, expand = "extensions"))
   expect_true(any(grepl(
@@ -196,7 +196,7 @@ test_that("asset-level extension fields print under their asset", {
 
   # the two extensions describe the same bands, so their fields merged
   expect_named(
-    item@assets$B4@extra_fields$bands[[1]],
+    item$assets$B4$extra_fields$bands[[1]],
     c(
       "name",
       "eo:common_name",
@@ -218,7 +218,7 @@ test_that("asset-level extension fields print under their asset", {
 test_that("unlabelled arrays of objects fall back to a count", {
   local_reproducible_output(unicode = FALSE)
   item <- test_item()
-  item@properties$`custom:things` <- list(list(a = 1), list(a = 2))
+  item$properties$`custom:things` <- list(list(a = 1), list(a = 2))
 
   out <- capture.output(print(item, expand = "properties"))
   expect_true(any(grepl("custom:things +<2 items>", out)))

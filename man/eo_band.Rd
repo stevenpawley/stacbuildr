@@ -41,7 +41,7 @@ and radiometric calibration.}
 extensions like raster fields (\code{nodata}, \code{data_type}, \code{raster:scale}, etc.).}
 }
 \value{
-An \code{eo_band} S7 object. Access fields with \code{@}.
+An \code{eo_band} S3 object. Access fields with \code{$}.
 The EO-specific fields are written with an \verb{eo:} prefix, as required by
 version 2.0.0 of the extension; \code{name} and \code{description} come from STAC
 Common Metadata and stay unprefixed.

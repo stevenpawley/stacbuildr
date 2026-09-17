@@ -17,10 +17,10 @@ test_that("add_projection_extension declares the extension and sets fields", {
     transform = c(30, 0, 712710, 0, -30, 5654790)
   )
 
-  expect_true(proj_uri %in% item@stac_extensions)
-  expect_equal(item@properties$`proj:code`, "EPSG:32612")
-  expect_equal(item@properties$`proj:shape`, c(5558, 9559))
-  expect_length(item@properties$`proj:transform`, 6)
+  expect_true(proj_uri %in% item$stac_extensions)
+  expect_equal(item$properties$`proj:code`, "EPSG:32612")
+  expect_equal(item$properties$`proj:shape`, c(5558, 9559))
+  expect_length(item$properties$`proj:transform`, 6)
 })
 
 test_that("add_projection_extension writes every supported field", {
@@ -36,7 +36,7 @@ test_that("add_projection_extension writes every supported field", {
     transform = c(30, 0, 712710, 0, -30, 5654790, 0, 0, 1)
   )
 
-  props <- item@properties
+  props <- item$properties
   expect_equal(props$`proj:wkt2`, "PROJCRS[\"WGS 84 / UTM zone 12N\"]")
   expect_equal(props$`proj:projjson`$type, "ProjectedCRS")
   expect_equal(props$`proj:geometry`$type, "Point")
@@ -49,10 +49,10 @@ test_that("add_projection_extension does not duplicate the extension URI", {
   item <- add_projection_extension(proj_item(), code = "EPSG:4326")
   item <- add_projection_extension(item, shape = c(10, 10))
 
-  expect_equal(sum(item@stac_extensions == proj_uri), 1L)
+  expect_equal(sum(item$stac_extensions == proj_uri), 1L)
   # The second call adds to, rather than replaces, what the first wrote
-  expect_equal(item@properties$`proj:code`, "EPSG:4326")
-  expect_equal(item@properties$`proj:shape`, c(10, 10))
+  expect_equal(item$properties$`proj:code`, "EPSG:4326")
+  expect_equal(item$properties$`proj:shape`, c(10, 10))
 })
 
 test_that("add_projection_extension writes to an asset when given asset_key", {
@@ -69,10 +69,10 @@ test_that("add_projection_extension writes to an asset when given asset_key", {
     asset_key = "swir"
   )
 
-  expect_equal(item@assets$swir@extra_fields$`proj:shape`, c(2779, 4780))
+  expect_equal(item$assets$swir$extra_fields$`proj:shape`, c(2779, 4780))
   # Asset-level placement leaves the item properties alone
-  expect_null(item@properties$`proj:shape`)
-  expect_true(proj_uri %in% item@stac_extensions)
+  expect_null(item$properties$`proj:shape`)
+  expect_true(proj_uri %in% item$stac_extensions)
 })
 
 test_that("add_projection_extension rejects a missing asset", {
@@ -176,7 +176,7 @@ test_that("add_projection_extension validates the centroid", {
     proj_item(),
     centroid = list(lat = 51.05, lon = -114.07)
   )
-  expect_equal(item@properties$`proj:centroid`$lat, 51.05)
+  expect_equal(item$properties$`proj:centroid`$lat, 51.05)
 })
 
 test_that("add_projection_extension validates geometry and item type", {
@@ -206,10 +206,10 @@ test_that("projection fields survive a write/read round trip", {
   write_item(item, path)
   back <- read_stac(path)
 
-  expect_equal(back@properties$`proj:code`, "EPSG:32612")
-  expect_length(back@properties$`proj:shape`, 2)
-  expect_length(back@properties$`proj:transform`, 6)
-  expect_true(proj_uri %in% back@stac_extensions)
+  expect_equal(back$properties$`proj:code`, "EPSG:32612")
+  expect_length(back$properties$`proj:shape`, 2)
+  expect_length(back$properties$`proj:transform`, 6)
+  expect_true(proj_uri %in% back$stac_extensions)
 })
 
 test_that("numeric projection fields are stored without names", {
@@ -222,7 +222,7 @@ test_that("numeric projection fields are stored without names", {
     transform = c(xscale = 30, a = 0, xmin = 0, b = 0, yscale = -30, ymax = 1)
   )
 
-  expect_null(names(item@properties$`proj:bbox`))
-  expect_null(names(item@properties$`proj:shape`))
-  expect_null(names(item@properties$`proj:transform`))
+  expect_null(names(item$properties$`proj:bbox`))
+  expect_null(names(item$properties$`proj:shape`))
+  expect_null(names(item$properties$`proj:transform`))
 })

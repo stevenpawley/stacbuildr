@@ -7,9 +7,9 @@ test_that("stac_extent creates a valid extent with closed temporal interval", {
   )
 
   expect_true(any(grepl("Extent", class(extent), fixed = TRUE)))
-  expect_equal(extent@spatial@bbox[[1]], c(-180, -90, 180, 90))
-  expect_equal(extent@temporal@interval[[1]][[1]], "2020-01-01T00:00:00Z")
-  expect_equal(extent@temporal@interval[[1]][[2]], "2020-12-31T23:59:59Z")
+  expect_equal(extent$spatial$bbox[[1]], c(-180, -90, 180, 90))
+  expect_equal(extent$temporal$interval[[1]][[1]], "2020-01-01T00:00:00Z")
+  expect_equal(extent$temporal$interval[[1]][[2]], "2020-12-31T23:59:59Z")
 })
 
 test_that("stac_extent accepts open-ended temporal interval (NULL end)", {
@@ -18,7 +18,7 @@ test_that("stac_extent accepts open-ended temporal interval (NULL end)", {
     temporal_interval = list(list("2015-01-01T00:00:00Z", NULL))
   )
 
-  expect_null(extent@temporal@interval[[1]][[2]])
+  expect_null(extent$temporal$interval[[1]][[2]])
 })
 
 test_that("stac_extent accepts fully open temporal interval (NULL, NULL)", {
@@ -27,8 +27,8 @@ test_that("stac_extent accepts fully open temporal interval (NULL, NULL)", {
     temporal_interval = list(list(NULL, NULL))
   )
 
-  expect_null(extent@temporal@interval[[1]][[1]])
-  expect_null(extent@temporal@interval[[1]][[2]])
+  expect_null(extent$temporal$interval[[1]][[1]])
+  expect_null(extent$temporal$interval[[1]][[2]])
 })
 
 test_that("stac_extent accepts multiple spatial bboxes", {
@@ -41,9 +41,9 @@ test_that("stac_extent accepts multiple spatial bboxes", {
     temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
   )
 
-  expect_length(extent@spatial@bbox, 3)
-  expect_equal(extent@spatial@bbox[[2]], c(-120, 30, -110, 40))
-  expect_equal(extent@spatial@bbox[[3]], c(-10, 35, 5, 45))
+  expect_length(extent$spatial$bbox, 3)
+  expect_equal(extent$spatial$bbox[[2]], c(-120, 30, -110, 40))
+  expect_equal(extent$spatial$bbox[[3]], c(-10, 35, 5, 45))
 })
 
 test_that("stac_extent accepts multiple temporal intervals", {
@@ -55,9 +55,9 @@ test_that("stac_extent accepts multiple temporal intervals", {
     )
   )
 
-  expect_length(extent@temporal@interval, 2)
-  expect_equal(extent@temporal@interval[[1]][[1]], "2015-01-01T00:00:00Z")
-  expect_equal(extent@temporal@interval[[2]][[1]], "2020-01-01T00:00:00Z")
+  expect_length(extent$temporal$interval, 2)
+  expect_equal(extent$temporal$interval[[1]][[1]], "2015-01-01T00:00:00Z")
+  expect_equal(extent$temporal$interval[[2]][[1]], "2020-01-01T00:00:00Z")
 })
 
 test_that("stac_extent accepts a 3D bbox (6 coordinates)", {
@@ -66,7 +66,7 @@ test_that("stac_extent accepts a 3D bbox (6 coordinates)", {
     temporal_interval = list(list(NULL, NULL))
   )
 
-  expect_length(extent@spatial@bbox[[1]], 6)
+  expect_length(extent$spatial$bbox[[1]], 6)
 })
 
 test_that("stac_extent serialises correctly with as.list", {
@@ -109,7 +109,7 @@ test_that("stac_extent accepts west > east for an antimeridian bbox", {
     temporal_interval = list(list(NULL, NULL))
   )
 
-  expect_equal(extent@spatial@bbox[[1]], c(10, -90, -10, 90))
+  expect_equal(extent$spatial$bbox[[1]], c(10, -90, -10, 90))
 })
 
 test_that("stac_extent errors when south > north", {
@@ -172,5 +172,5 @@ test_that("stac_extent round-trips through a stac_collection and validates", {
   )
 
   result <- validate_stac(collection)
-  expect_true(result@valid)
+  expect_true(result$valid)
 })

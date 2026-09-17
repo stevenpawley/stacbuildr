@@ -21,7 +21,7 @@ add_item(
 list of Items to add multiple items at once.}
 
 \item{href}{(character, optional) Href for each Item link. If \code{NULL}, uses
-\code{"./{item@id}/{item@id}.json"}. Supply one href per Item. \code{\link[=write_stac]{write_stac()}}
+\code{"./{item$id}/{item$id}.json"}. Supply one href per Item. \code{\link[=write_stac]{write_stac()}}
 regenerates these hrefs for its output layout and \code{catalog_type}.}
 
 \item{add_parent_links}{(logical, optional) If \code{TRUE}, add \code{"parent"} and

@@ -1,4 +1,4 @@
-test_that("eo_band exposes standard fields with @ and extensions via extra_fields", {
+test_that("eo_band exposes standard fields with $ and extensions via extra_fields", {
   band <- eo_band(
     name = "B4",
     common_name = "red",
@@ -6,14 +6,14 @@ test_that("eo_band exposes standard fields with @ and extensions via extra_field
     "raster:scale" = 1e-4
   )
 
-  expect_true(S7::S7_inherits(band, eo_band))
-  expect_equal(band@name, "B4")
-  expect_equal(band@common_name, "red")
-  expect_equal(band@center_wavelength, 0.665)
-  expect_equal(band@extra_fields$`raster:scale`, 1e-4)
+  expect_true(inherits(band, "eo_band"))
+  expect_equal(band$name, "B4")
+  expect_equal(band$common_name, "red")
+  expect_equal(band$center_wavelength, 0.665)
+  expect_equal(band$extra_fields$`raster:scale`, 1e-4)
 })
 
-test_that("EO bands remain S7 until serialization", {
+test_that("EO bands remain S3 until serialization", {
   item <- stac_item(
     id = "eo",
     geometry = list(type = "Point", coordinates = c(0, 0)),
@@ -22,7 +22,7 @@ test_that("EO bands remain S7 until serialization", {
   ) |>
     add_eo_extension(bands = list(eo_band("B4", "red")))
 
-  expect_true(S7::S7_inherits(item@properties$bands[[1]], eo_band))
+  expect_true(inherits(item$properties$bands[[1]], "eo_band"))
 
   json <- jsonlite::fromJSON(
     jsonlite::toJSON(as.list(item), auto_unbox = TRUE),

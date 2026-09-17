@@ -31,9 +31,10 @@
 #'   full definition.
 #' @param projjson (list, optional) The CRS as a PROJJSON object, supplied as a
 #'   named list.
-#' @param geometry (list, optional) A GeoJSON geometry giving the footprint in
-#'   the native CRS, as a named list with `type` and `coordinates`. Unlike the
-#'   Item's own `geometry`, this is *not* reprojected to WGS84.
+#' @param geometry (stac_geometry or list, optional) A GeoJSON geometry giving
+#'   the footprint in the native CRS. Plain lists are converted to S3 geometry
+#'   objects. Unlike the Item's own `geometry`, this is *not* reprojected to
+#'   WGS84.
 #' @param bbox (numeric, optional) Bounding box in the native CRS: four values
 #'   (`xmin, ymin, xmax, ymax`) for 2D data, or six
 #'   (`xmin, ymin, zmin, xmax, ymax, zmax`) for 3D data such as a point cloud.
@@ -83,7 +84,7 @@
 #'   bbox = c(712710, 5487090, 999480, 5654790)
 #' )
 #'
-#' item@properties$`proj:code`
+#' item$properties[["proj:code"]]
 #'
 #' # Per-asset placement, for assets at different resolutions
 #' item <- add_asset(
@@ -112,7 +113,7 @@ add_projection_extension <- function(
   transform = NULL,
   asset_key = NULL
 ) {
-  if (!S7::S7_inherits(item, stac_item)) {
+  if (!stac_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -167,12 +168,7 @@ add_projection_extension <- function(
   }
 
   if (!is.null(geometry)) {
-    if (!is.list(geometry) || is.null(geometry$type)) {
-      cli::cli_abort(c(
-        "'geometry' must be a GeoJSON geometry list with a 'type' field.",
-        "i" = "For example: {.code list(type = \"Polygon\", coordinates = ...)}."
-      ))
-    }
+    geometry <- as_stac_geometry(geometry)
   }
 
   if (!is.null(bbox)) {
@@ -242,19 +238,19 @@ add_projection_extension <- function(
     if (!is.character(asset_key) || length(asset_key) != 1) {
       cli::cli_abort("'asset_key' must be a single character string")
     }
-    if (is.null(item@assets[[asset_key]])) {
+    if (is.null(item$assets[[asset_key]])) {
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
   }
 
   ext_uri <- "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
 
-  if (is.null(item@stac_extensions)) {
-    item@stac_extensions <- character(0)
+  if (is.null(item$stac_extensions)) {
+    item$stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item@stac_extensions) {
-    item@stac_extensions <- c(item@stac_extensions, ext_uri)
+  if (!ext_uri %in% item$stac_extensions) {
+    item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
 
   # The numeric fields are JSON arrays, and terra hands back named vectors
@@ -288,11 +284,11 @@ add_projection_extension <- function(
 
   if (is.null(asset_key)) {
     for (field_name in names(fields)) {
-      item@properties[[field_name]] <- fields[[field_name]]
+      item$properties[[field_name]] <- fields[[field_name]]
     }
   } else {
     for (field_name in names(fields)) {
-      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[
+      item$assets[[asset_key]]$extra_fields[[field_name]] <- fields[[
         field_name
       ]]
     }

@@ -6,7 +6,7 @@
 as_json <- function(x) {
   jsonlite::fromJSON(
     jsonlite::toJSON(
-      if (inherits(x, "S7_object")) as.list(x) else x,
+      if (inherits(x, "stac_object")) as.list(x) else x,
       auto_unbox = TRUE,
       null = "null",
       digits = 15

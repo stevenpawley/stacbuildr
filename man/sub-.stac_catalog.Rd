@@ -2,7 +2,8 @@
 % Please edit documentation in R/coercion.R
 \name{sub-.stac_catalog}
 \alias{sub-.stac_catalog}
-\alias{[[,stacbuildr::stac_catalog-method}
+\alias{[.stac_catalog}
+\alias{[[.stac_catalog}
 \title{Extract Items from a STAC Catalog or Collection}
 \arguments{
 \item{x}{A \code{stac_catalog} or \code{stac_collection} object.}
@@ -42,7 +43,7 @@ collection <- add_item(collection, stac_item(
   datetime = "2024-06-01T00:00:00Z"
 ))
 
-collection[["scene-1"]]@id
+collection[["scene-1"]]$id
 length(collection[1])
 
 }

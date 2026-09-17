@@ -7,40 +7,58 @@
 #'
 #' ## Object Types
 #'
-#' The package uses **S7 classes** for core STAC structures and metadata helper
-#' objects.
+#' The package uses validated **S3 classes** for core STAC structures and
+#' metadata helper objects.
 #'
-#' ### S7 Classes (use `@` to access properties)
+#' ### S3 objects (use `$` to access fields)
 #'
-#' The primary STAC document types and most extension helper objects are S7
-#' objects. Use the `@` operator to read or modify their properties:
+#' The primary STAC document types and most extension helper objects are S3
+#' objects backed by named lists. Use `$` to read or modify declared fields:
 #'
 #' | Constructor | Class | Example access |
 #' | --- | --- | --- |
-#' | [stac_asset()] | `stac_asset` | `asset@href`, `asset@extra_fields` |
-#' | [stac_provider()] | `stac_provider` | `provider@name`, `provider@roles` |
-#' | [stac_item()] | `stac_item` | `item@id`, `item@assets` |
-#' | [stac_catalog()] | `stac_catalog` | `catalog@title` |
-#' | [stac_collection()] | `stac_collection` | `collection@description` |
-#' | [raster_band()] | `raster_band` | `band@data_type`, `band@scale` |
-#' | [raster_statistics()] | `raster_statistics` | `stats@minimum` |
-#' | [raster_histogram()] | `raster_histogram` | `hist@buckets` |
-#' | [eo_band()] | `eo_band` | `band@common_name` |
-#' | [scientific_publication()] | `scientific_publication` | `publication@doi` |
-#' | [table_column()] | `table_column` | `column@name` |
-#' | [pc_schema()] | `pc_schema` | `schema@size` |
-#' | [pc_statistic()] | `pc_statistic` | `statistic@minimum` |
-#' | [render_object()] | `render_object` | `render@assets` |
-#' | [cube_dimension()] | `cube_dimension` | `dimension@axis` |
-#' | [cube_variable()] | `cube_variable` | `variable@dimensions` |
-#' | [classification_class()] | `classification_class` | `class@value` |
-#' | [classification_bitfield()] | `classification_bitfield` | `bitfield@classes` |
-#' | [stac_summaries()] | `stac_summaries` | `summaries@extra_fields` |
-#' | [validate_stac()] | `stac_validation` | `result@valid`, `result@errors` |
-#' | [stac_extent()] | `Extent` | `extent@spatial`, `extent@temporal` |
+#' | [stac_asset()] | `stac_asset` | `asset$href`, `asset$extra_fields` |
+#' | [stac_provider()] | `stac_provider` | `provider$name`, `provider$roles` |
+#' | [stac_item()] | `stac_item` | `item$id`, `item$assets` |
+#' | [stac_geometry()] | `stac_geometry` | `geometry$type` |
+#' | [stac_link()] | `stac_link` | `link$rel`, `link$href` |
+#' | [stac_catalog()] | `stac_catalog` | `catalog$title` |
+#' | [stac_collection()] | `stac_collection` | `collection$description` |
+#' | [raster_band()] | `raster_band` | `band$data_type`, `band$scale` |
+#' | [raster_statistics()] | `raster_statistics` | `stats$minimum` |
+#' | [raster_histogram()] | `raster_histogram` | `hist$buckets` |
+#' | [eo_band()] | `eo_band` | `band$common_name` |
+#' | [scientific_publication()] | `scientific_publication` | `publication$doi` |
+#' | [table_column()] | `table_column` | `column$name` |
+#' | [pc_schema()] | `pc_schema` | `schema$size` |
+#' | [pc_statistic()] | `pc_statistic` | `statistic$minimum` |
+#' | [render_object()] | `render_object` | `render$assets` |
+#' | [cube_dimension()] | `cube_dimension` | `dimension$axis` |
+#' | [cube_variable()] | `cube_variable` | `variable$dimensions` |
+#' | [classification_class()] | `classification_class` | `class$value` |
+#' | [classification_bitfield()] | `classification_bitfield` | `bitfield$classes` |
+#' | [stac_summaries()] | `stac_summaries` | `summaries$extra_fields` |
+#' | [validate_stac()] | `stac_validation` | `result$valid`, `result$errors` |
+#' | [stac_extent()] | `Extent` | `extent$spatial`, `extent$temporal` |
 #'
 #' Note that `stac_collection` extends `stac_catalog`, so
-#' `S7::S7_inherits(x, stac_catalog)` is also true for a Collection.
+#' `stac_inherits(x, stac_catalog)` is also true for a Collection.
+#'
+#' ### Dictionaries (use `[[ ]]` to access entries)
+#'
+#' STAC permits arbitrary keys in dictionaries such as an Item's `properties`
+#' and `assets`, and an Asset's `extra_fields`. These containers remain named
+#' lists. Use `[[ ]]` when the key is held in a variable or is not a syntactic
+#' R name; `$` is also available for ordinary literal names:
+#'
+#' ```r
+#' item$properties[["datetime"]]
+#' item$assets[["B4"]]$href
+#' item$assets[["B4"]]$extra_fields[["bands"]]
+#' ```
+#'
+#' Both access styles are idiomatic R: `$` is convenient for known names and
+#' `[[ ]]` is the right choice for computed names.
 #'
 #' ## Printing
 #'
@@ -79,7 +97,7 @@
 #' ```r
 #' library(stacbuildr)
 #'
-#' # 1. Create a STAC Item (S7 object)
+#' # 1. Create a STAC Item (validated S3 object)
 #' item <- stac_item(
 #'   id       = "my-scene",
 #'   geometry = list(type = "Point", coordinates = c(-105, 40)),
@@ -87,7 +105,7 @@
 #'   datetime = "2024-06-01T00:00:00Z"
 #' )
 #'
-#' # 2. Add an asset (S7 object embedded in the item)
+#' # 2. Add an asset (S3 object embedded in the item)
 #' item <- add_asset(
 #'   item,
 #'   key   = "B4",
@@ -96,7 +114,7 @@
 #'   roles = "data"
 #' )
 #'
-#' # 3. Describe the band with the Raster extension (S7 raster_band)
+#' # 3. Describe the band with the Raster extension
 #' band <- raster_band(
 #'   data_type          = "uint16",
 #'   nodata             = 0,
@@ -107,9 +125,11 @@
 #'
 #' item <- add_raster_extension(item, bands = list(band), asset_key = "B4")
 #'
-#' # 4. Access S7 properties with @
-#' item@id
-#' band@scale
+#' # 4. Access known fields with $ and dynamic dictionary entries with [[ ]]
+#' item$id
+#' item$geometry$type
+#' item$assets[["B4"]]$href
+#' band$scale
 #'
 #' # 5. Write to disk
 #' write_item(item, "my-scene.json")

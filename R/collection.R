@@ -118,7 +118,7 @@
 #' * Range with min/max: `list(gsd = list(minimum = 15, maximum = 30))`
 #' * JSON Schema: For complex validation rules
 #'
-#' @return An S7 object of class `stac_collection` (extending `stac_catalog`)
+#' @return An S3 object of class `stac_collection` (extending `stac_catalog`)
 #'   containing the collection metadata. Convert to a plain list for JSON
 #'   serialization with `as.list()`, or write directly to disk using `write_stac()`.
 #'
@@ -212,25 +212,25 @@
 #' cat(collection_json)
 #'
 #' @export
-stac_collection <- S7::new_class(
+stac_collection <- new_stac_class(
   "stac_collection",
   parent = stac_catalog,
   properties = list(
-    license = S7::class_character,
+    license = "character",
     extent = Extent,
-    keywords = S7::new_property(
-      S7::new_union(S7::class_character, NULL),
+    keywords = new_stac_property(
+      new_stac_union("character", NULL),
       default = NULL
     ),
-    providers = S7::new_property(
-      S7::new_union(S7::class_list, NULL),
+    providers = new_stac_property(
+      new_stac_union("list", NULL),
       default = NULL,
       validator = function(value) {
         if (
           !is.null(value) &&
             !all(vapply(
               value,
-              S7::S7_inherits,
+              stac_inherits,
               logical(1),
               class = stac_provider
             ))
@@ -239,9 +239,9 @@ stac_collection <- S7::new_class(
         }
       }
     ),
-    summaries = S7::new_property(S7::class_any, default = NULL),
-    assets = S7::new_property(
-      S7::new_union(S7::class_list, NULL),
+    summaries = new_stac_property("any", default = NULL),
+    assets = new_stac_property(
+      new_stac_union("list", NULL),
       default = NULL
     )
   ),
@@ -274,7 +274,7 @@ stac_collection <- S7::new_class(
     }
 
     # Accept a plain list for backwards compatibility, converting to Extent
-    if (!S7::S7_inherits(extent, Extent)) {
+    if (!stac_inherits(extent, Extent)) {
       if (
         !is.list(extent) || !all(c("spatial", "temporal") %in% names(extent))
       ) {
@@ -287,7 +287,7 @@ stac_collection <- S7::new_class(
         temporal = TemporalExtent(interval = extent$temporal$interval)
       )
     }
-    S7::new_object(
+    new_stac_object(
       stac_catalog(
         id = id,
         description = description,
@@ -308,49 +308,51 @@ stac_collection <- S7::new_class(
     )
   },
   validator = function(self) {
-    if (length(self@license) == 0 || nchar(self@license) == 0) {
+    if (length(self$license) == 0 || nchar(self$license) == 0) {
       return("'license' must be a non-empty string")
     }
-    if (self@type != "Collection") {
+    if (self$type != "Collection") {
       return("'type' must be 'Collection'")
     }
     NULL
   }
 )
 
-S7::method(as.list, stac_collection) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.stac_collection <- function(x, ...) {
   out <- list(
-    type = x@type,
-    stac_version = x@stac_version,
-    id = x@id,
-    description = x@description,
-    license = x@license,
-    extent = as.list(x@extent)
+    type = x$type,
+    stac_version = x$stac_version,
+    id = x$id,
+    description = x$description,
+    license = x$license,
+    extent = as.list(x$extent)
   )
-  if (!is.null(x@title)) {
-    out$title <- x@title
+  if (!is.null(x$title)) {
+    out$title <- x$title
   }
-  if (!is.null(x@keywords) && length(x@keywords) > 0) {
-    out$keywords <- as_json_array(x@keywords)
+  if (!is.null(x$keywords) && length(x$keywords) > 0) {
+    out$keywords <- as_json_array(x$keywords)
   }
-  if (!is.null(x@providers) && length(x@providers) > 0) {
-    out$providers <- stac_json_value(x@providers)
+  if (!is.null(x$providers) && length(x$providers) > 0) {
+    out$providers <- stac_json_value(x$providers)
   }
-  if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
-    out$stac_extensions <- as.list(x@stac_extensions)
+  if (!is.null(x$stac_extensions) && length(x$stac_extensions) > 0) {
+    out$stac_extensions <- as.list(x$stac_extensions)
   }
-  out$links <- x@links
-  if (!is.null(x@summaries) && length(x@summaries@extra_fields) > 0) {
-    out$summaries <- stac_json_value(x@summaries)
+  out$links <- stac_json_value(x$links)
+  if (!is.null(x$summaries) && length(x$summaries$extra_fields) > 0) {
+    out$summaries <- stac_json_value(x$summaries)
   }
-  if (!is.null(x@assets) && length(x@assets) > 0) {
-    out$assets <- stac_json_value(x@assets)
+  if (!is.null(x$assets) && length(x$assets) > 0) {
+    out$assets <- stac_json_value(x$assets)
   }
-  if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
-    out$conformsTo <- as_json_array(x@conformsTo)
+  if (!is.null(x$conformsTo) && length(x$conformsTo) > 0) {
+    out$conformsTo <- as_json_array(x$conformsTo)
   }
-  if (length(x@extra_fields) > 0) {
-    out <- c(out, stac_json_value(x@extra_fields))
+  if (length(x$extra_fields) > 0) {
+    out <- c(out, stac_json_value(x$extra_fields))
   }
   out
 }
@@ -365,20 +367,22 @@ S7::method(as.list, stac_collection) <- function(x, ...) {
 #'   `c("providers", "summaries")`. Defaults to the `stacbuildr.print.expand`
 #'   option.
 #' @noRd
-S7::method(print, stac_collection) <- function(x, ..., expand = NULL) {
-  stac_print_header(paste("STAC", x@type))
-  stac_print_field("id", x@id, stac_style_id)
+#'
+#' @exportS3Method
+print.stac_collection <- function(x, ..., expand = NULL) {
+  stac_print_header(paste("STAC", x$type))
+  stac_print_field("id", x$id, stac_style_id)
 
-  if (!is.null(x@title)) {
-    stac_print_field("title", x@title)
+  if (!is.null(x$title)) {
+    stac_print_field("title", x$title)
   }
 
-  stac_print_field("stac_version", x@stac_version, stac_style_muted)
-  stac_print_field("description", stac_truncate(x@description))
-  stac_print_field("license", x@license, stac_style_key)
+  stac_print_field("stac_version", x$stac_version, stac_style_muted)
+  stac_print_field("description", stac_truncate(x$description))
+  stac_print_field("license", x$license, stac_style_key)
 
   # Spatial extent - show first bbox
-  bbox <- x@extent@spatial@bbox[[1]]
+  bbox <- x$extent$spatial$bbox[[1]]
   stac_print_field(
     "bbox",
     sprintf(
@@ -391,24 +395,24 @@ S7::method(print, stac_collection) <- function(x, ..., expand = NULL) {
   )
 
   # Temporal extent - show first interval
-  interval <- x@extent@temporal@interval[[1]]
+  interval <- x$extent$temporal$interval[[1]]
   t_start <- if (is.null(interval[[1]])) ".." else interval[[1]]
   t_end <- if (is.null(interval[[2]])) ".." else interval[[2]]
   stac_print_field("datetime", sprintf("%s / %s", t_start, t_end))
 
-  if (!is.null(x@keywords) && length(x@keywords) > 0) {
+  if (!is.null(x$keywords) && length(x$keywords) > 0) {
     stac_print_field(
       "keywords",
       stac_truncate(
-        paste(x@keywords, collapse = ", ")
+        paste(x$keywords, collapse = ", ")
       )
     )
   }
 
-  extensions <- x@stac_extensions %||% character(0)
-  providers <- x@providers %||% list()
-  summaries <- if (is.null(x@summaries)) list() else x@summaries@extra_fields
-  assets <- x@assets %||% list()
+  extensions <- x$stac_extensions %||% character(0)
+  providers <- x$providers %||% list()
+  summaries <- if (is.null(x$summaries)) list() else x$summaries$extra_fields
+  assets <- x$assets %||% list()
   children <- attr(x, "stac_children") %||% list()
   items <- attr(x, "stac_items") %||% list()
 
@@ -419,7 +423,7 @@ S7::method(print, stac_collection) <- function(x, ..., expand = NULL) {
         length(providers),
         summary = stac_preview(vapply(
           providers,
-          function(p) p@name,
+          function(p) p$name,
           character(1)
         )),
         lines = function() stac_provider_lines(providers),
@@ -455,13 +459,13 @@ S7::method(print, stac_collection) <- function(x, ..., expand = NULL) {
     },
     stac_print_section(
       "links",
-      length(x@links),
+      length(x$links),
       summary = stac_preview(vapply(
-        x@links,
-        function(l) l$rel %||% "",
+        x$links,
+        function(l) l$rel,
         character(1)
       )),
-      lines = function() stac_link_lines(x@links),
+      lines = function() stac_link_lines(x$links),
       expanded = stac_expanded(expand, "links")
     ),
     if (length(children) > 0) {
@@ -477,7 +481,7 @@ S7::method(print, stac_collection) <- function(x, ..., expand = NULL) {
       stac_print_section(
         "items",
         length(items),
-        summary = stac_preview(vapply(items, function(i) i@id, character(1))),
+        summary = stac_preview(vapply(items, function(i) i$id, character(1))),
         lines = function() stac_item_lines(items),
         expanded = stac_expanded(expand, "items")
       )
@@ -504,7 +508,7 @@ S7::method(print, stac_collection) <- function(x, ..., expand = NULL) {
 #'   intervals: `list("start", NULL)`. Times should be in ISO 8601 format.
 #'   Note: use `list()` not `c()` - `c()` drops `NULL`, producing an invalid interval.
 #'
-#' @return An `Extent` S7 object formatted for STAC Collections.
+#' @return An `Extent` S3 object formatted for STAC Collections.
 #'
 #' @examples
 #' # Simple global extent
@@ -549,8 +553,8 @@ stac_extent <- function(spatial_bbox, temporal_interval) {
 #'   "producer", "licensor", "processor", "host".
 #' @param url (character, optional) Homepage URL for the provider.
 #'
-#' @return An S7 object representing a STAC Provider. Access its properties
-#'   with `@`, for example `provider@name` and `provider@roles`.
+#' @return An S3 object representing a STAC Provider. Access its properties
+#'   with `$`, for example `provider$name` and `provider$roles`.
 #'
 #' @examples
 #' provider <- stac_provider(
@@ -559,24 +563,24 @@ stac_extent <- function(spatial_bbox, temporal_interval) {
 #'   roles = c("producer", "licensor", "host"),
 #'   url = "https://www.usgs.gov"
 #' )
-#' provider@name
-#' provider@roles
+#' provider$name
+#' provider$roles
 #'
 #' @export
-stac_provider <- S7::new_class(
+stac_provider <- new_stac_class(
   "stac_provider",
   properties = list(
-    name = S7::new_property(
-      S7::class_character,
+    name = new_stac_property(
+      "character",
       validator = function(value) {
         if (length(value) != 1L || is.na(value) || !nzchar(value)) {
           "must be a non-empty string"
         }
       }
     ),
-    description = S7::new_union(S7::class_character, NULL),
-    roles = S7::new_property(
-      S7::new_union(S7::class_character, NULL),
+    description = new_stac_union("character", NULL),
+    roles = new_stac_property(
+      new_stac_union("character", NULL),
       validator = function(value) {
         invalid <- setdiff(
           value %||% character(0),
@@ -587,14 +591,14 @@ stac_provider <- S7::new_class(
         }
       }
     ),
-    url = S7::new_union(S7::class_character, NULL)
+    url = new_stac_union("character", NULL)
   ),
   constructor = function(name, description = NULL, roles = NULL, url = NULL) {
     if (is.list(roles)) {
       roles <- unlist(roles, use.names = FALSE)
     }
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       name = name,
       description = description,
       roles = roles,
@@ -603,10 +607,12 @@ stac_provider <- S7::new_class(
   }
 )
 
-S7::method(as.list, stac_provider) <- function(x, ...) {
-  out <- list(name = x@name)
+#'
+#' @exportS3Method
+as.list.stac_provider <- function(x, ...) {
+  out <- list(name = x$name)
   for (field in c("description", "roles", "url")) {
-    value <- S7::prop(x, field)
+    value <- x[[field]]
     if (!is.null(value)) {
       out[[field]] <- if (field == "roles") as_json_array(value) else value
     }
@@ -615,7 +621,7 @@ S7::method(as.list, stac_provider) <- function(x, ...) {
 }
 
 as_stac_provider <- function(x) {
-  if (S7::S7_inherits(x, stac_provider)) {
+  if (stac_inherits(x, stac_provider)) {
     return(x)
   }
   if (!is.list(x) || is.null(x$name)) {
@@ -649,24 +655,26 @@ normalize_providers <- function(x) {
 #' @return `x`, invisibly.
 #'
 #' @noRd
-S7::method(print, stac_provider) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.stac_provider <- function(x, ...) {
   stac_print_header("STAC Provider")
-  stac_print_field("name", x@name, stac_style_id)
+  stac_print_field("name", x$name, stac_style_id)
 
-  if (!is.null(x@roles)) {
+  if (!is.null(x$roles)) {
     stac_print_field(
       "roles",
       sprintf(
         "[%s]",
-        paste(x@roles, collapse = ", ")
+        paste(x$roles, collapse = ", ")
       )
     )
   }
-  if (!is.null(x@url)) {
-    stac_print_field("url", x@url, stac_style_url)
+  if (!is.null(x$url)) {
+    stac_print_field("url", x$url, stac_style_url)
   }
-  if (!is.null(x@description)) {
-    stac_print_field("description", x@description)
+  if (!is.null(x$description)) {
+    stac_print_field("description", x$description)
   }
 
   invisible(x)
@@ -684,8 +692,8 @@ S7::method(print, stac_provider) <- function(x, ...) {
 #'   * A list with `minimum` and `maximum` elements
 #'   * A nested list for complex properties
 #'
-#' @return A `stac_summaries` S7 object. Summary fields are stored in
-#'   `summaries@extra_fields`.
+#' @return A `stac_summaries` S3 object. Summary fields are stored in
+#'   `summaries$extra_fields`.
 #'
 #' @examples
 #' summaries <- stac_summaries(
@@ -699,27 +707,29 @@ S7::method(print, stac_provider) <- function(x, ...) {
 #' )
 #'
 #' @export
-stac_summaries <- S7::new_class(
+stac_summaries <- new_stac_class(
   "stac_summaries",
   properties = list(
-    extra_fields = S7::new_property(S7::class_list, default = list())
+    extra_fields = new_stac_property("list", default = list())
   ),
   constructor = function(...) {
     # Atomic summaries represent sets of values and must remain JSON arrays.
     summaries <- lapply(list(...), as_json_array)
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       extra_fields = summaries
     )
   }
 )
 
-S7::method(as.list, stac_summaries) <- function(x, ...) {
-  x@extra_fields
+#'
+#' @exportS3Method
+as.list.stac_summaries <- function(x, ...) {
+  x$extra_fields
 }
 
 as_stac_summaries <- function(x) {
-  if (is.null(x) || S7::S7_inherits(x, stac_summaries)) {
+  if (is.null(x) || stac_inherits(x, stac_summaries)) {
     return(x)
   }
   if (!is.list(x)) {
@@ -737,10 +747,12 @@ as_stac_summaries <- function(x) {
 #' @return `x`, invisibly.
 #'
 #' @noRd
-S7::method(print, stac_summaries) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.stac_summaries <- function(x, ...) {
   stac_print_header("STAC Summaries")
 
-  fields <- x@extra_fields
+  fields <- x$extra_fields
   if (length(fields) == 0) {
     stac_print_empty()
     return(invisible(x))
@@ -817,7 +829,7 @@ S7::method(print, stac_summaries) <- function(x, ...) {
 #'
 #' @export
 add_item_assets <- function(collection) {
-  if (!S7::S7_inherits(collection, stac_collection)) {
+  if (!stac_inherits(collection, stac_collection)) {
     cli::cli_abort("'collection' must be a stac_collection object")
   }
 
@@ -828,15 +840,15 @@ add_item_assets <- function(collection) {
     )
   }
 
-  all_keys <- unique(unlist(lapply(items, function(item) names(item@assets))))
+  all_keys <- unique(unlist(lapply(items, function(item) names(item$assets))))
 
   item_assets <- lapply(stats::setNames(all_keys, all_keys), function(key) {
     for (item in items) {
-      asset <- item@assets[[key]]
+      asset <- item$assets[[key]]
       if (!is.null(asset)) {
         item_asset <- list()
         for (field in c("title", "description", "type", "roles")) {
-          value <- S7::prop(asset, field)
+          value <- asset[[field]]
           if (!is.null(value)) {
             item_asset[[field]] <- if (field == "roles") {
               as_json_array(value)
@@ -845,7 +857,7 @@ add_item_assets <- function(collection) {
             }
           }
         }
-        item_asset <- c(item_asset, asset@extra_fields)
+        item_asset <- c(item_asset, asset$extra_fields)
         if (!is.null(item_asset$bands)) {
           item_asset$bands <- lapply(item_asset$bands, function(band) {
             band[setdiff(names(band), "statistics")]
@@ -859,17 +871,17 @@ add_item_assets <- function(collection) {
 
   item_assets <- Filter(Negate(is.null), item_assets)
 
-  collection@extra_fields$item_assets <- item_assets
+  collection$extra_fields[["item_assets"]] <- item_assets
 
   # `item_assets` moved into the Collection spec in STAC 1.1.0, which
   # deprecated the extension. Only declare it for older collections.
-  if (utils::compareVersion(collection@stac_version, "1.1.0") < 0) {
+  if (utils::compareVersion(collection$stac_version, "1.1.0") < 0) {
     ext_uri <- "https://stac-extensions.github.io/item-assets/v1.0.0/schema.json"
     if (
-      is.null(collection@stac_extensions) ||
-        !ext_uri %in% collection@stac_extensions
+      is.null(collection$stac_extensions) ||
+        !ext_uri %in% collection$stac_extensions
     ) {
-      collection@stac_extensions <- c(collection@stac_extensions, ext_uri)
+      collection$stac_extensions <- c(collection$stac_extensions, ext_uri)
     }
   }
 

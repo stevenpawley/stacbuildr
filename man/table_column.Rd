@@ -20,7 +20,7 @@ recommended to use those type names (e.g. \code{"int64"}, \code{"double"},
 \item{...}{Additional fields for the column object.}
 }
 \value{
-A \code{table_column} S7 object. Access fields with \code{@}.
+A \code{table_column} S3 object. Access fields with \code{$}.
 }
 \description{
 Creates a column object for use with the Table Extension. Describes a

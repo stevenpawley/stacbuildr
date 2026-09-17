@@ -21,10 +21,10 @@ skip_if_no_schema_validation <- function() {
 expect_valid_stac <- function(object) {
   result <- validate_stac_schema(object)
   expect_true(
-    result@valid,
+    result$valid,
     info = paste0(
       "schema errors: ",
-      paste(result@errors, collapse = "; ")
+      paste(result$errors, collapse = "; ")
     )
   )
   invisible(result)

@@ -26,7 +26,7 @@ stac_item(
 should be unique within the Collection that contains the Item. It's
 recommended to use the data provider's existing identification scheme.}
 
-\item{geometry}{(list, required) Defines the full footprint of the asset
+\item{geometry}{(stac_geometry or list, required) Defines the full footprint of the asset
 represented by this Item, formatted according to RFC 7946, section 3.1 (for
 geometry) or section 3.2 (if no geometry). Must be a valid GeoJSON
 geometry object (e.g., Point, Polygon, MultiPolygon) or \code{NULL} for non-spatial
@@ -56,7 +56,8 @@ downloaded or accessed. Each asset should be created with \code{stac_asset()}.
 Keys are asset identifiers (e.g., "visual", "thumbnail"). Default is an
 empty list.}
 
-\item{links}{(list, optional) List of link objects to resources and related URLs.
+\item{links}{(list, optional) List of \code{\link[=stac_link]{stac_link()}} objects or plain link
+lists. Plain lists are converted to S3 link objects.
 Items are strongly recommended to provide a link to a STAC Collection.
 Use \code{add_link()} or related helper functions to add links after creation.
 Default is an empty list.}
@@ -88,7 +89,7 @@ a time range. Must be in UTC RFC 3339 format. Only used when \code{datetime} is 
 be merged with the \code{properties} parameter.}
 }
 \value{
-An S7 object of class \code{stac_item} containing the Item metadata
+An S3 object of class \code{stac_item} containing the Item metadata
 formatted as a GeoJSON Feature. Convert to a plain list for JSON
 serialization with \code{as.list()}, or write directly to disk using
 \code{write_item()}.

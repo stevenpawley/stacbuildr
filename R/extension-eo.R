@@ -178,7 +178,7 @@ add_eo_extension <- function(
   snow_cover = NULL,
   asset_key = NULL
 ) {
-  if (!S7::S7_inherits(item, stac_item)) {
+  if (!stac_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -198,21 +198,21 @@ add_eo_extension <- function(
   # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/eo/v2.0.0/schema.json"
 
-  if (is.null(item@stac_extensions)) {
-    item@stac_extensions <- character(0)
+  if (is.null(item$stac_extensions)) {
+    item$stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item@stac_extensions) {
-    item@stac_extensions <- c(item@stac_extensions, ext_uri)
+  if (!ext_uri %in% item$stac_extensions) {
+    item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
 
   # Add coverage properties to item properties (not assets)
   if (!is.null(cloud_cover)) {
-    item@properties$`eo:cloud_cover` <- cloud_cover
+    item$properties[["eo:cloud_cover"]] <- cloud_cover
   }
 
   if (!is.null(snow_cover)) {
-    item@properties$`eo:snow_cover` <- snow_cover
+    item$properties[["eo:snow_cover"]] <- snow_cover
   }
 
   # Add bands if provided
@@ -254,7 +254,7 @@ add_eo_extension <- function(
 #' @param ... Additional fields for the band object. Can include fields from other
 #'   extensions like raster fields (`nodata`, `data_type`, `raster:scale`, etc.).
 #'
-#' @return An `eo_band` S7 object. Access fields with `@`.
+#' @return An `eo_band` S3 object. Access fields with `$`.
 #'   The EO-specific fields are written with an `eo:` prefix, as required by
 #'   version 2.0.0 of the extension; `name` and `description` come from STAC
 #'   Common Metadata and stay unprefixed.
@@ -321,16 +321,16 @@ add_eo_extension <- function(
 #' )
 #'
 #' @export
-eo_band <- S7::new_class(
+eo_band <- new_stac_class(
   "eo_band",
   properties = list(
-    name = S7::class_character,
-    common_name = S7::class_character,
-    description = S7::class_character,
-    center_wavelength = S7::class_numeric,
-    full_width_half_max = S7::class_numeric,
-    solar_illumination = S7::class_numeric,
-    extra_fields = S7::new_property(S7::class_list, default = list())
+    name = "character",
+    common_name = "character",
+    description = "character",
+    center_wavelength = "numeric",
+    full_width_half_max = "numeric",
+    solar_illumination = "numeric",
+    extra_fields = new_stac_property("list", default = list())
   ),
   constructor = function(
     name = NULL,
@@ -386,8 +386,8 @@ eo_band <- S7::new_class(
       }
     }
 
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       name = name %||% character(0),
       common_name = common_name %||% character(0),
       description = description %||% character(0),
@@ -399,27 +399,29 @@ eo_band <- S7::new_class(
   }
 )
 
-S7::method(as.list, eo_band) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.eo_band <- function(x, ...) {
   fields <- list()
-  if (length(x@name) > 0L) {
-    fields$name <- x@name
+  if (length(x$name) > 0L) {
+    fields$name <- x$name
   }
-  if (length(x@description) > 0L) {
-    fields$description <- x@description
+  if (length(x$description) > 0L) {
+    fields$description <- x$description
   }
-  if (length(x@common_name) > 0L) {
-    fields$`eo:common_name` <- x@common_name
+  if (length(x$common_name) > 0L) {
+    fields$`eo:common_name` <- x$common_name
   }
-  if (length(x@center_wavelength) > 0L) {
-    fields$`eo:center_wavelength` <- x@center_wavelength
+  if (length(x$center_wavelength) > 0L) {
+    fields$`eo:center_wavelength` <- x$center_wavelength
   }
-  if (length(x@full_width_half_max) > 0L) {
-    fields$`eo:full_width_half_max` <- x@full_width_half_max
+  if (length(x$full_width_half_max) > 0L) {
+    fields$`eo:full_width_half_max` <- x$full_width_half_max
   }
-  if (length(x@solar_illumination) > 0L) {
-    fields$`eo:solar_illumination` <- x@solar_illumination
+  if (length(x$solar_illumination) > 0L) {
+    fields$`eo:solar_illumination` <- x$solar_illumination
   }
-  c(fields, x@extra_fields)
+  c(fields, x$extra_fields)
 }
 
 
@@ -885,30 +887,32 @@ planetscope_bands <- function() {
 #' @param ... Additional arguments (ignored)
 #'
 #' @noRd
-S7::method(print, eo_band) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.eo_band <- function(x, ...) {
   stac_print_header("EO Band")
   fields <- c(
     compact_nulls(list(
-      name = if (length(x@name)) x@name else NULL,
-      description = if (length(x@description)) x@description else NULL,
-      "eo:common_name" = if (length(x@common_name)) x@common_name else NULL,
-      "eo:center_wavelength" = if (length(x@center_wavelength)) {
-        x@center_wavelength
+      name = if (length(x$name)) x$name else NULL,
+      description = if (length(x$description)) x$description else NULL,
+      "eo:common_name" = if (length(x$common_name)) x$common_name else NULL,
+      "eo:center_wavelength" = if (length(x$center_wavelength)) {
+        x$center_wavelength
       } else {
         NULL
       },
-      "eo:full_width_half_max" = if (length(x@full_width_half_max)) {
-        x@full_width_half_max
+      "eo:full_width_half_max" = if (length(x$full_width_half_max)) {
+        x$full_width_half_max
       } else {
         NULL
       },
-      "eo:solar_illumination" = if (length(x@solar_illumination)) {
-        x@solar_illumination
+      "eo:solar_illumination" = if (length(x$solar_illumination)) {
+        x$solar_illumination
       } else {
         NULL
       }
     )),
-    x@extra_fields
+    x$extra_fields
   )
   stac_print_list_fields(
     fields,

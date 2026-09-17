@@ -90,7 +90,7 @@ add_datacube_extension <- function(
   variables = NULL,
   asset_key = NULL
 ) {
-  if (!S7::S7_inherits(item, stac_item)) {
+  if (!stac_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -128,12 +128,12 @@ add_datacube_extension <- function(
   # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/datacube/v2.3.0/schema.json"
 
-  if (is.null(item@stac_extensions)) {
-    item@stac_extensions <- character(0)
+  if (is.null(item$stac_extensions)) {
+    item$stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item@stac_extensions) {
-    item@stac_extensions <- c(item@stac_extensions, ext_uri)
+  if (!ext_uri %in% item$stac_extensions) {
+    item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
 
   fields <- list()
@@ -146,19 +146,19 @@ add_datacube_extension <- function(
 
   if (!is.null(asset_key)) {
     # Add to specific asset
-    if (is.null(item@assets[[asset_key]])) {
+    if (is.null(item$assets[[asset_key]])) {
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
 
     for (field_name in names(fields)) {
-      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[
+      item$assets[[asset_key]]$extra_fields[[field_name]] <- fields[[
         field_name
       ]]
     }
   } else {
     # Add to item properties
     for (field_name in names(fields)) {
-      item@properties[[field_name]] <- fields[[field_name]]
+      item$properties[[field_name]] <- fields[[field_name]]
     }
   }
 
@@ -182,7 +182,7 @@ validate_cube_named_list <- function(x, arg_name, class_name) {
   }
 
   cls <- get(class_name, envir = asNamespace("stacbuildr"))
-  not_cls <- !vapply(x, S7::S7_inherits, logical(1), cls)
+  not_cls <- !vapply(x, stac_inherits, logical(1), cls)
   if (any(not_cls)) {
     cli::cli_abort(
       "All elements of '{arg_name}' must be {class_name} objects"
@@ -239,7 +239,7 @@ validate_cube_named_list <- function(x, arg_name, class_name) {
 #'   `"Polygon"`).
 #' @param ... Additional fields for the dimension object.
 #'
-#' @return A `cube_dimension` S7 object. Access fields with `@`.
+#' @return A `cube_dimension` S3 object. Access fields with `$`.
 #'
 #' @details
 #' ## Dimension Types
@@ -280,62 +280,62 @@ validate_cube_named_list <- function(x, arg_name, class_name) {
 #' )
 #'
 #' @export
-cube_dimension <- S7::new_class(
+cube_dimension <- new_stac_class(
   "cube_dimension",
   properties = list(
-    type = S7::new_property(
-      S7::class_character,
+    type = new_stac_property(
+      "character",
       validator = function(value) {
         if (length(value) != 1L || is.na(value)) {
           "must be a single character string"
         }
       }
     ),
-    extent = S7::class_any,
-    values = S7::class_any,
-    step = S7::class_any,
-    unit = S7::class_any,
-    reference_system = S7::class_any,
-    description = S7::class_any,
-    axis = S7::class_any,
-    axes = S7::class_any,
-    bbox = S7::class_any,
-    geometry_types = S7::class_any,
-    extra_fields = S7::new_property(S7::class_list, default = list())
+    extent = "any",
+    values = "any",
+    step = "any",
+    unit = "any",
+    reference_system = "any",
+    description = "any",
+    axis = "any",
+    axes = "any",
+    bbox = "any",
+    geometry_types = "any",
+    extra_fields = new_stac_property("list", default = list())
   ),
   validator = function(self) {
-    if (identical(self@type, "spatial")) {
+    if (identical(self$type, "spatial")) {
       if (
-        !is.character(self@axis) ||
-          length(self@axis) != 1L ||
-          is.na(self@axis) ||
-          !self@axis %in% c("x", "y", "z")
+        !is.character(self$axis) ||
+          length(self$axis) != 1L ||
+          is.na(self$axis) ||
+          !self$axis %in% c("x", "y", "z")
       ) {
         return("@axis must be one of 'x', 'y', or 'z' when @type = 'spatial'")
       }
-      if (self@axis %in% c("x", "y") && length(self@extent) != 2L) {
+      if (self$axis %in% c("x", "y") && length(self$extent) != 2L) {
         return(
           "@extent (length 2) is required for horizontal spatial dimensions"
         )
       }
       if (
-        identical(self@axis, "z") &&
-          is.null(self@extent) &&
-          is.null(self@values)
+        identical(self$axis, "z") &&
+          is.null(self$extent) &&
+          is.null(self$values)
       ) {
         return(
           "Either @extent or @values is required for vertical ('z') spatial dimensions"
         )
       }
-    } else if (identical(self@type, "geometry")) {
-      if (is.null(self@bbox)) {
+    } else if (identical(self$type, "geometry")) {
+      if (is.null(self$bbox)) {
         return("@bbox is required when @type = 'geometry'")
       }
-    } else if (identical(self@type, "temporal")) {
-      if (length(self@extent) != 2L) {
+    } else if (identical(self$type, "temporal")) {
+      if (length(self$extent) != 2L) {
         return("@extent (length 2) is required when @type = 'temporal'")
       }
-    } else if (is.null(self@extent) && is.null(self@values)) {
+    } else if (is.null(self$extent) && is.null(self$values)) {
       return("Either @extent or @values is required for additional dimensions")
     }
   },
@@ -357,8 +357,8 @@ cube_dimension <- S7::new_class(
       cli::cli_abort("'type' is required")
     }
 
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       type = type,
       extent = extent,
       values = if (is.null(values)) NULL else unlist(values, use.names = FALSE),
@@ -391,25 +391,27 @@ cube_dimension <- S7::new_class(
   }
 )
 
-S7::method(as.list, cube_dimension) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.cube_dimension <- function(x, ...) {
   fields <- compact_nulls(list(
-    type = x@type,
-    axis = x@axis,
-    axes = if (is.null(x@axes)) NULL else as_json_array(x@axes),
-    bbox = x@bbox,
-    geometry_types = if (is.null(x@geometry_types)) {
+    type = x$type,
+    axis = x$axis,
+    axes = if (is.null(x$axes)) NULL else as_json_array(x$axes),
+    bbox = x$bbox,
+    geometry_types = if (is.null(x$geometry_types)) {
       NULL
     } else {
-      as_json_array(x@geometry_types)
+      as_json_array(x$geometry_types)
     },
-    extent = x@extent,
-    values = if (is.null(x@values)) NULL else as_json_array(x@values),
-    step = x@step,
-    unit = x@unit,
-    reference_system = x@reference_system,
-    description = x@description
+    extent = x$extent,
+    values = if (is.null(x$values)) NULL else as_json_array(x$values),
+    step = x$step,
+    unit = x$unit,
+    reference_system = x$reference_system,
+    description = x$description
   ))
-  c(fields, x@extra_fields)
+  c(fields, x$extra_fields)
 }
 
 
@@ -419,23 +421,25 @@ S7::method(as.list, cube_dimension) <- function(x, ...) {
 #' @param ... Additional arguments (ignored).
 #'
 #' @noRd
-S7::method(print, cube_dimension) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.cube_dimension <- function(x, ...) {
   stac_print_header("Datacube Dimension")
   fields <- c(
     compact_nulls(list(
-      type = x@type,
-      axis = x@axis,
-      axes = x@axes,
-      bbox = x@bbox,
-      geometry_types = x@geometry_types,
-      extent = x@extent,
-      values = x@values,
-      step = x@step,
-      unit = x@unit,
-      reference_system = x@reference_system,
-      description = x@description
+      type = x$type,
+      axis = x$axis,
+      axes = x$axes,
+      bbox = x$bbox,
+      geometry_types = x$geometry_types,
+      extent = x$extent,
+      values = x$values,
+      step = x$step,
+      unit = x$unit,
+      reference_system = x$reference_system,
+      description = x$description
     )),
-    x@extra_fields
+    x$extra_fields
   )
   stac_print_list_fields(fields, styles = list(type = stac_style_key))
   invisible(x)
@@ -470,7 +474,7 @@ S7::method(print, cube_dimension) <- function(x, ...) {
 #'   representation.
 #' @param ... Additional fields for the variable object.
 #'
-#' @return A `cube_variable` S7 object. Access fields with `@`.
+#' @return A `cube_variable` S3 object. Access fields with `$`.
 #'
 #' @examples
 #' temperature <- cube_variable(
@@ -487,11 +491,11 @@ S7::method(print, cube_dimension) <- function(x, ...) {
 #' )
 #'
 #' @export
-cube_variable <- S7::new_class(
+cube_variable <- new_stac_class(
   "cube_variable",
   properties = list(
-    type = S7::new_property(
-      S7::class_character,
+    type = new_stac_property(
+      "character",
       validator = function(value) {
         if (
           length(value) != 1L ||
@@ -502,14 +506,14 @@ cube_variable <- S7::new_class(
         }
       }
     ),
-    dimensions = S7::class_character,
-    extent = S7::class_any,
-    values = S7::class_any,
-    unit = S7::class_any,
-    nodata = S7::class_any,
-    data_type = S7::class_any,
-    description = S7::class_any,
-    extra_fields = S7::new_property(S7::class_list, default = list())
+    dimensions = "character",
+    extent = "any",
+    values = "any",
+    unit = "any",
+    nodata = "any",
+    data_type = "any",
+    description = "any",
+    extra_fields = new_stac_property("list", default = list())
   ),
   constructor = function(
     type,
@@ -526,8 +530,8 @@ cube_variable <- S7::new_class(
       cli::cli_abort("'type' is required")
     }
 
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       type = type,
       dimensions = dimensions,
       extent = extent,
@@ -541,18 +545,20 @@ cube_variable <- S7::new_class(
   }
 )
 
-S7::method(as.list, cube_variable) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.cube_variable <- function(x, ...) {
   fields <- compact_nulls(list(
-    dimensions = as_json_array(x@dimensions),
-    type = x@type,
-    extent = x@extent,
-    values = if (is.null(x@values)) NULL else as_json_array(x@values),
-    unit = x@unit,
-    nodata = x@nodata,
-    data_type = x@data_type,
-    description = x@description
+    dimensions = as_json_array(x$dimensions),
+    type = x$type,
+    extent = x$extent,
+    values = if (is.null(x$values)) NULL else as_json_array(x$values),
+    unit = x$unit,
+    nodata = x$nodata,
+    data_type = x$data_type,
+    description = x$description
   ))
-  c(fields, x@extra_fields)
+  c(fields, x$extra_fields)
 }
 
 
@@ -562,20 +568,22 @@ S7::method(as.list, cube_variable) <- function(x, ...) {
 #' @param ... Additional arguments (ignored).
 #'
 #' @noRd
-S7::method(print, cube_variable) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.cube_variable <- function(x, ...) {
   stac_print_header("Datacube Variable")
   fields <- c(
     compact_nulls(list(
-      dimensions = x@dimensions,
-      type = x@type,
-      extent = x@extent,
-      values = x@values,
-      unit = x@unit,
-      nodata = x@nodata,
-      data_type = x@data_type,
-      description = x@description
+      dimensions = x$dimensions,
+      type = x$type,
+      extent = x$extent,
+      values = x$values,
+      unit = x$unit,
+      nodata = x$nodata,
+      data_type = x$data_type,
+      description = x$description
     )),
-    x@extra_fields
+    x$extra_fields
   )
   stac_print_list_fields(fields, styles = list(type = stac_style_key))
   invisible(x)

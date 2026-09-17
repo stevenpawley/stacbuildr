@@ -20,14 +20,14 @@
 #'   metadata such as `"bands"` and extension-specific properties like
 #'   `"proj:shape"`, etc.
 #'
-#' @return An S7 asset. Access core fields with `asset@href` and arbitrary
-#'   metadata with `asset@extra_fields`.
+#' @return An S3 asset. Access core fields with `asset$href` and arbitrary
+#'   metadata with `asset$extra_fields`.
 #'
 #' @details
 #' `roles` is a character vector in memory and a JSON array when serialized.
-#' Assets retain their S7 class when attached to Items or Collections and when
+#' Assets retain their S3 class when attached to Items or Collections and when
 #' restored with [read_stac()]. The assets dictionary remains a named list:
-#' use `item@assets[["data"]]@href` to access an asset's URL.
+#' use `item$assets[["data"]]$href` to access an asset's URL.
 #' Use `as.list(asset)` to obtain the JSON-ready representation.
 #'
 #' @examples
@@ -45,8 +45,8 @@
 #'   type = "image/tiff; application=geotiff",
 #'   roles = c("data", "reflectance")
 #' )
-#' asset@href
-#' asset@roles
+#' asset$href
+#' asset$roles
 #'
 #' # Asset with extension properties
 #' asset <- stac_asset(
@@ -64,19 +64,19 @@
 #' )
 #'
 #' @export
-stac_asset <- S7::new_class(
+stac_asset <- new_stac_class(
   "stac_asset",
   properties = list(
-    href = S7::new_property(S7::class_character, validator = function(value) {
+    href = new_stac_property("character", validator = function(value) {
       if (length(value) != 1L || is.na(value) || !nzchar(value)) {
         "'href' must be a non-empty string"
       }
     }),
-    title = S7::new_union(S7::class_character, NULL),
-    description = S7::new_union(S7::class_character, NULL),
-    type = S7::new_union(S7::class_character, NULL),
-    roles = S7::new_union(S7::class_character, NULL),
-    extra_fields = S7::new_property(S7::class_list, default = list())
+    title = new_stac_union("character", NULL),
+    description = new_stac_union("character", NULL),
+    type = new_stac_union("character", NULL),
+    roles = new_stac_union("character", NULL),
+    extra_fields = new_stac_property("list", default = list())
   ),
   constructor = function(
     href,
@@ -89,8 +89,8 @@ stac_asset <- S7::new_class(
     if (is.list(roles)) {
       roles <- unlist(roles, use.names = FALSE)
     }
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       href = href,
       title = title,
       description = description,
@@ -101,28 +101,30 @@ stac_asset <- S7::new_class(
   }
 )
 
-S7::method(as.list, stac_asset) <- function(x, ...) {
-  out <- list(href = x@href)
+#'
+#' @exportS3Method
+as.list.stac_asset <- function(x, ...) {
+  out <- list(href = x$href)
   for (field in c("title", "description", "type", "roles")) {
-    value <- S7::prop(x, field)
+    value <- x[[field]]
     if (!is.null(value)) out[[field]] <- value
   }
-  normalize_common_arrays(c(out, x@extra_fields))
+  normalize_common_arrays(c(out, x$extra_fields))
 }
 
 # Normalize legacy lists and parsed JSON at object boundaries.
 as_stac_asset <- function(x) {
-  if (S7::S7_inherits(x, stac_asset)) {
+  if (stac_inherits(x, stac_asset)) {
     return(x)
   }
-  if (!is.list(x) || is.null(x$href)) {
+  if (!is.list(x) || is.null(x[["href"]])) {
     cli::cli_abort(c(
       "'asset' must be a stac_asset or a list with an 'href' field",
       "i" = "Use stac_asset() to build one."
     ))
   }
-  if (!is.null(x$roles)) {
-    x$roles <- unlist(x$roles, use.names = FALSE)
+  if (!is.null(x[["roles"]])) {
+    x[["roles"]] <- unlist(x[["roles"]], use.names = FALSE)
   }
   do.call(stac_asset, x)
 }
@@ -146,30 +148,32 @@ normalize_assets <- function(x) {
 #' @return `x`, invisibly.
 #'
 #' @noRd
-S7::method(print, stac_asset) <- function(x, ..., expand = NULL) {
+#'
+#' @exportS3Method
+print.stac_asset <- function(x, ..., expand = NULL) {
   stac_print_header("STAC Asset")
-  stac_print_field("href", x@href, stac_style_url)
+  stac_print_field("href", x$href, stac_style_url)
 
-  if (!is.null(x@title)) {
-    stac_print_field("title", x@title)
+  if (!is.null(x$title)) {
+    stac_print_field("title", x$title)
   }
-  if (!is.null(x@type)) {
-    stac_print_field("type", x@type, stac_style_key)
+  if (!is.null(x$type)) {
+    stac_print_field("type", x$type, stac_style_key)
   }
-  if (!is.null(x@roles)) {
+  if (!is.null(x$roles)) {
     stac_print_field(
       "roles",
       sprintf(
         "[%s]",
-        paste(x@roles, collapse = ", ")
+        paste(x$roles, collapse = ", ")
       )
     )
   }
-  if (!is.null(x@description)) {
-    stac_print_field("description", x@description)
+  if (!is.null(x$description)) {
+    stac_print_field("description", x$description)
   }
 
-  fields <- x@extra_fields
+  fields <- x$extra_fields
   collapsed <- if (length(fields) > 0) {
     stac_print_section(
       "fields",
@@ -236,7 +240,7 @@ add_asset <- function(
   roles = NULL,
   ...
 ) {
-  if (!S7::S7_inherits(item, stac_item)) {
+  if (!stac_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -260,12 +264,12 @@ add_asset <- function(
   }
 
   # Initialize the assets list if it doesn't exist in the item
-  if (is.null(item@assets)) {
-    item@assets <- list()
+  if (is.null(item$assets)) {
+    item$assets <- list()
   }
 
   # Assign the asset to the specified key in the item's assets
-  item@assets[[key]] <- asset
+  item$assets[[key]] <- asset
 
   return(item)
 }
