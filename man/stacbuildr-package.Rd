@@ -11,39 +11,57 @@ STAC Catalogs, Collections, and Items, including support for common STAC
 extensions (Raster, EO, Classification, Scientific).
 \subsection{Object Types}{
 
-The package uses \strong{S7 classes} for core STAC structures and metadata helper
-objects.
-\subsection{S7 Classes (use \code{@} to access properties)}{
+The package uses validated \strong{S3 classes} for core STAC structures and
+metadata helper objects.
+\subsection{S3 objects (use \code{$} to access fields)}{
 
-The primary STAC document types and most extension helper objects are S7
-objects. Use the \code{@} operator to read or modify their properties:\tabular{lll}{
+The primary STAC document types and most extension helper objects are S3
+objects backed by named lists. Use \code{$} to read or modify declared fields:\tabular{lll}{
    Constructor \tab Class \tab Example access \cr
-   \code{\link[=stac_asset]{stac_asset()}} \tab \code{stac_asset} \tab \code{asset@href}, \code{asset@extra_fields} \cr
-   \code{\link[=stac_provider]{stac_provider()}} \tab \code{stac_provider} \tab \code{provider@name}, \code{provider@roles} \cr
-   \code{\link[=stac_item]{stac_item()}} \tab \code{stac_item} \tab \code{item@id}, \code{item@assets} \cr
-   \code{\link[=stac_catalog]{stac_catalog()}} \tab \code{stac_catalog} \tab \code{catalog@title} \cr
-   \code{\link[=stac_collection]{stac_collection()}} \tab \code{stac_collection} \tab \code{collection@description} \cr
-   \code{\link[=raster_band]{raster_band()}} \tab \code{raster_band} \tab \code{band@data_type}, \code{band@scale} \cr
-   \code{\link[=raster_statistics]{raster_statistics()}} \tab \code{raster_statistics} \tab \code{stats@minimum} \cr
-   \code{\link[=raster_histogram]{raster_histogram()}} \tab \code{raster_histogram} \tab \code{hist@buckets} \cr
-   \code{\link[=eo_band]{eo_band()}} \tab \code{eo_band} \tab \code{band@common_name} \cr
-   \code{\link[=scientific_publication]{scientific_publication()}} \tab \code{scientific_publication} \tab \code{publication@doi} \cr
-   \code{\link[=table_column]{table_column()}} \tab \code{table_column} \tab \code{column@name} \cr
-   \code{\link[=pc_schema]{pc_schema()}} \tab \code{pc_schema} \tab \code{schema@size} \cr
-   \code{\link[=pc_statistic]{pc_statistic()}} \tab \code{pc_statistic} \tab \code{statistic@minimum} \cr
-   \code{\link[=render_object]{render_object()}} \tab \code{render_object} \tab \code{render@assets} \cr
-   \code{\link[=cube_dimension]{cube_dimension()}} \tab \code{cube_dimension} \tab \code{dimension@axis} \cr
-   \code{\link[=cube_variable]{cube_variable()}} \tab \code{cube_variable} \tab \code{variable@dimensions} \cr
-   \code{\link[=classification_class]{classification_class()}} \tab \code{classification_class} \tab \code{class@value} \cr
-   \code{\link[=classification_bitfield]{classification_bitfield()}} \tab \code{classification_bitfield} \tab \code{bitfield@classes} \cr
-   \code{\link[=stac_summaries]{stac_summaries()}} \tab \code{stac_summaries} \tab \code{summaries@extra_fields} \cr
-   \code{\link[=validate_stac]{validate_stac()}} \tab \code{stac_validation} \tab \code{result@valid}, \code{result@errors} \cr
-   \code{\link[=stac_extent]{stac_extent()}} \tab \code{Extent} \tab \code{extent@spatial}, \code{extent@temporal} \cr
+   \code{\link[=stac_asset]{stac_asset()}} \tab \code{stac_asset} \tab \code{asset$href}, \code{asset$extra_fields} \cr
+   \code{\link[=stac_provider]{stac_provider()}} \tab \code{stac_provider} \tab \code{provider$name}, \code{provider$roles} \cr
+   \code{\link[=stac_item]{stac_item()}} \tab \code{stac_item} \tab \code{item$id}, \code{item$assets} \cr
+   \code{\link[=stac_geometry]{stac_geometry()}} \tab \code{stac_geometry} \tab \code{geometry$type} \cr
+   \code{\link[=stac_link]{stac_link()}} \tab \code{stac_link} \tab \code{link$rel}, \code{link$href} \cr
+   \code{\link[=stac_catalog]{stac_catalog()}} \tab \code{stac_catalog} \tab \code{catalog$title} \cr
+   \code{\link[=stac_collection]{stac_collection()}} \tab \code{stac_collection} \tab \code{collection$description} \cr
+   \code{\link[=raster_band]{raster_band()}} \tab \code{raster_band} \tab \code{band$data_type}, \code{band$scale} \cr
+   \code{\link[=raster_statistics]{raster_statistics()}} \tab \code{raster_statistics} \tab \code{stats$minimum} \cr
+   \code{\link[=raster_histogram]{raster_histogram()}} \tab \code{raster_histogram} \tab \code{hist$buckets} \cr
+   \code{\link[=eo_band]{eo_band()}} \tab \code{eo_band} \tab \code{band$common_name} \cr
+   \code{\link[=scientific_publication]{scientific_publication()}} \tab \code{scientific_publication} \tab \code{publication$doi} \cr
+   \code{\link[=table_column]{table_column()}} \tab \code{table_column} \tab \code{column$name} \cr
+   \code{\link[=pc_schema]{pc_schema()}} \tab \code{pc_schema} \tab \code{schema$size} \cr
+   \code{\link[=pc_statistic]{pc_statistic()}} \tab \code{pc_statistic} \tab \code{statistic$minimum} \cr
+   \code{\link[=render_object]{render_object()}} \tab \code{render_object} \tab \code{render$assets} \cr
+   \code{\link[=cube_dimension]{cube_dimension()}} \tab \code{cube_dimension} \tab \code{dimension$axis} \cr
+   \code{\link[=cube_variable]{cube_variable()}} \tab \code{cube_variable} \tab \code{variable$dimensions} \cr
+   \code{\link[=classification_class]{classification_class()}} \tab \code{classification_class} \tab \code{class$value} \cr
+   \code{\link[=classification_bitfield]{classification_bitfield()}} \tab \code{classification_bitfield} \tab \code{bitfield$classes} \cr
+   \code{\link[=stac_summaries]{stac_summaries()}} \tab \code{stac_summaries} \tab \code{summaries$extra_fields} \cr
+   \code{\link[=validate_stac]{validate_stac()}} \tab \code{stac_validation} \tab \code{result$valid}, \code{result$errors} \cr
+   \code{\link[=stac_extent]{stac_extent()}} \tab \code{Extent} \tab \code{extent$spatial}, \code{extent$temporal} \cr
 }
 
 
 Note that \code{stac_collection} extends \code{stac_catalog}, so
-\code{S7::S7_inherits(x, stac_catalog)} is also true for a Collection.
+\code{stac_inherits(x, stac_catalog)} is also true for a Collection.
+}
+
+\subsection{Dictionaries (use \verb{[[ ]]} to access entries)}{
+
+STAC permits arbitrary keys in dictionaries such as an Item's \code{properties}
+and \code{assets}, and an Asset's \code{extra_fields}. These containers remain named
+lists. Use \verb{[[ ]]} when the key is held in a variable or is not a syntactic
+R name; \code{$} is also available for ordinary literal names:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{item$properties[["datetime"]]
+item$assets[["B4"]]$href
+item$assets[["B4"]]$extra_fields[["bands"]]
+}\if{html}{\out{</div>}}
+
+Both access styles are idiomatic R: \code{$} is convenient for known names and
+\verb{[[ ]]} is the right choice for computed names.
 }
 
 }
@@ -85,7 +103,7 @@ automatically when the console does not support them (log files, knitr,
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{library(stacbuildr)
 
-# 1. Create a STAC Item (S7 object)
+# 1. Create a STAC Item (validated S3 object)
 item <- stac_item(
   id       = "my-scene",
   geometry = list(type = "Point", coordinates = c(-105, 40)),
@@ -93,7 +111,7 @@ item <- stac_item(
   datetime = "2024-06-01T00:00:00Z"
 )
 
-# 2. Add an asset (S7 object embedded in the item)
+# 2. Add an asset (S3 object embedded in the item)
 item <- add_asset(
   item,
   key   = "B4",
@@ -102,7 +120,7 @@ item <- add_asset(
   roles = "data"
 )
 
-# 3. Describe the band with the Raster extension (S7 raster_band)
+# 3. Describe the band with the Raster extension
 band <- raster_band(
   data_type          = "uint16",
   nodata             = 0,
@@ -113,13 +131,26 @@ band <- raster_band(
 
 item <- add_raster_extension(item, bands = list(band), asset_key = "B4")
 
-# 4. Access S7 properties with @
-item@id
-band@scale
+# 4. Access known fields with $ and dynamic dictionary entries with [[ ]]
+item$id
+item$geometry$type
+item$assets[["B4"]]$href
+band$scale
 
 # 5. Write to disk
 write_item(item, "my-scene.json")
 }\if{html}{\out{</div>}}
+
+[ ]: R:\%20
+[ ]: R:\%20
+["datetime"]: R:\%22datetime\%22
+["B4"]: R:\%22B4\%22
+["B4"]: R:\%22B4\%22
+["bands"]: R:\%22bands\%22
+[ ]: R:\%20
+[B4, B5]: R:B4,\%20B5
+[ ]: R:\%20
+["B4"]: R:\%22B4\%22
 }
 }
 \references{

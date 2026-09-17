@@ -136,9 +136,9 @@ stac_object_labels <- function(x) {
     "data_type"
   )) {
     labels <- lapply(x, function(el) {
-      if (inherits(el, "S7_object")) {
+      if (inherits(el, "stac_object")) {
         property <- if (field == "eo:common_name") "common_name" else field
-        tryCatch(S7::prop(el, property), error = function(e) NULL)
+        tryCatch(, error = function(e) NULL)
       } else if (is.list(el) || !is.null(names(el))) {
         el[[field]]
       } else {
@@ -354,21 +354,21 @@ stac_asset_lines <- function(assets) {
   key_width <- max(nchar(names(assets)), 0L)
   unname(lapply(names(assets), function(key) {
     asset <- assets[[key]]
-    roles <- asset@roles %||% character(0)
+    roles <- asset$roles %||% character(0)
     detail <- paste(
       c(
-        asset@type,
+        asset$type,
         if (length(roles) > 0) sprintf("[%s]", paste(roles, collapse = ", "))
       ),
       collapse = " "
     )
     c(
       stac_entry(key, key_width, detail),
-      stac_style_url(stac_truncate(asset@href, stac_avail(11L))),
+      stac_style_url(stac_truncate(asset$href, stac_avail(11L))),
       # Extension fields attached to the asset (bands,
       # classification:classes, table:storage_options, ...)
       stac_field_lines(
-        asset@extra_fields,
+        asset$extra_fields,
         indent = 11L
       )
     )
@@ -380,9 +380,9 @@ stac_link_lines <- function(links) {
     links,
     function(link) {
       paste0(
-        stac_style_key(stac_pad(link$rel %||% "", 10L)),
+        stac_style_key(stac_pad(link$rel, 10L)),
         " ",
-        stac_style_url(stac_truncate(link$href %||% "", stac_avail(20L)))
+        stac_style_url(stac_truncate(link$href, stac_avail(20L)))
       )
     },
     character(1),
@@ -452,7 +452,7 @@ stac_child_lines <- function(children) {
       stac_entry(
         id,
         id_width,
-        paste(c(child@type, child@title), collapse = " "),
+        paste(c(child$type, child$title), collapse = " "),
         style = stac_style_id
       )
     },
@@ -462,12 +462,13 @@ stac_child_lines <- function(children) {
 }
 
 stac_item_lines <- function(items) {
-  id_width <- max(nchar(vapply(items, function(i) i@id, character(1))), 0L)
+  id_width <- max(nchar(vapply(items, function(i) i$id, character(1))), 0L)
   vapply(
     items,
     function(item) {
-      dt <- item@properties$datetime %||% item@properties$start_datetime
-      stac_entry(item@id, id_width, dt %||% "", style = stac_style_id)
+      dt <- item$properties[["datetime"]] %||%
+        item$properties[["start_datetime"]]
+      stac_entry(item$id, id_width, dt %||% "", style = stac_style_id)
     },
     character(1),
     USE.NAMES = FALSE
@@ -494,7 +495,7 @@ stac_field_lines <- function(x, width = 10L, indent = 9L) {
 
 # Classification classes -> "value  label" entries.
 stac_classification_lines <- function(classes) {
-  values <- vapply(classes, function(cls) as.character(cls@value), character(1))
+  values <- vapply(classes, function(cls) as.character(cls$value), character(1))
   value_width <- max(nchar(values), 0L)
   vapply(
     seq_along(classes),
@@ -503,7 +504,7 @@ stac_classification_lines <- function(classes) {
       stac_entry(
         values[[i]],
         value_width,
-        cls@title %||% cls@name %||% "",
+        cls$title %||% cls$name %||% "",
         style = stac_style_count
       )
     },
@@ -513,14 +514,14 @@ stac_classification_lines <- function(classes) {
 }
 
 stac_provider_lines <- function(providers) {
-  names_ <- vapply(providers, function(p) p@name, character(1))
+  names_ <- vapply(providers, function(p) p$name, character(1))
   name_width <- max(nchar(names_), 0L)
   vapply(
     providers,
     function(p) {
-      roles <- p@roles %||% character(0)
+      roles <- p$roles %||% character(0)
       stac_entry(
-        p@name,
+        p$name,
         name_width,
         if (length(roles) > 0) {
           sprintf("[%s]", paste(roles, collapse = ", "))

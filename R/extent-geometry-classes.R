@@ -15,13 +15,13 @@ is_rfc3339 <- function(x) {
 
 
 # Bbox class with validation
-Bbox <- S7::new_class(
+Bbox <- new_stac_class(
   "Bbox",
   properties = list(
-    coordinates = S7::class_numeric
+    coordinates = "numeric"
   ),
   validator = function(self) {
-    coords <- self@coordinates
+    coords <- self$coordinates
 
     if (!length(coords) %in% c(4, 6)) {
       return("Bbox must have 4 or 6 coordinates")
@@ -48,20 +48,20 @@ Bbox <- S7::new_class(
 )
 
 # SpatialExtent class
-SpatialExtent <- S7::new_class(
+SpatialExtent <- new_stac_class(
   "SpatialExtent",
   properties = list(
-    bbox = S7::new_property(S7::class_list, default = list())
+    bbox = new_stac_property("list", default = list())
   ),
   validator = function(self) {
-    if (length(self@bbox) == 0) {
+    if (length(self$bbox) == 0) {
       return("SpatialExtent must contain at least one bbox")
     }
 
     # Validate each bbox. Longitudes are range-checked but not ordered: a bbox
     # crossing the antimeridian has west > east (RFC 7946 section 5.2).
-    for (i in seq_along(self@bbox)) {
-      bbox <- self@bbox[[i]]
+    for (i in seq_along(self$bbox)) {
+      bbox <- self$bbox[[i]]
       if (!is.numeric(bbox)) {
         return(sprintf("Bbox[%d] must be numeric", i))
       }
@@ -156,18 +156,18 @@ SpatialExtent <- S7::new_class(
 )
 
 # TemporalExtent class
-TemporalExtent <- S7::new_class(
+TemporalExtent <- new_stac_class(
   "TemporalExtent",
   properties = list(
-    interval = S7::class_list
+    interval = "list"
   ),
   validator = function(self) {
-    if (length(self@interval) == 0) {
+    if (length(self$interval) == 0) {
       return("TemporalExtent must contain at least one interval")
     }
 
-    for (i in seq_along(self@interval)) {
-      interval <- self@interval[[i]]
+    for (i in seq_along(self$interval)) {
+      interval <- self$interval[[i]]
       if (length(interval) != 2) {
         return(sprintf(
           "Interval[%d] must have exactly 2 elements (start, end)",
@@ -209,7 +209,7 @@ TemporalExtent <- S7::new_class(
 )
 
 # Extent class combining spatial and temporal
-Extent <- S7::new_class(
+Extent <- new_stac_class(
   "Extent",
   properties = list(
     spatial = SpatialExtent,
@@ -217,13 +217,46 @@ Extent <- S7::new_class(
   )
 )
 
-# Geometry class
-Geometry <- S7::new_class(
-  "Geometry",
+#' Create a GeoJSON Geometry
+#'
+#' @description
+#' Creates an S3 representation of a GeoJSON geometry. Plain GeoJSON lists are
+#' accepted by [stac_item()] and converted automatically, so this constructor is
+#' mainly useful when building or inspecting geometries directly.
+#'
+#' @param type A GeoJSON geometry type.
+#' @param coordinates Coordinates for every geometry type except
+#'   `"GeometryCollection"`.
+#' @param geometries A list of geometries for `"GeometryCollection"`. Plain
+#'   GeoJSON geometry lists are converted recursively.
+#'
+#' @return A `stac_geometry` S3 object. Access its fields with `$`, for example
+#'   `geometry$type` and `geometry$coordinates`.
+#'
+#' @examples
+#' geometry <- stac_geometry("Point", coordinates = c(-105, 40))
+#' geometry$type
+#' geometry$coordinates
+#'
+#' @export
+stac_geometry <- new_stac_class(
+  "stac_geometry",
   properties = list(
-    type = S7::class_character,
-    coordinates = S7::class_any # varies by geometry type
+    type = "character",
+    coordinates = new_stac_property("any", default = NULL),
+    geometries = new_stac_property("list", default = list())
   ),
+  constructor = function(type, coordinates = NULL, geometries = list()) {
+    if (identical(type, "GeometryCollection")) {
+      geometries <- lapply(geometries, as_stac_geometry)
+    }
+    new_stac_object(
+      list(),
+      type = type,
+      coordinates = coordinates,
+      geometries = geometries
+    )
+  },
   validator = function(self) {
     valid_types <- c(
       "Point",
@@ -235,19 +268,52 @@ Geometry <- S7::new_class(
       "GeometryCollection"
     )
 
-    if (!self@type %in% valid_types) {
+    if (!self$type %in% valid_types) {
       return(sprintf(
         "Geometry type '%s' is not valid. Must be one of: %s",
-        self@type,
+        self$type,
         paste(valid_types, collapse = ", ")
       ))
     }
 
-    if (is.null(self@coordinates) && self@type != "GeometryCollection") {
+    if (self$type == "GeometryCollection") {
+      if (!is.null(self$coordinates)) {
+        return("GeometryCollection must not have coordinates")
+      }
+      if (!all(vapply(
+        self$geometries,
+        stac_inherits,
+        logical(1),
+        class = stac_geometry
+      ))) {
+        return("GeometryCollection must contain only stac_geometry objects")
+      }
+    } else if (is.null(self$coordinates)) {
       return("Geometry must have coordinates unless type is GeometryCollection")
     }
   }
 )
+
+# Normalize plain GeoJSON lists at public object boundaries.
+as_stac_geometry <- function(x) {
+  if (is.null(x) || stac_inherits(x, stac_geometry)) {
+    return(x)
+  }
+  if (!is.list(x)) {
+    cli::cli_abort(c(
+      "'geometry' must be a stac_geometry or a GeoJSON geometry list.",
+      "i" = "Use stac_geometry() to build one."
+    ))
+  }
+  if (is.null(x[["type"]])) {
+    cli::cli_abort("'geometry' must have a 'type' field.")
+  }
+  stac_geometry(
+    type = x[["type"]],
+    coordinates = x[["coordinates"]],
+    geometries = x[["geometries"]] %||% list()
+  )
+}
 
 # Print methods -----------------------------------------------------------
 
@@ -285,46 +351,54 @@ stac_format_interval <- function(interval) {
   paste(ends, collapse = " / ")
 }
 
-S7::method(print, Bbox) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.Bbox <- function(x, ...) {
   stac_print_header("Bbox")
   stac_print_list_fields(list(
-    dimensions = if (length(x@coordinates) == 6L) "3D" else "2D",
-    coordinates = stac_format_bbox(x@coordinates)
+    dimensions = if (length(x$coordinates) == 6L) "3D" else "2D",
+    coordinates = stac_format_bbox(x$coordinates)
   ))
   invisible(x)
 }
 
-S7::method(print, SpatialExtent) <- function(x, ..., expand = NULL) {
+#'
+#' @exportS3Method
+print.SpatialExtent <- function(x, ..., expand = NULL) {
   stac_print_header("Spatial Extent")
   collapsed <- stac_print_section(
     "bbox",
-    length(x@bbox),
-    summary = if (length(x@bbox) > 0) stac_format_bbox(x@bbox[[1]]),
-    lines = function() vapply(x@bbox, stac_format_bbox, character(1)),
+    length(x$bbox),
+    summary = if (length(x$bbox) > 0) stac_format_bbox(x$bbox[[1]]),
+    lines = function() vapply(x$bbox, stac_format_bbox, character(1)),
     expanded = stac_expanded(expand, "bbox")
   )
   stac_print_hint(sum(collapsed))
   invisible(x)
 }
 
-S7::method(print, TemporalExtent) <- function(x, ..., expand = NULL) {
+#'
+#' @exportS3Method
+print.TemporalExtent <- function(x, ..., expand = NULL) {
   stac_print_header("Temporal Extent")
   collapsed <- stac_print_section(
     "interval",
-    length(x@interval),
-    summary = if (length(x@interval) > 0) stac_format_interval(x@interval[[1]]),
-    lines = function() vapply(x@interval, stac_format_interval, character(1)),
+    length(x$interval),
+    summary = if (length(x$interval) > 0) stac_format_interval(x$interval[[1]]),
+    lines = function() vapply(x$interval, stac_format_interval, character(1)),
     expanded = stac_expanded(expand, "interval")
   )
   stac_print_hint(sum(collapsed))
   invisible(x)
 }
 
-S7::method(print, Extent) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.Extent <- function(x, ...) {
   stac_print_header("STAC Extent")
 
-  bboxes <- x@spatial@bbox
-  intervals <- x@temporal@interval
+  bboxes <- x$spatial$bbox
+  intervals <- x$temporal$interval
 
   # The first bbox and interval are the overall extent; any others are the
   # more precise sub-regions and sub-periods the spec allows.
@@ -351,12 +425,19 @@ S7::method(print, Extent) <- function(x, ...) {
   invisible(x)
 }
 
-S7::method(print, Geometry) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.stac_geometry <- function(x, ...) {
   stac_print_header("Geometry")
+  value <- if (x$type == "GeometryCollection") {
+    sprintf("%d geometries", length(x$geometries))
+  } else {
+    stac_geometry_summary(x$coordinates)
+  }
   stac_print_list_fields(
     list(
-      type = x@type,
-      coordinates = stac_geometry_summary(x@coordinates)
+      type = x$type,
+      coordinates = value
     ),
     styles = list(type = stac_style_key)
   )
@@ -378,19 +459,37 @@ stac_geometry_summary <- function(coords) {
 
 
 # Methods to support serialization to JSON
-S7::method(as.list, SpatialExtent) <- function(x, ...) {
-  list(bbox = x@bbox)
+#'
+#' @exportS3Method
+as.list.SpatialExtent <- function(x, ...) {
+  list(bbox = x$bbox)
 }
 
-S7::method(as.list, TemporalExtent) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.TemporalExtent <- function(x, ...) {
   # Strip names so each interval serialises as a JSON array, not an object.
   # list(start = "...", end = "...") would otherwise become {"start":...}.
-  list(interval = lapply(x@interval, unname))
+  list(interval = lapply(x$interval, unname))
 }
 
-S7::method(as.list, Extent) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.Extent <- function(x, ...) {
   list(
-    spatial = as.list(x@spatial),
-    temporal = as.list(x@temporal)
+    spatial = as.list(x$spatial),
+    temporal = as.list(x$temporal)
   )
+}
+
+#'
+#' @exportS3Method
+as.list.stac_geometry <- function(x, ...) {
+  if (x$type == "GeometryCollection") {
+    return(list(
+      type = x$type,
+      geometries = lapply(x$geometries, as.list)
+    ))
+  }
+  list(type = x$type, coordinates = x$coordinates)
 }

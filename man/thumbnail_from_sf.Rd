@@ -20,7 +20,7 @@ thumbnail_from_sf(sf_obj, path, width = 256, height = 256, title = NULL, ...)
 \item{...}{Additional arguments passed to \code{plot()}.}
 }
 \value{
-An S7 STAC asset with \code{href}, \code{type = "image/png"}, and
+An S3 STAC asset with \code{href}, \code{type = "image/png"}, and
 \code{roles = c("thumbnail")}.
 }
 \description{

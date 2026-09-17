@@ -1,10 +1,10 @@
 # --- raster_band() ---
 
-test_that("raster_band creates an S7 raster_band object", {
+test_that("raster_band creates an S3 raster_band object", {
   band <- raster_band(data_type = "uint16")
 
-  expect_true(S7::S7_inherits(band, raster_band))
-  expect_equal(band@data_type, "uint16")
+  expect_true(inherits(band, "raster_band"))
+  expect_equal(band$data_type, "uint16")
 
   as.list(band)
 })
@@ -20,13 +20,13 @@ test_that("raster_band stores all optional fields", {
     bits_per_sample = 16
   )
 
-  expect_equal(band@nodata, 0)
-  expect_equal(band@data_type, "float32")
-  expect_equal(band@spatial_resolution, 10)
-  expect_equal(band@scale, 2.75e-5)
-  expect_equal(band@offset, -0.2)
-  expect_equal(band@unit, "reflectance")
-  expect_equal(band@bits_per_sample, 16L)
+  expect_equal(band$nodata, 0)
+  expect_equal(band$data_type, "float32")
+  expect_equal(band$spatial_resolution, 10)
+  expect_equal(band$scale, 2.75e-5)
+  expect_equal(band$offset, -0.2)
+  expect_equal(band$unit, "reflectance")
+  expect_equal(band$bits_per_sample, 16L)
 })
 
 
@@ -54,7 +54,7 @@ test_that("add_raster_extension adds schema URI to stac_extensions", {
 
   expect_true(
     "https://stac-extensions.github.io/raster/v2.0.0/schema.json" %in%
-      item@stac_extensions
+      item$stac_extensions
   )
 })
 
@@ -66,8 +66,8 @@ test_that("add_raster_extension writes bands to item properties", {
   item <- make_item() |>
     add_raster_extension(bands = bands)
 
-  expect_length(item@properties$bands, 2L)
-  expect_equal(item@properties$bands[[1]]@data_type, "uint16")
+  expect_length(item$properties$bands, 2L)
+  expect_equal(item$properties$bands[[1]]$data_type, "uint16")
 })
 
 test_that("add_raster_extension writes bands to a named asset", {
@@ -75,8 +75,8 @@ test_that("add_raster_extension writes bands to a named asset", {
   item <- make_item() |>
     add_raster_extension(bands = bands, asset_key = "B4")
 
-  expect_length(item@assets$B4@extra_fields$bands, 1L)
-  expect_null(item@properties$bands)
+  expect_length(item$assets$B4$extra_fields$bands, 1L)
+  expect_null(item$properties$bands)
 })
 
 test_that("add_raster_extension errors on missing asset_key", {
@@ -117,8 +117,8 @@ test_that("raster:scale survives write/read round-trip precision", {
 
   restored <- read_stac(path)
 
-  expect_equal(restored@properties$bands[[1]]$`raster:scale`, 2.75e-5)
-  expect_equal(restored@properties$bands[[1]]$`raster:offset`, -0.2)
+  expect_equal(restored$properties$bands[[1]]$`raster:scale`, 2.75e-5)
+  expect_equal(restored$properties$bands[[1]]$`raster:offset`, -0.2)
 })
 
 test_that("raster:scale is not rounded to zero in raw JSON output", {
@@ -159,8 +159,8 @@ test_that("very small raster:offset survives write/read with full precision", {
   write_item(item, path)
 
   restored <- read_stac(path)
-  expect_equal(restored@properties$bands[[1]]$`raster:scale`, 1e-8)
-  expect_equal(restored@properties$bands[[1]]$`raster:offset`, -1e-6)
+  expect_equal(restored$properties$bands[[1]]$`raster:scale`, 1e-8)
+  expect_equal(restored$properties$bands[[1]]$`raster:offset`, -1e-6)
 })
 
 test_that("raster:scale precision holds when bands are on an asset, not item", {
@@ -176,7 +176,7 @@ test_that("raster:scale precision holds when bands are on an asset, not item", {
 
   restored <- read_stac(path)
   expect_equal(
-    restored@assets$B4@extra_fields$bands[[1]]$`raster:scale`,
+    restored$assets$B4$extra_fields$bands[[1]]$`raster:scale`,
     2.75e-5
   )
 })

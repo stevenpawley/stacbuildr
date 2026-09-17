@@ -25,8 +25,8 @@ raster_statistics(
 pixels. Should be between 0 and 100.}
 }
 \value{
-An S7 raster statistics object. Access its properties with \code{@}, for
-example \code{stats@minimum} and \code{stats@valid_percent}.
+An S3 raster statistics object. Access its fields with \code{$}, for
+example \code{stats$minimum} and \code{stats$valid_percent}.
 }
 \description{
 Creates a statistics object for describing the distribution of pixel values
@@ -40,7 +40,7 @@ stats <- raster_statistics(
   stddev = 1200,
   valid_percent = 99.8
 )
-stats@minimum
-stats@valid_percent
+stats$minimum
+stats$valid_percent
 
 }

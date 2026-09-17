@@ -124,7 +124,7 @@ add_classification_extension <- function(
   bitfields = NULL,
   asset_key = NULL
 ) {
-  if (!S7::S7_inherits(item, stac_item)) {
+  if (!stac_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -145,7 +145,7 @@ add_classification_extension <- function(
       (!is.list(classes) ||
         !all(vapply(
           classes,
-          S7::S7_inherits,
+          stac_inherits,
           logical(1),
           classification_class
         )))
@@ -158,7 +158,7 @@ add_classification_extension <- function(
       (!is.list(bitfields) ||
         !all(vapply(
           bitfields,
-          S7::S7_inherits,
+          stac_inherits,
           logical(1),
           classification_bitfield
         )))
@@ -170,31 +170,31 @@ add_classification_extension <- function(
 
   ext_uri <- "https://stac-extensions.github.io/classification/v2.0.0/schema.json"
 
-  if (is.null(item@stac_extensions)) {
-    item@stac_extensions <- character(0)
+  if (is.null(item$stac_extensions)) {
+    item$stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item@stac_extensions) {
-    item@stac_extensions <- c(item@stac_extensions, ext_uri)
+  if (!ext_uri %in% item$stac_extensions) {
+    item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
 
   if (!is.null(asset_key)) {
-    if (is.null(item@assets[[asset_key]])) {
+    if (is.null(item$assets[[asset_key]])) {
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
 
     if (!is.null(classes)) {
-      item@assets[[asset_key]]@extra_fields$`classification:classes` <- classes
+      item$assets[[asset_key]]$extra_fields[["classification:classes"]] <- classes
     } else {
-      item@assets[[
+      item$assets[[
         asset_key
-      ]]@extra_fields$`classification:bitfields` <- bitfields
+      ]]$extra_fields[["classification:bitfields"]] <- bitfields
     }
   } else {
     if (!is.null(classes)) {
-      item@properties$`classification:classes` <- classes
+      item$properties[["classification:classes"]] <- classes
     } else {
-      item@properties$`classification:bitfields` <- bitfields
+      item$properties[["classification:bitfields"]] <- bitfields
     }
   }
 
@@ -227,7 +227,7 @@ add_classification_extension <- function(
 #'   that belong to this class (0–100).
 #' @param count (integer, optional) Number of pixels that belong to this class.
 #'
-#' @return A `classification_class` S7 object. Access fields with `@`.
+#' @return A `classification_class` S3 object. Access fields with `$`.
 #'
 #' @details
 #' ## Name Format
@@ -260,11 +260,11 @@ add_classification_extension <- function(
 #' nodata_cls <- classification_class(value = 0, name = "nodata", nodata = TRUE)
 #'
 #' @export
-classification_class <- S7::new_class(
+classification_class <- new_stac_class(
   "classification_class",
   properties = list(
-    value = S7::new_property(
-      S7::class_integer,
+    value = new_stac_property(
+      "integer",
       default = quote(cli::cli_abort("'value' is required")),
       setter = function(self, value) {
         if (
@@ -275,7 +275,7 @@ classification_class <- S7::new_class(
         ) {
           cli::cli_abort("'value' must be a single integer")
         }
-        self@value <- as.integer(value)
+        self$value <- as.integer(value)
         self
       },
       validator = function(value) {
@@ -284,8 +284,8 @@ classification_class <- S7::new_class(
         }
       }
     ),
-    name = S7::new_property(
-      S7::new_union(NULL, S7::class_character),
+    name = new_stac_property(
+      new_stac_union(NULL, "character"),
       validator = function(value) {
         if (
           !is.null(value) &&
@@ -297,10 +297,10 @@ classification_class <- S7::new_class(
         }
       }
     ),
-    title = S7::new_union(NULL, S7::class_character),
-    description = S7::new_union(NULL, S7::class_character),
-    color_hint = S7::new_property(
-      S7::new_union(NULL, S7::class_character),
+    title = new_stac_union(NULL, "character"),
+    description = new_stac_union(NULL, "character"),
+    color_hint = new_stac_property(
+      new_stac_union(NULL, "character"),
       validator = function(value) {
         if (
           !is.null(value) &&
@@ -315,16 +315,16 @@ classification_class <- S7::new_class(
         }
       }
     ),
-    nodata = S7::new_property(
-      S7::new_union(NULL, S7::class_logical),
+    nodata = new_stac_property(
+      new_stac_union(NULL, "logical"),
       validator = function(value) {
         if (!is.null(value) && (length(value) != 1L || is.na(value))) {
           "must be TRUE or FALSE"
         }
       }
     ),
-    percentage = S7::new_property(
-      S7::new_union(NULL, S7::class_numeric),
+    percentage = new_stac_property(
+      new_stac_union(NULL, "numeric"),
       validator = function(value) {
         if (
           !is.null(value) &&
@@ -337,8 +337,8 @@ classification_class <- S7::new_class(
         }
       }
     ),
-    count = S7::new_property(
-      S7::new_union(NULL, S7::class_integer),
+    count = new_stac_property(
+      new_stac_union(NULL, "integer"),
       setter = function(self, value) {
         if (!is.null(value)) {
           if (
@@ -351,7 +351,7 @@ classification_class <- S7::new_class(
           }
           value <- as.integer(value)
         }
-        self@count <- value
+        self$count <- value
         self
       },
       validator = function(value) {
@@ -363,16 +363,18 @@ classification_class <- S7::new_class(
   )
 )
 
-S7::method(as.list, classification_class) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.classification_class <- function(x, ...) {
   compact_nulls(list(
-    value = x@value,
-    name = x@name,
-    title = x@title,
-    description = x@description,
-    color_hint = x@color_hint,
-    nodata = x@nodata,
-    percentage = x@percentage,
-    count = x@count
+    value = x$value,
+    name = x$name,
+    title = x$title,
+    description = x$description,
+    color_hint = x$color_hint,
+    nodata = x$nodata,
+    percentage = x$percentage,
+    count = x$count
   ))
 }
 
@@ -402,7 +404,7 @@ S7::method(as.list, classification_class) <- function(x, ...) {
 #' @param roles (character vector, optional) Roles associated with the
 #'   bitfield. Uses the same role vocabulary as STAC asset roles.
 #'
-#' @return A `classification_bitfield` S7 object. Access fields with `@`.
+#' @return A `classification_bitfield` S3 object. Access fields with `$`.
 #'
 #' @details
 #' ## Bit Extraction
@@ -448,11 +450,11 @@ S7::method(as.list, classification_class) <- function(x, ...) {
 #' )
 #'
 #' @export
-classification_bitfield <- S7::new_class(
+classification_bitfield <- new_stac_class(
   "classification_bitfield",
   properties = list(
-    offset = S7::new_property(
-      S7::class_integer,
+    offset = new_stac_property(
+      "integer",
       default = quote(cli::cli_abort("'offset' is required")),
       setter = function(self, value) {
         if (
@@ -463,7 +465,7 @@ classification_bitfield <- S7::new_class(
         ) {
           cli::cli_abort("'offset' must be a non-negative integer")
         }
-        self@offset <- as.integer(value)
+        self$offset <- as.integer(value)
         self
       },
       validator = function(value) {
@@ -472,8 +474,8 @@ classification_bitfield <- S7::new_class(
         }
       }
     ),
-    length = S7::new_property(
-      S7::class_integer,
+    length = new_stac_property(
+      "integer",
       default = quote(cli::cli_abort("'length' is required")),
       setter = function(self, value) {
         if (
@@ -484,7 +486,7 @@ classification_bitfield <- S7::new_class(
         ) {
           cli::cli_abort("'length' must be a positive integer")
         }
-        self@length <- as.integer(value)
+        self$length <- as.integer(value)
         self
       },
       validator = function(value) {
@@ -493,8 +495,8 @@ classification_bitfield <- S7::new_class(
         }
       }
     ),
-    classes = S7::new_property(
-      S7::class_list,
+    classes = new_stac_property(
+      "list",
       default = quote(cli::cli_abort("'classes' is required")),
       validator = function(value) {
         if (length(value) == 0L) {
@@ -502,7 +504,7 @@ classification_bitfield <- S7::new_class(
         } else if (
           !all(vapply(
             value,
-            S7::S7_inherits,
+            stac_inherits,
             logical(1),
             classification_class
           ))
@@ -511,8 +513,8 @@ classification_bitfield <- S7::new_class(
         }
       }
     ),
-    name = S7::new_property(
-      S7::new_union(NULL, S7::class_character),
+    name = new_stac_property(
+      new_stac_union(NULL, "character"),
       validator = function(value) {
         if (
           !is.null(value) &&
@@ -524,19 +526,21 @@ classification_bitfield <- S7::new_class(
         }
       }
     ),
-    description = S7::new_union(NULL, S7::class_character),
-    roles = S7::new_union(NULL, S7::class_character)
+    description = new_stac_union(NULL, "character"),
+    roles = new_stac_union(NULL, "character")
   )
 )
 
-S7::method(as.list, classification_bitfield) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.classification_bitfield <- function(x, ...) {
   compact_nulls(list(
-    offset = x@offset,
-    length = x@length,
-    classes = stac_json_value(x@classes),
-    name = x@name,
-    description = x@description,
-    roles = if (is.null(x@roles)) NULL else as_json_array(x@roles)
+    offset = x$offset,
+    length = x$length,
+    classes = stac_json_value(x$classes),
+    name = x$name,
+    description = x$description,
+    roles = if (is.null(x$roles)) NULL else as_json_array(x$roles)
   ))
 }
 
@@ -547,18 +551,20 @@ S7::method(as.list, classification_bitfield) <- function(x, ...) {
 #' @param ... Additional arguments (ignored)
 #'
 #' @noRd
-S7::method(print, classification_class) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.classification_class <- function(x, ...) {
   stac_print_header("Classification Class")
 
   fields <- compact_nulls(list(
-    value = x@value,
-    name = x@name,
-    title = x@title,
-    description = x@description,
-    color_hint = x@color_hint,
-    nodata = x@nodata,
-    percentage = x@percentage,
-    count = x@count
+    value = x$value,
+    name = x$name,
+    title = x$title,
+    description = x$description,
+    color_hint = x$color_hint,
+    nodata = x$nodata,
+    percentage = x$percentage,
+    count = x$count
   ))
   if (!is.null(fields$color_hint)) {
     fields$color_hint <- paste0("#", fields$color_hint)
@@ -586,14 +592,16 @@ S7::method(print, classification_class) <- function(x, ...) {
 #' @return `x`, invisibly.
 #'
 #' @noRd
-S7::method(print, classification_bitfield) <- function(x, ..., expand = NULL) {
+#'
+#' @exportS3Method
+print.classification_bitfield <- function(x, ..., expand = NULL) {
   stac_print_header("Classification Bitfield")
   fields <- compact_nulls(list(
-    offset = x@offset,
-    length = x@length,
-    name = x@name,
-    description = x@description,
-    roles = x@roles
+    offset = x$offset,
+    length = x$length,
+    name = x$name,
+    description = x$description,
+    roles = x$roles
   ))
   width <- stac_print_list_fields(
     fields,
@@ -602,7 +610,7 @@ S7::method(print, classification_bitfield) <- function(x, ..., expand = NULL) {
     skip = "classes"
   )
 
-  classes <- x@classes
+  classes <- x$classes
   collapsed <- stac_print_section(
     "classes",
     length(classes),

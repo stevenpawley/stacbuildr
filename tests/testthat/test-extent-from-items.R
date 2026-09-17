@@ -49,14 +49,14 @@ test_that("extent_from_items returns correct bbox for a single item", {
   item <- make_item("a", c(-10, -20, 10, 20), datetime = "2023-06-01T00:00:00Z")
   result <- extent_from_items(list(item))
 
-  expect_equal(result@spatial@bbox[[1]], c(-10, -20, 10, 20))
+  expect_equal(result$spatial$bbox[[1]], c(-10, -20, 10, 20))
 })
 
 test_that("extent_from_items returns single-point temporal extent for one item", {
   item <- make_item("a", c(-10, -20, 10, 20), datetime = "2023-06-01T00:00:00Z")
   result <- extent_from_items(list(item))
 
-  interval <- result@temporal@interval[[1]]
+  interval <- result$temporal$interval[[1]]
   expect_equal(interval[[1]], "2023-06-01T00:00:00Z")
   expect_null(interval[[2]])
 })
@@ -71,7 +71,7 @@ test_that("extent_from_items unions bboxes across multiple items", {
   )
 
   result <- extent_from_items(items)
-  bbox <- result@spatial@bbox[[1]]
+  bbox <- result$spatial$bbox[[1]]
 
   expect_equal(bbox[1], -10) # xmin
   expect_equal(bbox[2], -20) # ymin
@@ -87,7 +87,7 @@ test_that("extent_from_items sets temporal interval to min/max datetime", {
   )
 
   result <- extent_from_items(items)
-  interval <- result@temporal@interval[[1]]
+  interval <- result$temporal$interval[[1]]
 
   expect_equal(interval[[1]], "2023-01-01T00:00:00Z")
   expect_equal(interval[[2]], "2023-12-31T00:00:00Z")
@@ -112,7 +112,7 @@ test_that("extent_from_items handles items using start_datetime and end_datetime
   )
 
   result <- extent_from_items(items)
-  interval <- result@temporal@interval[[1]]
+  interval <- result$temporal$interval[[1]]
 
   expect_equal(interval[[1]], "2022-01-01T00:00:00Z")
   expect_equal(interval[[2]], "2022-12-31T00:00:00Z")
@@ -130,7 +130,7 @@ test_that("extent_from_items handles a mix of datetime and start/end_datetime it
   )
 
   result <- extent_from_items(items)
-  interval <- result@temporal@interval[[1]]
+  interval <- result$temporal$interval[[1]]
 
   expect_equal(interval[[1]], "2021-06-01T00:00:00Z")
   expect_equal(interval[[2]], "2023-12-31T00:00:00Z")
@@ -138,15 +138,15 @@ test_that("extent_from_items handles a mix of datetime and start/end_datetime it
 
 # --- Return type ---
 
-test_that("extent_from_items returns an Extent S7 object", {
+test_that("extent_from_items returns an Extent S3 object", {
   item <- make_item("a", c(-10, -10, 10, 10), datetime = "2023-01-01T00:00:00Z")
   result <- extent_from_items(list(item))
 
   expect_true(any(grepl("Extent", class(result), fixed = TRUE)))
-  expect_true(any(grepl("SpatialExtent", class(result@spatial), fixed = TRUE)))
+  expect_true(any(grepl("SpatialExtent", class(result$spatial), fixed = TRUE)))
   expect_true(any(grepl(
     "TemporalExtent",
-    class(result@temporal),
+    class(result$temporal),
     fixed = TRUE
   )))
 })

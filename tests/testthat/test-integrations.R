@@ -13,16 +13,16 @@ test_that("item_from_terra creates a valid item from a SpatRaster", {
     datetime = "2023-06-15T10:30:00Z"
   )
 
-  expect_true(S7::S7_inherits(item, stac_item))
-  expect_equal(item@id, "L7_ETMs")
-  expect_equal(item@type, "Feature")
-  expect_equal(item@properties$datetime, "2023-06-15T10:30:00Z")
+  expect_true(inherits(item, "stac_item"))
+  expect_equal(item$id, "L7_ETMs")
+  expect_equal(item$type, "Feature")
+  expect_equal(item$properties$datetime, "2023-06-15T10:30:00Z")
 
   # Geometry should be a polygon (extent reprojected to WGS84)
-  expect_equal(item@geometry$type, "Polygon")
+  expect_equal(item$geometry$type, "Polygon")
 
   # bbox should be in WGS84 (northeast Brazil, ~35°W / 8°S)
-  bbox <- item@bbox
+  bbox <- item$bbox
   expect_length(bbox, 4)
   expect_true(bbox[1] > -36 && bbox[1] < -34) # xmin
   expect_true(bbox[2] > -9 && bbox[2] < -7) # ymin
@@ -39,7 +39,7 @@ test_that("item_from_terra derives id from href when id is NULL", {
     datetime = "2023-06-15T10:30:00Z"
   )
 
-  expect_equal(item@id, "L7_ETMs")
+  expect_equal(item$id, "L7_ETMs")
 })
 
 test_that("item_from_terra adds the main asset with correct fields", {
@@ -54,10 +54,10 @@ test_that("item_from_terra adds the main asset with correct fields", {
     asset_roles = c("data")
   )
 
-  expect_true("data" %in% names(item@assets))
-  expect_equal(item@assets$data@href, gsub("\\\\", "/", normalizePath(tif)))
-  expect_equal(item@assets$data@type, "image/tiff; application=geotiff")
-  expect_equal(item@assets$data@roles, "data")
+  expect_true("data" %in% names(item$assets))
+  expect_equal(item$assets$data$href, gsub("\\\\", "/", normalizePath(tif)))
+  expect_equal(item$assets$data$type, "image/tiff; application=geotiff")
+  expect_equal(item$assets$data$roles, "data")
 })
 
 test_that("item_from_terra adds raster extension with 6 band objects", {
@@ -72,12 +72,12 @@ test_that("item_from_terra adds raster extension with 6 band objects", {
   )
 
   raster_ext <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
-  expect_true(raster_ext %in% item@stac_extensions)
+  expect_true(raster_ext %in% item$stac_extensions)
 
-  bands <- item@assets$data@extra_fields$bands
+  bands <- item$assets$data$extra_fields$bands
   expect_length(bands, 6)
-  expect_equal(bands[[1]]@data_type, "uint8")
-  expect_equal(bands[[1]]@spatial_resolution, 28.5)
+  expect_equal(bands[[1]]$data_type, "uint8")
+  expect_equal(bands[[1]]$spatial_resolution, 28.5)
 })
 
 test_that("item_from_terra skips raster extension when add_raster_bands is FALSE", {
@@ -92,8 +92,8 @@ test_that("item_from_terra skips raster extension when add_raster_bands is FALSE
   )
 
   raster_ext <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
-  expect_false(raster_ext %in% item@stac_extensions)
-  expect_null(item@assets$data@extra_fields$bands)
+  expect_false(raster_ext %in% item$stac_extensions)
+  expect_null(item$assets$data$extra_fields$bands)
 })
 
 test_that("item_from_terra adds projection extension for non-WGS84 CRS", {
@@ -107,14 +107,14 @@ test_that("item_from_terra adds projection extension for non-WGS84 CRS", {
   )
 
   proj_ext <- "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
-  expect_true(proj_ext %in% item@stac_extensions)
+  expect_true(proj_ext %in% item$stac_extensions)
 
-  expect_equal(item@properties$`proj:code`, "EPSG:31985")
-  expect_false(is.null(item@properties$`proj:wkt2`))
-  expect_equal(item@properties$`proj:shape`, c(352L, 349L)) # rows (y), cols (x)
-  expect_length(item@properties$`proj:transform`, 6)
-  expect_equal(item@properties$`proj:transform`[[1]], 28.5) # x pixel size
-  expect_equal(item@properties$`proj:transform`[[5]], -28.5) # y pixel size (negative)
+  expect_equal(item$properties$`proj:code`, "EPSG:31985")
+  expect_false(is.null(item$properties$`proj:wkt2`))
+  expect_equal(item$properties$`proj:shape`, c(352L, 349L)) # rows (y), cols (x)
+  expect_length(item$properties$`proj:transform`, 6)
+  expect_equal(item$properties$`proj:transform`[[1]], 28.5) # x pixel size
+  expect_equal(item$properties$`proj:transform`[[5]], -28.5) # y pixel size (negative)
 })
 
 test_that("item_from_terra validates correctly", {
@@ -128,7 +128,7 @@ test_that("item_from_terra validates correctly", {
   )
 
   result <- validate_stac(item)
-  expect_true(result@valid)
+  expect_true(result$valid)
 })
 
 test_that("bands_from_terra returns one band object per band", {
@@ -136,9 +136,9 @@ test_that("bands_from_terra returns one band object per band", {
   bands <- bands_from_terra(r)
 
   expect_length(bands, 6)
-  expect_equal(bands[[1]]@data_type, "uint8")
-  expect_equal(bands[[1]]@spatial_resolution, 28.5)
-  expect_length(bands[[1]]@statistics, 0)
+  expect_equal(bands[[1]]$data_type, "uint8")
+  expect_equal(bands[[1]]$spatial_resolution, 28.5)
+  expect_length(bands[[1]]$statistics, 0)
 })
 
 test_that("bands_from_terra calculates statistics when requested", {
@@ -148,10 +148,10 @@ test_that("bands_from_terra calculates statistics when requested", {
   expect_length(bands, 6)
 
   for (band in bands) {
-    expect_true(length(band@statistics) > 0)
-    expect_true(band@statistics@minimum <= band@statistics@maximum)
-    expect_true(band@statistics@valid_percent > 0)
-    expect_true(band@statistics@valid_percent <= 100)
+    expect_true(length(band$statistics) > 0)
+    expect_true(band$statistics$minimum <= band$statistics$maximum)
+    expect_true(band$statistics$valid_percent > 0)
+    expect_true(band$statistics$valid_percent <= 100)
   }
 })
 
@@ -175,8 +175,8 @@ test_that("item_from_terra works without href when id is supplied", {
     datetime = "2023-06-15T10:30:00Z"
   )
 
-  expect_equal(item@id, "L7_ETMs")
-  expect_length(item@assets, 0)
+  expect_equal(item$id, "L7_ETMs")
+  expect_length(item$assets, 0)
 })
 
 test_that("item_from_terra errors when both href and id are NULL", {
@@ -214,8 +214,8 @@ test_that("item_from_terra records the CRS authority in proj:code", {
       datetime = "2020-01-01T00:00:00Z"
     )
   )
-  expect_equal(item@properties$`proj:code`, "OGC:CRS84")
-  expect_equal(item@bbox, c(0, 0, 1, 1), ignore_attr = TRUE)
+  expect_equal(item$properties$`proj:code`, "OGC:CRS84")
+  expect_equal(item$bbox, c(0, 0, 1, 1), ignore_attr = TRUE)
 
   # An EPSG code is recorded with its authority prefix
   utm <- item_from_terra(
@@ -223,7 +223,7 @@ test_that("item_from_terra records the CRS authority in proj:code", {
     id = "utm",
     datetime = "2020-01-01T00:00:00Z"
   )
-  expect_equal(utm@properties$`proj:code`, "EPSG:32633")
+  expect_equal(utm$properties$`proj:code`, "EPSG:32633")
 })
 
 test_that("item_from_terra reports a missing CRS instead of failing in st_crs", {
@@ -263,8 +263,8 @@ test_that("band_from_file reads bands straight from a path", {
   # Same result as going through terra explicitly
   expect_equal(bands, bands_from_terra(terra::rast(tif)))
   expect_length(bands, 6)
-  expect_equal(bands[[1]]@data_type, "uint8")
-  expect_equal(bands[[1]]@spatial_resolution, 28.5)
+  expect_equal(bands[[1]]$data_type, "uint8")
+  expect_equal(bands[[1]]$spatial_resolution, 28.5)
 })
 
 test_that("band_from_file calculates statistics when asked", {
@@ -272,8 +272,8 @@ test_that("band_from_file calculates statistics when asked", {
 
   expect_length(bands, 6)
   for (band in bands) {
-    expect_true(length(band@statistics) > 0)
-    expect_true(band@statistics@minimum <= band@statistics@maximum)
+    expect_true(length(band$statistics) > 0)
+    expect_true(band$statistics$minimum <= band$statistics$maximum)
   }
 })
 
@@ -283,8 +283,8 @@ test_that("band_from_file passes sample_size through to the statistics", {
   sampled <- band_from_file(tif, calculate_statistics = TRUE, sample_size = 50L)
 
   expect_length(sampled, 6)
-  expect_true(sampled[[1]]@statistics@minimum >= full[[1]]@statistics@minimum)
-  expect_true(sampled[[1]]@statistics@maximum <= full[[1]]@statistics@maximum)
+  expect_true(sampled[[1]]$statistics$minimum >= full[[1]]$statistics$minimum)
+  expect_true(sampled[[1]]$statistics$maximum <= full[[1]]$statistics$maximum)
 })
 
 test_that("band_from_file errors on a file that does not exist", {
@@ -305,7 +305,7 @@ test_that("band_from_file output attaches to an item as raster bands", {
     asset_key = "data"
   )
 
-  expect_length(item@assets$data@extra_fields$bands, 6)
-  expect_equal(item@assets$data@extra_fields$bands[[1]]@data_type, "uint8")
-  expect_true(any(grepl("raster/v2.0.0", item@stac_extensions)))
+  expect_length(item$assets$data$extra_fields$bands, 6)
+  expect_equal(item$assets$data$extra_fields$bands[[1]]$data_type, "uint8")
+  expect_true(any(grepl("raster/v2.0.0", item$stac_extensions)))
 })

@@ -1,15 +1,12 @@
 # Turning STAC objects into the shapes R works in: a data frame of items, an
 # sf object, and the sf accessors on a single Item.
 #
-# The public coercion and subsetting generics are S3 generics, but S7 can
-# register methods for them directly. This preserves the formal, qualified S7
-# class names instead of adding unqualified aliases to each object's S3 class
-# vector.
+# Public coercion and subsetting behavior is implemented with S3 methods.
 
 # One item's properties as a single-row list, with the fields promoted out of
 # @properties that every item has.
 item_row <- function(item) {
-  props <- item@properties %||% list()
+  props <- item$properties %||% list()
 
   # datetime is the property a reader looks for first, so it leads the
   # properties rather than sitting wherever it happens to be stored.
@@ -20,8 +17,8 @@ item_row <- function(item) {
 
   c(
     list(
-      id = item@id,
-      collection = item@collection %||% NA_character_
+      id = item$id,
+      collection = item$collection %||% NA_character_
     ),
     props[lead],
     props[setdiff(names(props), lead)]
@@ -77,11 +74,15 @@ catalog_items <- function(x, resolve, base_path) {
 # for a non-spatial Item and becomes an empty geometrycollection so that the
 # column stays the same length as the table.
 item_sfc <- function(item) {
-  if (is.null(item@geometry)) {
+  if (is.null(item$geometry)) {
     return(sf::st_sfc(sf::st_geometrycollection(), crs = 4326))
   }
   geojsonsf::geojson_sfc(
-    jsonlite::toJSON(item@geometry, auto_unbox = TRUE, digits = 15)
+    jsonlite::toJSON(
+      stac_json_value(item$geometry),
+      auto_unbox = TRUE,
+      digits = 15
+    )
   )
 }
 
@@ -107,7 +108,9 @@ item_sfc <- function(item) {
 #'
 #' @name length.stac_catalog
 #' @usage NULL
-S7::method(length, stac_catalog) <- function(x) {
+#'
+#' @exportS3Method
+length.stac_catalog <- function(x) {
   count_items(x)
 }
 
@@ -163,7 +166,9 @@ S7::method(length, stac_catalog) <- function(x) {
 #'
 #' @name as.data.frame.stac_catalog
 #' @usage NULL
-S7::method(as.data.frame, stac_catalog) <- function(
+#'
+#' @exportS3Method
+as.data.frame.stac_catalog <- function(
   x,
   row.names = NULL,
   optional = FALSE,
@@ -186,7 +191,9 @@ S7::method(as.data.frame, stac_catalog) <- function(
 
 #' @rdname as.data.frame.stac_catalog
 #' @usage NULL
-S7::method(as.data.frame, stac_item) <- function(
+#'
+#' @exportS3Method
+as.data.frame.stac_item <- function(
   x,
   row.names = NULL,
   optional = FALSE,
@@ -240,7 +247,9 @@ S7::method(as.data.frame, stac_item) <- function(
 #'
 #' @name st_as_sf.stac_catalog
 #' @usage NULL
-S7::method(st_as_sf, stac_catalog) <- function(
+#'
+#' @exportS3Method
+st_as_sf.stac_catalog <- function(
   x,
   ...,
   resolve = FALSE,
@@ -264,7 +273,9 @@ S7::method(st_as_sf, stac_catalog) <- function(
 
 #' @rdname st_as_sf.stac_catalog
 #' @usage NULL
-S7::method(st_as_sf, stac_item) <- function(x, ...) {
+#'
+#' @exportS3Method
+st_as_sf.stac_item <- function(x, ...) {
   sf::st_sf(rows_to_df(list(item_row(x))), geometry = item_sfc(x))
 }
 
@@ -306,17 +317,21 @@ NULL
 
 #' @rdname stac_item_sf_accessors
 #' @usage NULL
-S7::method(st_geometry, stac_item) <- function(obj, ...) {
+#'
+#' @exportS3Method
+st_geometry.stac_item <- function(obj, ...) {
   item_sfc(obj)
 }
 
 #' @rdname stac_item_sf_accessors
 #' @usage NULL
-S7::method(st_bbox, stac_item) <- function(obj, ...) {
-  if (!is.null(obj@bbox) && length(obj@bbox) >= 4) {
+#'
+#' @exportS3Method
+st_bbox.stac_item <- function(obj, ...) {
+  if (!is.null(obj$bbox) && length(obj$bbox) >= 4) {
     # A 3D STAC bbox is (xmin, ymin, zmin, xmax, ymax, zmax); sf's bbox is 2D,
     # so the elevation pair is dropped.
-    b <- if (length(obj@bbox) == 6L) obj@bbox[c(1, 2, 4, 5)] else obj@bbox[1:4]
+    b <- if (length(obj$bbox) == 6L) obj$bbox[c(1, 2, 4, 5)] else obj$bbox[1:4]
     return(sf::st_bbox(
       stats::setNames(
         as.numeric(b),
@@ -330,7 +345,9 @@ S7::method(st_bbox, stac_item) <- function(obj, ...) {
 
 #' @rdname stac_item_sf_accessors
 #' @usage NULL
-S7::method(st_crs, stac_item) <- function(x, ...) {
+#'
+#' @exportS3Method
+st_crs.stac_item <- function(x, ...) {
   sf::st_crs(4326)
 }
 
@@ -371,19 +388,23 @@ S7::method(st_crs, stac_item) <- function(x, ...) {
 #'   datetime = "2024-06-01T00:00:00Z"
 #' ))
 #'
-#' collection[["scene-1"]]@id
+#' collection[["scene-1"]]$id
 #' length(collection[1])
 #'
 #' @name sub-.stac_catalog
 #' @usage NULL
-S7::method(`[`, stac_catalog) <- function(x, i) {
+#'
+#' @export
+`[.stac_catalog` <- function(x, i) {
   items <- catalog_items(x, resolve = FALSE, base_path = ".")
   items[stac_item_index(items, i, multiple = TRUE)]
 }
 
 #' @rdname sub-.stac_catalog
 #' @usage NULL
-S7::method(`[[`, stac_catalog) <- function(x, i) {
+#'
+#' @export
+`[[.stac_catalog` <- function(x, i) {
   items <- catalog_items(x, resolve = FALSE, base_path = ".")
   idx <- stac_item_index(items, i, multiple = FALSE)
   items[[idx]]
@@ -396,7 +417,7 @@ stac_item_index <- function(items, i, multiple) {
     return(i)
   }
 
-  ids <- vapply(items, function(it) it@id, character(1))
+  ids <- vapply(items, function(it) it$id, character(1))
   idx <- match(i, ids)
 
   if (anyNA(idx)) {

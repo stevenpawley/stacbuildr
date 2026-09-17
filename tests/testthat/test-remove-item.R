@@ -28,7 +28,7 @@ stocked_catalog <- function(n = 3, type = c("catalog", "collection")) {
 }
 
 stored_ids <- function(x) {
-  vapply(get_items(x) %||% list(), function(it) it@id, character(1))
+  vapply(get_items(x) %||% list(), function(it) it$id, character(1))
 }
 
 test_that("remove_item drops the item by id", {
@@ -47,7 +47,7 @@ test_that("remove_item drops several ids at once", {
 
 test_that("remove_item drops by href", {
   coll <- stocked_catalog(3)
-  href <- Filter(function(l) l$rel == "item", coll@links)[[2]]$href
+  href <- Filter(function(l) l$rel == "item", coll$links)[[2]]$href
 
   out <- remove_item(coll, href = href)
   expect_equal(count_items(out), 2L)
@@ -65,7 +65,7 @@ test_that("remove_item keeps non-item links", {
   coll <- add_root_link(stocked_catalog(2), "https://example.com/catalog.json")
   out <- remove_item(coll, all = TRUE)
 
-  rels <- vapply(out@links, function(l) l$rel, character(1))
+  rels <- vapply(out$links, function(l) l$rel, character(1))
   expect_true("root" %in% rels)
   expect_false("item" %in% rels)
 })

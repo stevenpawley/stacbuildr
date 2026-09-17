@@ -90,7 +90,7 @@ add_scientific_extension <- function(
   citation = NULL,
   publications = NULL
 ) {
-  if (!S7::S7_inherits(item, stac_item)) {
+  if (!stac_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -125,7 +125,7 @@ add_scientific_extension <- function(
     }
     not_pub <- !vapply(
       publications,
-      S7::S7_inherits,
+      stac_inherits,
       logical(1),
       scientific_publication
     )
@@ -138,42 +138,42 @@ add_scientific_extension <- function(
 
   ext_uri <- "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
 
-  if (is.null(item@stac_extensions)) {
-    item@stac_extensions <- character(0)
+  if (is.null(item$stac_extensions)) {
+    item$stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item@stac_extensions) {
-    item@stac_extensions <- c(item@stac_extensions, ext_uri)
+  if (!ext_uri %in% item$stac_extensions) {
+    item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
 
   if (!is.null(doi)) {
-    item@properties$`sci:doi` <- doi
+    item$properties[["sci:doi"]] <- doi
 
     # Add cite-as link per RFC 8574
-    doi_link <- list(
+    doi_link <- stac_link(
       rel = "cite-as",
       href = paste0("https://doi.org/", doi)
     )
-    if (is.null(item@links)) {
-      item@links <- list()
+    if (is.null(item$links)) {
+      item$links <- list()
     }
     # Only add if the link is not already present
     existing_hrefs <- vapply(
-      item@links,
-      function(l) l$href %||% "",
+      item$links,
+      function(l) l$href,
       character(1)
     )
     if (!doi_link$href %in% existing_hrefs) {
-      item@links <- c(item@links, list(doi_link))
+      item$links <- c(item$links, list(doi_link))
     }
   }
 
   if (!is.null(citation)) {
-    item@properties$`sci:citation` <- citation
+    item$properties[["sci:citation"]] <- citation
   }
 
   if (!is.null(publications)) {
-    item@properties$`sci:publications` <- publications
+    item$properties[["sci:publications"]] <- publications
   }
 
   item
@@ -195,7 +195,7 @@ add_scientific_extension <- function(
 #'   information to uniquely identify the publication. At least one of `doi` or
 #'   `citation` must be provided.
 #'
-#' @return A `scientific_publication` S7 object. Access fields with `@`.
+#' @return A `scientific_publication` S3 object. Access fields with `$`.
 #'
 #' @examples
 #' # Publication with both DOI and citation
@@ -210,11 +210,11 @@ add_scientific_extension <- function(
 #' )
 #'
 #' @export
-scientific_publication <- S7::new_class(
+scientific_publication <- new_stac_class(
   "scientific_publication",
   properties = list(
-    doi = S7::new_property(
-      S7::new_union(NULL, S7::class_character),
+    doi = new_stac_property(
+      new_stac_union(NULL, "character"),
       validator = function(value) {
         if (!is.null(value) && length(value) != 1L) {
           return("must be a single character string")
@@ -226,8 +226,8 @@ scientific_publication <- S7::new_class(
         }
       }
     ),
-    citation = S7::new_property(
-      S7::new_union(NULL, S7::class_character),
+    citation = new_stac_property(
+      new_stac_union(NULL, "character"),
       validator = function(value) {
         if (!is.null(value) && length(value) != 1L) {
           "must be a single character string"
@@ -236,14 +236,16 @@ scientific_publication <- S7::new_class(
     )
   ),
   validator = function(self) {
-    if (is.null(self@doi) && is.null(self@citation)) {
+    if (is.null(self$doi) && is.null(self$citation)) {
       "At least one of @doi or @citation must be provided"
     }
   }
 )
 
-S7::method(as.list, scientific_publication) <- function(x, ...) {
-  compact_nulls(list(doi = x@doi, citation = x@citation))
+#'
+#' @exportS3Method
+as.list.scientific_publication <- function(x, ...) {
+  compact_nulls(list(doi = x$doi, citation = x$citation))
 }
 
 
@@ -253,10 +255,12 @@ S7::method(as.list, scientific_publication) <- function(x, ...) {
 #' @param ... Additional arguments (ignored).
 #'
 #' @noRd
-S7::method(print, scientific_publication) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.scientific_publication <- function(x, ...) {
   stac_print_header("Scientific Publication")
   stac_print_list_fields(
-    compact_nulls(list(doi = x@doi, citation = x@citation)),
+    compact_nulls(list(doi = x$doi, citation = x$citation)),
     styles = list(doi = stac_style_id)
   )
   invisible(x)

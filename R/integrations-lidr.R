@@ -280,7 +280,7 @@ header_statistics <- function(header, schemas) {
 
   positions <- stats::setNames(
     seq_along(schemas) - 1L,
-    vapply(schemas, function(s) s@name, character(1))
+    vapply(schemas, function(s) s$name, character(1))
   )
 
   stats_list <- list()
@@ -308,7 +308,7 @@ header_statistics <- function(header, schemas) {
 point_statistics <- function(las, schemas) {
   positions <- stats::setNames(
     seq_along(schemas) - 1L,
-    vapply(schemas, function(s) s@name, character(1))
+    vapply(schemas, function(s) s$name, character(1))
   )
 
   stats_list <- list()

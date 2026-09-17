@@ -9,7 +9,7 @@
 #' @param id (character, required) Provider identifier for the Item. The ID
 #'   should be unique within the Collection that contains the Item. It's
 #'   recommended to use the data provider's existing identification scheme.
-#' @param geometry (list, required) Defines the full footprint of the asset
+#' @param geometry (stac_geometry or list, required) Defines the full footprint of the asset
 #'   represented by this Item, formatted according to RFC 7946, section 3.1 (for
 #'   geometry) or section 3.2 (if no geometry). Must be a valid GeoJSON
 #'   geometry object (e.g., Point, Polygon, MultiPolygon) or `NULL` for non-spatial
@@ -34,7 +34,8 @@
 #'   downloaded or accessed. Each asset should be created with `stac_asset()`.
 #'   Keys are asset identifiers (e.g., "visual", "thumbnail"). Default is an
 #'   empty list.
-#' @param links (list, optional) List of link objects to resources and related URLs.
+#' @param links (list, optional) List of [stac_link()] objects or plain link
+#'   lists. Plain lists are converted to S3 link objects.
 #'   Items are strongly recommended to provide a link to a STAC Collection.
 #'   Use `add_link()` or related helper functions to add links after creation.
 #'   Default is an empty list.
@@ -99,7 +100,7 @@
 #' Items to link back to the Collection. Use `add_item()` with
 #' `add_parent_links = TRUE` to properly establish this relationship.
 #'
-#' @return An S7 object of class `stac_item` containing the Item metadata
+#' @return An S3 object of class `stac_item` containing the Item metadata
 #'   formatted as a GeoJSON Feature. Convert to a plain list for JSON
 #'   serialization with `as.list()`, or write directly to disk using
 #'   `write_item()`.
@@ -212,29 +213,42 @@
 #' cat(item_json)
 #'
 #' @export
-stac_item <- S7::new_class(
+stac_item <- new_stac_class(
   "stac_item",
   properties = list(
-    type = S7::new_property(S7::class_character, default = "Feature"),
-    stac_version = S7::new_property(S7::class_character, default = "1.1.0"),
-    id = S7::class_character,
-    geometry = S7::new_property(
-      S7::new_union(S7::class_list, NULL),
+    type = new_stac_property("character", default = "Feature"),
+    stac_version = new_stac_property("character", default = "1.1.0"),
+    id = "character",
+    geometry = new_stac_property(
+      new_stac_union(stac_geometry, NULL),
       default = NULL
     ),
-    bbox = S7::new_property(
-      S7::new_union(S7::class_numeric, NULL),
+    bbox = new_stac_property(
+      new_stac_union("numeric", NULL),
       default = NULL
     ),
-    properties = S7::new_property(S7::class_list, default = list()),
-    links = S7::new_property(S7::class_list, default = list()),
-    assets = S7::new_property(S7::class_list, default = list()),
-    stac_extensions = S7::new_property(
-      S7::new_union(S7::class_character, NULL),
+    properties = new_stac_property("list", default = list()),
+    links = new_stac_property(
+      "list",
+      default = list(),
+      validator = function(value) {
+        if (!all(vapply(
+          value,
+          stac_inherits,
+          logical(1),
+          class = stac_link
+        ))) {
+          "must contain only stac_link objects"
+        }
+      }
+    ),
+    assets = new_stac_property("list", default = list()),
+    stac_extensions = new_stac_property(
+      new_stac_union("character", NULL),
       default = NULL
     ),
-    collection = S7::new_property(
-      S7::new_union(S7::class_character, NULL),
+    collection = new_stac_property(
+      new_stac_union("character", NULL),
       default = NULL
     )
   ),
@@ -287,45 +301,45 @@ stac_item <- S7::new_class(
 
     props <- normalize_common_arrays(props)
 
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       type = type,
       stac_version = stac_version,
       id = id,
-      geometry = geometry,
+      geometry = as_stac_geometry(geometry),
       bbox = bbox,
       properties = props,
-      links = links,
+      links = normalize_links(links),
       assets = normalize_assets(assets),
       stac_extensions = stac_extensions,
       collection = collection
     )
   },
   validator = function(self) {
-    if (length(self@id) == 0 || nchar(self@id) == 0) {
+    if (length(self$id) == 0 || nchar(self$id) == 0) {
       return("'id' must be a non-empty string")
     }
-    if (self@type != "Feature") {
+    if (self$type != "Feature") {
       return("'type' must be 'Feature'")
     }
 
     # geometry / bbox consistency
-    if (!is.null(self@geometry) && is.null(self@bbox)) {
+    if (!is.null(self$geometry) && is.null(self$bbox)) {
       return("'bbox' is required when 'geometry' is not NULL")
     }
-    if (is.null(self@geometry) && !is.null(self@bbox)) {
+    if (is.null(self$geometry) && !is.null(self$bbox)) {
       return("'bbox' is prohibited when 'geometry' is NULL")
     }
-    if (!is.null(self@bbox) && !length(self@bbox) %in% c(4, 6)) {
+    if (!is.null(self$bbox) && !length(self$bbox) %in% c(4, 6)) {
       return("'bbox' must have length 4 (2D) or 6 (3D)")
     }
 
     # 2D bbox coordinate ranges (WGS84)
-    if (!is.null(self@bbox) && length(self@bbox) == 4L) {
-      west <- self@bbox[1]
-      east <- self@bbox[3]
-      south <- self@bbox[2]
-      north <- self@bbox[4]
+    if (!is.null(self$bbox) && length(self$bbox) == 4L) {
+      west <- self$bbox[1]
+      east <- self$bbox[3]
+      south <- self$bbox[2]
+      north <- self$bbox[4]
       if (west < -180 || east > 180) {
         return(sprintf(
           "'bbox' longitudes must be in [-180, 180] (got west = %g, east = %g)",
@@ -343,9 +357,9 @@ stac_item <- S7::new_class(
     }
 
     # datetime presence
-    dt <- self@properties$datetime
-    start_dt <- self@properties$start_datetime
-    end_dt <- self@properties$end_datetime
+    dt <- self$properties[["datetime"]]
+    start_dt <- self$properties[["start_datetime"]]
+    end_dt <- self$properties[["end_datetime"]]
 
     if (is.null(dt) && !((!is.null(start_dt)) && (!is.null(end_dt)))) {
       return(
@@ -386,29 +400,31 @@ stac_item <- S7::new_class(
   }
 )
 
-S7::method(as.list, stac_item) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.stac_item <- function(x, ...) {
   out <- list(
-    type = x@type,
-    stac_version = x@stac_version,
-    id = x@id,
-    geometry = x@geometry,
-    properties = stac_json_value(x@properties),
-    links = x@links,
+    type = x$type,
+    stac_version = x$stac_version,
+    id = x$id,
+    geometry = stac_json_value(x$geometry),
+    properties = stac_json_value(x$properties),
+    links = stac_json_value(x$links),
     # Ensure assets serializes as {} not [] when empty
-    assets = if (length(x@assets) == 0) {
+    assets = if (length(x$assets) == 0) {
       setNames(list(), character(0))
     } else {
-      stac_json_value(x@assets)
+      stac_json_value(x$assets)
     }
   )
-  if (!is.null(x@bbox)) {
-    out$bbox <- x@bbox
+  if (!is.null(x$bbox)) {
+    out$bbox <- x$bbox
   }
-  if (!is.null(x@stac_extensions) && length(x@stac_extensions) > 0) {
-    out$stac_extensions <- as.list(x@stac_extensions)
+  if (!is.null(x$stac_extensions) && length(x$stac_extensions) > 0) {
+    out$stac_extensions <- as.list(x$stac_extensions)
   }
-  if (!is.null(x@collection)) {
-    out$collection <- x@collection
+  if (!is.null(x$collection)) {
+    out$collection <- x$collection
   }
   out
 }
@@ -423,55 +439,57 @@ S7::method(as.list, stac_item) <- function(x, ...) {
 #'   `c("assets", "properties")`. Defaults to the `stacbuildr.print.expand`
 #'   option.
 #' @noRd
-S7::method(print, stac_item) <- function(x, ..., expand = NULL) {
+#'
+#' @exportS3Method
+print.stac_item <- function(x, ..., expand = NULL) {
   stac_print_header("STAC Item")
-  stac_print_field("id", x@id, stac_style_id)
+  stac_print_field("id", x$id, stac_style_id)
 
-  if (!is.null(x@collection)) {
-    stac_print_field("collection", x@collection, stac_style_key)
+  if (!is.null(x$collection)) {
+    stac_print_field("collection", x$collection, stac_style_key)
   }
 
-  stac_print_field("stac_version", x@stac_version, stac_style_muted)
+  stac_print_field("stac_version", x$stac_version, stac_style_muted)
 
   # Datetime / time range
-  if (!is.null(x@properties$datetime)) {
-    stac_print_field("datetime", x@properties$datetime)
-  } else if (!is.null(x@properties$start_datetime)) {
+  if (!is.null(x$properties[["datetime"]])) {
+    stac_print_field("datetime", x$properties[["datetime"]])
+  } else if (!is.null(x$properties[["start_datetime"]])) {
     stac_print_field(
       "datetime",
       sprintf(
         "%s / %s",
-        x@properties$start_datetime,
-        x@properties$end_datetime %||% ".."
+        x$properties[["start_datetime"]],
+        x$properties[["end_datetime"]] %||% ".."
       )
     )
   }
 
   # Geometry type and bbox
-  if (!is.null(x@geometry)) {
-    stac_print_field("geometry", x@geometry$type)
+  if (!is.null(x$geometry)) {
+    stac_print_field("geometry", x$geometry$type)
   } else {
     stac_print_field("geometry", "NULL (non-spatial)", stac_style_muted)
   }
 
-  if (!is.null(x@bbox)) {
+  if (!is.null(x$bbox)) {
     stac_print_field(
       "bbox",
       sprintf(
         "[%.4f, %.4f, %.4f, %.4f]",
-        x@bbox[1],
-        x@bbox[2],
-        x@bbox[3],
-        x@bbox[4]
+        x$bbox[1],
+        x$bbox[2],
+        x$bbox[3],
+        x$bbox[4]
       )
     )
   }
 
   # Properties other than the datetime fields already shown above
-  props <- x@properties[
-    !names(x@properties) %in% c("datetime", "start_datetime", "end_datetime")
+  props <- x$properties[
+    !names(x$properties) %in% c("datetime", "start_datetime", "end_datetime")
   ]
-  extensions <- x@stac_extensions %||% character(0)
+  extensions <- x$stac_extensions %||% character(0)
 
   collapsed <- c(
     if (length(props) > 0) {
@@ -485,9 +503,9 @@ S7::method(print, stac_item) <- function(x, ..., expand = NULL) {
     },
     stac_print_section(
       "assets",
-      length(x@assets),
-      summary = stac_preview(names(x@assets)),
-      lines = function() stac_asset_lines(x@assets),
+      length(x$assets),
+      summary = stac_preview(names(x$assets)),
+      lines = function() stac_asset_lines(x$assets),
       expanded = stac_expanded(expand, "assets")
     ),
     if (length(extensions) > 0) {
@@ -501,13 +519,13 @@ S7::method(print, stac_item) <- function(x, ..., expand = NULL) {
     },
     stac_print_section(
       "links",
-      length(x@links),
+      length(x$links),
       summary = stac_preview(vapply(
-        x@links,
-        function(l) l$rel %||% "",
+        x$links,
+        function(l) l$rel,
         character(1)
       )),
-      lines = function() stac_link_lines(x@links),
+      lines = function() stac_link_lines(x$links),
       expanded = stac_expanded(expand, "links")
     )
   )

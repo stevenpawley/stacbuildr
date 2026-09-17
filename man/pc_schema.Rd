@@ -21,7 +21,7 @@ bytes. Must be a whole number greater than 0.}
 \code{"floating"}, \code{"unsigned"}, or \code{"signed"}.}
 }
 \value{
-A \code{pc_schema} S7 object. Access fields with \code{@}.
+A \code{pc_schema} S3 object. Access fields with \code{$}.
 }
 \description{
 Creates a Schema object for the \code{pc:schemas} field of the Point Cloud

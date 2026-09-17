@@ -2,8 +2,8 @@ test_that("validation catches invalid items", {
   # A plain list without stac_item class is an unknown type
   invalid_item <- list(type = "Feature", id = "test")
   result <- validate_stac(invalid_item)
-  expect_false(result@valid)
-  expect_gt(length(result@errors), 0)
+  expect_false(result$valid)
+  expect_gt(length(result$errors), 0)
 })
 
 test_that("validation catches invalid bbox", {
@@ -16,8 +16,8 @@ test_that("validation catches invalid bbox", {
   )
 
   result <- validate_stac(item)
-  expect_false(result@valid)
-  expect_true(any(grepl("south.*north", result@errors, ignore.case = TRUE)))
+  expect_false(result$valid)
+  expect_true(any(grepl("south.*north", result$errors, ignore.case = TRUE)))
 })
 
 test_that("validation accepts a bbox crossing the antimeridian", {
@@ -30,7 +30,7 @@ test_that("validation accepts a bbox crossing the antimeridian", {
     datetime = "2023-06-15T17:30:00Z"
   )
 
-  expect_true(validate_stac(item)@valid)
+  expect_true(validate_stac(item)$valid)
 
   extent <- stac_extent(
     spatial_bbox = list(c(177, -20, -178, -16)),
@@ -43,7 +43,7 @@ test_that("validation accepts a bbox crossing the antimeridian", {
     extent = extent
   )
 
-  expect_true(validate_stac(collection)@valid)
+  expect_true(validate_stac(collection)$valid)
 })
 
 test_that("validation still orders latitude and elevation", {

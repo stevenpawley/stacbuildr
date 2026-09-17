@@ -12,9 +12,9 @@ test_that("preview_from_terra returns a valid thumbnail asset", {
   asset <- preview_from_terra(r, path = path)
 
   expect_true(file.exists(path))
-  expect_equal(asset@type, "image/png")
-  expect_equal(asset@roles, "thumbnail")
-  expect_equal(asset@href, gsub("\\\\", "/", normalizePath(path)))
+  expect_equal(asset$type, "image/png")
+  expect_equal(asset$roles, "thumbnail")
+  expect_equal(asset$href, gsub("\\\\", "/", normalizePath(path)))
 })
 
 test_that("preview_from_terra accepts a title", {
@@ -24,7 +24,7 @@ test_that("preview_from_terra accepts a title", {
 
   asset <- preview_from_terra(r, path = path, title = "Preview")
 
-  expect_equal(asset@title, "Preview")
+  expect_equal(asset$title, "Preview")
 })
 
 test_that("preview_from_terra accepts custom dimensions", {
@@ -59,9 +59,9 @@ test_that("thumbnail_from_sf returns a valid thumbnail asset", {
   asset <- thumbnail_from_sf(nc, path = path)
 
   expect_true(file.exists(path))
-  expect_equal(asset@type, "image/png")
-  expect_equal(asset@roles, "thumbnail")
-  expect_equal(asset@href, gsub("\\\\", "/", normalizePath(path)))
+  expect_equal(asset$type, "image/png")
+  expect_equal(asset$roles, "thumbnail")
+  expect_equal(asset$href, gsub("\\\\", "/", normalizePath(path)))
 })
 
 test_that("thumbnail_from_sf accepts a title", {
@@ -71,7 +71,7 @@ test_that("thumbnail_from_sf accepts a title", {
 
   asset <- thumbnail_from_sf(nc, path = path, title = "Overview")
 
-  expect_equal(asset@title, "Overview")
+  expect_equal(asset$title, "Overview")
 })
 
 test_that("thumbnail_from_sf errors on non-sf input", {
@@ -98,7 +98,7 @@ test_that("thumbnail asset can be added to a stac item", {
   asset <- preview_from_terra(r, path = path)
   item <- add_asset(item, key = "thumbnail", asset = asset)
 
-  expect_true("thumbnail" %in% names(item@assets))
-  expect_equal(item@assets$thumbnail@roles, "thumbnail")
-  expect_equal(item@assets$thumbnail@type, "image/png")
+  expect_true("thumbnail" %in% names(item$assets))
+  expect_equal(item$assets$thumbnail$roles, "thumbnail")
+  expect_equal(item$assets$thumbnail$type, "image/png")
 })

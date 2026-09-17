@@ -10,10 +10,10 @@ geometry_from_sf(sf_obj)
 \item{sf_obj}{An sf object.}
 }
 \value{
-A GeoJSON geometry object (list).
+A \code{stac_geometry} S3 object.
 }
 \description{
-Converts an sf object's geometry to a GeoJSON-compatible list structure.
+Converts an sf object's geometry to a \code{\link[=stac_geometry]{stac_geometry()}} S3 object.
 If the sf object contains multiple features, they are unioned into a single
 geometry, since a STAC item has one geometry.
 }
@@ -22,7 +22,8 @@ geometry, since a STAC item has one geometry.
 library(sf)
 
 polygon <- st_read("boundary.shp")
-geojson <- geometry_from_sf(polygon)
+geometry <- geometry_from_sf(polygon)
+geometry$type
 }
 
 }

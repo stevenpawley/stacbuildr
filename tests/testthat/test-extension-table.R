@@ -3,10 +3,10 @@
 test_that("table_column creates a minimal object with just name", {
   col <- table_column(name = "geometry")
 
-  expect_equal(col@name, "geometry")
-  expect_null(col@description)
-  expect_null(col@type)
-  expect_true(S7::S7_inherits(col, table_column))
+  expect_equal(col$name, "geometry")
+  expect_null(col$description)
+  expect_null(col$type)
+  expect_true(inherits(col, "table_column"))
 })
 
 test_that("table_column stores all optional fields", {
@@ -16,15 +16,15 @@ test_that("table_column stores all optional fields", {
     type = "double"
   )
 
-  expect_equal(col@name, "elevation")
-  expect_equal(col@description, "Elevation in meters")
-  expect_equal(col@type, "double")
+  expect_equal(col$name, "elevation")
+  expect_equal(col$description, "Elevation in meters")
+  expect_equal(col$type, "double")
 })
 
 test_that("table_column stores extra fields via ...", {
   col <- table_column(name = "id", type = "int64", unit = "count")
 
-  expect_equal(col@extra_fields$unit, "count")
+  expect_equal(col$extra_fields$unit, "count")
 })
 
 test_that("table_column errors when name is missing or invalid", {
@@ -41,7 +41,7 @@ test_that("table_column errors when name is missing or invalid", {
 
 test_that("table_column validates name modifications", {
   col <- table_column("geometry")
-  expect_error(col@name <- c("a", "b"), "single character string")
+  expect_error(col$name <- c("a", "b"), "single character string")
 })
 
 
@@ -139,7 +139,7 @@ test_that("add_table_extension adds schema URI to stac_extensions", {
 
   expect_true(
     "https://stac-extensions.github.io/table/v1.2.0/schema.json" %in%
-      item@stac_extensions
+      item$stac_extensions
   )
 })
 
@@ -148,7 +148,7 @@ test_that("add_table_extension does not duplicate schema URI", {
     add_table_extension(row_count = 100) |>
     add_table_extension(primary_geometry = "geometry")
 
-  n_table_uris <- sum(grepl("table", item@stac_extensions))
+  n_table_uris <- sum(grepl("table", item$stac_extensions))
   expect_equal(n_table_uris, 1L)
 })
 
@@ -159,21 +159,21 @@ test_that("add_table_extension writes table:columns to item properties", {
   )
   item <- add_table_extension(make_item(), columns = cols)
 
-  expect_length(item@properties$`table:columns`, 2)
-  expect_equal(item@properties$`table:columns`[[1]]@name, "geometry")
-  expect_equal(item@properties$`table:columns`[[2]]@name, "id")
+  expect_length(item$properties$`table:columns`, 2)
+  expect_equal(item$properties$`table:columns`[[1]]$name, "geometry")
+  expect_equal(item$properties$`table:columns`[[2]]$name, "id")
 })
 
 test_that("add_table_extension writes table:primary_geometry to item properties", {
   item <- add_table_extension(make_item(), primary_geometry = "geometry")
 
-  expect_equal(item@properties$`table:primary_geometry`, "geometry")
+  expect_equal(item$properties$`table:primary_geometry`, "geometry")
 })
 
 test_that("add_table_extension writes table:row_count to item properties", {
   item <- add_table_extension(make_item(), row_count = 15000)
 
-  expect_equal(item@properties$`table:row_count`, 15000)
+  expect_equal(item$properties$`table:row_count`, 15000)
 })
 
 test_that("add_table_extension writes table:storage_options to the specified asset", {
@@ -184,10 +184,10 @@ test_that("add_table_extension writes table:storage_options to the specified ass
   )
 
   expect_equal(
-    item@assets$data@extra_fields$`table:storage_options`,
+    item$assets$data$extra_fields$`table:storage_options`,
     list(anon = TRUE)
   )
-  expect_null(item@properties$`table:storage_options`)
+  expect_null(item$properties$`table:storage_options`)
 })
 
 test_that("add_table_extension can set all fields at once", {
@@ -202,20 +202,20 @@ test_that("add_table_extension can set all fields at once", {
   )
 
   # asset_key routes every field it can, as in the other extensions
-  expect_length(item@assets$data@extra_fields$`table:columns`, 1)
+  expect_length(item$assets$data$extra_fields$`table:columns`, 1)
   expect_equal(
-    item@assets$data@extra_fields$`table:primary_geometry`,
+    item$assets$data$extra_fields$`table:primary_geometry`,
     "geometry"
   )
-  expect_equal(item@assets$data@extra_fields$`table:row_count`, 42)
+  expect_equal(item$assets$data$extra_fields$`table:row_count`, 42)
   expect_equal(
-    item@assets$data@extra_fields$`table:storage_options`,
+    item$assets$data$extra_fields$`table:storage_options`,
     list(anon = TRUE)
   )
 
-  expect_null(item@properties$`table:columns`)
-  expect_null(item@properties$`table:primary_geometry`)
-  expect_null(item@properties$`table:row_count`)
+  expect_null(item$properties$`table:columns`)
+  expect_null(item$properties$`table:primary_geometry`)
+  expect_null(item$properties$`table:row_count`)
 })
 
 test_that("add_table_extension routes columns to an asset when asset_key is given", {
@@ -229,8 +229,8 @@ test_that("add_table_extension routes columns to an asset when asset_key is give
     asset_key = "data"
   )
 
-  expect_length(item@assets$data@extra_fields$`table:columns`, 2)
-  expect_null(item@properties$`table:columns`)
+  expect_length(item$assets$data$extra_fields$`table:columns`, 2)
+  expect_null(item$properties$`table:columns`)
 })
 
 test_that("add_table_extension keeps item-level placement when asset_key is omitted", {
@@ -241,8 +241,8 @@ test_that("add_table_extension keeps item-level placement when asset_key is omit
     row_count = 42
   )
 
-  expect_length(item@properties$`table:columns`, 1)
-  expect_equal(item@properties$`table:primary_geometry`, "geometry")
-  expect_equal(item@properties$`table:row_count`, 42)
-  expect_null(item@assets$data@extra_fields$`table:columns`)
+  expect_length(item$properties$`table:columns`, 1)
+  expect_equal(item$properties$`table:primary_geometry`, "geometry")
+  expect_equal(item$properties$`table:row_count`, 42)
+  expect_null(item$assets$data$extra_fields$`table:columns`)
 })

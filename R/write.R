@@ -72,7 +72,7 @@ write_stac <- function(
   pretty = TRUE,
   base_url = NULL
 ) {
-  if (!S7::S7_inherits(catalog, stac_catalog)) {
+  if (!stac_inherits(catalog, stac_catalog)) {
     cli::cli_abort(
       "'catalog' must be a stac_catalog or stac_collection object"
     )
@@ -123,7 +123,7 @@ write_stac <- function(
 stac_to_json <- function(x, pretty = FALSE) {
   x <- strip_stored_objects(x)
 
-  if (S7::S7_inherits(x)) {
+  if (inherits(x, "stac_object")) {
     x <- as.list(x)
   }
 
@@ -185,7 +185,7 @@ write_stac_file <- function(x, file, overwrite = FALSE, pretty = TRUE) {
 #'
 #' @export
 write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
-  if (!S7::S7_inherits(catalog, stac_catalog)) {
+  if (!stac_inherits(catalog, stac_catalog)) {
     cli::cli_abort(
       "'catalog' must be a stac_catalog or stac_collection object"
     )
@@ -223,7 +223,7 @@ write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
 #'
 #' @export
 write_item <- function(item, file, overwrite = FALSE, pretty = TRUE) {
-  if (!S7::S7_inherits(item, stac_item)) {
+  if (!stac_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -282,7 +282,7 @@ write_catalog_recursive <- function(
   depth = 0L,
   root_file = NULL
 ) {
-  catalog_file <- if (S7::S7_inherits(catalog, stac_collection)) {
+  catalog_file <- if (stac_inherits(catalog, stac_collection)) {
     "collection.json"
   } else {
     "catalog.json"
@@ -361,23 +361,23 @@ write_catalog_recursive <- function(
   # Write items — each item gets its own subdirectory: {id}/{id}.json
   if (!is.null(stored_items) && length(stored_items) > 0) {
     for (item in stored_items) {
-      check_path_segment(item@id, "an item")
-      item_dir <- file.path(path, item@id)
+      check_path_segment(item$id, "an item")
+      item_dir <- file.path(path, item$id)
       if (!dir.exists(item_dir)) {
         dir.create(item_dir, recursive = TRUE)
       }
-      item_file <- file.path(item_dir, paste0(item@id, ".json"))
+      item_file <- file.path(item_dir, paste0(item$id, ".json"))
 
       # Items live one level below the catalog dir, so relative hrefs from
       # inside the item dir are one level deeper than the catalog.
       if (catalog_type == "absolute") {
-        item_base_url <- paste0(base_url, "/", item@id)
+        item_base_url <- paste0(base_url, "/", item$id)
         item <- update_item_links(
           item,
-          paste0(item_base_url, "/", item@id, ".json"),
+          paste0(item_base_url, "/", item$id, ".json"),
           paste0(base_url, "/", catalog_file),
           root_href,
-          parent_is_collection = S7::S7_inherits(catalog, stac_collection)
+          parent_is_collection = stac_inherits(catalog, stac_collection)
         )
       } else {
         # Self-contained and relative catalogs carry no item self links; only
@@ -387,7 +387,7 @@ write_catalog_recursive <- function(
           NULL,
           paste0("../", catalog_file),
           paste0(strrep("../", depth + 1L), root_file),
-          parent_is_collection = S7::S7_inherits(catalog, stac_collection)
+          parent_is_collection = stac_inherits(catalog, stac_collection)
         )
       }
 
@@ -428,7 +428,7 @@ update_catalog_links <- function(
   root_href = NULL
 ) {
   # Determine the catalog filename
-  if (S7::S7_inherits(catalog, stac_collection)) {
+  if (stac_inherits(catalog, stac_collection)) {
     catalog_file <- "collection.json"
   } else {
     catalog_file <- "catalog.json"
@@ -445,18 +445,18 @@ update_catalog_links <- function(
   }
 
   # Remove any existing self link and add the updated one
-  catalog@links <- Filter(function(x) x$rel != "self", catalog@links)
+  catalog$links <- Filter(function(x) x$rel != "self", catalog$links)
   if (!is.null(self_href)) {
     catalog <- add_self_link(catalog, self_href)
   }
 
   # Add root link — root_href is computed by the caller from the nesting depth
-  catalog@links <- Filter(function(x) x$rel != "root", catalog@links)
+  catalog$links <- Filter(function(x) x$rel != "root", catalog$links)
   catalog <- add_root_link(catalog, root_href)
 
   # Add parent link for non-root catalogs
   if (!is_root && !is.null(parent_href)) {
-    catalog@links <- Filter(function(x) x$rel != "parent", catalog@links)
+    catalog$links <- Filter(function(x) x$rel != "parent", catalog$links)
     catalog <- add_parent_link(catalog, parent_href)
   }
 
@@ -464,13 +464,13 @@ update_catalog_links <- function(
   stored_children <- attr(catalog, "stac_children")
   if (!is.null(stored_children) && length(stored_children) > 0) {
     # Remove existing child links
-    catalog@links <- Filter(function(x) x$rel != "child", catalog@links)
+    catalog$links <- Filter(function(x) x$rel != "child", catalog$links)
 
     # Add updated child links
     for (child_id in names(stored_children)) {
       child <- stored_children[[child_id]]
 
-      if (S7::S7_inherits(child, stac_collection)) {
+      if (stac_inherits(child, stac_collection)) {
         child_file <- "collection.json"
       } else {
         child_file <- "catalog.json"
@@ -487,7 +487,7 @@ update_catalog_links <- function(
         rel = "child",
         href = child_href,
         type = "application/json",
-        title = child@title
+        title = child$title
       )
     }
   }
@@ -496,14 +496,14 @@ update_catalog_links <- function(
   stored_items <- attr(catalog, "stac_items")
   if (!is.null(stored_items) && length(stored_items) > 0) {
     # Remove existing item links
-    catalog@links <- Filter(function(x) x$rel != "item", catalog@links)
+    catalog$links <- Filter(function(x) x$rel != "item", catalog$links)
 
     # Add updated item links
     for (item in stored_items) {
       if (catalog_type == "absolute") {
-        item_href <- paste0(base_url, "/", item@id, "/", item@id, ".json")
+        item_href <- paste0(base_url, "/", item$id, "/", item$id, ".json")
       } else {
-        item_href <- paste0("./", item@id, "/", item@id, ".json")
+        item_href <- paste0("./", item$id, "/", item$id, ".json")
       }
 
       catalog <- add_link(
@@ -511,7 +511,7 @@ update_catalog_links <- function(
         rel = "item",
         href = item_href,
         type = "application/geo+json",
-        title = item@properties$title
+        title = item$properties[["title"]]
       )
     }
   }
@@ -536,7 +536,7 @@ update_item_links <- function(
   # Update self link. `self_href` is NULL for self-contained and relative
   # catalogs, where items carry no self link because it would have to be
   # absolute.
-  item@links <- Filter(function(x) x$rel != "self", item@links)
+  item$links <- Filter(function(x) x$rel != "self", item$links)
   if (!is.null(self_href)) {
     item <- add_link(
       item,
@@ -548,7 +548,7 @@ update_item_links <- function(
 
   # Update parent link
   if (!is.null(parent_href)) {
-    item@links <- Filter(function(x) x$rel != "parent", item@links)
+    item$links <- Filter(function(x) x$rel != "parent", item$links)
     item <- add_link(
       item,
       rel = "parent",
@@ -557,7 +557,7 @@ update_item_links <- function(
     )
 
     # Only add collection link when parent is actually a collection
-    item@links <- Filter(function(x) x$rel != "collection", item@links)
+    item$links <- Filter(function(x) x$rel != "collection", item$links)
     if (parent_is_collection) {
       item <- add_link(
         item,
@@ -570,7 +570,7 @@ update_item_links <- function(
 
   # Update root link
   if (!is.null(root_href)) {
-    item@links <- Filter(function(x) x$rel != "root", item@links)
+    item$links <- Filter(function(x) x$rel != "root", item$links)
     item <- add_link(
       item,
       rel = "root",
@@ -596,22 +596,22 @@ update_item_links <- function(
 # @keywords internal
 reconcile_item_collection <- function(item) {
   has_link <- any(vapply(
-    item@links,
+    item$links,
     function(link) identical(link$rel, "collection"),
     logical(1)
   ))
-  has_field <- !is.null(item@collection)
+  has_field <- !is.null(item$collection)
 
   if (has_field && !has_link) {
     cli::cli_warn(c(
-      "Item {.val {item@id}} sets {.field collection} to {.val {item@collection}} but has no {.val collection} link.",
+      "Item {.val {item$id}} sets {.field collection} to {.val {item$collection}} but has no {.val collection} link.",
       "i" = "The Item schema does not allow the field without the link, so it has been dropped from the output.",
       ">" = "Keep the reference by adding the link: {.code add_link(item, \"collection\", href)}."
     ))
-    item@collection <- NULL
+    item$collection <- NULL
   } else if (has_link && !has_field) {
     cli::cli_warn(c(
-      "Item {.val {item@id}} has a {.val collection} link but no {.field collection} field.",
+      "Item {.val {item$id}} has a {.val collection} link but no {.field collection} field.",
       "i" = "The Item schema requires the field whenever the link is present, so the written item will not validate.",
       ">" = "Set it with {.code stac_item(..., collection = <id>)}."
     ))
@@ -712,32 +712,32 @@ url_join <- function(base, rel) {
 #'
 #' @noRd
 absolutize_asset_hrefs <- function(item, item_base_url) {
-  if (is.null(item@assets) || length(item@assets) == 0) {
+  if (is.null(item$assets) || length(item$assets) == 0) {
     return(item)
   }
 
   unresolved <- character(0)
 
-  item@assets <- lapply(item@assets, function(a) {
-    if (is.null(a@href)) {
+  item$assets <- lapply(item$assets, function(a) {
+    if (is.null(a$href)) {
       return(a)
     }
-    if (grepl("://", a@href, fixed = TRUE)) {
-      return(a)
-    }
-
-    if (startsWith(a@href, "/")) {
-      unresolved <<- c(unresolved, a@href)
+    if (grepl("://", a$href, fixed = TRUE)) {
       return(a)
     }
 
-    a@href <- url_join(item_base_url, a@href)
+    if (startsWith(a$href, "/")) {
+      unresolved <<- c(unresolved, a$href)
+      return(a)
+    }
+
+    a$href <- url_join(item_base_url, a$href)
     a
   })
 
   if (length(unresolved) > 0) {
     cli::cli_warn(c(
-      "Item {.val {item@id}} has local asset paths that cannot be made absolute.",
+      "Item {.val {item$id}} has local asset paths that cannot be made absolute.",
       "i" = "An absolute catalog requires absolute asset hrefs, but a local
              filesystem path has no URL equivalent.",
       "x" = "Left unchanged: {.file {unresolved}}",
@@ -754,12 +754,12 @@ absolutize_asset_hrefs <- function(item, item_base_url) {
 #'
 #' @noRd
 relativize_asset_hrefs <- function(item, item_dir) {
-  if (is.null(item@assets) || length(item@assets) == 0) {
+  if (is.null(item$assets) || length(item$assets) == 0) {
     return(item)
   }
-  item@assets <- lapply(item@assets, function(a) {
-    if (!is.null(a@href)) {
-      a@href <- make_relative_href(a@href, item_dir)
+  item$assets <- lapply(item$assets, function(a) {
+    if (!is.null(a$href)) {
+      a$href <- make_relative_href(a$href, item_dir)
     }
     a
   })
@@ -783,13 +783,13 @@ strip_stored_objects <- function(stac_obj) {
 #'
 #' @description
 #' Reads a STAC Catalog, Collection, or Item from a JSON file and returns the
-#' corresponding S7 object (`stac_catalog`, `stac_collection`, or `stac_item`).
+#' corresponding S3 object (`stac_catalog`, `stac_collection`, or `stac_item`).
 #' The returned object is fully usable with all package functions, completing
 #' the write/read round-trip.
 #'
 #' @param file (character, required) Path to the STAC JSON file.
 #'
-#' @return An S7 object of class `stac_catalog`, `stac_collection`, or
+#' @return An S3 object of class `stac_catalog`, `stac_collection`, or
 #'   `stac_item`, depending on the `type` field in the JSON.
 #'
 #' @examples
@@ -823,7 +823,7 @@ read_stac <- function(file) {
 }
 
 
-#' Reconstruct a stac_item S7 Object from a Parsed JSON List
+#' Reconstruct a stac_item S3 object from a Parsed JSON List
 #'
 #' @noRd
 parse_stac_item <- function(parsed) {
@@ -858,7 +858,7 @@ parse_stac_item <- function(parsed) {
 }
 
 
-#' Reconstruct a stac_catalog S7 Object from a Parsed JSON List
+#' Reconstruct a stac_catalog S3 object from a Parsed JSON List
 #'
 #' @noRd
 parse_stac_catalog <- function(parsed) {
@@ -891,18 +891,18 @@ parse_stac_catalog <- function(parsed) {
           unlist(parsed$conformsTo)
         } else {
           NULL
-        }
+        },
+        links = parsed$links %||% list()
       ),
       extra
     )
   )
 
-  catalog@links <- parsed$links %||% list()
   catalog
 }
 
 
-#' Reconstruct a stac_collection S7 Object from a Parsed JSON List
+#' Reconstruct a stac_collection S3 object from a Parsed JSON List
 #'
 #' @noRd
 parse_stac_collection <- function(parsed) {
@@ -961,13 +961,13 @@ parse_stac_collection <- function(parsed) {
           unlist(parsed$conformsTo)
         } else {
           NULL
-        }
+        },
+        links = parsed$links %||% list()
       ),
       extra
     )
   )
 
-  collection@links <- parsed$links %||% list()
   collection
 }
 
@@ -1001,7 +1001,7 @@ parse_stac_collection <- function(parsed) {
 #'
 #' @export
 get_children <- function(catalog, resolve = FALSE, base_path = ".") {
-  if (!S7::S7_inherits(catalog, stac_catalog)) {
+  if (!stac_inherits(catalog, stac_catalog)) {
     cli::cli_abort(
       "'catalog' must be a stac_catalog or stac_collection object"
     )
@@ -1013,8 +1013,8 @@ get_children <- function(catalog, resolve = FALSE, base_path = ".") {
   }
 
   child_links <- Filter(
-    function(link) !is.null(link$rel) && link$rel == "child",
-    catalog@links
+    function(link) link$rel == "child",
+    catalog$links
   )
 
   if (length(child_links) == 0) {
@@ -1031,7 +1031,7 @@ get_children <- function(catalog, resolve = FALSE, base_path = ".") {
   })
 
   # Name by child id
-  ids <- vapply(children, function(x) x@id, character(1))
+  ids <- vapply(children, function(x) x$id, character(1))
   stats::setNames(children, ids)
 }
 
@@ -1067,7 +1067,7 @@ get_children <- function(catalog, resolve = FALSE, base_path = ".") {
 #'
 #' @export
 get_items <- function(catalog, resolve = FALSE, base_path = ".") {
-  if (!S7::S7_inherits(catalog, stac_catalog)) {
+  if (!stac_inherits(catalog, stac_catalog)) {
     cli::cli_abort(
       "'catalog' must be a stac_catalog or stac_collection object"
     )
@@ -1079,8 +1079,8 @@ get_items <- function(catalog, resolve = FALSE, base_path = ".") {
   }
 
   item_links <- Filter(
-    function(link) !is.null(link$rel) && link$rel == "item",
-    catalog@links
+    function(link) link$rel == "item",
+    catalog$links
   )
 
   if (length(item_links) == 0) {

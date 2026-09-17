@@ -6,17 +6,17 @@ test_that("scientific_publication creates an object with both doi and citation",
     citation = "Smith, J. (2022). My Paper. Journal of Examples."
   )
 
-  expect_equal(pub@doi, "10.1000/abc456")
-  expect_equal(pub@citation, "Smith, J. (2022). My Paper. Journal of Examples.")
-  expect_true(S7::S7_inherits(pub, scientific_publication))
+  expect_equal(pub$doi, "10.1000/abc456")
+  expect_equal(pub$citation, "Smith, J. (2022). My Paper. Journal of Examples.")
+  expect_true(inherits(pub, "scientific_publication"))
 })
 
 test_that("scientific_publication creates an object with only doi", {
   pub <- scientific_publication(doi = "10.1000/abc456")
 
-  expect_equal(pub@doi, "10.1000/abc456")
-  expect_null(pub@citation)
-  expect_true(S7::S7_inherits(pub, scientific_publication))
+  expect_equal(pub$doi, "10.1000/abc456")
+  expect_null(pub$citation)
+  expect_true(inherits(pub, "scientific_publication"))
 })
 
 test_that("scientific_publication creates an object with only citation", {
@@ -24,9 +24,9 @@ test_that("scientific_publication creates an object with only citation", {
     citation = "Jones, A. (2020). Background Study."
   )
 
-  expect_equal(pub@citation, "Jones, A. (2020). Background Study.")
-  expect_null(pub@doi)
-  expect_true(S7::S7_inherits(pub, scientific_publication))
+  expect_equal(pub$citation, "Jones, A. (2020). Background Study.")
+  expect_null(pub$doi)
+  expect_true(inherits(pub, "scientific_publication"))
 })
 
 test_that("scientific_publication errors when neither doi nor citation is provided", {
@@ -69,19 +69,19 @@ test_that("scientific_publication remains valid when properties are modified", {
   pub <- scientific_publication(doi = "10.1000/abc456")
 
   expect_error(
-    pub@doi <- "https://doi.org/10.1000/abc456",
+    pub$doi <- "https://doi.org/10.1000/abc456",
     "not a URL"
   )
   expect_error(
-    pub@doi <- c("10.1000/a", "10.1000/b"),
+    pub$doi <- c("10.1000/a", "10.1000/b"),
     "single character string"
   )
   expect_error(
-    pub@citation <- c("a", "b"),
+    pub$citation <- c("a", "b"),
     "single character string"
   )
   expect_error(
-    pub@doi <- NULL,
+    pub$doi <- NULL,
     "At least one of @doi or @citation"
   )
 })
@@ -152,7 +152,7 @@ test_that("add_scientific_extension adds schema URI to stac_extensions", {
 
   expect_true(
     "https://stac-extensions.github.io/scientific/v1.0.0/schema.json" %in%
-      item@stac_extensions
+      item$stac_extensions
   )
 })
 
@@ -161,14 +161,14 @@ test_that("add_scientific_extension does not duplicate schema URI", {
     add_scientific_extension(doi = "10.1000/xyz123") |>
     add_scientific_extension(citation = "Smith (2023).")
 
-  n_sci_uris <- sum(grepl("scientific", item@stac_extensions))
+  n_sci_uris <- sum(grepl("scientific", item$stac_extensions))
   expect_equal(n_sci_uris, 1L)
 })
 
 test_that("add_scientific_extension writes sci:doi to item properties", {
   item <- add_scientific_extension(make_item(), doi = "10.1000/xyz123")
 
-  expect_equal(item@properties$`sci:doi`, "10.1000/xyz123")
+  expect_equal(item$properties$`sci:doi`, "10.1000/xyz123")
 })
 
 test_that("add_scientific_extension writes sci:citation to item properties", {
@@ -177,7 +177,7 @@ test_that("add_scientific_extension writes sci:citation to item properties", {
     citation = "Smith, J. (2023). My Dataset."
   )
 
-  expect_equal(item@properties$`sci:citation`, "Smith, J. (2023). My Dataset.")
+  expect_equal(item$properties$`sci:citation`, "Smith, J. (2023). My Dataset.")
 })
 
 test_that("add_scientific_extension writes sci:publications to item properties", {
@@ -187,22 +187,22 @@ test_that("add_scientific_extension writes sci:publications to item properties",
   )
   item <- add_scientific_extension(make_item(), publications = pubs)
 
-  expect_length(item@properties$`sci:publications`, 2)
-  expect_equal(item@properties$`sci:publications`[[1]]@doi, "10.1000/a")
-  expect_equal(item@properties$`sci:publications`[[2]]@citation, "Pub B.")
+  expect_length(item$properties$`sci:publications`, 2)
+  expect_equal(item$properties$`sci:publications`[[1]]$doi, "10.1000/a")
+  expect_equal(item$properties$`sci:publications`[[2]]$citation, "Pub B.")
 })
 
 test_that("add_scientific_extension appends a cite-as link when doi is provided", {
   item <- add_scientific_extension(make_item(), doi = "10.1000/xyz123")
 
-  link_rels <- vapply(item@links, `[[`, character(1), "rel")
+  link_rels <- vapply(item$links, function(link) link$rel, character(1))
   expect_true("cite-as" %in% link_rels)
 })
 
 test_that("add_scientific_extension cite-as link has the correct DOI URL", {
   item <- add_scientific_extension(make_item(), doi = "10.1000/xyz123")
 
-  cite_as_links <- Filter(function(l) l$rel == "cite-as", item@links)
+  cite_as_links <- Filter(function(l) l$rel == "cite-as", item$links)
   expect_length(cite_as_links, 1)
   expect_equal(cite_as_links[[1]]$href, "https://doi.org/10.1000/xyz123")
 })
@@ -213,7 +213,7 @@ test_that("add_scientific_extension does not duplicate cite-as link on repeated 
     add_scientific_extension(doi = "10.1000/xyz123")
 
   cite_as_count <- sum(vapply(
-    item@links,
+    item$links,
     function(l) l$rel == "cite-as",
     logical(1)
   ))
@@ -223,7 +223,7 @@ test_that("add_scientific_extension does not duplicate cite-as link on repeated 
 test_that("add_scientific_extension does not add cite-as link when no doi is given", {
   item <- add_scientific_extension(make_item(), citation = "Smith (2023).")
 
-  link_rels <- vapply(item@links, `[[`, character(1), "rel")
+  link_rels <- vapply(item$links, function(link) link$rel, character(1))
   expect_false("cite-as" %in% link_rels)
 })
 
@@ -236,10 +236,10 @@ test_that("add_scientific_extension can set all three fields at once", {
     publications = pubs
   )
 
-  expect_equal(item@properties$`sci:doi`, "10.1000/xyz123")
-  expect_equal(item@properties$`sci:citation`, "Smith (2023). Dataset.")
-  expect_length(item@properties$`sci:publications`, 1)
+  expect_equal(item$properties$`sci:doi`, "10.1000/xyz123")
+  expect_equal(item$properties$`sci:citation`, "Smith (2023). Dataset.")
+  expect_length(item$properties$`sci:publications`, 1)
 
-  cite_as_links <- Filter(function(l) l$rel == "cite-as", item@links)
+  cite_as_links <- Filter(function(l) l$rel == "cite-as", item$links)
   expect_length(cite_as_links, 1)
 })

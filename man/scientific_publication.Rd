@@ -17,7 +17,7 @@ information to uniquely identify the publication. At least one of \code{doi} or
 \code{citation} must be provided.}
 }
 \value{
-A \code{scientific_publication} S7 object. Access fields with \code{@}.
+A \code{scientific_publication} S3 object. Access fields with \code{$}.
 }
 \description{
 Creates a publication object for use with the Scientific Citation Extension.

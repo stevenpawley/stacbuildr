@@ -8,10 +8,10 @@ test_that("item_from_sf creates a valid item from a multi-feature sf object", {
 
   item <- item_from_sf(nc, id = "nc", datetime = "2025-01-01T00:00:00Z")
 
-  expect_true(S7::S7_inherits(item, stac_item))
-  expect_equal(item@id, "nc")
-  expect_equal(item@type, "Feature")
-  expect_equal(item@properties$datetime, "2025-01-01T00:00:00Z")
+  expect_true(inherits(item, "stac_item"))
+  expect_equal(item$id, "nc")
+  expect_equal(item$type, "Feature")
+  expect_equal(item$properties$datetime, "2025-01-01T00:00:00Z")
 })
 
 test_that("item_from_sf unions all features into a single geometry", {
@@ -20,8 +20,8 @@ test_that("item_from_sf unions all features into a single geometry", {
   item <- item_from_sf(nc, id = "nc", datetime = "2025-01-01T00:00:00Z")
 
   # 100 county polygons should be unioned into one MultiPolygon
-  expect_equal(item@geometry$type, "MultiPolygon")
-  expect_false(is.null(item@geometry$coordinates))
+  expect_equal(item$geometry$type, "MultiPolygon")
+  expect_false(is.null(item$geometry$coordinates))
 })
 
 test_that("item_from_sf reprojects non-WGS84 input to WGS84", {
@@ -32,7 +32,7 @@ test_that("item_from_sf reprojects non-WGS84 input to WGS84", {
   item <- item_from_sf(nc, id = "nc", datetime = "2025-01-01T00:00:00Z")
 
   # bbox should cover North Carolina in WGS84 degrees
-  bbox <- item@bbox
+  bbox <- item$bbox
   expect_length(bbox, 4)
   expect_true(bbox[1] > -85 && bbox[1] < -84) # xmin
   expect_true(bbox[2] > 33 && bbox[2] < 34) # ymin
@@ -50,18 +50,18 @@ test_that("item_from_sf adds a source asset when href is provided", {
     href = sf_file
   )
 
-  expect_true("source" %in% names(item@assets))
+  expect_true("source" %in% names(item$assets))
   expect_equal(
-    item@assets$source@href,
+    item$assets$source$href,
     gsub("\\\\", "/", normalizePath(sf_file))
   )
-  expect_equal(item@assets$source@roles, "data")
+  expect_equal(item$assets$source$roles, "data")
 })
 
 test_that("item_from_sf creates no assets when href is not provided", {
   nc <- sf::st_read(sf_file, quiet = TRUE)
   item <- item_from_sf(nc, id = "nc", datetime = "2025-01-01T00:00:00Z")
-  expect_length(item@assets, 0)
+  expect_length(item$assets, 0)
 })
 
 test_that("item_from_sf passes additional properties through", {
@@ -74,7 +74,7 @@ test_that("item_from_sf passes additional properties through", {
     properties = list(title = "North Carolina Counties")
   )
 
-  expect_equal(item@properties$title, "North Carolina Counties")
+  expect_equal(item$properties$title, "North Carolina Counties")
 })
 
 test_that("item_from_sf produces a valid STAC item", {
@@ -88,7 +88,7 @@ test_that("item_from_sf produces a valid STAC item", {
   )
 
   result <- validate_stac(item)
-  expect_true(result@valid)
+  expect_true(result$valid)
 })
 
 test_that("item_from_sf errors on non-sf input", {
@@ -107,15 +107,14 @@ test_that("geometry_from_sf returns a bare geometry, not a Feature", {
   # used to serialise as a whole Feature with a nested "geometry" member.
   geometry <- geometry_from_sf(nc[1, ])
 
-  expect_setequal(names(geometry), c("type", "coordinates"))
+  expect_true(inherits(geometry, "stac_geometry"))
   expect_equal(geometry$type, "MultiPolygon")
-  expect_false("properties" %in% names(geometry))
 
   # geometry-only input keeps working
   geometry_only <- geometry_from_sf(sf::st_sf(
     geometry = sf::st_geometry(nc[1, ])
   ))
-  expect_setequal(names(geometry_only), c("type", "coordinates"))
+  expect_true(inherits(geometry_only, "stac_geometry"))
 })
 
 test_that("geometry_from_sf preserves full coordinate precision", {
@@ -134,8 +133,8 @@ test_that("item_from_sf produces a schema-shaped geometry for one feature", {
 
   item <- item_from_sf(nc[1, ], id = "nc-1", datetime = "2025-01-01T00:00:00Z")
 
-  expect_setequal(names(item@geometry), c("type", "coordinates"))
-  expect_true(item@geometry$type %in% c("Polygon", "MultiPolygon"))
+  expect_true(inherits(item$geometry, "stac_geometry"))
+  expect_true(item$geometry$type %in% c("Polygon", "MultiPolygon"))
 })
 
 test_that("geometry_from_sf rejects an sf object with no geometries", {
@@ -153,7 +152,7 @@ test_that("item_from_sf accepts any WGS84 lon/lat CRS, not just EPSG:4326", {
   )
 
   item <- item_from_sf(crs84, id = "crs84", datetime = "2020-01-01T00:00:00Z")
-  expect_equal(item@bbox, c(10, 20, 10, 20), ignore_attr = TRUE)
+  expect_equal(item$bbox, c(10, 20, 10, 20), ignore_attr = TRUE)
 })
 
 test_that("item_from_sf reprojects a non-WGS84 CRS", {
@@ -163,7 +162,7 @@ test_that("item_from_sf reprojects a non-WGS84 CRS", {
   )
 
   item <- item_from_sf(webmerc, id = "3857", datetime = "2020-01-01T00:00:00Z")
-  expect_equal(item@bbox[1:2], c(10, 20), tolerance = 1e-4, ignore_attr = TRUE)
+  expect_equal(item$bbox[1:2], c(10, 20), tolerance = 1e-4, ignore_attr = TRUE)
 })
 
 test_that("item_from_sf reports a missing CRS instead of failing on NA", {

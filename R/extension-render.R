@@ -30,7 +30,7 @@
 #' @param bidx (numeric, optional) Band indexes to use for rendering.
 #' @param ... Additional fields allowed by the open-ended Render Object schema.
 #'
-#' @return A `render_object` S7 object. Access fields with `@`.
+#' @return A `render_object` S3 object. Access fields with `$`.
 #'
 #' @details
 #' ## Render Object Fields
@@ -68,27 +68,27 @@
 #' )
 #'
 #' @export
-render_object <- S7::new_class(
+render_object <- new_stac_class(
   "render_object",
   properties = list(
-    assets = S7::new_property(
-      S7::class_character,
+    assets = new_stac_property(
+      "character",
       validator = function(value) {
         if (length(value) == 0L) {
           "must be a non-empty character vector"
         }
       }
     ),
-    title = S7::new_property(
-      S7::class_any,
+    title = new_stac_property(
+      "any",
       validator = function(value) {
         if (!is.null(value) && (!is.character(value) || length(value) != 1L)) {
           "must be a single character string"
         }
       }
     ),
-    rescale = S7::new_property(
-      S7::class_any,
+    rescale = new_stac_property(
+      "any",
       validator = function(value) {
         if (!is.null(value) && (!is.list(value) || length(value) == 0L)) {
           return("must be a non-empty list of numeric vectors")
@@ -105,22 +105,22 @@ render_object <- S7::new_class(
         }
       }
     ),
-    nodata = S7::class_any,
-    colormap_name = S7::class_any,
-    colormap = S7::class_any,
-    color_formula = S7::class_any,
-    resampling = S7::class_any,
-    expression = S7::class_any,
-    minmax_zoom = S7::new_property(
-      S7::class_any,
+    nodata = "any",
+    colormap_name = "any",
+    colormap = "any",
+    color_formula = "any",
+    resampling = "any",
+    expression = "any",
+    minmax_zoom = new_stac_property(
+      "any",
       validator = function(value) {
         if (!is.null(value) && (!is.numeric(value) || length(value) != 2L)) {
           "must be a numeric vector of length 2"
         }
       }
     ),
-    bidx = S7::class_any,
-    extra_fields = S7::new_property(S7::class_list, default = list())
+    bidx = "any",
+    extra_fields = new_stac_property("list", default = list())
   ),
   constructor = function(
     assets,
@@ -140,8 +140,8 @@ render_object <- S7::new_class(
       cli::cli_abort("'assets' is required")
     }
 
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       assets = assets,
       title = title,
       rescale = rescale,
@@ -158,21 +158,23 @@ render_object <- S7::new_class(
   }
 )
 
-S7::method(as.list, render_object) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.render_object <- function(x, ...) {
   fields <- compact_nulls(list(
-    assets = as_json_array(x@assets),
-    title = x@title,
-    rescale = x@rescale,
-    nodata = x@nodata,
-    colormap_name = x@colormap_name,
-    colormap = x@colormap,
-    color_formula = x@color_formula,
-    resampling = x@resampling,
-    expression = x@expression,
-    minmax_zoom = x@minmax_zoom,
-    bidx = if (is.null(x@bidx)) NULL else as_json_array(x@bidx)
+    assets = as_json_array(x$assets),
+    title = x$title,
+    rescale = x$rescale,
+    nodata = x$nodata,
+    colormap_name = x$colormap_name,
+    colormap = x$colormap,
+    color_formula = x$color_formula,
+    resampling = x$resampling,
+    expression = x$expression,
+    minmax_zoom = x$minmax_zoom,
+    bidx = if (is.null(x$bidx)) NULL else as_json_array(x$bidx)
   ))
-  c(fields, x@extra_fields)
+  c(fields, x$extra_fields)
 }
 
 
@@ -260,8 +262,8 @@ S7::method(as.list, render_object) <- function(x, ...) {
 #' @export
 add_render_extension <- function(item, renders) {
   if (
-    !S7::S7_inherits(item, stac_item) &&
-      !S7::S7_inherits(item, stac_collection)
+    !stac_inherits(item, stac_item) &&
+      !stac_inherits(item, stac_collection)
   ) {
     cli::cli_abort("'item' must be a stac_item or stac_collection object")
   }
@@ -271,12 +273,12 @@ add_render_extension <- function(item, renders) {
   # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/render/v2.0.0/schema.json"
 
-  if (is.null(item@stac_extensions)) {
-    item@stac_extensions <- character(0)
+  if (is.null(item$stac_extensions)) {
+    item$stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item@stac_extensions) {
-    item@stac_extensions <- c(item@stac_extensions, ext_uri)
+  if (!ext_uri %in% item$stac_extensions) {
+    item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
 
   # Merge with existing renders, letting new keys overwrite existing ones.
@@ -289,13 +291,13 @@ add_render_extension <- function(item, renders) {
     existing
   }
 
-  if (S7::S7_inherits(item, stac_item)) {
-    item@properties$renders <- merge_renders(
-      item@properties$renders %||% list()
+  if (stac_inherits(item, stac_item)) {
+    item$properties[["renders"]] <- merge_renders(
+      item$properties[["renders"]] %||% list()
     )
   } else {
-    item@extra_fields$renders <- merge_renders(
-      item@extra_fields$renders %||% list()
+    item$extra_fields[["renders"]] <- merge_renders(
+      item$extra_fields[["renders"]] %||% list()
     )
   }
 
@@ -318,7 +320,7 @@ validate_render_named_list <- function(x) {
     cli::cli_abort("'renders' must not contain duplicate names")
   }
 
-  not_cls <- !vapply(x, S7::S7_inherits, logical(1), render_object)
+  not_cls <- !vapply(x, stac_inherits, logical(1), render_object)
   if (any(not_cls)) {
     cli::cli_abort("All elements of 'renders' must be render_object objects")
   }
@@ -333,23 +335,25 @@ validate_render_named_list <- function(x) {
 #' @param ... Additional arguments (ignored).
 #'
 #' @noRd
-S7::method(print, render_object) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.render_object <- function(x, ...) {
   stac_print_header("Render Object")
   fields <- c(
     compact_nulls(list(
-      assets = x@assets,
-      title = x@title,
-      rescale = x@rescale,
-      nodata = x@nodata,
-      colormap_name = x@colormap_name,
-      colormap = x@colormap,
-      color_formula = x@color_formula,
-      resampling = x@resampling,
-      expression = x@expression,
-      minmax_zoom = x@minmax_zoom,
-      bidx = x@bidx
+      assets = x$assets,
+      title = x$title,
+      rescale = x$rescale,
+      nodata = x$nodata,
+      colormap_name = x$colormap_name,
+      colormap = x$colormap,
+      color_formula = x$color_formula,
+      resampling = x$resampling,
+      expression = x$expression,
+      minmax_zoom = x$minmax_zoom,
+      bidx = x$bidx
     )),
-    x@extra_fields
+    x$extra_fields
   )
   stac_print_list_fields(fields, styles = list(assets = stac_style_key))
   invisible(x)

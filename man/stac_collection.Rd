@@ -103,7 +103,7 @@ to STAC API specifications or other standards. Introduced in STAC 1.1.0.}
 extensions or additional metadata beyond the core specification.}
 }
 \value{
-An S7 object of class \code{stac_collection} (extending \code{stac_catalog})
+An S3 object of class \code{stac_collection} (extending \code{stac_catalog})
 containing the collection metadata. Convert to a plain list for JSON
 serialization with \code{as.list()}, or write directly to disk using \code{write_stac()}.
 }

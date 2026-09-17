@@ -34,8 +34,8 @@ test_that("print dispatches for sub-object classes", {
   )
 
   for (cls in names(cases)) {
-    if (inherits(cases[[cls]], "S7_object")) {
-      expect_true(S7::S7_inherits(cases[[cls]], get(cls)))
+    if (inherits(cases[[cls]], "stac_object")) {
+      expect_true(inherits(cases[[cls]], cls))
     } else {
       expect_s3_class(cases[[cls]], cls)
     }
@@ -48,9 +48,9 @@ test_that("print dispatches for sub-object classes", {
 
 test_that("eo_band stores extension fields in extra_fields", {
   band <- eo_band(name = "B4", "raster:scale" = 1e-4)
-  expect_true(S7::S7_inherits(band, eo_band))
-  expect_equal(band@name, "B4")
-  expect_equal(band@extra_fields$`raster:scale`, 1e-4)
+  expect_true(inherits(band, "eo_band"))
+  expect_equal(band$name, "B4")
+  expect_equal(band$extra_fields$`raster:scale`, 1e-4)
 })
 
 test_that("every sub-object prints in the shared style", {
@@ -162,30 +162,30 @@ test_that("sub-object sections expand", {
   expect_true(any(grepl("minimum", out, fixed = TRUE)))
 })
 
-test_that("metadata helpers expose S7 properties", {
-  expect_equal(stac_asset(href = "./b4.tif")@href, "./b4.tif")
-  expect_equal(stac_provider(name = "USGS")@name, "USGS")
-  expect_equal(raster_statistics(minimum = 3)@minimum, 3)
-  expect_equal(eo_band(name = "B4")@name, "B4")
-  expect_equal(classification_class(1)@value, 1L)
+test_that("metadata helpers expose S3 fields", {
+  expect_equal(stac_asset(href = "./b4.tif")$href, "./b4.tif")
+  expect_equal(stac_provider(name = "USGS")$name, "USGS")
+  expect_equal(raster_statistics(minimum = 3)$minimum, 3)
+  expect_equal(eo_band(name = "B4")$name, "B4")
+  expect_equal(classification_class(1)$value, 1L)
   expect_equal(
-    classification_bitfield(0, 1, list(classification_class(0)))@offset,
+    classification_bitfield(0, 1, list(classification_class(0)))$offset,
     0L
   )
   expect_equal(
-    stac_summaries(platform = "landsat-8")@extra_fields$platform,
+    stac_summaries(platform = "landsat-8")$extra_fields$platform,
     list("landsat-8")
   )
 })
 
-test_that("classed helpers survive being embedded in S7 objects", {
+test_that("classed helpers survive being embedded in S3 objects", {
   band <- raster_band(
     data_type = "uint16",
     statistics = raster_statistics(minimum = 1, maximum = 10),
     histogram = raster_histogram(count = 2, min = 0, max = 1, buckets = c(1, 2))
   )
-  expect_true(S7::S7_inherits(band@statistics, raster_statistics))
-  expect_true(S7::S7_inherits(band@histogram, raster_histogram))
+  expect_true(inherits(band$statistics, "raster_statistics"))
+  expect_true(inherits(band$histogram, "raster_histogram"))
 
   item <- stac_item(
     id = "i",
@@ -194,7 +194,7 @@ test_that("classed helpers survive being embedded in S7 objects", {
     datetime = "2023-01-01T00:00:00Z"
   )
   item <- add_asset(item, "B4", href = "./b4.tif", type = "image/tiff")
-  expect_true(S7::S7_inherits(item@assets$B4, stac_asset))
+  expect_true(inherits(item$assets$B4, "stac_asset"))
 })
 
 test_that("the new classes do not leak into JSON", {
@@ -239,4 +239,12 @@ test_that("the eo_band class does not leak into JSON", {
   )
   band <- json$assets$B4$bands[[1]]
   expect_named(band, c("name", "eo:common_name"))
+})
+
+test_that("str() displays S3 fields without private validation metadata", {
+  band <- raster_band(data_type = "uint16")
+  output <- capture.output(str(band, max.level = 1))
+
+  expect_match(output[[1]], "List of")
+  expect_false(any(grepl("stac_properties|stac_validators", output)))
 })

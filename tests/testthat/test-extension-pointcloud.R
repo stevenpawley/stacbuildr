@@ -23,11 +23,11 @@ test_that("the extension writes its fields and schema URI", {
 
   expect_true(
     "https://stac-extensions.github.io/pointcloud/v2.0.0/schema.json" %in%
-      item@stac_extensions
+      item$stac_extensions
   )
-  expect_equal(item@properties$`pc:count`, 1000L)
-  expect_equal(item@properties$`pc:type`, "lidar")
-  expect_equal(item@properties$`pc:density`, 4.5)
+  expect_equal(item$properties$`pc:count`, 1000L)
+  expect_equal(item$properties$`pc:type`, "lidar")
+  expect_equal(item$properties$`pc:density`, 4.5)
 })
 
 test_that("count and type are required", {
@@ -62,8 +62,8 @@ test_that("counts beyond integer range survive as doubles", {
   big <- 5e9
   item <- add_pointcloud_extension(pc_test_item(), count = big, type = "lidar")
 
-  expect_equal(item@properties$`pc:count`, big)
-  json <- jsonlite::toJSON(item@properties$`pc:count`, auto_unbox = TRUE)
+  expect_equal(item$properties$`pc:count`, big)
+  json <- jsonlite::toJSON(item$properties$`pc:count`, auto_unbox = TRUE)
   expect_equal(as.character(json), "5000000000")
 })
 
@@ -76,7 +76,7 @@ test_that("an unsuggested pc:type warns but is kept", {
     ),
     "not one of the suggested values"
   )
-  expect_equal(item@properties$`pc:type`, "photogrammetry")
+  expect_equal(item$properties$`pc:type`, "photogrammetry")
 
   expect_silent(add_pointcloud_extension(
     pc_test_item(),
@@ -97,8 +97,8 @@ test_that("fields can go on an asset instead of properties", {
     asset_key = "data"
   )
 
-  expect_equal(item@assets$data@extra_fields$`pc:count`, 10L)
-  expect_null(item@properties$`pc:count`)
+  expect_equal(item$assets$data$extra_fields$`pc:count`, 10L)
+  expect_null(item$properties$`pc:count`)
   expect_error(
     add_pointcloud_extension(
       pc_test_item(),
@@ -112,8 +112,8 @@ test_that("fields can go on an asset instead of properties", {
 
 test_that("pc_schema validates name, size and type", {
   s <- pc_schema("X", size = 8, type = "floating")
-  expect_true(S7::S7_inherits(s, pc_schema))
-  expect_equal(s@size, 8L)
+  expect_true(inherits(s, "pc_schema"))
+  expect_equal(s$size, 8L)
 
   expect_error(
     pc_schema("X", size = 8, type = "double"),
@@ -126,35 +126,35 @@ test_that("pc_schema validates name, size and type", {
 
 test_that("pointcloud sub-objects validate property modifications", {
   schema <- pc_schema("X", size = 8, type = "floating")
-  schema@size <- 4
-  expect_identical(schema@size, 4L)
-  expect_error(schema@name <- "", "non-empty string")
-  expect_error(schema@size <- 0L, "greater than 0")
-  expect_error(schema@size <- 1.5, "whole number")
-  expect_error(schema@type <- "double", "floating, unsigned, or signed")
+  schema$size <- 4
+  expect_identical(schema$size, 4L)
+  expect_error(schema$name <- "", "non-empty string")
+  expect_error(schema$size <- 0L, "greater than 0")
+  expect_error(schema$size <- 1.5, "whole number")
+  expect_error(schema$type <- "double", "floating, unsigned, or signed")
 
   statistic <- pc_statistic("Z", minimum = 0)
-  statistic@position <- 2
-  statistic@count <- 10
-  expect_identical(statistic@position, 2L)
-  expect_identical(statistic@count, 10L)
-  expect_error(statistic@name <- "", "non-empty string")
-  expect_error(statistic@position <- -1L, "greater than or equal to 0")
-  expect_error(statistic@position <- 1.5, "whole number")
-  expect_error(statistic@minimum <- c(0, 1), "single number")
-  expect_error(statistic@count <- 1.5, "whole number")
+  statistic$position <- 2
+  statistic$count <- 10
+  expect_identical(statistic$position, 2L)
+  expect_identical(statistic$count, 10L)
+  expect_error(statistic$name <- "", "non-empty string")
+  expect_error(statistic$position <- -1L, "greater than or equal to 0")
+  expect_error(statistic$position <- 1.5, "whole number")
+  expect_error(statistic$minimum <- c(0, 1), "single number")
+  expect_error(statistic$count <- 1.5, "whole number")
 
-  statistic@count <- NULL
-  statistic@position <- NULL
-  expect_error(statistic@minimum <- NULL, "at least one statistic")
+  statistic$count <- NULL
+  statistic$position <- NULL
+  expect_error(statistic$minimum <- NULL, "at least one statistic")
 })
 
 test_that("pc_statistic needs at least one statistic beside the name", {
   expect_error(pc_statistic("Z"), "at least one statistic")
 
   s <- pc_statistic("Z", position = 2, minimum = 1, maximum = 9)
-  expect_true(S7::S7_inherits(s, pc_statistic))
-  expect_equal(s@position, 2L)
+  expect_true(inherits(s, "pc_statistic"))
+  expect_equal(s$position, 2L)
   # fields follow the specification's order, not the argument order
   expect_equal(names(as.list(s)), c("name", "position", "maximum", "minimum"))
 

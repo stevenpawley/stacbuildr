@@ -22,8 +22,8 @@ raster_histogram(
 Length must equal \code{count}.}
 }
 \value{
-An S7 raster histogram object. Access its properties with \code{@}, for
-example \code{hist@count} and \code{hist@buckets}.
+An S3 raster histogram object. Access its fields with \code{$}, for
+example \code{hist$count} and \code{hist$buckets}.
 }
 \description{
 Creates a histogram object describing the distribution of pixel values in a
@@ -38,7 +38,7 @@ hist <- raster_histogram(
   max = 100,
   buckets = c(1500, 3200, 4100, 2800, 1400)
 )
-hist@count
-hist@buckets
+hist$count
+hist$buckets
 
 }

@@ -32,9 +32,10 @@ full definition.}
 \item{projjson}{(list, optional) The CRS as a PROJJSON object, supplied as a
 named list.}
 
-\item{geometry}{(list, optional) A GeoJSON geometry giving the footprint in
-the native CRS, as a named list with \code{type} and \code{coordinates}. Unlike the
-Item's own \code{geometry}, this is \emph{not} reprojected to WGS84.}
+\item{geometry}{(stac_geometry or list, optional) A GeoJSON geometry giving
+the footprint in the native CRS. Plain lists are converted to S3 geometry
+objects. Unlike the Item's own \code{geometry}, this is \emph{not} reprojected to
+WGS84.}
 
 \item{bbox}{(numeric, optional) Bounding box in the native CRS: four values
 (\verb{xmin, ymin, xmax, ymax}) for 2D data, or six
@@ -113,7 +114,7 @@ item <- add_projection_extension(
   bbox = c(712710, 5487090, 999480, 5654790)
 )
 
-item@properties$`proj:code`
+item$properties[["proj:code"]]
 
 # Per-asset placement, for assets at different resolutions
 item <- add_asset(

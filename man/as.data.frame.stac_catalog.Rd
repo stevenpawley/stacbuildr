@@ -2,7 +2,7 @@
 % Please edit documentation in R/coercion.R
 \name{as.data.frame.stac_catalog}
 \alias{as.data.frame.stac_catalog}
-\alias{as.data.frame,stacbuildr::stac_item-method}
+\alias{as.data.frame.stac_item}
 \title{Coerce a STAC Catalog, Collection or Item to a Data Frame}
 \arguments{
 \item{x}{A \code{stac_catalog}, \code{stac_collection} or \code{stac_item} object.}

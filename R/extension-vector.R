@@ -86,7 +86,7 @@ add_vector_extension <- function(
   reference_scale = NULL,
   asset_key = NULL
 ) {
-  if (!S7::S7_inherits(item, stac_item)) {
+  if (!stac_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -156,12 +156,12 @@ add_vector_extension <- function(
   # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/vector/v0.1.0/schema.json"
 
-  if (is.null(item@stac_extensions)) {
-    item@stac_extensions <- character(0)
+  if (is.null(item$stac_extensions)) {
+    item$stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item@stac_extensions) {
-    item@stac_extensions <- c(item@stac_extensions, ext_uri)
+  if (!ext_uri %in% item$stac_extensions) {
+    item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
 
   fields <- list()
@@ -180,19 +180,19 @@ add_vector_extension <- function(
 
   if (!is.null(asset_key)) {
     # Add to specific asset
-    if (is.null(item@assets[[asset_key]])) {
+    if (is.null(item$assets[[asset_key]])) {
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
 
     for (field_name in names(fields)) {
-      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[
+      item$assets[[asset_key]]$extra_fields[[field_name]] <- fields[[
         field_name
       ]]
     }
   } else {
     # Add to item properties
     for (field_name in names(fields)) {
-      item@properties[[field_name]] <- fields[[field_name]]
+      item$properties[[field_name]] <- fields[[field_name]]
     }
   }
 

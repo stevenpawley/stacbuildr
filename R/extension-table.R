@@ -110,7 +110,7 @@ add_table_extension <- function(
   storage_options = NULL,
   asset_key = NULL
 ) {
-  if (!S7::S7_inherits(item, stac_item)) {
+  if (!stac_inherits(item, stac_item)) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -131,7 +131,7 @@ add_table_extension <- function(
         "'columns' must be a non-empty list of table_column objects"
       )
     }
-    not_col <- !vapply(columns, S7::S7_inherits, logical(1), table_column)
+    not_col <- !vapply(columns, stac_inherits, logical(1), table_column)
     if (any(not_col)) {
       cli::cli_abort("All elements of 'columns' must be table_column objects")
     }
@@ -165,7 +165,7 @@ add_table_extension <- function(
     if (!is.character(asset_key) || length(asset_key) != 1) {
       cli::cli_abort("'asset_key' must be a single character string")
     }
-    if (is.null(item@assets[[asset_key]])) {
+    if (is.null(item$assets[[asset_key]])) {
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
   }
@@ -173,12 +173,12 @@ add_table_extension <- function(
   # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/table/v1.2.0/schema.json"
 
-  if (is.null(item@stac_extensions)) {
-    item@stac_extensions <- character(0)
+  if (is.null(item$stac_extensions)) {
+    item$stac_extensions <- character(0)
   }
 
-  if (!ext_uri %in% item@stac_extensions) {
-    item@stac_extensions <- c(item@stac_extensions, ext_uri)
+  if (!ext_uri %in% item$stac_extensions) {
+    item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
 
   # table:columns, table:primary_geometry and table:row_count follow
@@ -198,11 +198,11 @@ add_table_extension <- function(
 
   if (is.null(asset_key)) {
     for (field_name in names(fields)) {
-      item@properties[[field_name]] <- fields[[field_name]]
+      item$properties[[field_name]] <- fields[[field_name]]
     }
   } else {
     for (field_name in names(fields)) {
-      item@assets[[asset_key]]@extra_fields[[field_name]] <- fields[[
+      item$assets[[asset_key]]$extra_fields[[field_name]] <- fields[[
         field_name
       ]]
     }
@@ -210,9 +210,9 @@ add_table_extension <- function(
 
   # table:storage_options is always an asset-level field
   if (!is.null(storage_options)) {
-    item@assets[[
+    item$assets[[
       asset_key
-    ]]@extra_fields$`table:storage_options` <- storage_options
+    ]]$extra_fields[["table:storage_options"]] <- storage_options
   }
 
   item
@@ -234,7 +234,7 @@ add_table_extension <- function(
 #'   `"string"`, `"bool"`, `"binary"`).
 #' @param ... Additional fields for the column object.
 #'
-#' @return A `table_column` S7 object. Access fields with `@`.
+#' @return A `table_column` S3 object. Access fields with `$`.
 #'
 #' @examples
 #' # A geometry column
@@ -248,28 +248,28 @@ add_table_extension <- function(
 #' col <- table_column(name = "elevation", type = "double")
 #'
 #' @export
-table_column <- S7::new_class(
+table_column <- new_stac_class(
   "table_column",
   properties = list(
-    name = S7::new_property(
-      S7::class_character,
+    name = new_stac_property(
+      "character",
       validator = function(value) {
         if (length(value) != 1L) {
           "must be a single character string"
         }
       }
     ),
-    description = S7::new_union(S7::class_character, NULL),
-    type = S7::new_union(S7::class_character, NULL),
-    extra_fields = S7::new_property(S7::class_list, default = list())
+    description = new_stac_union("character", NULL),
+    type = new_stac_union("character", NULL),
+    extra_fields = new_stac_property("list", default = list())
   ),
   constructor = function(name, description = NULL, type = NULL, ...) {
     if (missing(name)) {
       cli::cli_abort("'name' is required")
     }
 
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       name = name,
       description = description,
       type = type,
@@ -278,14 +278,16 @@ table_column <- S7::new_class(
   }
 )
 
-S7::method(as.list, table_column) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.table_column <- function(x, ...) {
   c(
     compact_nulls(list(
-      name = x@name,
-      description = x@description,
-      type = x@type
+      name = x$name,
+      description = x$description,
+      type = x$type
     )),
-    x@extra_fields
+    x$extra_fields
   )
 }
 
@@ -296,16 +298,18 @@ S7::method(as.list, table_column) <- function(x, ...) {
 #' @param ... Additional arguments (ignored).
 #'
 #' @noRd
-S7::method(print, table_column) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.table_column <- function(x, ...) {
   stac_print_header("Table Column")
   stac_print_list_fields(
     c(
       compact_nulls(list(
-        name = x@name,
-        description = x@description,
-        type = x@type
+        name = x$name,
+        description = x$description,
+        type = x$type
       )),
-      x@extra_fields
+      x$extra_fields
     ),
     styles = list(name = stac_style_id, type = stac_style_key)
   )

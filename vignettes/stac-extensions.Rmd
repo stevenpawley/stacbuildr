@@ -80,7 +80,7 @@ item <- item |>
 Nearly every `add_*_extension()` function takes an `asset_key` argument, and the
 choice it controls matters more than it first appears.
 
-* **Omit `asset_key`** and the fields land in `item@properties`. This says the
+* **Omit `asset_key`** and the fields land in `item$properties`. This says the
   metadata describes the whole scene.
 * **Pass `asset_key`** and the fields land on that asset. This says the metadata
   describes only that file.
@@ -141,8 +141,8 @@ item <- item |>
     asset_key = "nir"
   )
 
-item@properties$`eo:cloud_cover`
-item@assets$red@extra_fields$bands
+item$properties[["eo:cloud_cover"]]
+item$assets[["red"]]$extra_fields[["bands"]]
 ```
 
 Note the pattern above: calling `add_eo_extension()` several times is fine. The
@@ -168,9 +168,9 @@ wrong, so the package ships presets:
 bands <- landsat_oli_bands()
 length(bands)
 list(
-  name = bands[[4]]@name,
-  `eo:common_name` = bands[[4]]@common_name,
-  `eo:center_wavelength` = bands[[4]]@center_wavelength
+  name = bands[[4]]$name,
+  `eo:common_name` = bands[[4]]$common_name,
+  `eo:center_wavelength` = bands[[4]]$center_wavelength
 )
 ```
 
@@ -185,7 +185,7 @@ Where EO describes the *physics* of a band, the
 *pixels*: data type, nodata value, ground sample distance, and the scale/offset
 needed to turn stored integers into physical units.
 
-`raster_band()` is an S7 object rather than a plain list, so typos in
+`raster_band()` is an S3 object rather than a plain list, so typos in
 `data_type` are caught as they are written.
 
 ```{r}
@@ -207,7 +207,7 @@ red_band <- raster_band(
 
 item <- add_raster_extension(item, bands = list(red_band), asset_key = "red")
 
-item@assets$red@extra_fields$bands[[1]]$`raster:scale`
+item$assets[["red"]]$extra_fields[["bands"]][[1]][["raster:scale"]]
 ```
 
 Raster v2.0.0 made the same move as EO: the band objects go in the shared
@@ -269,7 +269,7 @@ combined_item <- item |>
     asset_key = "red"
   )
 
-names(combined_item@assets$red@extra_fields$bands[[1]])
+names(combined_item$assets[["red"]]$extra_fields[["bands"]][[1]])
 ```
 
 A list of a different length is taken to describe different bands and replaces
@@ -372,8 +372,8 @@ qa_item <- add_classification_extension(
 )
 
 vapply(
-  qa_item@properties$`classification:bitfields`,
-  function(bitfield) bitfield@name,
+  qa_item$properties[["classification:bitfields"]],
+  function(bitfield) bitfield$name,
   character(1)
 )
 ```
@@ -410,7 +410,7 @@ item <- add_render_extension(
   )
 )
 
-names(item@properties$renders)
+names(item$properties[["renders"]])
 ```
 
 `rescale` is a list of two-element numeric vectors, one per band being
@@ -457,7 +457,7 @@ item <- add_scientific_extension(
   )
 )
 
-item@properties$`sci:doi`
+item$properties[["sci:doi"]]
 ```
 
 `doi` must be a bare DOI name, not a URL — clients build the resolver link
@@ -521,9 +521,9 @@ parcels <- stac_item(
     asset_key = "data"
   )
 
-vapply(parcels@properties$`table:columns`, function(column) column@name,
+vapply(parcels$properties[["table:columns"]], function(column) column$name,
        character(1))
-names(parcels@assets$data@extra_fields$`table:storage_options`)
+names(parcels$assets[["data"]]$extra_fields[["table:storage_options"]])
 ```
 
 When one item bundles several tables with different schemas, pass `asset_key`
@@ -553,8 +553,8 @@ multi <- stac_item(
     asset_key = "persons"
   )
 
-vapply(multi@assets$persons@extra_fields$`table:columns`,
-       function(column) column@name, character(1))
+vapply(multi$assets[["persons"]]$extra_fields[["table:columns"]],
+       function(column) column$name, character(1))
 ```
 
 One caveat on how much the spec backs any of this. The item/asset split is
@@ -582,7 +582,7 @@ parcels <- add_vector_extension(
   reference_scale = 50000
 )
 
-parcels@properties[c("vector:geometry_types", "vector:reference_scale")]
+parcels$properties[c("vector:geometry_types", "vector:reference_scale")]
 ```
 
 `geometry_types` is checked against the seven GeoJSON geometry type names, so
@@ -652,7 +652,7 @@ cube <- stac_item(
     )
   )
 
-names(cube@properties$`cube:dimensions`)
+names(cube$properties[["cube:dimensions"]])
 ```
 
 A few points that are easy to get wrong:
@@ -705,7 +705,7 @@ cloud <- add_pointcloud_extension(
   )
 )
 
-cloud@properties[c("pc:count", "pc:type", "pc:density")]
+cloud$properties[c("pc:count", "pc:type", "pc:density")]
 ```
 
 Two details are worth knowing before you write these by hand.
@@ -740,14 +740,14 @@ f <- system.file("extdata", "Megaplot.laz", package = "lidR")
 
 tile <- item_from_lidr(f, datetime = "2023-06-15T00:00:00Z")
 
-tile@properties[c("pc:count", "pc:density", "proj:code")]
+tile$properties[c("pc:count", "pc:density", "proj:code")]
 ```
 
 The dimension schema is derived from the file's point data record format and
 from any Extra Bytes record it declares:
 
 ```{r, eval = requireNamespace("lidR", quietly = TRUE)}
-vapply(tile@properties$`pc:schemas`, function(s) s@name, character(1))
+vapply(tile$properties[["pc:schemas"]], function(s) s$name, character(1))
 ```
 
 Statistics are the one thing the header cannot fully supply. It carries the X,
@@ -795,7 +795,7 @@ proj_item <- stac_item(
     bbox = c(712710, 5487090, 999480, 5654790)
   )
 
-proj_item@properties[c("proj:code", "proj:shape")]
+proj_item$properties[c("proj:code", "proj:shape")]
 ```
 
 `proj:code` is an `AUTHORITY:CODE` string — it replaced the bare-integer
@@ -818,7 +818,7 @@ structural rules and needs no extra dependencies:
 
 ```{r}
 result <- validate_stac(item)
-result@valid
+result$valid
 ```
 
 `validate_stac_schema()` goes further, fetching the official JSON schemas and
@@ -851,7 +851,7 @@ through.
 Here is the finished set of extensions on our scene:
 
 ```{r}
-item@stac_extensions
+item$stac_extensions
 ```
 
 ## Where to go next

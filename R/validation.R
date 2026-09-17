@@ -8,19 +8,19 @@
 #' @param strict (logical, optional) If TRUE, enforces stricter validation including
 #'   recommended fields. Default is FALSE.
 #'
-#' @return A `stac_validation` S7 object with properties:
+#' @return A `stac_validation` S3 object with properties:
 #'   * `valid`: Logical indicating if the object is valid
 #'   * `errors`: Character vector of error messages (empty if valid)
 #'   * `warnings`: Character vector of warning messages for missing recommended fields
 #'
 #' @export
 validate_stac <- function(stac_object, strict = FALSE) {
-  # Validate the formal S7 class hierarchy.
-  if (S7::S7_inherits(stac_object, stac_item)) {
+  # Validate the formal S3 class hierarchy.
+  if (stac_inherits(stac_object, stac_item)) {
     validate_item(stac_object)
-  } else if (S7::S7_inherits(stac_object, stac_collection)) {
+  } else if (stac_inherits(stac_object, stac_collection)) {
     validate_collection(stac_object, strict)
-  } else if (S7::S7_inherits(stac_object, stac_catalog)) {
+  } else if (stac_inherits(stac_object, stac_catalog)) {
     validate_catalog(stac_object, strict)
   } else {
     new_stac_validation(
@@ -31,25 +31,25 @@ validate_stac <- function(stac_object, strict = FALSE) {
 
 
 # Result returned by every validator.
-stac_validation <- S7::new_class(
+stac_validation <- new_stac_class(
   "stac_validation",
   properties = list(
-    valid = S7::new_property(
-      S7::class_logical,
+    valid = new_stac_property(
+      "logical",
       validator = function(value) {
         if (length(value) != 1L || is.na(value)) "must be TRUE or FALSE"
       }
     ),
-    errors = S7::class_character,
-    warnings = S7::class_character
+    errors = "character",
+    warnings = "character"
   ),
   constructor = function(
     errors = character(),
     warnings = character(),
     valid = NULL
   ) {
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       valid = valid %||% (length(errors) == 0L),
       errors = errors,
       warnings = warnings
@@ -57,8 +57,10 @@ stac_validation <- S7::new_class(
   }
 )
 
-S7::method(as.list, stac_validation) <- function(x, ...) {
-  list(valid = x@valid, errors = x@errors, warnings = x@warnings)
+#'
+#' @exportS3Method
+as.list.stac_validation <- function(x, ...) {
+  list(valid = x$valid, errors = x$errors, warnings = x$warnings)
 }
 
 new_stac_validation <- function(
@@ -79,21 +81,23 @@ new_stac_validation <- function(
 #' @return `x`, invisibly.
 #'
 #' @noRd
-S7::method(print, stac_validation) <- function(x, ...) {
+#'
+#' @exportS3Method
+print.stac_validation <- function(x, ...) {
   stac_print_header("STAC Validation")
 
-  if (isTRUE(x@valid)) {
+  if (isTRUE(x$valid)) {
     cat(sprintf(
       "  %s %s\n",
       stac_style_ok(stac_sym("tick")),
       stac_style_ok("valid")
     ))
   } else {
-    stac_print_issues(x@errors, "error", stac_sym("cross"), stac_style_bad)
+    stac_print_issues(x$errors, "error", stac_sym("cross"), stac_style_bad)
   }
 
   # warnings are reported whether or not the object is valid
-  stac_print_issues(x@warnings, "warning", stac_sym("info"), stac_style_warn)
+  stac_print_issues(x$warnings, "warning", stac_sym("info"), stac_style_warn)
 
   invisible(x)
 }
@@ -135,42 +139,42 @@ validate_catalog <- function(catalog, strict = FALSE) {
   warnings <- character()
 
   # Check required fields
-  if (is.null(catalog@type) || catalog@type != "Catalog") {
+  if (is.null(catalog$type) || catalog$type != "Catalog") {
     errors <- c(errors, "Field 'type' must be 'Catalog'")
   }
 
-  if (is.null(catalog@stac_version)) {
+  if (is.null(catalog$stac_version)) {
     errors <- c(errors, "Field 'stac_version' is required")
   }
 
-  if (is.null(catalog@id) || nchar(catalog@id) == 0) {
+  if (is.null(catalog$id) || nchar(catalog$id) == 0) {
     errors <- c(errors, "Field 'id' is required and must be non-empty")
   }
 
-  if (is.null(catalog@description) || nchar(catalog@description) == 0) {
+  if (is.null(catalog$description) || nchar(catalog$description) == 0) {
     errors <- c(errors, "Field 'description' is required and must be non-empty")
   }
 
-  if (is.null(catalog@links)) {
+  if (is.null(catalog$links)) {
     errors <- c(errors, "Field 'links' is required (can be empty list)")
-  } else if (!is.list(catalog@links)) {
+  } else if (!is.list(catalog$links)) {
     errors <- c(errors, "Field 'links' must be a list")
   }
 
   # Validate links
-  if (!is.null(catalog@links) && length(catalog@links) > 0) {
-    link_errors <- validate_links(catalog@links)
+  if (!is.null(catalog$links) && length(catalog$links) > 0) {
+    link_errors <- validate_links(catalog$links)
     errors <- c(errors, link_errors)
   }
 
   # Check recommended fields
-  if (strict && is.null(catalog@title)) {
+  if (strict && is.null(catalog$title)) {
     warnings <- c(warnings, "Field 'title' is recommended")
   }
 
   # Validate stac_extensions if present
-  if (!is.null(catalog@stac_extensions)) {
-    if (!is.character(catalog@stac_extensions)) {
+  if (!is.null(catalog$stac_extensions)) {
+    if (!is.character(catalog$stac_extensions)) {
       errors <- c(errors, "Field 'stac_extensions' must be an array of strings")
     }
   }
@@ -187,62 +191,62 @@ validate_collection <- function(collection, strict = FALSE) {
   warnings <- character()
 
   # Check required fields
-  if (is.null(collection@type) || collection@type != "Collection") {
+  if (is.null(collection$type) || collection$type != "Collection") {
     errors <- c(errors, "Field 'type' must be 'Collection'")
   }
 
-  if (is.null(collection@stac_version)) {
+  if (is.null(collection$stac_version)) {
     errors <- c(errors, "Field 'stac_version' is required")
   }
 
-  if (is.null(collection@id) || nchar(collection@id) == 0) {
+  if (is.null(collection$id) || nchar(collection$id) == 0) {
     errors <- c(errors, "Field 'id' is required and must be non-empty")
   }
 
-  if (is.null(collection@description) || nchar(collection@description) == 0) {
+  if (is.null(collection$description) || nchar(collection$description) == 0) {
     errors <- c(errors, "Field 'description' is required and must be non-empty")
   }
 
-  if (is.null(collection@license) || nchar(collection@license) == 0) {
+  if (is.null(collection$license) || nchar(collection$license) == 0) {
     errors <- c(errors, "Field 'license' is required and must be non-empty")
   }
 
   # Validate extent
-  if (is.null(collection@extent)) {
+  if (is.null(collection$extent)) {
     errors <- c(errors, "Field 'extent' is required")
   } else {
-    extent_errors <- validate_extent(collection@extent)
+    extent_errors <- validate_extent(collection$extent)
     errors <- c(errors, extent_errors)
   }
 
-  if (is.null(collection@links)) {
+  if (is.null(collection$links)) {
     errors <- c(errors, "Field 'links' is required (can be empty array)")
-  } else if (!is.list(collection@links)) {
+  } else if (!is.list(collection$links)) {
     errors <- c(errors, "Field 'links' must be an array")
   }
 
   # Validate links
-  if (!is.null(collection@links) && length(collection@links) > 0) {
-    link_errors <- validate_links(collection@links)
+  if (!is.null(collection$links) && length(collection$links) > 0) {
+    link_errors <- validate_links(collection$links)
     errors <- c(errors, link_errors)
   }
 
   # Check recommended fields
   if (strict) {
-    if (is.null(collection@title)) {
+    if (is.null(collection$title)) {
       warnings <- c(warnings, "Field 'title' is recommended")
     }
-    if (is.null(collection@keywords)) {
+    if (is.null(collection$keywords)) {
       warnings <- c(warnings, "Field 'keywords' is recommended")
     }
-    if (is.null(collection@providers)) {
+    if (is.null(collection$providers)) {
       warnings <- c(warnings, "Field 'providers' is recommended")
     }
   }
 
   # Validate providers if present
-  if (!is.null(collection@providers)) {
-    provider_errors <- validate_providers(collection@providers)
+  if (!is.null(collection$providers)) {
+    provider_errors <- validate_providers(collection$providers)
     errors <- c(errors, provider_errors)
   }
 
@@ -257,64 +261,64 @@ validate_item <- function(item) {
   errors <- character()
 
   # Check required fields
-  if (is.null(item@type) || item@type != "Feature") {
+  if (is.null(item$type) || item$type != "Feature") {
     errors <- c(errors, "Field 'type' must be 'Feature'")
   }
 
-  if (is.null(item@stac_version)) {
+  if (is.null(item$stac_version)) {
     errors <- c(errors, "Field 'stac_version' is required")
   }
 
-  if (is.null(item@id) || nchar(item@id) == 0) {
+  if (is.null(item$id) || nchar(item$id) == 0) {
     errors <- c(errors, "Field 'id' is required and must be non-empty")
   }
 
   # Validate geometry and bbox
-  if (!is.null(item@geometry)) {
-    geom_errors <- validate_geometry(item@geometry)
+  if (!is.null(item$geometry)) {
+    geom_errors <- validate_geometry(item$geometry)
     errors <- c(errors, geom_errors)
 
-    if (is.null(item@bbox)) {
+    if (is.null(item$bbox)) {
       errors <- c(errors, "Field 'bbox' is required when geometry is not null")
     } else {
-      bbox_errors <- validate_bbox(item@bbox)
+      bbox_errors <- validate_bbox(item$bbox)
       errors <- c(errors, bbox_errors)
     }
   } else {
-    if (!is.null(item@bbox)) {
+    if (!is.null(item$bbox)) {
       errors <- c(errors, "Field 'bbox' is prohibited when geometry is null")
     }
   }
 
   # Validate properties
-  if (is.null(item@properties)) {
+  if (is.null(item$properties)) {
     errors <- c(errors, "Field 'properties' is required")
   } else {
-    prop_errors <- validate_item_properties(item@properties)
+    prop_errors <- validate_item_properties(item$properties)
     errors <- c(errors, prop_errors)
   }
 
-  if (is.null(item@links)) {
+  if (is.null(item$links)) {
     errors <- c(errors, "Field 'links' is required (can be empty array)")
-  } else if (!is.list(item@links)) {
+  } else if (!is.list(item$links)) {
     errors <- c(errors, "Field 'links' must be an array")
   }
 
-  if (is.null(item@assets)) {
+  if (is.null(item$assets)) {
     errors <- c(errors, "Field 'assets' is required (can be empty object)")
-  } else if (!is.list(item@assets)) {
+  } else if (!is.list(item$assets)) {
     errors <- c(errors, "Field 'assets' must be an object")
   }
 
   # Validate links
-  if (!is.null(item@links) && length(item@links) > 0) {
-    link_errors <- validate_links(item@links)
+  if (!is.null(item$links) && length(item$links) > 0) {
+    link_errors <- validate_links(item$links)
     errors <- c(errors, link_errors)
   }
 
   # Validate assets
-  if (!is.null(item@assets) && length(item@assets) > 0) {
-    asset_errors <- validate_assets(item@assets)
+  if (!is.null(item$assets) && length(item$assets) > 0) {
+    asset_errors <- validate_assets(item$assets)
     errors <- c(errors, asset_errors)
   }
 
@@ -331,15 +335,16 @@ validate_links <- function(links) {
   for (i in seq_along(links)) {
     link <- links[[i]]
 
-    if (!is.list(link)) {
-      errors <- c(errors, paste0("Link[", i, "] must be a list object"))
+    if (!stac_inherits(link, stac_link)) {
+      errors <- c(errors, paste0("Link[", i, "] must be a stac_link object"))
+      next
     }
 
-    if (is.null(link$rel) || nchar(link$rel) == 0) {
+    if (nchar(link$rel) == 0) {
       errors <- c(errors, paste0("Link[", i, "] must have 'rel' field"))
     }
 
-    if (is.null(link$href) || nchar(link$href) == 0) {
+    if (nchar(link$href) == 0) {
       errors <- c(errors, paste0("Link[", i, "] must have 'href' field"))
     }
 
@@ -364,7 +369,7 @@ validate_assets <- function(assets) {
   for (key in asset_keys) {
     asset <- assets[[key]]
 
-    if (!S7::S7_inherits(asset, stac_asset)) {
+    if (!stac_inherits(asset, stac_asset)) {
       errors <- c(
         errors,
         paste0("Asset '", key, "' must be a stac_asset object")
@@ -372,11 +377,11 @@ validate_assets <- function(assets) {
       next
     }
 
-    if (length(asset@href) != 1L || is.na(asset@href) || !nzchar(asset@href)) {
+    if (length(asset$href) != 1L || is.na(asset$href) || !nzchar(asset$href)) {
       errors <- c(errors, paste0("Asset '", key, "' must have 'href' field"))
     }
 
-    if (!is.null(asset@roles) && !is.character(asset@roles)) {
+    if (!is.null(asset$roles) && !is.character(asset$roles)) {
       errors <- c(
         errors,
         paste0("Asset '", key, "' 'roles' must be a character vector")
@@ -408,8 +413,8 @@ validate_assets <- function(assets) {
 validate_extent <- function(extent) {
   errors <- character()
 
-  # Convert S7 Extent objects to plain list for validation
-  if (S7::S7_inherits(extent)) {
+  # Convert classed extent objects to plain lists for validation.
+  if (inherits(extent, "Extent")) {
     extent <- as.list(extent)
   }
 
@@ -421,7 +426,7 @@ validate_extent <- function(extent) {
   if (is.null(extent$spatial)) {
     errors <- c(errors, "Field 'extent$spatial' is required")
   } else {
-    spatial <- if (S7::S7_inherits(extent$spatial)) {
+    spatial <- if (inherits(extent$spatial, "SpatialExtent")) {
       as.list(extent$spatial)
     } else {
       extent$spatial
@@ -446,7 +451,7 @@ validate_extent <- function(extent) {
   if (is.null(extent$temporal)) {
     errors <- c(errors, "Field 'extent$temporal' is required")
   } else {
-    temporal <- if (S7::S7_inherits(extent$temporal)) {
+    temporal <- if (inherits(extent$temporal, "TemporalExtent")) {
       as.list(extent$temporal)
     } else {
       extent$temporal
@@ -519,6 +524,7 @@ validate_bbox <- function(bbox, prefix = "bbox") {
 #'
 #' @noRd
 validate_geometry <- function(geometry) {
+  geometry <- stac_json_value(geometry)
   if (!is.list(geometry)) {
     return("Field 'geometry' must be a GeoJSON geometry object")
   }
@@ -867,7 +873,7 @@ validate_item_properties <- function(properties) {
 #'   Extension errors are prefixed with the extension schema URI.
 #' * `warnings` — always an empty character vector (reserved for future use).
 #'
-#' @return A `stac_validation` S7 object with `valid`, `errors`, and `warnings`
+#' @return A `stac_validation` S3 object with `valid`, `errors`, and `warnings`
 #'   properties.
 #'
 #' @seealso [validate_stac()] for fast, offline structural checks.
@@ -885,8 +891,8 @@ validate_item_properties <- function(properties) {
 #'
 #' \dontrun{
 #' result <- validate_stac_schema(item)
-#' result@valid
-#' result@errors
+#' result$valid
+#' result$errors
 #' }
 #'
 #' @export
@@ -899,8 +905,8 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
   }
 
   if (
-    !S7::S7_inherits(stac_object, stac_item) &&
-      !S7::S7_inherits(stac_object, stac_catalog)
+    !stac_inherits(stac_object, stac_item) &&
+      !stac_inherits(stac_object, stac_catalog)
   ) {
     return(new_stac_validation(
       errors = "Object must be a stac_catalog, stac_collection, or stac_item"
@@ -908,14 +914,14 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
   }
 
   json <- stac_to_json(stac_object)
-  stac_version <- stac_object@stac_version %||% "1.0.0"
+  stac_version <- stac_object$stac_version %||% "1.0.0"
   core_url <- stac_core_schema_url(stac_object, stac_version)
 
   errors <- run_schema_validation(json, core_url)
 
   ext_errors <- character()
   if (validate_extensions) {
-    ext_uris <- tryCatch(stac_object@stac_extensions, error = function(e) NULL)
+    ext_uris <- tryCatch(stac_object$stac_extensions, error = function(e) NULL)
     for (ext_uri in ext_uris) {
       errs <- run_schema_validation(json, ext_uri)
       if (length(errs) > 0) {
@@ -936,9 +942,9 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
 # @keywords internal
 stac_core_schema_url <- function(stac_object, stac_version) {
   base <- paste0("https://schemas.stacspec.org/v", stac_version)
-  if (S7::S7_inherits(stac_object, stac_item)) {
+  if (stac_inherits(stac_object, stac_item)) {
     paste0(base, "/item-spec/json-schema/item.json")
-  } else if (S7::S7_inherits(stac_object, stac_collection)) {
+  } else if (stac_inherits(stac_object, stac_collection)) {
     paste0(base, "/collection-spec/json-schema/collection.json")
   } else {
     paste0(base, "/catalog-spec/json-schema/catalog.json")
@@ -1214,7 +1220,7 @@ validate_providers <- function(providers) {
   for (i in seq_along(providers)) {
     provider <- providers[[i]]
 
-    if (!S7::S7_inherits(provider, stac_provider)) {
+    if (!stac_inherits(provider, stac_provider)) {
       errors <- c(
         errors,
         paste0("Provider[", i, "] must be a stac_provider object")
@@ -1223,17 +1229,17 @@ validate_providers <- function(providers) {
     }
 
     if (
-      length(provider@name) != 1L ||
-        is.na(provider@name) ||
-        !nzchar(provider@name)
+      length(provider$name) != 1L ||
+        is.na(provider$name) ||
+        !nzchar(provider$name)
     ) {
       errors <- c(errors, paste0("Provider[", i, "] must have 'name' field"))
     }
 
-    if (!is.null(provider@roles)) {
+    if (!is.null(provider$roles)) {
       valid_roles <- c("producer", "licensor", "processor", "host")
-      if (is.character(provider@roles)) {
-        invalid <- setdiff(provider@roles, valid_roles)
+      if (is.character(provider$roles)) {
+        invalid <- setdiff(provider$roles, valid_roles)
         if (length(invalid) > 0) {
           errors <- c(
             errors,

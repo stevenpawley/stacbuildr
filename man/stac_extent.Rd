@@ -18,7 +18,7 @@ intervals: \code{list("start", NULL)}. Times should be in ISO 8601 format.
 Note: use \code{list()} not \code{c()} - \code{c()} drops \code{NULL}, producing an invalid interval.}
 }
 \value{
-An \code{Extent} S7 object formatted for STAC Collections.
+An \code{Extent} S3 object formatted for STAC Collections.
 }
 \description{
 Helper function to create a properly formatted extent object for STAC Collections.

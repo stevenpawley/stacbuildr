@@ -1,5 +1,5 @@
-property_id <- S7::new_property(
-  class = S7::class_character,
+property_id <- new_stac_property(
+  class = "character",
   validator = function(value) {
     if (length(value) == 0 || nchar(value) == 0) {
       return("'id' must be a non-empty character string")
@@ -7,8 +7,8 @@ property_id <- S7::new_property(
   }
 )
 
-property_description <- S7::new_property(
-  class = S7::class_character,
+property_description <- new_stac_property(
+  class = "character",
   validator = function(value) {
     if (length(value) == 0 || nchar(value) == 0) {
       return("'description' must be a non-empty character string")
@@ -51,9 +51,9 @@ property_description <- S7::new_property(
 #'   conformance to STAC API specifications or other standards. Typically used
 #'   when the catalog is served via an API. Introduced in STAC 1.1.0. Default
 #'   is `NULL`.
-#' @param links (list, optional) Initial list of link objects. Links are
-#'   typically managed via `add_link()`, `add_child()`, and related helpers
-#'   after construction. Default is an empty list.
+#' @param links (list, optional) Initial list of [stac_link()] objects or plain
+#'   link lists. Plain lists are converted to S3 link objects. Links are
+#'   typically managed via `add_link()`, `add_child()`, and related helpers.
 #' @param ... Additional fields to include in the catalog. Any extra named
 #'   arguments will be added to the catalog object. This allows for custom
 #'   extensions or additional metadata beyond the core specification.
@@ -89,7 +89,7 @@ property_description <- S7::new_property(
 #' parameter with their full schema URI. Note that most extensions apply to
 #' Items or Collections rather than Catalogs.
 #'
-#' @return An S7 object of class `stac_catalog` containing the catalog metadata.
+#' @return An S3 object of class `stac_catalog` containing the catalog metadata.
 #'   Convert to a plain list for JSON serialization with `as.list()`, or write
 #'   directly to disk using `write_stac()`.
 #'
@@ -158,27 +158,40 @@ property_description <- S7::new_property(
 #' cat(catalog_json)
 #'
 #' @export
-stac_catalog <- S7::new_class(
+stac_catalog <- new_stac_class(
   "stac_catalog",
   properties = list(
     id = property_id,
     description = property_description,
-    title = S7::new_property(
-      S7::new_union(S7::class_character, NULL),
+    title = new_stac_property(
+      new_stac_union("character", NULL),
       default = NULL
     ),
-    stac_version = S7::new_property(S7::class_character, default = "1.1.0"),
-    type = S7::new_property(S7::class_character, default = "Catalog"),
-    stac_extensions = S7::new_property(
-      S7::new_union(S7::class_character, NULL),
+    stac_version = new_stac_property("character", default = "1.1.0"),
+    type = new_stac_property("character", default = "Catalog"),
+    stac_extensions = new_stac_property(
+      new_stac_union("character", NULL),
       default = NULL
     ),
-    conformsTo = S7::new_property(
-      S7::new_union(S7::class_character, NULL),
+    conformsTo = new_stac_property(
+      new_stac_union("character", NULL),
       default = NULL
     ),
-    links = S7::new_property(S7::class_list, default = list()),
-    extra_fields = S7::new_property(S7::class_list, default = list())
+    links = new_stac_property(
+      "list",
+      default = list(),
+      validator = function(value) {
+        if (!all(vapply(
+          value,
+          stac_inherits,
+          logical(1),
+          class = stac_link
+        ))) {
+          "must contain only stac_link objects"
+        }
+      }
+    ),
+    extra_fields = new_stac_property("list", default = list())
   ),
   constructor = function(
     id,
@@ -191,8 +204,8 @@ stac_catalog <- S7::new_class(
     links = list(),
     ...
   ) {
-    S7::new_object(
-      S7::S7_object(),
+    new_stac_object(
+      list(),
       type = type,
       stac_version = stac_version,
       id = id,
@@ -200,48 +213,50 @@ stac_catalog <- S7::new_class(
       title = title,
       stac_extensions = stac_extensions,
       conformsTo = conformsTo,
-      links = links,
+      links = normalize_links(links),
       extra_fields = list(...)
     )
   },
   validator = function(self) {
-    if (nchar(self@stac_version) == 0) {
+    if (nchar(self$stac_version) == 0) {
       return("'stac_version' must be a non-empty string")
     }
     # type is enforced by each concrete subclass ("Catalog" / "Collection");
     # here we just guard against values that are clearly wrong
-    if (!self@type %in% c("Catalog", "Collection")) {
+    if (!self$type %in% c("Catalog", "Collection")) {
       return(sprintf(
         "'type' must be 'Catalog' or 'Collection', got '%s'",
-        self@type
+        self$type
       ))
     }
     NULL
   }
 )
 
-S7::method(as.list, stac_catalog) <- function(x, ...) {
+#'
+#' @exportS3Method
+as.list.stac_catalog <- function(x, ...) {
   out <- list(
-    type = x@type,
-    stac_version = x@stac_version,
-    id = x@id,
-    description = x@description
+    type = x$type,
+    stac_version = x$stac_version,
+    id = x$id,
+    description = x$description
   )
-  if (!is.null(x@title)) {
-    out$title <- x@title
+  if (!is.null(x$title)) {
+    out$title <- x$title
   }
   if (
-    !is.null(x@stac_extensions) &&
-      length(x@stac_extensions) > 0
+    !is.null(x$stac_extensions) &&
+      length(x$stac_extensions) > 0
   ) {
-    out$stac_extensions <- as.list(x@stac_extensions)
+    out$stac_extensions <- as.list(x$stac_extensions)
   }
-  if (!is.null(x@conformsTo) && length(x@conformsTo) > 0) {
-    out$conformsTo <- as_json_array(x@conformsTo)
+  if (!is.null(x$conformsTo) && length(x$conformsTo) > 0) {
+    out$conformsTo <- as_json_array(x$conformsTo)
   }
-  out$links <- x@links
-  if (length(x@extra_fields) > 0) {
-    out <- c(out, x@extra_fields)
+  out$links <- stac_json_value(x$links)
+  if (length(x$extra_fields) > 0) {
+    out <- c(out, x$extra_fields)
   }
   out
 }
@@ -255,18 +270,20 @@ S7::method(as.list, stac_catalog) <- function(x, ...) {
 #'   a character vector of section names to expand only those, e.g.
 #'   `c("links", "children")`. Defaults to the `stacbuildr.print.expand` option.
 #' @noRd
-S7::method(print, stac_catalog) <- function(x, ..., expand = NULL) {
-  stac_print_header(paste("STAC", x@type))
-  stac_print_field("id", x@id, stac_style_id)
+#'
+#' @exportS3Method
+print.stac_catalog <- function(x, ..., expand = NULL) {
+  stac_print_header(paste("STAC", x$type))
+  stac_print_field("id", x$id, stac_style_id)
 
-  if (!is.null(x@title)) {
-    stac_print_field("title", x@title)
+  if (!is.null(x$title)) {
+    stac_print_field("title", x$title)
   }
 
-  stac_print_field("stac_version", x@stac_version, stac_style_muted)
-  stac_print_field("description", stac_truncate(x@description))
+  stac_print_field("stac_version", x$stac_version, stac_style_muted)
+  stac_print_field("description", stac_truncate(x$description))
 
-  extensions <- x@stac_extensions %||% character(0)
+  extensions <- x$stac_extensions %||% character(0)
   children <- attr(x, "stac_children") %||% list()
   items <- attr(x, "stac_items") %||% list()
 
@@ -282,13 +299,13 @@ S7::method(print, stac_catalog) <- function(x, ..., expand = NULL) {
     },
     stac_print_section(
       "links",
-      length(x@links),
+      length(x$links),
       summary = stac_preview(vapply(
-        x@links,
-        function(l) l$rel %||% "",
+        x$links,
+        function(l) l$rel,
         character(1)
       )),
-      lines = function() stac_link_lines(x@links),
+      lines = function() stac_link_lines(x$links),
       expanded = stac_expanded(expand, "links")
     ),
     stac_print_section(
@@ -302,7 +319,7 @@ S7::method(print, stac_catalog) <- function(x, ..., expand = NULL) {
       stac_print_section(
         "items",
         length(items),
-        summary = stac_preview(vapply(items, function(i) i@id, character(1))),
+        summary = stac_preview(vapply(items, function(i) i$id, character(1))),
         lines = function() stac_item_lines(items),
         expanded = stac_expanded(expand, "items")
       )
@@ -341,8 +358,11 @@ S7::method(print, stac_catalog) <- function(x, ..., expand = NULL) {
 #'   (typically used with POST requests). Default is `NULL`.
 #' @param merge (logical, optional) Whether to merge the link body with the
 #'   current resource when following the link. Default is `FALSE`.
+#' @param ... Additional link fields retained in `link$extra_fields` and
+#'   included during JSON serialization.
 #'
-#' @return A list representing a STAC link object with NULL values removed.
+#' @return A `stac_link` S3 object. Access fields with `$`, for example
+#'   `link$rel` and `link$href`.
 #'
 #' @seealso
 #' * [add_link()] for adding links to STAC objects
@@ -352,40 +372,88 @@ S7::method(print, stac_catalog) <- function(x, ..., expand = NULL) {
 #' STAC Link Object specification:
 #' \url{https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md#link-object}
 #'
-#' @noRd
-stac_link <- function(
-  rel,
-  href,
-  type = NULL,
-  title = NULL,
-  method = NULL,
-  headers = NULL,
-  body = NULL,
-  merge = FALSE
-) {
-  link <- list(rel = rel, href = href)
+#' @examples
+#' link <- stac_link("self", "https://example.com/catalog.json")
+#' link$rel
+#' link$href
+#'
+#' @export
+stac_link <- new_stac_class(
+  "stac_link",
+  properties = list(
+    rel = new_stac_property("character", validator = function(value) {
+      if (length(value) != 1L || is.na(value) || !nzchar(value)) {
+        "must be a non-empty string"
+      }
+    }),
+    href = new_stac_property("character", validator = function(value) {
+      if (length(value) != 1L || is.na(value) || !nzchar(value)) {
+        "must be a non-empty string"
+      }
+    }),
+    type = new_stac_union("character", NULL),
+    title = new_stac_union("character", NULL),
+    method = new_stac_union("character", NULL),
+    headers = new_stac_property("any", default = NULL),
+    body = new_stac_property("any", default = NULL),
+    merge = new_stac_property("logical", default = FALSE),
+    extra_fields = new_stac_property("list", default = list())
+  ),
+  constructor = function(
+    rel,
+    href,
+    type = NULL,
+    title = NULL,
+    method = NULL,
+    headers = NULL,
+    body = NULL,
+    merge = FALSE,
+    ...
+  ) {
+    new_stac_object(
+      list(),
+      rel = rel,
+      href = href,
+      type = type,
+      title = title,
+      method = method,
+      headers = headers,
+      body = body,
+      merge = merge,
+      extra_fields = list(...)
+    )
+  }
+)
 
-  if (!is.null(type)) {
-    link$type <- type
+#'
+#' @exportS3Method
+as.list.stac_link <- function(x, ...) {
+  out <- list(rel = x$rel, href = x$href)
+  for (field in c("type", "title", "method", "headers", "body")) {
+    value <- x[[field]]
+    if (!is.null(value)) out[[field]] <- value
   }
-  if (!is.null(title)) {
-    link$title <- title
-  }
-  if (!is.null(method)) {
-    link$method <- method
-  }
-  if (!is.null(headers)) {
-    link$headers <- headers
-  }
-  if (!is.null(body)) {
-    link$body <- body
-  }
-  if (merge) {
-    link$merge <- merge
-  }
+  if (isTRUE(x$merge)) out[["merge"]] <- TRUE
+  c(out, x$extra_fields)
+}
 
-  # Remove NULL values
-  link[!sapply(link, is.null)]
+as_stac_link <- function(x) {
+  if (stac_inherits(x, stac_link)) {
+    return(x)
+  }
+  if (!is.list(x) || is.null(x[["rel"]]) || is.null(x[["href"]])) {
+    cli::cli_abort(c(
+      "Each link must be a stac_link or a list with 'rel' and 'href' fields.",
+      "i" = "Use stac_link() to build one."
+    ))
+  }
+  do.call(stac_link, x)
+}
+
+normalize_links <- function(x) {
+  if (is.null(x)) return(list())
+  if (!is.list(x)) cli::cli_abort("'links' must be a list of link objects.")
+  lapply(x, as_stac_link)
 }
 
 
@@ -438,7 +506,7 @@ stac_link <- function(
 #' @export
 add_link <- function(catalog, rel, href, ...) {
   new_link <- stac_link(rel = rel, href = href, ...)
-  catalog@links <- c(catalog@links, list(new_link))
+  catalog$links <- c(catalog$links, list(new_link))
   catalog
 }
 
@@ -483,21 +551,21 @@ add_link <- function(catalog, rel, href, ...) {
 #'
 #' @export
 add_child <- function(catalog, child, href = NULL, title = NULL) {
-  if (!S7::S7_inherits(child, stac_catalog)) {
+  if (!stac_inherits(child, stac_catalog)) {
     cli::cli_abort("'child' must be a stac_catalog or stac_collection object")
   }
 
   check_duplicate_ids(
-    new_ids = child@id,
+    new_ids = child$id,
     existing_ids = names(attr(catalog, "stac_children") %||% list()),
     what = "a child"
   )
 
   if (is.null(href)) {
-    if (S7::S7_inherits(child, stac_collection)) {
-      href <- paste0("./", child@id, "/collection.json")
+    if (stac_inherits(child, stac_collection)) {
+      href <- paste0("./", child$id, "/collection.json")
     } else {
-      href <- paste0("./", child@id, "/catalog.json")
+      href <- paste0("./", child$id, "/catalog.json")
     }
   }
 
@@ -506,7 +574,7 @@ add_child <- function(catalog, child, href = NULL, title = NULL) {
     rel = "child",
     href = href,
     type = "application/json",
-    title = title %||% child@title
+    title = title %||% child$title
   )
 
   # Store child object so write_stac() can recurse into it
@@ -514,7 +582,7 @@ add_child <- function(catalog, child, href = NULL, title = NULL) {
   if (is.null(stored_children)) {
     stored_children <- list()
   }
-  stored_children[[child@id]] <- child
+  stored_children[[child$id]] <- child
   attr(catalog, "stac_children") <- stored_children
 
   catalog
