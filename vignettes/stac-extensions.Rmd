@@ -207,7 +207,7 @@ red_band <- raster_band(
 
 item <- add_raster_extension(item, bands = list(red_band), asset_key = "red")
 
-item$assets[["red"]]$extra_fields[["bands"]][[1]][["raster:scale"]]
+item$assets$red$extra_fields$bands[[1]][["raster:scale"]]
 ```
 
 Raster v2.0.0 made the same move as EO: the band objects go in the shared
