@@ -164,53 +164,22 @@ stac_catalog <- function(
   )
 
   # Validation
-  # Catalog identifier
-  id_is_char <- is.character(object[["id"]])
-  if (!id_is_char) {
-    cli::cli_abort("id must be character.")
-  }
-  id_is_nonempty <- length(object[["id"]]) > 0 && nchar(object[["id"]]) > 0
-  if (!id_is_nonempty) {
-    cli::cli_abort(paste("id", "must be a non-empty character string"))
-  }
-
-  # Catalog description
-  description_is_char <- is.character(object[["description"]])
-  if (!description_is_char) {
-    cli::cli_abort("description must be character.")
-  }
-  description_is_nonempty <- length(object[["description"]]) > 0 &&
-    nchar(object[["description"]]) > 0
-  if (!description_is_nonempty) {
-    cli::cli_abort(paste("description", "must be a non-empty character string"))
-  }
-
-  # Catalog title
-  title_is_char_or_null <- is.character(object[["title"]]) ||
-    is.null(object[["title"]])
-  if (!title_is_char_or_null) {
-    cli::cli_abort("title must be character or NULL.")
-  }
-  if (!is.character(object[["stac_version"]])) {
-    cli::cli_abort("stac_version must be character.")
-  }
-  if (!is.character(object[["type"]])) {
-    cli::cli_abort("type must be character.")
-  }
-
-  # Extensions
-  stac_extensions_is_char_or_null <-
-    is.character(object[["stac_extensions"]]) ||
-    is.null(object[["stac_extensions"]])
-  if (!stac_extensions_is_char_or_null) {
-    cli::cli_abort("stac_extensions must be character or NULL.")
-  }
-  # Conforms
-  conforms_to_is_char_or_null <-
-    is.character(object[["conformsTo"]]) || is.null(object[["conformsTo"]])
-  if (!conforms_to_is_char_or_null) {
-    cli::cli_abort("conformsTo must be character or NULL.")
-  }
+  check_single_character(object$id, "id")
+  check_single_character(object$description, "description")
+  check_single_character(
+    object$title,
+    "title",
+    allow_null = TRUE,
+    allow_empty = TRUE
+  )
+  check_single_character(object$stac_version, "stac_version")
+  check_single_character(object$type, "type")
+  check_character_vector(
+    object$stac_extensions,
+    "stac_extensions",
+    allow_null = TRUE
+  )
+  check_character_vector(object$conformsTo, "conformsTo", allow_null = TRUE)
   # Links
   if (!is.list(object[["links"]])) {
     cli::cli_abort("links must be list.")
@@ -223,10 +192,6 @@ stac_catalog <- function(
   # Extra fields
   if (!is.list(object[["extra_fields"]])) {
     cli::cli_abort("extra_fields must be list.")
-  }
-  # STAC version
-  if (nchar(object$stac_version) == 0) {
-    cli::cli_abort("'stac_version' must be a non-empty string")
   }
   # Type
   if (!object$type %in% c("Catalog", "Collection")) {
@@ -425,51 +390,27 @@ stac_link <- function(
     extra_fields = list(...)
   )
   # Validation
-  # Link relation type
-  rel_is_char <- is.character(object[["rel"]])
-  if (!rel_is_char) {
-    cli::cli_abort("rel must be character.")
-  }
-  # Link target URI
-  rel_is_nonempty <- length(object[["rel"]]) == 1L &&
-    !is.na(object[["rel"]]) &&
-    nzchar(object[["rel"]])
-  if (!rel_is_nonempty) {
-    cli::cli_abort(paste("rel", "must be a non-empty string"))
-  }
-  # Link target URI
-  href_is_char <- is.character(object[["href"]])
-  if (!href_is_char) {
-    cli::cli_abort("href must be character.")
-  }
-  href_is_nonempty <- length(object[["href"]]) == 1L &&
-    !is.na(object[["href"]]) &&
-    nzchar(object[["href"]])
-  if (!href_is_nonempty) {
-    cli::cli_abort(paste("href", "must be a non-empty string"))
-  }
-  # Media type of the link target
-  type_is_char_or_null <-
-    is.character(object[["type"]]) || is.null(object[["type"]])
-  if (!type_is_char_or_null) {
-    cli::cli_abort("type must be character or NULL.")
-  }
-  # Link title
-  title_is_char_or_null <-
-    is.character(object[["title"]]) || is.null(object[["title"]])
-  if (!title_is_char_or_null) {
-    cli::cli_abort("title must be character or NULL.")
-  }
-  # HTTP method for the link request
-  method_is_char_or_null <-
-    is.character(object[["method"]]) || is.null(object[["method"]])
-  if (!method_is_char_or_null) {
-    cli::cli_abort("method must be character or NULL.")
-  }
-  # Merge behavior for POST link bodies
-  if (!is.logical(object[["merge"]])) {
-    cli::cli_abort("merge must be logical.")
-  }
+  check_single_character(object$rel, "rel")
+  check_single_character(object$href, "href")
+  check_single_character(
+    object$type,
+    "type",
+    allow_null = TRUE,
+    allow_empty = TRUE
+  )
+  check_single_character(
+    object$title,
+    "title",
+    allow_null = TRUE,
+    allow_empty = TRUE
+  )
+  check_single_character(
+    object$method,
+    "method",
+    allow_null = TRUE,
+    allow_empty = TRUE
+  )
+  check_flag(object$merge, "merge")
   # Additional unstructured fields
   if (!is.list(object[["extra_fields"]])) {
     cli::cli_abort("extra_fields must be list.")

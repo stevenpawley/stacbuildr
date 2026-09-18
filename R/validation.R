@@ -42,18 +42,9 @@ stac_validation <- function(
     errors = errors,
     warnings = warnings
   )
-  if (!is.logical(object[["valid"]])) {
-    cli::cli_abort("valid must be logical.")
-  }
-  if (length(object[["valid"]]) != 1L || is.na(object[["valid"]])) {
-    cli::cli_abort(paste("valid", "must be TRUE or FALSE"))
-  }
-  if (!is.character(object[["errors"]])) {
-    cli::cli_abort("errors must be character.")
-  }
-  if (!is.character(object[["warnings"]])) {
-    cli::cli_abort("warnings must be character.")
-  }
+  check_flag(object$valid, "valid")
+  check_character_vector(object$errors, "errors")
+  check_character_vector(object$warnings, "warnings")
   class(object) <- c("stac_validation", "stac_object")
   return(object)
 }

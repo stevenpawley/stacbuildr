@@ -263,15 +263,9 @@ stac_item <- function(
     stac_extensions = stac_extensions,
     collection = collection
   )
-  if (!is.character(object[["type"]])) {
-    cli::cli_abort("type must be character.")
-  }
-  if (!is.character(object[["stac_version"]])) {
-    cli::cli_abort("stac_version must be character.")
-  }
-  if (!is.character(object[["id"]])) {
-    cli::cli_abort("id must be character.")
-  }
+  check_single_character(object$type, "type")
+  check_single_character(object$stac_version, "stac_version")
+  check_single_character(object$id, "id")
   if (
     !(inherits(object[["geometry"]], "stac_geometry") ||
       is.null(object[["geometry"]]))
@@ -295,20 +289,12 @@ stac_item <- function(
   if (!is.list(object[["assets"]])) {
     cli::cli_abort("assets must be list.")
   }
-  if (
-    !(is.character(object[["stac_extensions"]]) ||
-      is.null(object[["stac_extensions"]]))
-  ) {
-    cli::cli_abort("stac_extensions must be character or NULL.")
-  }
-  if (
-    !(is.character(object[["collection"]]) || is.null(object[["collection"]]))
-  ) {
-    cli::cli_abort("collection must be character or NULL.")
-  }
-  if (length(object$id) == 0 || nchar(object$id) == 0) {
-    cli::cli_abort("'id' must be a non-empty string")
-  }
+  check_character_vector(
+    object$stac_extensions,
+    "stac_extensions",
+    allow_null = TRUE
+  )
+  check_single_character(object$collection, "collection", allow_null = TRUE)
   if (object$type != "Feature") {
     cli::cli_abort("'type' must be 'Feature'")
   }
