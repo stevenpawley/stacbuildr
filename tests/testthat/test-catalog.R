@@ -1,7 +1,6 @@
 test_that("catalog structure matches pystac output", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
 
   # Common catalog parameters
@@ -57,8 +56,7 @@ test_that("catalog structure matches pystac output", {
 
 test_that("collection structure matches pystac output", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
 
   # Common collection parameters
@@ -126,8 +124,7 @@ test_that("collection structure matches pystac output", {
 
 test_that("item structure matches pystac output", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -198,8 +195,7 @@ test_that("item structure matches pystac output", {
 
 test_that("catalog with child catalogs matches pystac", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
 
   # Create R parent and child catalogs

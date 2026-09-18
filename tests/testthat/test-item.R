@@ -59,8 +59,7 @@ test_that("link serialization retains standard and additional fields", {
 })
 
 test_that("item with assets matches pystac", {
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -156,8 +155,7 @@ test_that("item with assets matches pystac", {
 
 test_that("item with links matches pystac", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -241,8 +239,7 @@ test_that("item with links matches pystac", {
 
 test_that("item with assets matches pystac", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -338,8 +335,7 @@ test_that("item with assets matches pystac", {
 
 test_that("item with links matches pystac", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -423,8 +419,7 @@ test_that("item with links matches pystac", {
 
 test_that("collection with items matches pystac", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -490,8 +485,7 @@ test_that("collection with items matches pystac", {
 
 test_that("items with different geometry types match pystac", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -575,8 +569,7 @@ test_that("items with different geometry types match pystac", {
 
 test_that("item with null geometry matches pystac", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
@@ -786,8 +779,7 @@ test_that("asset roles survive a write/read round-trip as a list", {
 
 test_that("item with temporal range matches pystac", {
   # Import pystac
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
   datetime <- reticulate::import("datetime", convert = FALSE)
 
