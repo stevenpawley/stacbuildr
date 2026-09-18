@@ -186,6 +186,7 @@ normalize_assets <- function(x) {
     return(NULL)
   }
 
+  check_named_list(x, "assets")
   return(lapply(x, as_stac_asset))
 }
 

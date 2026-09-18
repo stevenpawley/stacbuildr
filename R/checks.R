@@ -71,3 +71,49 @@ check_flag <- function(x, arg, allow_null = FALSE) {
 
   invisible(x)
 }
+
+
+check_named_list <- function(
+  x,
+  arg,
+  allow_null = FALSE,
+  allow_empty = TRUE
+) {
+  if (is.null(x) && allow_null) {
+    return(invisible(x))
+  }
+
+  if (!is.list(x)) {
+    cli::cli_abort(
+      "{.arg {arg}} must be {if (allow_null) 'NULL or ' else ''}a named list."
+    )
+  }
+  if (length(x) == 0L) {
+    if (!allow_empty) {
+      cli::cli_abort("{.arg {arg}} must contain at least one named element.")
+    }
+    return(invisible(x))
+  }
+
+  element_names <- names(x)
+  if (
+    is.null(element_names) ||
+      length(element_names) != length(x) ||
+      anyNA(element_names) ||
+      any(!nzchar(element_names))
+  ) {
+    cli::cli_abort(
+      "{.arg {arg}} must have a non-empty name for every element."
+    )
+  }
+
+  duplicated_names <- unique(element_names[duplicated(element_names)])
+  if (length(duplicated_names) > 0L) {
+    cli::cli_abort(c(
+      "{.arg {arg}} must have unique names.",
+      x = "Duplicated {?name/names}: {.val {duplicated_names}}."
+    ))
+  }
+
+  invisible(x)
+}

@@ -23,3 +23,59 @@ test_that("assets remain S3 through extensions and disk round trips", {
     stacbuildr:::stac_json_value(as.list(item$assets$data))
   )
 })
+
+
+test_that("item and collection assets must be named dictionaries", {
+  asset <- stac_asset("./a.tif")
+
+  expect_error(
+    stac_item(
+      id = "scene",
+      geometry = NULL,
+      datetime = "2024-01-01T00:00:00Z",
+      assets = list(asset)
+    ),
+    "non-empty name"
+  )
+  expect_error(
+    stac_item(
+      id = "scene",
+      geometry = NULL,
+      datetime = "2024-01-01T00:00:00Z",
+      assets = setNames(list(asset, asset), c("data", "data"))
+    ),
+    "unique names"
+  )
+
+  extent <- stac_extent(
+    spatial_bbox = list(c(0, 0, 1, 1)),
+    temporal_interval = list(list(NULL, NULL))
+  )
+  expect_error(
+    stac_collection(
+      id = "collection",
+      description = "Collection",
+      license = "CC0-1.0",
+      extent = extent,
+      assets = list(asset)
+    ),
+    "non-empty name"
+  )
+
+  expect_no_error(
+    stac_item(
+      id = "scene",
+      geometry = NULL,
+      datetime = "2024-01-01T00:00:00Z",
+      assets = list(data = asset)
+    )
+  )
+  expect_no_error(
+    stac_item(
+      id = "scene",
+      geometry = NULL,
+      datetime = "2024-01-01T00:00:00Z",
+      assets = list()
+    )
+  )
+})
