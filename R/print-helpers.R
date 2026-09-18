@@ -169,7 +169,7 @@ stac_object_labels <- function(x) {
       return(
         if (inherits(el, "stac_object")) {
           property <- if (field == "eo:common_name") "common_name" else field
-          tryCatch(, error = function(e) {
+          tryCatch(el[[property]], error = function(e) {
             return(NULL)
           })
         } else if (is.list(el) || !is.null(names(el))) {
