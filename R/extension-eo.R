@@ -166,8 +166,10 @@
 #' item <- item |>
 #'   add_eo_extension(bands = list(combined_band)) |>
 #'   add_raster_extension(
-#'     bands = list(raster_band(nodata = 0, data_type = "uint16",
-#'                              spatial_resolution = 30, scale = 0.0001))
+#'     bands = list(raster_band(
+#'       nodata = 0, data_type = "uint16",
+#'       spatial_resolution = 30, scale = 0.0001
+#'     ))
 #'   )
 #'
 #' @export
@@ -178,53 +180,39 @@ add_eo_extension <- function(
   snow_cover = NULL,
   asset_key = NULL
 ) {
-  if (!stac_inherits(item, stac_item)) {
+  if (!inherits(item, "stac_item")) {
     cli::cli_abort("'item' must be a stac_item object")
   }
-
-  # Validate percentages
   if (!is.null(cloud_cover)) {
     if (cloud_cover < 0 || cloud_cover > 100) {
       cli::cli_abort("'cloud_cover' must be between 0 and 100")
     }
   }
-
   if (!is.null(snow_cover)) {
     if (snow_cover < 0 || snow_cover > 100) {
       cli::cli_abort("'snow_cover' must be between 0 and 100")
     }
   }
-
-  # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/eo/v2.0.0/schema.json"
-
   if (is.null(item$stac_extensions)) {
     item$stac_extensions <- character(0)
   }
-
   if (!ext_uri %in% item$stac_extensions) {
     item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
-
-  # Add coverage properties to item properties (not assets)
   if (!is.null(cloud_cover)) {
     item$properties[["eo:cloud_cover"]] <- cloud_cover
   }
-
   if (!is.null(snow_cover)) {
     item$properties[["eo:snow_cover"]] <- snow_cover
   }
-
-  # Add bands if provided
   if (!is.null(bands)) {
     if (!is.list(bands)) {
       cli::cli_abort("'bands' must be a list of band objects")
     }
-
     item <- set_bands(item, bands, asset_key = asset_key)
   }
-
-  item
+  return(item)
 }
 
 
@@ -321,83 +309,92 @@ add_eo_extension <- function(
 #' )
 #'
 #' @export
-eo_band <- new_stac_class(
-  "eo_band",
-  properties = list(
-    name = "character",
-    common_name = "character",
-    description = "character",
-    center_wavelength = "numeric",
-    full_width_half_max = "numeric",
-    solar_illumination = "numeric",
-    extra_fields = new_stac_property("list", default = list())
-  ),
-  constructor = function(
-    name = NULL,
-    common_name = NULL,
-    description = NULL,
-    center_wavelength = NULL,
-    full_width_half_max = NULL,
-    solar_illumination = NULL,
-    ...
-  ) {
-    extra_fields <- list(...)
-    common_name <- common_name %||% extra_fields$`eo:common_name`
-    center_wavelength <- center_wavelength %||%
-      extra_fields$`eo:center_wavelength`
-    full_width_half_max <- full_width_half_max %||%
-      extra_fields$`eo:full_width_half_max`
-    solar_illumination <- solar_illumination %||%
-      extra_fields$`eo:solar_illumination`
-    extra_fields[c(
-      "eo:common_name",
-      "eo:center_wavelength",
-      "eo:full_width_half_max",
-      "eo:solar_illumination"
-    )] <- NULL
-
-    if (!is.null(common_name)) {
-      valid_common_names <- c(
-        "coastal",
-        "blue",
-        "green",
-        "red",
-        "rededge",
-        "rededge071",
-        "rededge075",
-        "rededge078",
-        "nir",
-        "nir08",
-        "nir09",
-        "cirrus",
-        "swir16",
-        "swir22",
-        "lwir",
-        "lwir11",
-        "lwir12",
-        "pan"
-      )
-
-      if (!common_name %in% valid_common_names) {
-        cli::cli_warn(c(
-          "'{common_name}' is not a standard common_name.",
-          "i" = "Standard names: {paste(valid_common_names, collapse = ', ')}"
-        ))
-      }
-    }
-
-    new_stac_object(
-      list(),
-      name = name %||% character(0),
-      common_name = common_name %||% character(0),
-      description = description %||% character(0),
-      center_wavelength = center_wavelength %||% numeric(0),
-      full_width_half_max = full_width_half_max %||% numeric(0),
-      solar_illumination = solar_illumination %||% numeric(0),
-      extra_fields = extra_fields
+eo_band <- function(
+  name = NULL,
+  common_name = NULL,
+  description = NULL,
+  center_wavelength = NULL,
+  full_width_half_max = NULL,
+  solar_illumination = NULL,
+  ...
+) {
+  extra_fields <- list(...)
+  common_name <- common_name %||% extra_fields$`eo:common_name`
+  center_wavelength <- center_wavelength %||%
+    extra_fields$`eo:center_wavelength`
+  full_width_half_max <- full_width_half_max %||%
+    extra_fields$`eo:full_width_half_max`
+  solar_illumination <- solar_illumination %||%
+    extra_fields$`eo:solar_illumination`
+  extra_fields[c(
+    "eo:common_name",
+    "eo:center_wavelength",
+    "eo:full_width_half_max",
+    "eo:solar_illumination"
+  )] <- NULL
+  if (!is.null(common_name)) {
+    valid_common_names <- c(
+      "coastal",
+      "blue",
+      "green",
+      "red",
+      "rededge",
+      "rededge071",
+      "rededge075",
+      "rededge078",
+      "nir",
+      "nir08",
+      "nir09",
+      "cirrus",
+      "swir16",
+      "swir22",
+      "lwir",
+      "lwir11",
+      "lwir12",
+      "pan"
     )
+    if (!common_name %in% valid_common_names) {
+      cli::cli_warn(c(
+        "'{common_name}' is not a standard common_name.",
+        i = "Standard names: {paste(valid_common_names, collapse = ', ')}"
+      ))
+    }
   }
-)
+  object <- list(
+    name = name %||% character(0),
+    common_name = common_name %||% character(0),
+    description = description %||%
+      character(0),
+    center_wavelength = center_wavelength %||% numeric(0),
+    full_width_half_max = full_width_half_max %||%
+      numeric(0),
+    solar_illumination = solar_illumination %||% numeric(0),
+    extra_fields = extra_fields
+  )
+  if (!is.character(object[["name"]])) {
+    cli::cli_abort("name must be character.")
+  }
+  if (!is.character(object[["common_name"]])) {
+    cli::cli_abort("common_name must be character.")
+  }
+  if (!is.character(object[["description"]])) {
+    cli::cli_abort("description must be character.")
+  }
+  if (!is.numeric(object[["center_wavelength"]])) {
+    cli::cli_abort("center_wavelength must be numeric.")
+  }
+  if (!is.numeric(object[["full_width_half_max"]])) {
+    cli::cli_abort("full_width_half_max must be numeric.")
+  }
+  if (!is.numeric(object[["solar_illumination"]])) {
+    cli::cli_abort("solar_illumination must be numeric.")
+  }
+  if (!is.list(object[["extra_fields"]])) {
+    cli::cli_abort("extra_fields must be list.")
+  }
+  class(object) <- c("eo_band", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
@@ -421,7 +418,7 @@ as.list.eo_band <- function(x, ...) {
   if (length(x$solar_illumination) > 0L) {
     fields$`eo:solar_illumination` <- x$solar_illumination
   }
-  c(fields, x$extra_fields)
+  return(c(fields, x$extra_fields))
 }
 
 
@@ -535,7 +532,7 @@ landsat_oli_bands <- function(include_thermal = FALSE) {
     )
   }
 
-  bands
+  return(bands)
 }
 
 
@@ -569,7 +566,7 @@ landsat_oli_bands <- function(include_thermal = FALSE) {
 #'
 #' @export
 sentinel2_msi_bands <- function() {
-  list(
+  return(list(
     eo_band(
       name = "B01",
       common_name = "coastal",
@@ -648,7 +645,7 @@ sentinel2_msi_bands <- function() {
       center_wavelength = 2.194,
       full_width_half_max = 0.179
     )
-  )
+  ))
 }
 
 #' Create Standard WorldView-3 Bands
@@ -663,7 +660,7 @@ sentinel2_msi_bands <- function() {
 #' bands <- worldview3_bands()
 #' @export
 worldview3_bands <- function() {
-  list(
+  return(list(
     eo_band(
       name = "PAN",
       common_name = "pan",
@@ -766,7 +763,7 @@ worldview3_bands <- function() {
       center_wavelength = 2.330,
       full_width_half_max = 0.070
     )
-  )
+  ))
 }
 
 #' Create Standard Planet SkySat Bands
@@ -781,7 +778,7 @@ worldview3_bands <- function() {
 #' bands <- skysat_bands()
 #' @export
 skysat_bands <- function() {
-  list(
+  return(list(
     eo_band(
       name = "B01",
       common_name = "blue",
@@ -812,7 +809,7 @@ skysat_bands <- function() {
       center_wavelength = 0.675,
       full_width_half_max = 0.45
     )
-  )
+  ))
 }
 
 
@@ -828,7 +825,7 @@ skysat_bands <- function() {
 #' bands <- planetscope_bands()
 #' @export
 planetscope_bands <- function() {
-  list(
+  return(list(
     eo_band(
       name = "B01",
       common_name = "coastal",
@@ -877,7 +874,7 @@ planetscope_bands <- function() {
       center_wavelength = 0.865,
       full_width_half_max = 0.04
     )
-  )
+  ))
 }
 
 
@@ -923,5 +920,5 @@ print.eo_band <- function(x, ...) {
     ),
     styles = list(name = stac_style_id, "eo:common_name" = stac_style_key)
   )
-  invisible(x)
+  return(invisible(x))
 }

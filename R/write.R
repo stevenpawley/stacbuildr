@@ -72,35 +72,24 @@ write_stac <- function(
   pretty = TRUE,
   base_url = NULL
 ) {
-  if (!stac_inherits(catalog, stac_catalog)) {
-    cli::cli_abort(
-      "'catalog' must be a stac_catalog or stac_collection object"
-    )
+  if (!inherits(catalog, "stac_catalog")) {
+    cli::cli_abort("'catalog' must be a stac_catalog or stac_collection object")
   }
-
   catalog_type <- match.arg(catalog_type)
-
-  # Both absolute and relative catalogs need to know where they are published
   if (catalog_type %in% c("absolute", "relative") && is.null(base_url)) {
     cli::cli_abort(c(
       "{.arg base_url} is required when {.arg catalog_type} is {.val {catalog_type}}.",
-      "i" = if (catalog_type == "relative") {
-        "A relative catalog carries an absolute self link on its root, which
-         needs the published location."
+      i = if (catalog_type == "relative") {
+        "A relative catalog carries an absolute self link on its root, which\n         needs the published location."
       } else {
         "An absolute catalog builds every link from the published location."
       },
-      ">" = "Use {.code catalog_type = \"self-contained\"} for a portable
-             catalog with no published location."
+      `>` = "Use {.code catalog_type = \"self-contained\"} for a portable\n             catalog with no published location."
     ))
   }
-
-  # Create root directory if it doesn't exist
   if (!dir.exists(path)) {
     dir.create(path, recursive = TRUE)
   }
-
-  # Write the catalog recursively
   write_catalog_recursive(
     catalog,
     path,
@@ -111,9 +100,8 @@ write_stac <- function(
     is_root = TRUE,
     parent_href = NULL
   )
-
   cli::cli_alert_success("STAC catalog written to {.file {path}}")
-  invisible(path)
+  return(invisible(path))
 }
 
 
@@ -127,13 +115,13 @@ stac_to_json <- function(x, pretty = FALSE) {
     x <- as.list(x)
   }
 
-  jsonlite::toJSON(
+  return(jsonlite::toJSON(
     x,
     auto_unbox = TRUE,
     pretty = pretty,
     null = "null",
     digits = 15
-  )
+  ))
 }
 
 
@@ -153,7 +141,7 @@ write_stac_file <- function(x, file, overwrite = FALSE, pretty = TRUE) {
   }
 
   writeLines(stac_to_json(x, pretty = pretty), file)
-  invisible(file)
+  return(invisible(file))
 }
 
 
@@ -185,13 +173,10 @@ write_stac_file <- function(x, file, overwrite = FALSE, pretty = TRUE) {
 #'
 #' @export
 write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
-  if (!stac_inherits(catalog, stac_catalog)) {
-    cli::cli_abort(
-      "'catalog' must be a stac_catalog or stac_collection object"
-    )
+  if (!inherits(catalog, "stac_catalog")) {
+    cli::cli_abort("'catalog' must be a stac_catalog or stac_collection object")
   }
-
-  write_stac_file(catalog, file, overwrite, pretty)
+  return(write_stac_file(catalog, file, overwrite, pretty))
 }
 
 
@@ -223,15 +208,11 @@ write_catalog <- function(catalog, file, overwrite = FALSE, pretty = TRUE) {
 #'
 #' @export
 write_item <- function(item, file, overwrite = FALSE, pretty = TRUE) {
-  if (!stac_inherits(item, stac_item)) {
+  if (!inherits(item, "stac_item")) {
     cli::cli_abort("'item' must be a stac_item object")
   }
-
-  # The `collection` field and the collection link are co-dependent in the
-  # schema; drop or flag a half-specified pair before serialising.
   item <- reconcile_item_collection(item)
-
-  write_stac_file(item, file, overwrite, pretty)
+  return(write_stac_file(item, file, overwrite, pretty))
 }
 
 
@@ -258,7 +239,7 @@ check_path_segment <- function(id, what) {
     ))
   }
 
-  invisible(id)
+  return(invisible(id))
 }
 
 
@@ -282,15 +263,11 @@ write_catalog_recursive <- function(
   depth = 0L,
   root_file = NULL
 ) {
-  catalog_file <- if (stac_inherits(catalog, stac_collection)) {
+  catalog_file <- if (inherits(catalog, "stac_collection")) {
     "collection.json"
   } else {
     "catalog.json"
   }
-
-  # For the root, establish root_href and the root filename once, then thread
-  # both down through the children. Relative root hrefs are rebuilt at each
-  # level from the nesting depth so they stay correct beyond one level.
   if (is_root) {
     root_file <- catalog_file
     root_href <- if (catalog_type == "absolute") {
@@ -301,8 +278,6 @@ write_catalog_recursive <- function(
   } else if (catalog_type != "absolute") {
     root_href <- paste0(strrep("../", depth), root_file)
   }
-
-  # Update catalog links
   catalog <- update_catalog_links(
     catalog,
     catalog_type,
@@ -311,37 +286,25 @@ write_catalog_recursive <- function(
     parent_href,
     root_href
   )
-
-  # Get stored children and items
   stored_children <- attr(catalog, "stac_children")
   stored_items <- attr(catalog, "stac_items")
-
-  # Write children recursively
   if (!is.null(stored_children) && length(stored_children) > 0) {
     for (child_id in names(stored_children)) {
       child <- stored_children[[child_id]]
       check_path_segment(child_id, "a child")
       child_path <- file.path(path, child_id)
-
-      # Create child directory
       if (!dir.exists(child_path)) {
         dir.create(child_path, recursive = TRUE)
       }
-
-      # Calculate child base_url for absolute catalogs
       child_base_url <- NULL
       if (catalog_type == "absolute" && !is.null(base_url)) {
         child_base_url <- paste0(base_url, "/", child_id)
       }
-
-      # Calculate parent href for child
       if (catalog_type == "absolute") {
         child_parent_href <- paste0(base_url, "/", catalog_file)
       } else {
         child_parent_href <- paste0("../", catalog_file)
       }
-
-      # Recursively write child
       write_catalog_recursive(
         child,
         child_path,
@@ -352,13 +315,12 @@ write_catalog_recursive <- function(
         is_root = FALSE,
         parent_href = child_parent_href,
         root_href = root_href,
-        depth = depth + 1L,
+        depth = depth +
+          1L,
         root_file = root_file
       )
     }
   }
-
-  # Write items — each item gets its own subdirectory: {id}/{id}.json
   if (!is.null(stored_items) && length(stored_items) > 0) {
     for (item in stored_items) {
       check_path_segment(item$id, "an item")
@@ -367,30 +329,34 @@ write_catalog_recursive <- function(
         dir.create(item_dir, recursive = TRUE)
       }
       item_file <- file.path(item_dir, paste0(item$id, ".json"))
-
-      # Items live one level below the catalog dir, so relative hrefs from
-      # inside the item dir are one level deeper than the catalog.
       if (catalog_type == "absolute") {
         item_base_url <- paste0(base_url, "/", item$id)
         item <- update_item_links(
           item,
           paste0(item_base_url, "/", item$id, ".json"),
-          paste0(base_url, "/", catalog_file),
+          paste0(
+            base_url,
+            "/",
+            catalog_file
+          ),
           root_href,
-          parent_is_collection = stac_inherits(catalog, stac_collection)
+          parent_is_collection = inherits(catalog, "stac_collection")
         )
       } else {
-        # Self-contained and relative catalogs carry no item self links; only
-        # the root of a relative catalog gets one, and it must be absolute.
         item <- update_item_links(
           item,
           NULL,
           paste0("../", catalog_file),
-          paste0(strrep("../", depth + 1L), root_file),
-          parent_is_collection = stac_inherits(catalog, stac_collection)
+          paste0(
+            strrep(
+              "../",
+              depth + 1L
+            ),
+            root_file
+          ),
+          parent_is_collection = inherits(catalog, "stac_collection")
         )
       }
-
       if (catalog_type == "absolute") {
         item <- absolutize_asset_hrefs(item, item_base_url)
       } else {
@@ -399,8 +365,6 @@ write_catalog_recursive <- function(
       write_item(item, item_file, overwrite = overwrite, pretty = pretty)
     }
   }
-
-  # Write the catalog file itself
   catalog_filepath <- file.path(path, catalog_file)
   write_catalog(
     catalog,
@@ -408,8 +372,7 @@ write_catalog_recursive <- function(
     overwrite = overwrite,
     pretty = pretty
   )
-
-  invisible(path)
+  return(invisible(path))
 }
 
 
@@ -427,15 +390,11 @@ update_catalog_links <- function(
   parent_href = NULL,
   root_href = NULL
 ) {
-  # Determine the catalog filename
-  if (stac_inherits(catalog, stac_collection)) {
+  if (inherits(catalog, "stac_collection")) {
     catalog_file <- "collection.json"
   } else {
     catalog_file <- "catalog.json"
   }
-
-  # Build the self link. A self link must be absolute, so self-contained
-  # catalogs get none at all and relative catalogs get one on the root only.
   self_href <- if (
     catalog_type == "absolute" || (catalog_type == "relative" && is_root)
   ) {
@@ -443,45 +402,51 @@ update_catalog_links <- function(
   } else {
     NULL
   }
-
-  # Remove any existing self link and add the updated one
-  catalog$links <- Filter(function(x) x$rel != "self", catalog$links)
+  catalog$links <- Filter(
+    function(x) {
+      return(x$rel != "self")
+    },
+    catalog$links
+  )
   if (!is.null(self_href)) {
     catalog <- add_self_link(catalog, self_href)
   }
-
-  # Add root link — root_href is computed by the caller from the nesting depth
-  catalog$links <- Filter(function(x) x$rel != "root", catalog$links)
+  catalog$links <- Filter(
+    function(x) {
+      return(x$rel != "root")
+    },
+    catalog$links
+  )
   catalog <- add_root_link(catalog, root_href)
-
-  # Add parent link for non-root catalogs
   if (!is_root && !is.null(parent_href)) {
-    catalog$links <- Filter(function(x) x$rel != "parent", catalog$links)
+    catalog$links <- Filter(
+      function(x) {
+        return(x$rel != "parent")
+      },
+      catalog$links
+    )
     catalog <- add_parent_link(catalog, parent_href)
   }
-
-  # Update child links based on stored children
   stored_children <- attr(catalog, "stac_children")
   if (!is.null(stored_children) && length(stored_children) > 0) {
-    # Remove existing child links
-    catalog$links <- Filter(function(x) x$rel != "child", catalog$links)
-
-    # Add updated child links
+    catalog$links <- Filter(
+      function(x) {
+        return(x$rel != "child")
+      },
+      catalog$links
+    )
     for (child_id in names(stored_children)) {
       child <- stored_children[[child_id]]
-
-      if (stac_inherits(child, stac_collection)) {
+      if (inherits(child, "stac_collection")) {
         child_file <- "collection.json"
       } else {
         child_file <- "catalog.json"
       }
-
       if (catalog_type == "absolute") {
         child_href <- paste0(base_url, "/", child_id, "/", child_file)
       } else {
         child_href <- paste0("./", child_id, "/", child_file)
       }
-
       catalog <- add_link(
         catalog,
         rel = "child",
@@ -491,21 +456,20 @@ update_catalog_links <- function(
       )
     }
   }
-
-  # Update item links based on stored items
   stored_items <- attr(catalog, "stac_items")
   if (!is.null(stored_items) && length(stored_items) > 0) {
-    # Remove existing item links
-    catalog$links <- Filter(function(x) x$rel != "item", catalog$links)
-
-    # Add updated item links
+    catalog$links <- Filter(
+      function(x) {
+        return(x$rel != "item")
+      },
+      catalog$links
+    )
     for (item in stored_items) {
       if (catalog_type == "absolute") {
         item_href <- paste0(base_url, "/", item$id, "/", item$id, ".json")
       } else {
         item_href <- paste0("./", item$id, "/", item$id, ".json")
       }
-
       catalog <- add_link(
         catalog,
         rel = "item",
@@ -515,8 +479,7 @@ update_catalog_links <- function(
       )
     }
   }
-
-  catalog
+  return(catalog)
 }
 
 
@@ -536,7 +499,12 @@ update_item_links <- function(
   # Update self link. `self_href` is NULL for self-contained and relative
   # catalogs, where items carry no self link because it would have to be
   # absolute.
-  item$links <- Filter(function(x) x$rel != "self", item$links)
+  item$links <- Filter(
+    function(x) {
+      return(x$rel != "self")
+    },
+    item$links
+  )
   if (!is.null(self_href)) {
     item <- add_link(
       item,
@@ -548,7 +516,12 @@ update_item_links <- function(
 
   # Update parent link
   if (!is.null(parent_href)) {
-    item$links <- Filter(function(x) x$rel != "parent", item$links)
+    item$links <- Filter(
+      function(x) {
+        return(x$rel != "parent")
+      },
+      item$links
+    )
     item <- add_link(
       item,
       rel = "parent",
@@ -557,7 +530,12 @@ update_item_links <- function(
     )
 
     # Only add collection link when parent is actually a collection
-    item$links <- Filter(function(x) x$rel != "collection", item$links)
+    item$links <- Filter(
+      function(x) {
+        return(x$rel != "collection")
+      },
+      item$links
+    )
     if (parent_is_collection) {
       item <- add_link(
         item,
@@ -570,7 +548,12 @@ update_item_links <- function(
 
   # Update root link
   if (!is.null(root_href)) {
-    item$links <- Filter(function(x) x$rel != "root", item$links)
+    item$links <- Filter(
+      function(x) {
+        return(x$rel != "root")
+      },
+      item$links
+    )
     item <- add_link(
       item,
       rel = "root",
@@ -579,7 +562,7 @@ update_item_links <- function(
     )
   }
 
-  item
+  return(item)
 }
 
 
@@ -597,7 +580,9 @@ update_item_links <- function(
 reconcile_item_collection <- function(item) {
   has_link <- any(vapply(
     item$links,
-    function(link) identical(link$rel, "collection"),
+    function(link) {
+      return(identical(link$rel, "collection"))
+    },
     logical(1)
   ))
   has_field <- !is.null(item$collection)
@@ -617,7 +602,7 @@ reconcile_item_collection <- function(item) {
     ))
   }
 
-  item
+  return(item)
 }
 
 
@@ -655,7 +640,7 @@ make_relative_href <- function(target, from_dir) {
   up <- rep("..", length(from_parts) - common_len)
   down <- tail(target_parts, length(target_parts) - common_len)
   parts <- c(up, down)
-  if (length(parts) == 0) "." else paste(parts, collapse = "/")
+  return(if (length(parts) == 0) "." else paste(parts, collapse = "/"))
 }
 
 
@@ -699,7 +684,7 @@ url_join <- function(base, rel) {
     }
   }
 
-  paste0(prefix, "/", paste(resolved, collapse = "/"))
+  return(paste0(prefix, "/", paste(resolved, collapse = "/")))
 }
 
 
@@ -732,7 +717,7 @@ absolutize_asset_hrefs <- function(item, item_base_url) {
     }
 
     a$href <- url_join(item_base_url, a$href)
-    a
+    return(a)
   })
 
   if (length(unresolved) > 0) {
@@ -746,7 +731,7 @@ absolutize_asset_hrefs <- function(item, item_base_url) {
     ))
   }
 
-  item
+  return(item)
 }
 
 
@@ -761,9 +746,9 @@ relativize_asset_hrefs <- function(item, item_dir) {
     if (!is.null(a$href)) {
       a$href <- make_relative_href(a$href, item_dir)
     }
-    a
+    return(a)
   })
-  item
+  return(item)
 }
 
 
@@ -775,7 +760,7 @@ strip_stored_objects <- function(stac_obj) {
   # Remove stac_children and stac_items attributes
   attr(stac_obj, "stac_children") <- NULL
   attr(stac_obj, "stac_items") <- NULL
-  stac_obj
+  return(stac_obj)
 }
 
 
@@ -795,7 +780,7 @@ strip_stored_objects <- function(stac_obj) {
 #' @examples
 #' \dontrun{
 #' catalog <- read_stac("path/to/catalog.json")
-#' item    <- read_stac("path/to/item.json")
+#' item <- read_stac("path/to/item.json")
 #' }
 #'
 #' @export
@@ -810,7 +795,7 @@ read_stac <- function(file) {
     cli::cli_abort("Invalid STAC file: missing 'type' field")
   }
 
-  switch(
+  return(switch(
     parsed$type,
     "Feature" = parse_stac_item(parsed),
     "Catalog" = parse_stac_catalog(parsed),
@@ -819,7 +804,7 @@ read_stac <- function(file) {
       cli::cli_warn("Unknown STAC type: {parsed$type}")
       parsed
     }
-  )
+  ))
 }
 
 
@@ -837,7 +822,7 @@ parse_stac_item <- function(parsed) {
   props$start_datetime <- NULL
   props$end_datetime <- NULL
 
-  stac_item(
+  return(stac_item(
     id = parsed$id,
     geometry = parsed$geometry,
     bbox = if (!is.null(parsed$bbox)) unlist(parsed$bbox) else NULL,
@@ -854,7 +839,7 @@ parse_stac_item <- function(parsed) {
       NULL
     },
     collection = parsed$collection
-  )
+  ))
 }
 
 
@@ -898,7 +883,7 @@ parse_stac_catalog <- function(parsed) {
     )
   )
 
-  catalog
+  return(catalog)
 }
 
 
@@ -968,7 +953,7 @@ parse_stac_collection <- function(parsed) {
     )
   )
 
-  collection
+  return(collection)
 }
 
 
@@ -1001,38 +986,37 @@ parse_stac_collection <- function(parsed) {
 #'
 #' @export
 get_children <- function(catalog, resolve = FALSE, base_path = ".") {
-  if (!stac_inherits(catalog, stac_catalog)) {
-    cli::cli_abort(
-      "'catalog' must be a stac_catalog or stac_collection object"
-    )
+  if (!inherits(catalog, "stac_catalog")) {
+    cli::cli_abort("'catalog' must be a stac_catalog or stac_collection object")
   }
-
   stored <- attr(catalog, "stac_children")
   if (!is.null(stored) || !resolve) {
     return(stored)
   }
-
   child_links <- Filter(
-    function(link) link$rel == "child",
+    function(link) {
+      return(link$rel == "child")
+    },
     catalog$links
   )
-
   if (length(child_links) == 0) {
     return(NULL)
   }
-
   children <- lapply(child_links, function(link) {
     href <- link$href
-    # Resolve relative hrefs against base_path
     if (!grepl("^https?://", href) && !startsWith(href, "/")) {
       href <- file.path(base_path, href)
     }
-    read_stac(href)
+    return(read_stac(href))
   })
-
-  # Name by child id
-  ids <- vapply(children, function(x) x$id, character(1))
-  stats::setNames(children, ids)
+  ids <- vapply(
+    children,
+    function(x) {
+      return(x$id)
+    },
+    character(1)
+  )
+  return(stats::setNames(children, ids))
 }
 
 
@@ -1067,31 +1051,27 @@ get_children <- function(catalog, resolve = FALSE, base_path = ".") {
 #'
 #' @export
 get_items <- function(catalog, resolve = FALSE, base_path = ".") {
-  if (!stac_inherits(catalog, stac_catalog)) {
-    cli::cli_abort(
-      "'catalog' must be a stac_catalog or stac_collection object"
-    )
+  if (!inherits(catalog, "stac_catalog")) {
+    cli::cli_abort("'catalog' must be a stac_catalog or stac_collection object")
   }
-
   stored <- attr(catalog, "stac_items")
   if (!is.null(stored) || !resolve) {
     return(stored)
   }
-
   item_links <- Filter(
-    function(link) link$rel == "item",
+    function(link) {
+      return(link$rel == "item")
+    },
     catalog$links
   )
-
   if (length(item_links) == 0) {
     return(NULL)
   }
-
-  lapply(item_links, function(link) {
+  return(lapply(item_links, function(link) {
     href <- link$href
     if (!grepl("^https?://", href) && !startsWith(href, "/")) {
       href <- file.path(base_path, href)
     }
-    read_stac(href)
-  })
+    return(read_stac(href))
+  }))
 }

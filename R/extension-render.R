@@ -68,95 +68,86 @@
 #' )
 #'
 #' @export
-render_object <- new_stac_class(
-  "render_object",
-  properties = list(
-    assets = new_stac_property(
-      "character",
-      validator = function(value) {
-        if (length(value) == 0L) {
-          "must be a non-empty character vector"
-        }
-      }
-    ),
-    title = new_stac_property(
-      "any",
-      validator = function(value) {
-        if (!is.null(value) && (!is.character(value) || length(value) != 1L)) {
-          "must be a single character string"
-        }
-      }
-    ),
-    rescale = new_stac_property(
-      "any",
-      validator = function(value) {
-        if (!is.null(value) && (!is.list(value) || length(value) == 0L)) {
-          return("must be a non-empty list of numeric vectors")
-        }
-        if (
-          !is.null(value) &&
-            !all(vapply(
-              value,
-              function(x) is.numeric(x) && length(x) == 2L,
-              logical(1)
-            ))
-        ) {
-          "must contain only numeric vectors of length 2"
-        }
-      }
-    ),
-    nodata = "any",
-    colormap_name = "any",
-    colormap = "any",
-    color_formula = "any",
-    resampling = "any",
-    expression = "any",
-    minmax_zoom = new_stac_property(
-      "any",
-      validator = function(value) {
-        if (!is.null(value) && (!is.numeric(value) || length(value) != 2L)) {
-          "must be a numeric vector of length 2"
-        }
-      }
-    ),
-    bidx = "any",
-    extra_fields = new_stac_property("list", default = list())
-  ),
-  constructor = function(
-    assets,
-    title = NULL,
-    rescale = NULL,
-    nodata = NULL,
-    colormap_name = NULL,
-    colormap = NULL,
-    color_formula = NULL,
-    resampling = NULL,
-    expression = NULL,
-    minmax_zoom = NULL,
-    bidx = NULL,
-    ...
-  ) {
-    if (missing(assets)) {
-      cli::cli_abort("'assets' is required")
-    }
-
-    new_stac_object(
-      list(),
-      assets = assets,
-      title = title,
-      rescale = rescale,
-      nodata = nodata,
-      colormap_name = colormap_name,
-      colormap = colormap,
-      color_formula = color_formula,
-      resampling = resampling,
-      expression = expression,
-      minmax_zoom = minmax_zoom,
-      bidx = if (is.null(bidx)) NULL else unlist(bidx, use.names = FALSE),
-      extra_fields = list(...)
-    )
+render_object <- function(
+  assets,
+  title = NULL,
+  rescale = NULL,
+  nodata = NULL,
+  colormap_name = NULL,
+  colormap = NULL,
+  color_formula = NULL,
+  resampling = NULL,
+  expression = NULL,
+  minmax_zoom = NULL,
+  bidx = NULL,
+  ...
+) {
+  if (missing(assets)) {
+    cli::cli_abort("'assets' is required")
   }
-)
+  object <- list(
+    assets = assets,
+    title = title,
+    rescale = rescale,
+    nodata = nodata,
+    colormap_name = colormap_name,
+    colormap = colormap,
+    color_formula = color_formula,
+    resampling = resampling,
+    expression = expression,
+    minmax_zoom = minmax_zoom,
+    bidx = if (is.null(bidx)) NULL else unlist(bidx, use.names = FALSE),
+    extra_fields = list(...)
+  )
+  if (!is.character(object[["assets"]])) {
+    cli::cli_abort("assets must be character.")
+  }
+  if (length(object[["assets"]]) == 0L) {
+    cli::cli_abort(paste("assets", "must be a non-empty character vector"))
+  }
+  if (
+    !is.null(object[["title"]]) &&
+      (!is.character(object[["title"]]) || length(object[["title"]]) != 1L)
+  ) {
+    cli::cli_abort(paste("title", "must be a single character string"))
+  }
+  if (
+    !is.null(object[["rescale"]]) &&
+      (!is.list(object[["rescale"]]) || length(object[["rescale"]]) == 0L)
+  ) {
+    cli::cli_abort(paste(
+      "rescale",
+      "must be a non-empty list of numeric vectors"
+    ))
+  }
+  if (
+    !is.null(object[["rescale"]]) &&
+      !all(vapply(
+        object[["rescale"]],
+        function(x) {
+          return(is.numeric(x) && length(x) == 2L)
+        },
+        logical(1)
+      ))
+  ) {
+    cli::cli_abort(paste(
+      "rescale",
+      "must contain only numeric vectors of length 2"
+    ))
+  }
+  if (
+    !is.null(object[["minmax_zoom"]]) &&
+      (!is.numeric(object[["minmax_zoom"]]) ||
+        length(object[["minmax_zoom"]]) != 2L)
+  ) {
+    cli::cli_abort(paste("minmax_zoom", "must be a numeric vector of length 2"))
+  }
+  if (!is.list(object[["extra_fields"]])) {
+    cli::cli_abort("extra_fields must be list.")
+  }
+  class(object) <- c("render_object", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
@@ -174,7 +165,7 @@ as.list.render_object <- function(x, ...) {
     minmax_zoom = x$minmax_zoom,
     bidx = if (is.null(x$bidx)) NULL else as_json_array(x$bidx)
   ))
-  c(fields, x$extra_fields)
+  return(c(fields, x$extra_fields))
 }
 
 
@@ -261,37 +252,22 @@ as.list.render_object <- function(x, ...) {
 #'
 #' @export
 add_render_extension <- function(item, renders) {
-  if (
-    !stac_inherits(item, stac_item) &&
-      !stac_inherits(item, stac_collection)
-  ) {
+  if (!inherits(item, "stac_item") && !inherits(item, "stac_collection")) {
     cli::cli_abort("'item' must be a stac_item or stac_collection object")
   }
-
   renders <- validate_render_named_list(renders)
-
-  # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/render/v2.0.0/schema.json"
-
   if (is.null(item$stac_extensions)) {
     item$stac_extensions <- character(0)
   }
-
   if (!ext_uri %in% item$stac_extensions) {
     item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
-
-  # Merge with existing renders, letting new keys overwrite existing ones.
-  # The replacement is one level deep: a render object named again is swapped
-  # out whole rather than merged field by field. modifyList() would recurse
-  # into it and, because fields such as `assets` are unnamed lists, silently
-  # keep the old value instead of replacing it.
   merge_renders <- function(existing) {
     existing[names(renders)] <- renders
-    existing
+    return(existing)
   }
-
-  if (stac_inherits(item, stac_item)) {
+  if (inherits(item, "stac_item")) {
     item$properties[["renders"]] <- merge_renders(
       item$properties[["renders"]] %||% list()
     )
@@ -300,8 +276,7 @@ add_render_extension <- function(item, renders) {
       item$extra_fields[["renders"]] %||% list()
     )
   }
-
-  item
+  return(item)
 }
 
 
@@ -310,22 +285,18 @@ validate_render_named_list <- function(x) {
   if (!is.list(x) || length(x) == 0) {
     cli::cli_abort("'renders' must be a non-empty named list")
   }
-
   nms <- names(x)
   if (is.null(nms) || any(nms == "") || any(is.na(nms))) {
     cli::cli_abort("'renders' must be a fully named list")
   }
-
   if (any(duplicated(nms))) {
     cli::cli_abort("'renders' must not contain duplicate names")
   }
-
-  not_cls <- !vapply(x, stac_inherits, logical(1), render_object)
+  not_cls <- !vapply(x, inherits, logical(1), "render_object")
   if (any(not_cls)) {
     cli::cli_abort("All elements of 'renders' must be render_object objects")
   }
-
-  x
+  return(x)
 }
 
 
@@ -356,5 +327,5 @@ print.render_object <- function(x, ...) {
     x$extra_fields
   )
   stac_print_list_fields(fields, styles = list(assets = stac_style_key))
-  invisible(x)
+  return(invisible(x))
 }

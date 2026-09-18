@@ -39,11 +39,6 @@ test_that("table_column errors when name is missing or invalid", {
   )
 })
 
-test_that("table_column validates name modifications", {
-  col <- table_column("geometry")
-  expect_error(col$name <- c("a", "b"), "single character string")
-})
-
 
 # --- add_table_extension() ---
 

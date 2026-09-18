@@ -79,8 +79,8 @@
 #'
 #' item <- item |>
 #'   add_pointcloud_extension(
-#'     count   = 10653336,
-#'     type    = "lidar",
+#'     count = 10653336,
+#'     type = "lidar",
 #'     density = 4.664,
 #'     schemas = list(
 #'       pc_schema("X", size = 8, type = "floating"),
@@ -103,20 +103,17 @@ add_pointcloud_extension <- function(
   statistics = NULL,
   asset_key = NULL
 ) {
-  if (!stac_inherits(item, stac_item)) {
+  if (!inherits(item, "stac_item")) {
     cli::cli_abort("'item' must be a stac_item object")
   }
-
   if (missing(count)) {
     cli::cli_abort("'count' is required by the Point Cloud extension")
   }
   if (missing(type)) {
     cli::cli_abort("'type' is required by the Point Cloud extension")
   }
-
   count <- validate_pc_count(count)
   type <- validate_pc_type(type)
-
   if (!is.null(density)) {
     if (!is.numeric(density) || length(density) != 1 || is.na(density)) {
       cli::cli_abort("'density' must be a single number")
@@ -125,21 +122,19 @@ add_pointcloud_extension <- function(
       cli::cli_abort("'density' must be greater than or equal to 0")
     }
   }
-
   if (!is.null(schemas)) {
     if (!is.list(schemas) || length(schemas) == 0) {
       cli::cli_abort("'schemas' must be a non-empty list of pc_schema objects")
     }
     for (i in seq_along(schemas)) {
-      if (!stac_inherits(schemas[[i]], pc_schema)) {
+      if (!inherits(schemas[[i]], "pc_schema")) {
         cli::cli_abort(c(
           "'schemas[[{i}]]' is not a valid Schema object",
-          "i" = "Create them with {.fn pc_schema}"
+          i = "Create them with {.fn pc_schema}"
         ))
       }
     }
   }
-
   if (!is.null(statistics)) {
     if (!is.list(statistics) || length(statistics) == 0) {
       cli::cli_abort(
@@ -147,25 +142,21 @@ add_pointcloud_extension <- function(
       )
     }
     for (i in seq_along(statistics)) {
-      if (!stac_inherits(statistics[[i]], pc_statistic)) {
+      if (!inherits(statistics[[i]], "pc_statistic")) {
         cli::cli_abort(c(
           "'statistics[[{i}]]' is not a valid Stats object",
-          "i" = "Create them with {.fn pc_statistic}"
+          i = "Create them with {.fn pc_statistic}"
         ))
       }
     }
   }
-
   ext_uri <- "https://stac-extensions.github.io/pointcloud/v2.0.0/schema.json"
-
   if (is.null(item$stac_extensions)) {
     item$stac_extensions <- character(0)
   }
-
   if (!ext_uri %in% item$stac_extensions) {
     item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
-
   fields <- list()
   fields$`pc:count` <- count
   fields$`pc:type` <- type
@@ -178,12 +169,10 @@ add_pointcloud_extension <- function(
   if (!is.null(statistics)) {
     fields$`pc:statistics` <- unname(statistics)
   }
-
   if (!is.null(asset_key)) {
     if (is.null(item$assets[[asset_key]])) {
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
-
     for (field_name in names(fields)) {
       item$assets[[asset_key]]$extra_fields[[field_name]] <- fields[[
         field_name
@@ -194,8 +183,7 @@ add_pointcloud_extension <- function(
       item$properties[[field_name]] <- fields[[field_name]]
     }
   }
-
-  item
+  return(item)
 }
 
 
@@ -210,11 +198,13 @@ coerce_pc_count <- function(count, arg = "count") {
   if (count != trunc(count)) {
     cli::cli_abort("'{arg}' must be a whole number, not {count}")
   }
-  if (is.integer(count) || count <= .Machine$integer.max) {
-    as.integer(count)
-  } else {
-    count
-  }
+  return(
+    if (is.integer(count) || count <= .Machine$integer.max) {
+      as.integer(count)
+    } else {
+      count
+    }
+  )
 }
 
 validate_pc_count <- function(count, arg = "count") {
@@ -222,7 +212,7 @@ validate_pc_count <- function(count, arg = "count") {
   if (count < 0) {
     cli::cli_abort("'{arg}' must be greater than or equal to 0")
   }
-  count
+  return(count)
 }
 
 
@@ -245,7 +235,7 @@ validate_pc_type <- function(type) {
     ))
   }
 
-  type
+  return(type)
 }
 
 
@@ -277,59 +267,67 @@ validate_pc_type <- function(type) {
 #' pc_schema("Intensity", size = 2, type = "unsigned")
 #'
 #' @export
-pc_schema <- new_stac_class(
-  "pc_schema",
-  properties = list(
-    name = new_stac_property(
-      "character",
-      default = quote(cli::cli_abort("'name' is required")),
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value) || !nzchar(value)) {
-          "must be a non-empty string"
-        }
-      }
-    ),
-    size = new_stac_property(
-      "integer",
-      default = quote(cli::cli_abort("'size' is required")),
-      setter = function(self, value) {
-        if (
-          !is.numeric(value) ||
-            length(value) != 1L ||
-            is.na(value) ||
-            value != trunc(value)
-        ) {
-          cli::cli_abort("'size' must be a whole number of bytes")
-        }
-        self$size <- as.integer(value)
-        self
-      },
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value) || value <= 0L) {
-          "must be greater than 0"
-        }
-      }
-    ),
-    type = new_stac_property(
-      "character",
-      default = quote(cli::cli_abort("'type' is required")),
-      validator = function(value) {
-        if (
-          length(value) != 1L ||
-            is.na(value) ||
-            !value %in% c("floating", "unsigned", "signed")
-        ) {
-          "must be floating, unsigned, or signed"
-        }
-      }
-    )
-  )
-)
+pc_schema <- function(
+  name = cli::cli_abort("'name' is required"),
+  size = cli::cli_abort("'size' is required"),
+  type = cli::cli_abort("'type' is required")
+) {
+  object <- list(name = name, size = size, type = type)
+  object <- (function(self, value) {
+    if (
+      !is.numeric(value) ||
+        length(value) != 1L ||
+        is.na(value) ||
+        value != trunc(value)
+    ) {
+      cli::cli_abort("'size' must be a whole number of bytes")
+    }
+    self$size <- as.integer(value)
+    return(self)
+  })(object, object[["size"]])
+  if (!is.character(object[["name"]])) {
+    cli::cli_abort("name must be character.")
+  }
+  if (
+    length(object[["name"]]) != 1L ||
+      is.na(object[["name"]]) ||
+      !nzchar(object[["name"]])
+  ) {
+    cli::cli_abort(paste("name", "must be a non-empty string"))
+  }
+  if (!is.integer(object[["size"]])) {
+    cli::cli_abort("size must be integer.")
+  }
+  if (
+    length(object[["size"]]) != 1L ||
+      is.na(object[["size"]]) ||
+      object[["size"]] <= 0L
+  ) {
+    cli::cli_abort(paste("size", "must be greater than 0"))
+  }
+  if (!is.character(object[["type"]])) {
+    cli::cli_abort("type must be character.")
+  }
+  if (
+    length(object[["type"]]) != 1L ||
+      is.na(object[["type"]]) ||
+      !object[["type"]] %in%
+        c(
+          "floating",
+          "unsigned",
+          "signed"
+        )
+  ) {
+    cli::cli_abort(paste("type", "must be floating, unsigned, or signed"))
+  }
+  class(object) <- c("pc_schema", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
 as.list.pc_schema <- function(x, ...) {
-  list(name = x$name, size = x$size, type = x$type)
+  return(list(name = x$name, size = x$size, type = x$type))
 }
 
 
@@ -348,19 +346,7 @@ print.pc_schema <- function(x, ...) {
     units = c(size = "bytes"),
     styles = list(name = stac_style_id, type = stac_style_key)
   )
-  invisible(x)
-}
-
-
-pc_statistic_number_property <- function() {
-  new_stac_property(
-    new_stac_union(NULL, "numeric"),
-    validator = function(value) {
-      if (!is.null(value) && (length(value) != 1L || is.na(value))) {
-        "must be a single number"
-      }
-    }
-  )
+  return(invisible(x))
 }
 
 
@@ -393,91 +379,153 @@ pc_statistic_number_property <- function() {
 #' pc_statistic("Z", position = 2, minimum = 406.14, maximum = 615.26)
 #'
 #' @export
-pc_statistic <- new_stac_class(
-  "pc_statistic",
-  properties = list(
-    name = new_stac_property(
-      "character",
-      default = quote(cli::cli_abort("'name' is required")),
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value) || !nzchar(value)) {
-          "must be a non-empty string"
-        }
+pc_statistic <- function(
+  name = cli::cli_abort("'name' is required"),
+  position = NULL,
+  average = NULL,
+  count = NULL,
+  maximum = NULL,
+  minimum = NULL,
+  stddev = NULL,
+  variance = NULL
+) {
+  object <- list(
+    name = name,
+    position = position,
+    average = average,
+    count = count,
+    maximum = maximum,
+    minimum = minimum,
+    stddev = stddev,
+    variance = variance
+  )
+  object <- (function(self, value) {
+    if (!is.null(value)) {
+      if (
+        !is.numeric(value) ||
+          length(value) != 1L ||
+          is.na(value) ||
+          value != trunc(value)
+      ) {
+        cli::cli_abort(
+          "'position' must be a whole number greater than or equal to 0"
+        )
       }
-    ),
-    position = new_stac_property(
-      new_stac_union(NULL, "integer"),
-      setter = function(self, value) {
-        if (!is.null(value)) {
-          if (
-            !is.numeric(value) ||
-              length(value) != 1L ||
-              is.na(value) ||
-              value != trunc(value)
-          ) {
-            cli::cli_abort(
-              "'position' must be a whole number greater than or equal to 0"
-            )
-          }
-          value <- as.integer(value)
-        }
-        self$position <- value
-        self
-      },
-      validator = function(value) {
-        if (
-          !is.null(value) && (length(value) != 1L || is.na(value) || value < 0L)
-        ) {
-          "must be a whole number greater than or equal to 0"
-        }
-      }
-    ),
-    average = pc_statistic_number_property(),
-    count = new_stac_property(
-      new_stac_union(NULL, "numeric"),
-      setter = function(self, value) {
-        if (!is.null(value)) {
-          value <- coerce_pc_count(value)
-        }
-        self$count <- value
-        self
-      },
-      validator = function(value) {
-        if (
-          !is.null(value) &&
-            (length(value) != 1L ||
-              is.na(value) ||
-              value != trunc(value) ||
-              value < 0)
-        ) {
-          "must be a whole number greater than or equal to 0"
-        }
-      }
-    ),
-    maximum = pc_statistic_number_property(),
-    minimum = pc_statistic_number_property(),
-    stddev = pc_statistic_number_property(),
-    variance = pc_statistic_number_property()
-  ),
-  validator = function(self) {
-    values <- list(
-      self$average,
-      self$count,
-      self$maximum,
-      self$minimum,
-      self$stddev,
-      self$variance
-    )
-    if (all(vapply(values, is.null, logical(1)))) {
-      return("at least one statistic must be provided")
+      value <- as.integer(value)
     }
+    self$position <- value
+    return(self)
+  })(object, object[["position"]])
+  object <- (function(self, value) {
+    if (!is.null(value)) {
+      value <- coerce_pc_count(value)
+    }
+    self$count <- value
+    return(self)
+  })(object, object[["count"]])
+  if (!is.character(object[["name"]])) {
+    cli::cli_abort("name must be character.")
   }
-)
+  if (
+    length(object[["name"]]) != 1L ||
+      is.na(object[["name"]]) ||
+      !nzchar(object[["name"]])
+  ) {
+    cli::cli_abort(paste("name", "must be a non-empty string"))
+  }
+  if (!(is.null(object[["position"]]) || is.integer(object[["position"]]))) {
+    cli::cli_abort("position must be NULL or integer.")
+  }
+  if (
+    !is.null(object[["position"]]) &&
+      (length(object[["position"]]) != 1L ||
+        is.na(object[["position"]]) ||
+        object[["position"]] < 0L)
+  ) {
+    cli::cli_abort(paste(
+      "position",
+      "must be a whole number greater than or equal to 0"
+    ))
+  }
+  if (!(is.null(object[["average"]]) || is.numeric(object[["average"]]))) {
+    cli::cli_abort("average must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["average"]]) &&
+      (length(object[["average"]]) != 1L || is.na(object[["average"]]))
+  ) {
+    cli::cli_abort("average must be a single number")
+  }
+  if (!(is.null(object[["count"]]) || is.numeric(object[["count"]]))) {
+    cli::cli_abort("count must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["count"]]) &&
+      (length(object[["count"]]) != 1L ||
+        is.na(object[["count"]]) ||
+        object[["count"]] != trunc(object[["count"]]) ||
+        object[["count"]] < 0)
+  ) {
+    cli::cli_abort(paste(
+      "count",
+      "must be a whole number greater than or equal to 0"
+    ))
+  }
+  if (!(is.null(object[["maximum"]]) || is.numeric(object[["maximum"]]))) {
+    cli::cli_abort("maximum must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["maximum"]]) &&
+      (length(object[["maximum"]]) != 1L || is.na(object[["maximum"]]))
+  ) {
+    cli::cli_abort("maximum must be a single number")
+  }
+  if (!(is.null(object[["minimum"]]) || is.numeric(object[["minimum"]]))) {
+    cli::cli_abort("minimum must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["minimum"]]) &&
+      (length(object[["minimum"]]) != 1L || is.na(object[["minimum"]]))
+  ) {
+    cli::cli_abort("minimum must be a single number")
+  }
+  if (!(is.null(object[["stddev"]]) || is.numeric(object[["stddev"]]))) {
+    cli::cli_abort("stddev must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["stddev"]]) &&
+      (length(object[["stddev"]]) != 1L || is.na(object[["stddev"]]))
+  ) {
+    cli::cli_abort("stddev must be a single number")
+  }
+  if (!(is.null(object[["variance"]]) || is.numeric(object[["variance"]]))) {
+    cli::cli_abort("variance must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["variance"]]) &&
+      (length(object[["variance"]]) != 1L || is.na(object[["variance"]]))
+  ) {
+    cli::cli_abort("variance must be a single number")
+  }
+  values <- list(
+    object$average,
+    object$count,
+    object$maximum,
+    object$minimum,
+    object$stddev,
+    object$variance
+  )
+  if (all(vapply(values, is.null, logical(1)))) {
+    cli::cli_abort("at least one statistic must be provided")
+  }
+  class(object) <- c("pc_statistic", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
 as.list.pc_statistic <- function(x, ...) {
-  compact_nulls(list(
+  return(compact_nulls(list(
     name = x$name,
     position = x$position,
     average = x$average,
@@ -486,7 +534,7 @@ as.list.pc_statistic <- function(x, ...) {
     minimum = x$minimum,
     stddev = x$stddev,
     variance = x$variance
-  ))
+  )))
 }
 
 
@@ -513,5 +561,5 @@ print.pc_statistic <- function(x, ...) {
     )),
     styles = list(name = stac_style_id)
   )
-  invisible(x)
+  return(invisible(x))
 }

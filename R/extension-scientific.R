@@ -90,16 +90,14 @@ add_scientific_extension <- function(
   citation = NULL,
   publications = NULL
 ) {
-  if (!stac_inherits(item, stac_item)) {
+  if (!inherits(item, "stac_item")) {
     cli::cli_abort("'item' must be a stac_item object")
   }
-
   if (is.null(doi) && is.null(citation) && is.null(publications)) {
     cli::cli_abort(
       "At least one of 'doi', 'citation', or 'publications' must be provided"
     )
   }
-
   if (!is.null(doi)) {
     if (!is.character(doi) || length(doi) != 1) {
       cli::cli_abort("'doi' must be a single character string")
@@ -110,13 +108,11 @@ add_scientific_extension <- function(
       )
     }
   }
-
   if (!is.null(citation)) {
     if (!is.character(citation) || length(citation) != 1) {
       cli::cli_abort("'citation' must be a single character string")
     }
   }
-
   if (!is.null(publications)) {
     if (!is.list(publications) || length(publications) == 0) {
       cli::cli_abort(
@@ -125,9 +121,9 @@ add_scientific_extension <- function(
     }
     not_pub <- !vapply(
       publications,
-      stac_inherits,
+      inherits,
       logical(1),
-      scientific_publication
+      "scientific_publication"
     )
     if (any(not_pub)) {
       cli::cli_abort(
@@ -135,21 +131,15 @@ add_scientific_extension <- function(
       )
     }
   }
-
   ext_uri <- "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
-
   if (is.null(item$stac_extensions)) {
     item$stac_extensions <- character(0)
   }
-
   if (!ext_uri %in% item$stac_extensions) {
     item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
-
   if (!is.null(doi)) {
     item$properties[["sci:doi"]] <- doi
-
-    # Add cite-as link per RFC 8574
     doi_link <- stac_link(
       rel = "cite-as",
       href = paste0("https://doi.org/", doi)
@@ -157,26 +147,24 @@ add_scientific_extension <- function(
     if (is.null(item$links)) {
       item$links <- list()
     }
-    # Only add if the link is not already present
     existing_hrefs <- vapply(
       item$links,
-      function(l) l$href,
+      function(l) {
+        return(l$href)
+      },
       character(1)
     )
     if (!doi_link$href %in% existing_hrefs) {
       item$links <- c(item$links, list(doi_link))
     }
   }
-
   if (!is.null(citation)) {
     item$properties[["sci:citation"]] <- citation
   }
-
   if (!is.null(publications)) {
     item$properties[["sci:publications"]] <- publications
   }
-
-  item
+  return(item)
 }
 
 
@@ -210,42 +198,37 @@ add_scientific_extension <- function(
 #' )
 #'
 #' @export
-scientific_publication <- new_stac_class(
-  "scientific_publication",
-  properties = list(
-    doi = new_stac_property(
-      new_stac_union(NULL, "character"),
-      validator = function(value) {
-        if (!is.null(value) && length(value) != 1L) {
-          return("must be a single character string")
-        }
-        if (!is.null(value) && grepl("^https?://", value)) {
-          return(
-            "must be a DOI name (e.g. '10.1000/abc456'), not a URL"
-          )
-        }
-      }
-    ),
-    citation = new_stac_property(
-      new_stac_union(NULL, "character"),
-      validator = function(value) {
-        if (!is.null(value) && length(value) != 1L) {
-          "must be a single character string"
-        }
-      }
-    )
-  ),
-  validator = function(self) {
-    if (is.null(self$doi) && is.null(self$citation)) {
-      "At least one of @doi or @citation must be provided"
-    }
+scientific_publication <- function(doi = NULL, citation = NULL) {
+  object <- list(doi = doi, citation = citation)
+  if (!(is.null(object[["doi"]]) || is.character(object[["doi"]]))) {
+    cli::cli_abort("doi must be NULL or character.")
   }
-)
+  if (!is.null(object[["doi"]]) && length(object[["doi"]]) != 1L) {
+    cli::cli_abort(paste("doi", "must be a single character string"))
+  }
+  if (!is.null(object[["doi"]]) && grepl("^https?://", object[["doi"]])) {
+    cli::cli_abort(paste(
+      "doi",
+      "must be a DOI name (e.g. '10.1000/abc456'), not a URL"
+    ))
+  }
+  if (!(is.null(object[["citation"]]) || is.character(object[["citation"]]))) {
+    cli::cli_abort("citation must be NULL or character.")
+  }
+  if (!is.null(object[["citation"]]) && length(object[["citation"]]) != 1L) {
+    cli::cli_abort(paste("citation", "must be a single character string"))
+  }
+  if (is.null(object$doi) && is.null(object$citation)) {
+    cli::cli_abort("At least one of @doi or @citation must be provided")
+  }
+  class(object) <- c("scientific_publication", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
 as.list.scientific_publication <- function(x, ...) {
-  compact_nulls(list(doi = x$doi, citation = x$citation))
+  return(compact_nulls(list(doi = x$doi, citation = x$citation)))
 }
 
 
@@ -263,5 +246,5 @@ print.scientific_publication <- function(x, ...) {
     compact_nulls(list(doi = x$doi, citation = x$citation)),
     styles = list(doi = stac_style_id)
   )
-  invisible(x)
+  return(invisible(x))
 }

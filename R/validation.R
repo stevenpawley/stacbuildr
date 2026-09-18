@@ -15,52 +15,53 @@
 #'
 #' @export
 validate_stac <- function(stac_object, strict = FALSE) {
-  # Validate the formal S3 class hierarchy.
-  if (stac_inherits(stac_object, stac_item)) {
-    validate_item(stac_object)
-  } else if (stac_inherits(stac_object, stac_collection)) {
-    validate_collection(stac_object, strict)
-  } else if (stac_inherits(stac_object, stac_catalog)) {
-    validate_catalog(stac_object, strict)
-  } else {
-    new_stac_validation(
-      errors = "Object must be a stac_catalog, stac_collection, or stac_item"
-    )
-  }
+  return(
+    if (inherits(stac_object, "stac_item")) {
+      validate_item(stac_object)
+    } else if (inherits(stac_object, "stac_collection")) {
+      validate_collection(stac_object, strict)
+    } else if (inherits(stac_object, "stac_catalog")) {
+      validate_catalog(stac_object, strict)
+    } else {
+      new_stac_validation(
+        errors = "Object must be a stac_catalog, stac_collection, or stac_item"
+      )
+    }
+  )
 }
 
 
 # Result returned by every validator.
-stac_validation <- new_stac_class(
-  "stac_validation",
-  properties = list(
-    valid = new_stac_property(
-      "logical",
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value)) "must be TRUE or FALSE"
-      }
-    ),
-    errors = "character",
-    warnings = "character"
-  ),
-  constructor = function(
-    errors = character(),
-    warnings = character(),
-    valid = NULL
-  ) {
-    new_stac_object(
-      list(),
-      valid = valid %||% (length(errors) == 0L),
-      errors = errors,
-      warnings = warnings
-    )
+stac_validation <- function(
+  errors = character(),
+  warnings = character(),
+  valid = NULL
+) {
+  object <- list(
+    valid = valid %||% (length(errors) == 0L),
+    errors = errors,
+    warnings = warnings
+  )
+  if (!is.logical(object[["valid"]])) {
+    cli::cli_abort("valid must be logical.")
   }
-)
+  if (length(object[["valid"]]) != 1L || is.na(object[["valid"]])) {
+    cli::cli_abort(paste("valid", "must be TRUE or FALSE"))
+  }
+  if (!is.character(object[["errors"]])) {
+    cli::cli_abort("errors must be character.")
+  }
+  if (!is.character(object[["warnings"]])) {
+    cli::cli_abort("warnings must be character.")
+  }
+  class(object) <- c("stac_validation", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
 as.list.stac_validation <- function(x, ...) {
-  list(valid = x$valid, errors = x$errors, warnings = x$warnings)
+  return(list(valid = x$valid, errors = x$errors, warnings = x$warnings))
 }
 
 new_stac_validation <- function(
@@ -68,7 +69,7 @@ new_stac_validation <- function(
   warnings = character(),
   valid = NULL
 ) {
-  stac_validation(errors = errors, warnings = warnings, valid = valid)
+  return(stac_validation(errors = errors, warnings = warnings, valid = valid))
 }
 
 
@@ -99,7 +100,7 @@ print.stac_validation <- function(x, ...) {
   # warnings are reported whether or not the object is valid
   stac_print_issues(x$warnings, "warning", stac_sym("info"), stac_style_warn)
 
-  invisible(x)
+  return(invisible(x))
 }
 
 # One "<symbol> N errors" heading followed by a numbered list.
@@ -127,7 +128,7 @@ stac_print_issues <- function(issues, label, symbol, style) {
       stac_truncate(issues[[i]], stac_avail(9L + width))
     ))
   }
-  invisible(NULL)
+  return(invisible(NULL))
 }
 
 
@@ -179,7 +180,7 @@ validate_catalog <- function(catalog, strict = FALSE) {
     }
   }
 
-  new_stac_validation(errors = errors, warnings = warnings)
+  return(new_stac_validation(errors = errors, warnings = warnings))
 }
 
 
@@ -250,7 +251,7 @@ validate_collection <- function(collection, strict = FALSE) {
     errors <- c(errors, provider_errors)
   }
 
-  new_stac_validation(errors = errors, warnings = warnings)
+  return(new_stac_validation(errors = errors, warnings = warnings))
 }
 
 
@@ -322,7 +323,7 @@ validate_item <- function(item) {
     errors <- c(errors, asset_errors)
   }
 
-  new_stac_validation(errors = errors)
+  return(new_stac_validation(errors = errors))
 }
 
 
@@ -331,30 +332,23 @@ validate_item <- function(item) {
 #' @noRd
 validate_links <- function(links) {
   errors <- character()
-
   for (i in seq_along(links)) {
     link <- links[[i]]
-
-    if (!stac_inherits(link, stac_link)) {
+    if (!inherits(link, "stac_link")) {
       errors <- c(errors, paste0("Link[", i, "] must be a stac_link object"))
       next
     }
-
     if (nchar(link$rel) == 0) {
       errors <- c(errors, paste0("Link[", i, "] must have 'rel' field"))
     }
-
     if (nchar(link$href) == 0) {
       errors <- c(errors, paste0("Link[", i, "] must have 'href' field"))
     }
-
-    # Validate type if present
     if (!is.null(link$type) && !is.character(link$type)) {
       errors <- c(errors, paste0("Link[", i, "] 'type' must be a string"))
     }
   }
-
-  errors
+  return(errors)
 }
 
 
@@ -363,24 +357,19 @@ validate_links <- function(links) {
 #' @noRd
 validate_assets <- function(assets) {
   errors <- character()
-
   asset_keys <- names(assets)
-
   for (key in asset_keys) {
     asset <- assets[[key]]
-
-    if (!stac_inherits(asset, stac_asset)) {
+    if (!inherits(asset, "stac_asset")) {
       errors <- c(
         errors,
         paste0("Asset '", key, "' must be a stac_asset object")
       )
       next
     }
-
     if (length(asset$href) != 1L || is.na(asset$href) || !nzchar(asset$href)) {
       errors <- c(errors, paste0("Asset '", key, "' must have 'href' field"))
     }
-
     if (!is.null(asset$roles) && !is.character(asset$roles)) {
       errors <- c(
         errors,
@@ -388,8 +377,7 @@ validate_assets <- function(assets) {
       )
     }
   }
-
-  errors
+  return(errors)
 }
 
 
@@ -479,7 +467,7 @@ validate_extent <- function(extent) {
     }
   }
 
-  errors
+  return(errors)
 }
 
 
@@ -513,7 +501,7 @@ validate_bbox <- function(bbox, prefix = "bbox") {
     }
   }
 
-  errors
+  return(errors)
 }
 
 
@@ -562,7 +550,7 @@ validate_geometry <- function(geometry) {
     ))
   }
 
-  switch(
+  return(switch(
     geometry$type,
     Point = validate_point_coords(geometry$coordinates),
     LineString = validate_linestring_coords(geometry$coordinates),
@@ -571,7 +559,7 @@ validate_geometry <- function(geometry) {
     MultiLineString = validate_multilinestring_coords(geometry$coordinates),
     MultiPolygon = validate_multipolygon_coords(geometry$coordinates),
     character()
-  )
+  ))
 }
 
 
@@ -589,10 +577,16 @@ is_geojson_position <- function(x) {
     return(
       length(x) %in%
         2:3 &&
-        all(vapply(x, function(v) is.numeric(v) && length(v) == 1L, logical(1)))
+        all(vapply(
+          x,
+          function(v) {
+            return(is.numeric(v) && length(v) == 1L)
+          },
+          logical(1)
+        ))
     )
   }
-  FALSE
+  return(FALSE)
 }
 
 # Extract [lon, lat] from a position, normalised to a numeric pair.
@@ -600,14 +594,14 @@ position_lon_lat <- function(x) {
   if (is.numeric(x)) {
     return(x[1:2])
   }
-  c(as.numeric(x[[1]]), as.numeric(x[[2]]))
+  return(c(as.numeric(x[[1]]), as.numeric(x[[2]])))
 }
 
 # Positions must be equal within floating-point tolerance (ring-closure check).
 positions_equal <- function(a, b) {
   pa <- position_lon_lat(a)
   pb <- position_lon_lat(b)
-  isTRUE(all.equal(pa, pb, tolerance = 1e-10, check.names = FALSE))
+  return(isTRUE(all.equal(pa, pb, tolerance = 1e-10, check.names = FALSE)))
 }
 
 # Validate a single position, including WGS 84 coordinate-range checks.
@@ -633,7 +627,7 @@ validate_geojson_position <- function(pos, label) {
       sprintf("%s latitude %g is outside [-90, 90]", label, ll[2])
     )
   }
-  errors
+  return(errors)
 }
 
 # A linear ring (Polygon boundary) must:
@@ -680,13 +674,13 @@ validate_linear_ring <- function(ring, label) {
       )
     )
   }
-  errors
+  return(errors)
 }
 
 # Per-type coordinate validators -----------------------------------------
 
 validate_point_coords <- function(coords) {
-  validate_geojson_position(coords, "Point coordinates")
+  return(validate_geojson_position(coords, "Point coordinates"))
 }
 
 validate_linestring_coords <- function(coords) {
@@ -712,7 +706,7 @@ validate_linestring_coords <- function(coords) {
       )
     )
   }
-  errors
+  return(errors)
 }
 
 validate_polygon_coords <- function(coords) {
@@ -731,7 +725,7 @@ validate_polygon_coords <- function(coords) {
     }
     errors <- c(errors, validate_linear_ring(coords[[i]], label))
   }
-  errors
+  return(errors)
 }
 
 validate_multipoint_coords <- function(coords) {
@@ -748,7 +742,7 @@ validate_multipoint_coords <- function(coords) {
       )
     )
   }
-  errors
+  return(errors)
 }
 
 validate_multilinestring_coords <- function(coords) {
@@ -764,7 +758,7 @@ validate_multilinestring_coords <- function(coords) {
       errors <- c(errors, sprintf("MultiLineString[%d]: %s", i, errs))
     }
   }
-  errors
+  return(errors)
 }
 
 validate_multipolygon_coords <- function(coords) {
@@ -780,7 +774,7 @@ validate_multipolygon_coords <- function(coords) {
       errors <- c(errors, sprintf("MultiPolygon[%d]: %s", i, errs))
     }
   }
-  errors
+  return(errors)
 }
 
 validate_geometry_collection <- function(geometry) {
@@ -797,7 +791,7 @@ validate_geometry_collection <- function(geometry) {
       errors <- c(errors, sprintf("geometries[%d]: %s", i, errs))
     }
   }
-  errors
+  return(errors)
 }
 
 
@@ -825,7 +819,7 @@ validate_item_properties <- function(properties) {
     )
   }
 
-  errors
+  return(errors)
 }
 
 #' Validate a STAC Object Against the Official JSON Schema
@@ -900,28 +894,26 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
   if (!requireNamespace("jsonvalidate", quietly = TRUE)) {
     cli::cli_abort(c(
       "Package 'jsonvalidate' is required for schema validation.",
-      "i" = "Install with: install.packages('jsonvalidate')"
+      i = "Install with: install.packages('jsonvalidate')"
     ))
   }
-
   if (
-    !stac_inherits(stac_object, stac_item) &&
-      !stac_inherits(stac_object, stac_catalog)
+    !inherits(stac_object, "stac_item") &&
+      !inherits(stac_object, "stac_catalog")
   ) {
     return(new_stac_validation(
       errors = "Object must be a stac_catalog, stac_collection, or stac_item"
     ))
   }
-
   json <- stac_to_json(stac_object)
   stac_version <- stac_object$stac_version %||% "1.0.0"
   core_url <- stac_core_schema_url(stac_object, stac_version)
-
   errors <- run_schema_validation(json, core_url)
-
   ext_errors <- character()
   if (validate_extensions) {
-    ext_uris <- tryCatch(stac_object$stac_extensions, error = function(e) NULL)
+    ext_uris <- tryCatch(stac_object$stac_extensions, error = function(e) {
+      return(NULL)
+    })
     for (ext_uri in ext_uris) {
       errs <- run_schema_validation(json, ext_uri)
       if (length(errs) > 0) {
@@ -929,10 +921,8 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
       }
     }
   }
-
   all_errors <- c(errors, ext_errors)
-
-  new_stac_validation(errors = all_errors)
+  return(new_stac_validation(errors = all_errors))
 }
 
 
@@ -942,13 +932,15 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
 # @keywords internal
 stac_core_schema_url <- function(stac_object, stac_version) {
   base <- paste0("https://schemas.stacspec.org/v", stac_version)
-  if (stac_inherits(stac_object, stac_item)) {
-    paste0(base, "/item-spec/json-schema/item.json")
-  } else if (stac_inherits(stac_object, stac_collection)) {
-    paste0(base, "/collection-spec/json-schema/collection.json")
-  } else {
-    paste0(base, "/catalog-spec/json-schema/catalog.json")
-  }
+  return(
+    if (inherits(stac_object, "stac_item")) {
+      paste0(base, "/item-spec/json-schema/item.json")
+    } else if (inherits(stac_object, "stac_collection")) {
+      paste0(base, "/collection-spec/json-schema/collection.json")
+    } else {
+      paste0(base, "/catalog-spec/json-schema/catalog.json")
+    }
+  )
 }
 
 
@@ -981,18 +973,20 @@ stac_core_schema_url <- function(stac_object, stac_version) {
 #
 # @keywords internal
 suppress_unknown_format_warnings <- function(expr) {
-  withCallingHandlers(
+  return(withCallingHandlers(
     expr,
     warning = function(w) {
-      if (grepl("unknown format", conditionMessage(w), fixed = TRUE)) {
-        invokeRestart("muffleWarning")
-      }
+      return(
+        if (grepl("unknown format", conditionMessage(w), fixed = TRUE)) {
+          invokeRestart("muffleWarning")
+        }
+      )
     }
-  )
+  ))
 }
 
 run_schema_validation <- function(json, schema_url) {
-  tryCatch(
+  return(tryCatch(
     {
       local_path <- bundle_schema_url(schema_url)
 
@@ -1031,14 +1025,14 @@ run_schema_validation <- function(json, schema_url) {
       unique(msgs)
     },
     error = function(e) {
-      paste0(
+      return(paste0(
         "Could not fetch or parse schema '",
         schema_url,
         "': ",
         conditionMessage(e)
-      )
+      ))
     }
-  )
+  ))
 }
 
 
@@ -1077,15 +1071,17 @@ bundle_schema_url <- function(schema_url) {
         paste(readLines(con, warn = FALSE), collapse = "\n")
       },
       error = function(e) {
-        cli::cli_abort(
+        return(cli::cli_abort(
           "Failed to download schema '{url}': {conditionMessage(e)}"
-        )
+        ))
       }
     )
 
     parsed <- tryCatch(
       jsonlite::fromJSON(txt, simplifyVector = FALSE),
-      error = function(e) NULL
+      error = function(e) {
+        return(NULL)
+      }
     )
     this_base <- sub("[^/]*$", "", url) # trailing-slash base URL directory
 
@@ -1145,10 +1141,10 @@ bundle_schema_url <- function(schema_url) {
     }
 
     writeLines(txt, local_path)
-    local_path
+    return(local_path)
   }
 
-  bundle_one(schema_url)
+  return(bundle_one(schema_url))
 }
 
 
@@ -1158,7 +1154,7 @@ bundle_schema_url <- function(schema_url) {
 url_to_cached_schema_path <- function(url, cache_dir) {
   safe <- gsub("^https?://", "", url)
   safe <- gsub("[^A-Za-z0-9._-]", "_", safe)
-  file.path(cache_dir, safe)
+  return(file.path(cache_dir, safe))
 }
 
 
@@ -1181,7 +1177,7 @@ normalize_schema_url <- function(url) {
       stack <- c(stack, p)
     }
   }
-  paste0(proto, paste(stack, collapse = "/"))
+  return(paste0(proto, paste(stack, collapse = "/")))
 }
 
 
@@ -1203,7 +1199,7 @@ find_schema_refs <- function(x) {
   for (child in x) {
     refs <- c(refs, find_schema_refs(child))
   }
-  unique(refs)
+  return(unique(refs))
 }
 
 
@@ -1212,22 +1208,18 @@ find_schema_refs <- function(x) {
 #' @noRd
 validate_providers <- function(providers) {
   errors <- character()
-
   if (!is.list(providers)) {
     return("Field 'providers' must be a list")
   }
-
   for (i in seq_along(providers)) {
     provider <- providers[[i]]
-
-    if (!stac_inherits(provider, stac_provider)) {
+    if (!inherits(provider, "stac_provider")) {
       errors <- c(
         errors,
         paste0("Provider[", i, "] must be a stac_provider object")
       )
       next
     }
-
     if (
       length(provider$name) != 1L ||
         is.na(provider$name) ||
@@ -1235,7 +1227,6 @@ validate_providers <- function(providers) {
     ) {
       errors <- c(errors, paste0("Provider[", i, "] must have 'name' field"))
     }
-
     if (!is.null(provider$roles)) {
       valid_roles <- c("producer", "licensor", "processor", "host")
       if (is.character(provider$roles)) {
@@ -1259,6 +1250,5 @@ validate_providers <- function(providers) {
       }
     }
   }
-
-  errors
+  return(errors)
 }

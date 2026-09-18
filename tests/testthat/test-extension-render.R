@@ -85,18 +85,6 @@ test_that("render_object errors when minmax_zoom is not length 2", {
   )
 })
 
-test_that("render_object validates property modifications", {
-  render <- render_object("B4")
-
-  expect_error(render$assets <- character(), "non-empty character vector")
-  expect_error(render$title <- c("a", "b"), "single character string")
-  expect_error(
-    render$rescale <- list(c(0, 1, 2)),
-    "numeric vectors of length 2"
-  )
-  expect_error(render$minmax_zoom <- 0:2, "numeric vector of length 2")
-})
-
 
 # --- add_render_extension() ---
 

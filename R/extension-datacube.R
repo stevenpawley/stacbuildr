@@ -90,16 +90,14 @@ add_datacube_extension <- function(
   variables = NULL,
   asset_key = NULL
 ) {
-  if (!stac_inherits(item, stac_item)) {
+  if (!inherits(item, "stac_item")) {
     cli::cli_abort("'item' must be a stac_item object")
   }
-
   if (is.null(dimensions) && is.null(variables)) {
     cli::cli_abort(
       "At least one of 'dimensions' or 'variables' must be provided"
     )
   }
-
   if (!is.null(dimensions)) {
     dimensions <- validate_cube_named_list(
       dimensions,
@@ -107,7 +105,6 @@ add_datacube_extension <- function(
       "cube_dimension"
     )
   }
-
   if (!is.null(variables)) {
     variables <- validate_cube_named_list(
       variables,
@@ -115,7 +112,6 @@ add_datacube_extension <- function(
       "cube_variable"
     )
   }
-
   if (!is.null(dimensions) && !is.null(variables)) {
     overlap <- intersect(names(dimensions), names(variables))
     if (length(overlap) > 0) {
@@ -124,18 +120,13 @@ add_datacube_extension <- function(
       )
     }
   }
-
-  # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/datacube/v2.3.0/schema.json"
-
   if (is.null(item$stac_extensions)) {
     item$stac_extensions <- character(0)
   }
-
   if (!ext_uri %in% item$stac_extensions) {
     item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
-
   fields <- list()
   if (!is.null(dimensions)) {
     fields$`cube:dimensions` <- dimensions
@@ -143,26 +134,21 @@ add_datacube_extension <- function(
   if (!is.null(variables)) {
     fields$`cube:variables` <- variables
   }
-
   if (!is.null(asset_key)) {
-    # Add to specific asset
     if (is.null(item$assets[[asset_key]])) {
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
-
     for (field_name in names(fields)) {
       item$assets[[asset_key]]$extra_fields[[field_name]] <- fields[[
         field_name
       ]]
     }
   } else {
-    # Add to item properties
     for (field_name in names(fields)) {
       item$properties[[field_name]] <- fields[[field_name]]
     }
   }
-
-  item
+  return(item)
 }
 
 
@@ -171,25 +157,18 @@ validate_cube_named_list <- function(x, arg_name, class_name) {
   if (!is.list(x) || length(x) == 0) {
     cli::cli_abort("'{arg_name}' must be a non-empty named list")
   }
-
   nms <- names(x)
   if (is.null(nms) || any(nms == "") || any(is.na(nms))) {
     cli::cli_abort("'{arg_name}' must be a fully named list")
   }
-
   if (any(duplicated(nms))) {
     cli::cli_abort("'{arg_name}' must not contain duplicate names")
   }
-
-  cls <- get(class_name, envir = asNamespace("stacbuildr"))
-  not_cls <- !vapply(x, stac_inherits, logical(1), cls)
+  not_cls <- !vapply(x, inherits, logical(1), class_name)
   if (any(not_cls)) {
-    cli::cli_abort(
-      "All elements of '{arg_name}' must be {class_name} objects"
-    )
+    cli::cli_abort("All elements of '{arg_name}' must be {class_name} objects")
   }
-
-  x
+  return(x)
 }
 
 
@@ -280,116 +259,111 @@ validate_cube_named_list <- function(x, arg_name, class_name) {
 #' )
 #'
 #' @export
-cube_dimension <- new_stac_class(
-  "cube_dimension",
-  properties = list(
-    type = new_stac_property(
-      "character",
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value)) {
-          "must be a single character string"
-        }
-      }
-    ),
-    extent = "any",
-    values = "any",
-    step = "any",
-    unit = "any",
-    reference_system = "any",
-    description = "any",
-    axis = "any",
-    axes = "any",
-    bbox = "any",
-    geometry_types = "any",
-    extra_fields = new_stac_property("list", default = list())
-  ),
-  validator = function(self) {
-    if (identical(self$type, "spatial")) {
-      if (
-        !is.character(self$axis) ||
-          length(self$axis) != 1L ||
-          is.na(self$axis) ||
-          !self$axis %in% c("x", "y", "z")
-      ) {
-        return("@axis must be one of 'x', 'y', or 'z' when @type = 'spatial'")
-      }
-      if (self$axis %in% c("x", "y") && length(self$extent) != 2L) {
-        return(
-          "@extent (length 2) is required for horizontal spatial dimensions"
+cube_dimension <- function(
+  type,
+  extent = NULL,
+  values = NULL,
+  step = NULL,
+  unit = NULL,
+  reference_system = NULL,
+  description = NULL,
+  axis = NULL,
+  axes = NULL,
+  bbox = NULL,
+  geometry_types = NULL,
+  ...
+) {
+  if (missing(type)) {
+    cli::cli_abort("'type' is required")
+  }
+  object <- list(
+    type = type,
+    extent = extent,
+    values = if (is.null(values)) {} else {
+      unlist(values, use.names = FALSE)
+    },
+    step = step,
+    unit = unit,
+    reference_system = if (
+      identical(type, "spatial") ||
+        identical(
+          type,
+          "geometry"
         )
-      }
-      if (
-        identical(self$axis, "z") &&
-          is.null(self$extent) &&
-          is.null(self$values)
-      ) {
-        return(
-          "Either @extent or @values is required for vertical ('z') spatial dimensions"
-        )
-      }
-    } else if (identical(self$type, "geometry")) {
-      if (is.null(self$bbox)) {
-        return("@bbox is required when @type = 'geometry'")
-      }
-    } else if (identical(self$type, "temporal")) {
-      if (length(self$extent) != 2L) {
-        return("@extent (length 2) is required when @type = 'temporal'")
-      }
-    } else if (is.null(self$extent) && is.null(self$values)) {
-      return("Either @extent or @values is required for additional dimensions")
+    ) {
+      reference_system
+    } else {},
+    description = description,
+    axis = if (identical(type, "spatial")) axis else NULL,
+    axes = if (
+      identical(
+        type,
+        "geometry"
+      ) &&
+        !is.null(axes)
+    ) {
+      unlist(axes, use.names = FALSE)
+    } else {},
+    bbox = if (identical(type, "geometry")) bbox else NULL,
+    geometry_types = if (
+      identical(type, "geometry") &&
+        !is.null(geometry_types)
+    ) {
+      unlist(geometry_types, use.names = FALSE)
+    } else {},
+    extra_fields = list(...)
+  )
+  if (!is.character(object[["type"]])) {
+    cli::cli_abort("type must be character.")
+  }
+  if (length(object[["type"]]) != 1L || is.na(object[["type"]])) {
+    cli::cli_abort(paste("type", "must be a single character string"))
+  }
+  if (!is.list(object[["extra_fields"]])) {
+    cli::cli_abort("extra_fields must be list.")
+  }
+  if (identical(object$type, "spatial")) {
+    if (
+      !is.character(object$axis) ||
+        length(object$axis) != 1L ||
+        is.na(object$axis) ||
+        !object$axis %in%
+          c("x", "y", "z")
+    ) {
+      cli::cli_abort(
+        "@axis must be one of 'x', 'y', or 'z' when @type = 'spatial'"
+      )
     }
-  },
-  constructor = function(
-    type,
-    extent = NULL,
-    values = NULL,
-    step = NULL,
-    unit = NULL,
-    reference_system = NULL,
-    description = NULL,
-    axis = NULL,
-    axes = NULL,
-    bbox = NULL,
-    geometry_types = NULL,
-    ...
-  ) {
-    if (missing(type)) {
-      cli::cli_abort("'type' is required")
+    if (object$axis %in% c("x", "y") && length(object$extent) != 2L) {
+      cli::cli_abort(
+        "@extent (length 2) is required for horizontal spatial dimensions"
+      )
     }
-
-    new_stac_object(
-      list(),
-      type = type,
-      extent = extent,
-      values = if (is.null(values)) NULL else unlist(values, use.names = FALSE),
-      step = step,
-      unit = unit,
-      reference_system = if (
-        identical(type, "spatial") || identical(type, "geometry")
-      ) {
-        reference_system
-      } else {
-        NULL
-      },
-      description = description,
-      axis = if (identical(type, "spatial")) axis else NULL,
-      axes = if (identical(type, "geometry") && !is.null(axes)) {
-        unlist(axes, use.names = FALSE)
-      } else {
-        NULL
-      },
-      bbox = if (identical(type, "geometry")) bbox else NULL,
-      geometry_types = if (
-        identical(type, "geometry") && !is.null(geometry_types)
-      ) {
-        unlist(geometry_types, use.names = FALSE)
-      } else {
-        NULL
-      },
-      extra_fields = list(...)
+    if (
+      identical(object$axis, "z") &&
+        is.null(object$extent) &&
+        is.null(object$values)
+    ) {
+      cli::cli_abort(
+        "Either @extent or @values is required for vertical ('z') spatial dimensions"
+      )
+    }
+  } else if (identical(object$type, "geometry")) {
+    if (is.null(object$bbox)) {
+      cli::cli_abort("@bbox is required when @type = 'geometry'")
+    }
+  } else if (identical(object$type, "temporal")) {
+    if (length(object$extent) != 2L) {
+      cli::cli_abort("@extent (length 2) is required when @type = 'temporal'")
+    }
+  } else if (is.null(object$extent) && is.null(object$values)) {
+    cli::cli_abort(
+      "Either @extent or @values is required for additional dimensions"
     )
   }
-)
+  class(object) <- c("cube_dimension", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
@@ -411,7 +385,7 @@ as.list.cube_dimension <- function(x, ...) {
     reference_system = x$reference_system,
     description = x$description
   ))
-  c(fields, x$extra_fields)
+  return(c(fields, x$extra_fields))
 }
 
 
@@ -442,7 +416,7 @@ print.cube_dimension <- function(x, ...) {
     x$extra_fields
   )
   stac_print_list_fields(fields, styles = list(type = stac_style_key))
-  invisible(x)
+  return(invisible(x))
 }
 
 
@@ -491,59 +465,56 @@ print.cube_dimension <- function(x, ...) {
 #' )
 #'
 #' @export
-cube_variable <- new_stac_class(
-  "cube_variable",
-  properties = list(
-    type = new_stac_property(
-      "character",
-      validator = function(value) {
-        if (
-          length(value) != 1L ||
-            is.na(value) ||
-            !value %in% c("data", "auxiliary")
-        ) {
-          "must be either 'data' or 'auxiliary'"
-        }
-      }
-    ),
-    dimensions = "character",
-    extent = "any",
-    values = "any",
-    unit = "any",
-    nodata = "any",
-    data_type = "any",
-    description = "any",
-    extra_fields = new_stac_property("list", default = list())
-  ),
-  constructor = function(
-    type,
-    dimensions = character(0),
-    extent = NULL,
-    values = NULL,
-    unit = NULL,
-    nodata = NULL,
-    data_type = NULL,
-    description = NULL,
-    ...
-  ) {
-    if (missing(type)) {
-      cli::cli_abort("'type' is required")
-    }
-
-    new_stac_object(
-      list(),
-      type = type,
-      dimensions = dimensions,
-      extent = extent,
-      values = if (is.null(values)) NULL else unlist(values, use.names = FALSE),
-      unit = unit,
-      nodata = nodata,
-      data_type = data_type,
-      description = description,
-      extra_fields = list(...)
-    )
+cube_variable <- function(
+  type,
+  dimensions = character(0),
+  extent = NULL,
+  values = NULL,
+  unit = NULL,
+  nodata = NULL,
+  data_type = NULL,
+  description = NULL,
+  ...
+) {
+  if (missing(type)) {
+    cli::cli_abort("'type' is required")
   }
-)
+  object <- list(
+    type = type,
+    dimensions = dimensions,
+    extent = extent,
+    values = if (is.null(values)) {} else {
+      unlist(values, use.names = FALSE)
+    },
+    unit = unit,
+    nodata = nodata,
+    data_type = data_type,
+    description = description,
+    extra_fields = list(...)
+  )
+  if (!is.character(object[["type"]])) {
+    cli::cli_abort("type must be character.")
+  }
+  if (
+    length(object[["type"]]) != 1L ||
+      is.na(object[["type"]]) ||
+      !object[["type"]] %in%
+        c(
+          "data",
+          "auxiliary"
+        )
+  ) {
+    cli::cli_abort(paste("type", "must be either 'data' or 'auxiliary'"))
+  }
+  if (!is.character(object[["dimensions"]])) {
+    cli::cli_abort("dimensions must be character.")
+  }
+  if (!is.list(object[["extra_fields"]])) {
+    cli::cli_abort("extra_fields must be list.")
+  }
+  class(object) <- c("cube_variable", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
@@ -558,7 +529,7 @@ as.list.cube_variable <- function(x, ...) {
     data_type = x$data_type,
     description = x$description
   ))
-  c(fields, x$extra_fields)
+  return(c(fields, x$extra_fields))
 }
 
 
@@ -586,5 +557,5 @@ print.cube_variable <- function(x, ...) {
     x$extra_fields
   )
   stac_print_list_fields(fields, styles = list(type = stac_style_key))
-  invisible(x)
+  return(invisible(x))
 }

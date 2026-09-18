@@ -76,8 +76,8 @@
 #'
 #' # Define land cover classes
 #' classes <- list(
-#'   classification_class(value = 1, name = "water",  title = "Water",  color_hint = "0000FF"),
-#'   classification_class(value = 2, name = "urban",  title = "Urban",  color_hint = "FF0000"),
+#'   classification_class(value = 1, name = "water", title = "Water", color_hint = "0000FF"),
+#'   classification_class(value = 2, name = "urban", title = "Urban", color_hint = "FF0000"),
 #'   classification_class(value = 3, name = "forest", title = "Forest", color_hint = "00FF00"),
 #'   classification_class(value = 0, name = "nodata", nodata = TRUE)
 #' )
@@ -95,7 +95,7 @@
 #' # Bitfield example: Landsat-style QA band
 #' qa_classes <- list(
 #'   classification_class(value = 0, name = "no_fill", title = "No Fill"),
-#'   classification_class(value = 1, name = "fill",    title = "Fill")
+#'   classification_class(value = 1, name = "fill", title = "Fill")
 #' )
 #'
 #' qa_bitfields <- list(
@@ -124,71 +124,57 @@ add_classification_extension <- function(
   bitfields = NULL,
   asset_key = NULL
 ) {
-  if (!stac_inherits(item, stac_item)) {
+  if (!inherits(item, "stac_item")) {
     cli::cli_abort("'item' must be a stac_item object")
   }
-
   if (!is.null(classes) && !is.null(bitfields)) {
     cli::cli_abort(
       "Only one of 'classes' or 'bitfields' may be provided, not both"
     )
   }
-
   if (is.null(classes) && is.null(bitfields)) {
-    cli::cli_abort(
-      "At least one of 'classes' or 'bitfields' must be provided"
-    )
+    cli::cli_abort("At least one of 'classes' or 'bitfields' must be provided")
   }
-
   if (
     !is.null(classes) &&
       (!is.list(classes) ||
-        !all(vapply(
-          classes,
-          stac_inherits,
-          logical(1),
-          classification_class
-        )))
+        !all(vapply(classes, inherits, logical(1), "classification_class")))
   ) {
     cli::cli_abort("'classes' must be a list of classification_class objects")
   }
-
   if (
     !is.null(bitfields) &&
       (!is.list(bitfields) ||
         !all(vapply(
           bitfields,
-          stac_inherits,
+          inherits,
           logical(1),
-          classification_bitfield
+          "classification_bitfield"
         )))
   ) {
     cli::cli_abort(
       "'bitfields' must be a list of classification_bitfield objects"
     )
   }
-
   ext_uri <- "https://stac-extensions.github.io/classification/v2.0.0/schema.json"
-
   if (is.null(item$stac_extensions)) {
     item$stac_extensions <- character(0)
   }
-
   if (!ext_uri %in% item$stac_extensions) {
     item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
-
   if (!is.null(asset_key)) {
     if (is.null(item$assets[[asset_key]])) {
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
-
     if (!is.null(classes)) {
-      item$assets[[asset_key]]$extra_fields[["classification:classes"]] <- classes
+      item$assets[[asset_key]]$extra_fields[[
+        "classification:classes"
+      ]] <- classes
     } else {
-      item$assets[[
-        asset_key
-      ]]$extra_fields[["classification:bitfields"]] <- bitfields
+      item$assets[[asset_key]]$extra_fields[[
+        "classification:bitfields"
+      ]] <- bitfields
     }
   } else {
     if (!is.null(classes)) {
@@ -197,8 +183,7 @@ add_classification_extension <- function(
       item$properties[["classification:bitfields"]] <- bitfields
     }
   }
-
-  item
+  return(item)
 }
 
 
@@ -260,113 +245,143 @@ add_classification_extension <- function(
 #' nodata_cls <- classification_class(value = 0, name = "nodata", nodata = TRUE)
 #'
 #' @export
-classification_class <- new_stac_class(
-  "classification_class",
-  properties = list(
-    value = new_stac_property(
-      "integer",
-      default = quote(cli::cli_abort("'value' is required")),
-      setter = function(self, value) {
-        if (
-          !is.numeric(value) ||
-            length(value) != 1L ||
-            is.na(value) ||
-            value != trunc(value)
-        ) {
-          cli::cli_abort("'value' must be a single integer")
-        }
-        self$value <- as.integer(value)
-        self
-      },
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value)) {
-          "must be a single integer"
-        }
-      }
-    ),
-    name = new_stac_property(
-      new_stac_union(NULL, "character"),
-      validator = function(value) {
-        if (
-          !is.null(value) &&
-            (length(value) != 1L ||
-              is.na(value) ||
-              !grepl("^[A-Za-z0-9_-]+$", value))
-        ) {
-          "must consist only of letters, numbers, hyphens, and underscores"
-        }
-      }
-    ),
-    title = new_stac_union(NULL, "character"),
-    description = new_stac_union(NULL, "character"),
-    color_hint = new_stac_property(
-      new_stac_union(NULL, "character"),
-      validator = function(value) {
-        if (
-          !is.null(value) &&
-            (length(value) != 1L ||
-              is.na(value) ||
-              !grepl("^[0-9A-F]{6}$", value))
-        ) {
-          paste(
-            "must be exactly 6 upper-case hexadecimal characters",
-            "(e.g., 'FF0000')"
-          )
-        }
-      }
-    ),
-    nodata = new_stac_property(
-      new_stac_union(NULL, "logical"),
-      validator = function(value) {
-        if (!is.null(value) && (length(value) != 1L || is.na(value))) {
-          "must be TRUE or FALSE"
-        }
-      }
-    ),
-    percentage = new_stac_property(
-      new_stac_union(NULL, "numeric"),
-      validator = function(value) {
-        if (
-          !is.null(value) &&
-            (length(value) != 1L ||
-              is.na(value) ||
-              value < 0 ||
-              value > 100)
-        ) {
-          "must be a number between 0 and 100"
-        }
-      }
-    ),
-    count = new_stac_property(
-      new_stac_union(NULL, "integer"),
-      setter = function(self, value) {
-        if (!is.null(value)) {
-          if (
-            !is.numeric(value) ||
-              length(value) != 1L ||
-              is.na(value) ||
-              value != trunc(value)
-          ) {
-            cli::cli_abort("'count' must be a single integer")
-          }
-          value <- as.integer(value)
-        }
-        self$count <- value
-        self
-      },
-      validator = function(value) {
-        if (!is.null(value) && (length(value) != 1L || is.na(value))) {
-          "must be a single integer"
-        }
-      }
-    )
+classification_class <- function(
+  value = cli::cli_abort("'value' is required"),
+  name = NULL,
+  title = NULL,
+  description = NULL,
+  color_hint = NULL,
+  nodata = NULL,
+  percentage = NULL,
+  count = NULL
+) {
+  object <- list(
+    value = value,
+    name = name,
+    title = title,
+    description = description,
+    color_hint = color_hint,
+    nodata = nodata,
+    percentage = percentage,
+    count = count
   )
-)
+  object <- (function(self, value) {
+    if (
+      !is.numeric(value) ||
+        length(value) != 1L ||
+        is.na(value) ||
+        value != trunc(value)
+    ) {
+      cli::cli_abort("'value' must be a single integer")
+    }
+    self$value <- as.integer(value)
+    return(self)
+  })(object, object[["value"]])
+  object <- (function(self, value) {
+    if (!is.null(value)) {
+      if (
+        !is.numeric(value) ||
+          length(value) != 1L ||
+          is.na(value) ||
+          value != trunc(value)
+      ) {
+        cli::cli_abort("'count' must be a single integer")
+      }
+      value <- as.integer(value)
+    }
+    self$count <- value
+    return(self)
+  })(object, object[["count"]])
+  if (!is.integer(object[["value"]])) {
+    cli::cli_abort("value must be integer.")
+  }
+  if (length(object[["value"]]) != 1L || is.na(object[["value"]])) {
+    cli::cli_abort(paste("value", "must be a single integer"))
+  }
+  if (!(is.null(object[["name"]]) || is.character(object[["name"]]))) {
+    cli::cli_abort("name must be NULL or character.")
+  }
+  if (
+    !is.null(object[["name"]]) &&
+      (length(object[["name"]]) != 1L ||
+        is.na(object[["name"]]) ||
+        !grepl(
+          "^[A-Za-z0-9_-]+$",
+          object[["name"]]
+        ))
+  ) {
+    cli::cli_abort(paste(
+      "name",
+      "must consist only of letters, numbers, hyphens, and underscores"
+    ))
+  }
+  if (!(is.null(object[["title"]]) || is.character(object[["title"]]))) {
+    cli::cli_abort("title must be NULL or character.")
+  }
+  if (
+    !(is.null(object[["description"]]) || is.character(object[["description"]]))
+  ) {
+    cli::cli_abort("description must be NULL or character.")
+  }
+  if (
+    !(is.null(object[["color_hint"]]) || is.character(object[["color_hint"]]))
+  ) {
+    cli::cli_abort("color_hint must be NULL or character.")
+  }
+  if (
+    !is.null(object[["color_hint"]]) &&
+      (length(object[["color_hint"]]) != 1L ||
+        is.na(object[["color_hint"]]) ||
+        !grepl("^[0-9A-F]{6}$", object[["color_hint"]]))
+  ) {
+    cli::cli_abort(paste(
+      "color_hint",
+      paste(
+        "must be exactly 6 upper-case hexadecimal characters",
+        "(e.g., 'FF0000')"
+      )
+    ))
+  }
+  if (!(is.null(object[["nodata"]]) || is.logical(object[["nodata"]]))) {
+    cli::cli_abort("nodata must be NULL or logical.")
+  }
+  if (
+    !is.null(object[["nodata"]]) &&
+      (length(object[["nodata"]]) != 1L || is.na(object[["nodata"]]))
+  ) {
+    cli::cli_abort(paste("nodata", "must be TRUE or FALSE"))
+  }
+  if (
+    !(is.null(object[["percentage"]]) || is.numeric(object[["percentage"]]))
+  ) {
+    cli::cli_abort("percentage must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["percentage"]]) &&
+      (length(object[["percentage"]]) != 1L ||
+        is.na(object[["percentage"]]) ||
+        object[["percentage"]] < 0 ||
+        object[["percentage"]] > 100)
+  ) {
+    cli::cli_abort(paste("percentage", "must be a number between 0 and 100"))
+  }
+  if (!(is.null(object[["count"]]) || is.integer(object[["count"]]))) {
+    cli::cli_abort("count must be NULL or integer.")
+  }
+  if (
+    !is.null(object[["count"]]) &&
+      (length(object[["count"]]) != 1L || is.na(object[["count"]]))
+  ) {
+    cli::cli_abort(paste("count", "must be a single integer"))
+  }
+  class(object) <- c("classification_class", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
 as.list.classification_class <- function(x, ...) {
-  compact_nulls(list(
+  return(compact_nulls(list(
     value = x$value,
     name = x$name,
     title = x$title,
@@ -375,7 +390,7 @@ as.list.classification_class <- function(x, ...) {
     nodata = x$nodata,
     percentage = x$percentage,
     count = x$count
-  ))
+  )))
 }
 
 
@@ -422,7 +437,7 @@ as.list.classification_class <- function(x, ...) {
 #' # Single-bit cloud flag (bit 3 of Landsat QA_PIXEL)
 #' cloud_classes <- list(
 #'   classification_class(value = 0, name = "not_cloud", title = "Not Cloud"),
-#'   classification_class(value = 1, name = "cloud",     title = "Cloud")
+#'   classification_class(value = 1, name = "cloud", title = "Cloud")
 #' )
 #'
 #' cloud_bit <- classification_bitfield(
@@ -435,10 +450,10 @@ as.list.classification_class <- function(x, ...) {
 #'
 #' # Two-bit cloud confidence field (bits 8–9 of Landsat QA_PIXEL)
 #' confidence_classes <- list(
-#'   classification_class(value = 0, name = "none",   title = "No Confidence"),
-#'   classification_class(value = 1, name = "low",    title = "Low Confidence"),
+#'   classification_class(value = 0, name = "none", title = "No Confidence"),
+#'   classification_class(value = 1, name = "low", title = "Low Confidence"),
 #'   classification_class(value = 2, name = "medium", title = "Medium Confidence"),
-#'   classification_class(value = 3, name = "high",   title = "High Confidence")
+#'   classification_class(value = 3, name = "high", title = "High Confidence")
 #' )
 #'
 #' confidence_bit <- classification_bitfield(
@@ -450,98 +465,123 @@ as.list.classification_class <- function(x, ...) {
 #' )
 #'
 #' @export
-classification_bitfield <- new_stac_class(
-  "classification_bitfield",
-  properties = list(
-    offset = new_stac_property(
-      "integer",
-      default = quote(cli::cli_abort("'offset' is required")),
-      setter = function(self, value) {
-        if (
-          !is.numeric(value) ||
-            length(value) != 1L ||
-            is.na(value) ||
-            value != trunc(value)
-        ) {
-          cli::cli_abort("'offset' must be a non-negative integer")
-        }
-        self$offset <- as.integer(value)
-        self
-      },
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value) || value < 0L) {
-          "must be a non-negative integer"
-        }
-      }
-    ),
-    length = new_stac_property(
-      "integer",
-      default = quote(cli::cli_abort("'length' is required")),
-      setter = function(self, value) {
-        if (
-          !is.numeric(value) ||
-            length(value) != 1L ||
-            is.na(value) ||
-            value != trunc(value)
-        ) {
-          cli::cli_abort("'length' must be a positive integer")
-        }
-        self$length <- as.integer(value)
-        self
-      },
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value) || value < 1L) {
-          "must be a positive integer"
-        }
-      }
-    ),
-    classes = new_stac_property(
-      "list",
-      default = quote(cli::cli_abort("'classes' is required")),
-      validator = function(value) {
-        if (length(value) == 0L) {
-          "must be a non-empty list of classification_class objects"
-        } else if (
-          !all(vapply(
-            value,
-            stac_inherits,
-            logical(1),
-            classification_class
-          ))
-        ) {
-          "must contain only classification_class objects"
-        }
-      }
-    ),
-    name = new_stac_property(
-      new_stac_union(NULL, "character"),
-      validator = function(value) {
-        if (
-          !is.null(value) &&
-            (length(value) != 1L ||
-              is.na(value) ||
-              !grepl("^[A-Za-z0-9_-]+$", value))
-        ) {
-          "must consist only of letters, numbers, hyphens, and underscores"
-        }
-      }
-    ),
-    description = new_stac_union(NULL, "character"),
-    roles = new_stac_union(NULL, "character")
+classification_bitfield <- function(
+  offset = cli::cli_abort("'offset' is required"),
+  length = cli::cli_abort("'length' is required"),
+  classes = cli::cli_abort("'classes' is required"),
+  name = NULL,
+  description = NULL,
+  roles = NULL
+) {
+  object <- list(
+    offset = offset,
+    length = length,
+    classes = classes,
+    name = name,
+    description = description,
+    roles = roles
   )
-)
+  object <- (function(self, value) {
+    if (
+      !is.numeric(value) ||
+        length(value) != 1L ||
+        is.na(value) ||
+        value != trunc(value)
+    ) {
+      cli::cli_abort("'offset' must be a non-negative integer")
+    }
+    self$offset <- as.integer(value)
+    return(self)
+  })(object, object[["offset"]])
+  object <- (function(self, value) {
+    if (
+      !is.numeric(value) ||
+        length(value) != 1L ||
+        is.na(value) ||
+        value != trunc(value)
+    ) {
+      cli::cli_abort("'length' must be a positive integer")
+    }
+    self$length <- as.integer(value)
+    return(self)
+  })(object, object[["length"]])
+  if (!is.integer(object[["offset"]])) {
+    cli::cli_abort("offset must be integer.")
+  }
+  if (
+    length(object[["offset"]]) != 1L ||
+      is.na(object[["offset"]]) ||
+      object[["offset"]] < 0L
+  ) {
+    cli::cli_abort(paste("offset", "must be a non-negative integer"))
+  }
+  if (!is.integer(object[["length"]])) {
+    cli::cli_abort("length must be integer.")
+  }
+  if (
+    length(object[["length"]]) != 1L ||
+      is.na(object[["length"]]) ||
+      object[["length"]] < 1L
+  ) {
+    cli::cli_abort(paste("length", "must be a positive integer"))
+  }
+  if (!is.list(object[["classes"]])) {
+    cli::cli_abort("classes must be list.")
+  }
+  if (length(object[["classes"]]) == 0L) {
+    cli::cli_abort(
+      "classes must be a non-empty list of classification_class objects"
+    )
+  } else if (
+    !all(vapply(
+      object[["classes"]],
+      inherits,
+      logical(1),
+      "classification_class"
+    ))
+  ) {
+    cli::cli_abort("classes must contain only classification_class objects")
+  }
+  if (!(is.null(object[["name"]]) || is.character(object[["name"]]))) {
+    cli::cli_abort("name must be NULL or character.")
+  }
+  if (
+    !is.null(object[["name"]]) &&
+      (length(object[["name"]]) != 1L ||
+        is.na(object[["name"]]) ||
+        !grepl(
+          "^[A-Za-z0-9_-]+$",
+          object[["name"]]
+        ))
+  ) {
+    cli::cli_abort(paste(
+      "name",
+      "must consist only of letters, numbers, hyphens, and underscores"
+    ))
+  }
+  if (
+    !(is.null(object[["description"]]) || is.character(object[["description"]]))
+  ) {
+    cli::cli_abort("description must be NULL or character.")
+  }
+  if (!(is.null(object[["roles"]]) || is.character(object[["roles"]]))) {
+    cli::cli_abort("roles must be NULL or character.")
+  }
+  class(object) <- c("classification_bitfield", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
 as.list.classification_bitfield <- function(x, ...) {
-  compact_nulls(list(
+  return(compact_nulls(list(
     offset = x$offset,
     length = x$length,
     classes = stac_json_value(x$classes),
     name = x$name,
     description = x$description,
     roles = if (is.null(x$roles)) NULL else as_json_array(x$roles)
-  ))
+  )))
 }
 
 
@@ -577,7 +617,7 @@ print.classification_class <- function(x, ...) {
     fields,
     styles = list(name = stac_style_id, value = stac_style_count)
   )
-  invisible(x)
+  return(invisible(x))
 }
 
 
@@ -615,11 +655,13 @@ print.classification_bitfield <- function(x, ..., expand = NULL) {
     "classes",
     length(classes),
     summary = stac_preview(stac_object_labels(classes)),
-    lines = function() stac_classification_lines(classes),
+    lines = function() {
+      return(stac_classification_lines(classes))
+    },
     expanded = stac_expanded(expand, "classes"),
     width = width
   )
 
   stac_print_hint(sum(collapsed))
-  invisible(x)
+  return(invisible(x))
 }

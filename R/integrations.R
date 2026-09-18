@@ -185,7 +185,7 @@ item_from_terra <- function(
     item <- add_projection_metadata_terra(item, terra_obj)
   }
 
-  item
+  return(item)
 }
 
 
@@ -282,7 +282,7 @@ item_from_sf <- function(
     )
   }
 
-  item
+  return(item)
 }
 
 
@@ -335,7 +335,10 @@ geometry_from_sf <- function(sf_obj) {
   }
 
   geojson_str <- geojsonsf::sfc_geojson(geom)
-  as_stac_geometry(jsonlite::fromJSON(geojson_str, simplifyVector = FALSE))
+  return(as_stac_geometry(jsonlite::fromJSON(
+    geojson_str,
+    simplifyVector = FALSE
+  )))
 }
 
 
@@ -355,7 +358,7 @@ bbox_from_sf <- function(sf_obj) {
   }
 
   bbox <- sf::st_bbox(sf_obj)
-  c(bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"])
+  return(c(bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"]))
 }
 
 
@@ -412,10 +415,10 @@ extract_terra_spatial_metadata <- function(
     }
   }
 
-  list(
+  return(list(
     geometry = geometry_from_sf(bbox_sf),
     bbox = bbox_from_sf(bbox_sf)
-  )
+  ))
 }
 
 
@@ -460,7 +463,7 @@ add_projection_metadata_terra <- function(item, terra_obj) {
 
   ext <- terra::ext(terra_obj)
 
-  add_projection_extension(
+  return(add_projection_extension(
     item,
     code = code,
     wkt2 = wkt2,
@@ -474,7 +477,7 @@ add_projection_metadata_terra <- function(item, terra_obj) {
       -terra::yres(terra_obj), # pixel height (negative for north up)
       ext$ymax # top-left y
     )
-  )
+  ))
 }
 
 
@@ -494,7 +497,7 @@ normalize_href <- function(href) {
     href <- normalizePath(href, mustWork = FALSE)
     href <- gsub("\\\\", "/", href)
   }
-  href
+  return(href)
 }
 
 
@@ -542,7 +545,7 @@ get_media_type <- function(file) {
     base_type <- "application/vnd.laszip+copc"
   }
 
-  base_type
+  return(base_type)
 }
 
 
@@ -559,7 +562,7 @@ get_media_type <- function(file) {
 #'
 #' @noRd
 is_copc <- function(file) {
-  grepl("\\.copc\\.laz$", basename(file), ignore.case = TRUE)
+  return(grepl("\\.copc\\.laz$", basename(file), ignore.case = TRUE))
 }
 
 
@@ -582,13 +585,15 @@ is_cog <- function(file) {
   if (!file.exists(local_path)) {
     return(FALSE)
   }
-  tryCatch(
+  return(tryCatch(
     {
       info <- sf::gdal_utils("info", source = local_path, quiet = TRUE)
       grepl("LAYOUT=COG", info, fixed = TRUE)
     },
-    error = function(e) FALSE
-  )
+    error = function(e) {
+      return(FALSE)
+    }
+  ))
 }
 
 
@@ -621,13 +626,23 @@ extent_from_items <- function(items) {
   }
 
   # Extract all bboxes
-  bboxes <- lapply(items, function(item) item$bbox)
+  bboxes <- lapply(items, function(item) {
+    return(item$bbox)
+  })
 
   # Calculate overall spatial extent
-  xmins <- sapply(bboxes, function(b) b[1])
-  ymins <- sapply(bboxes, function(b) b[2])
-  xmaxs <- sapply(bboxes, function(b) b[3])
-  ymaxs <- sapply(bboxes, function(b) b[4])
+  xmins <- sapply(bboxes, function(b) {
+    return(b[1])
+  })
+  ymins <- sapply(bboxes, function(b) {
+    return(b[2])
+  })
+  xmaxs <- sapply(bboxes, function(b) {
+    return(b[3])
+  })
+  ymaxs <- sapply(bboxes, function(b) {
+    return(b[4])
+  })
 
   overall_bbox <- c(
     min(xmins),
@@ -667,10 +682,10 @@ extent_from_items <- function(items) {
     temporal_end <- NULL
   }
 
-  stac_extent(
+  return(stac_extent(
     spatial_bbox = list(overall_bbox),
     temporal_interval = list(list(temporal_start, temporal_end))
-  )
+  ))
 }
 
 
@@ -710,7 +725,9 @@ bands_from_terra <- function(
 
   data_types <- vapply(
     seq_len(n_bands),
-    function(i) terra_dtype(terra::datatype(terra_obj)[i]),
+    function(i) {
+      return(terra_dtype(terra::datatype(terra_obj)[i]))
+    },
     character(1)
   )
 
@@ -745,7 +762,7 @@ bands_from_terra <- function(
     bands[[i]] <- band
   }
 
-  bands
+  return(bands)
 }
 
 
@@ -753,7 +770,7 @@ bands_from_terra <- function(
 #'
 #' @noRd
 terra_dtype <- function(dt) {
-  switch(
+  return(switch(
     dt,
     "INT1U" = "uint8",
     "INT2U" = "uint16",
@@ -763,7 +780,7 @@ terra_dtype <- function(dt) {
     "FLT4S" = "float32",
     "FLT8S" = "float64",
     "other"
-  )
+  ))
 }
 
 
@@ -774,7 +791,7 @@ gdal_nodata <- function(file) {
   if (!file.exists(file)) {
     return(NULL)
   }
-  tryCatch(
+  return(tryCatch(
     {
       info <- sf::gdal_utils("info", source = file, quiet = TRUE)
       m <- regmatches(info, regexpr("NoData Value=([^\\n\\r]+)", info))
@@ -784,6 +801,8 @@ gdal_nodata <- function(file) {
       val <- trimws(sub("NoData Value=", "", m[[1]]))
       as.numeric(val)
     },
-    error = function(e) NULL
-  )
+    error = function(e) {
+      return(NULL)
+    }
+  ))
 }

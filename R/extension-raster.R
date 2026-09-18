@@ -136,39 +136,30 @@
 #'
 #' @export
 add_raster_extension <- function(item, bands, asset_key = NULL) {
-  if (!stac_inherits(item, stac_item)) {
+  if (!inherits(item, "stac_item")) {
     cli::cli_abort("'item' must be a stac_item object")
   }
-
   if (!is.list(bands)) {
     cli::cli_abort("'bands' must be a list of band objects")
   }
-
-  # Detect double-wrapping: band_from_file() returns a list, so
-  # list(band_from_file(...)) produces list(list(band, ...))
   if (
     length(bands) == 1 &&
       is.list(bands[[1]]) &&
-      !stac_inherits(bands[[1]], raster_band)
+      !inherits(bands[[1]], "raster_band")
   ) {
     cli::cli_abort(c(
       "'bands' appears to be double-wrapped.",
-      "i" = "Use bands = band_from_file(...), not bands = list(band_from_file(...))."
+      i = "Use bands = band_from_file(...), not bands = list(band_from_file(...))."
     ))
   }
-
-  # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
-
   if (is.null(item$stac_extensions)) {
     item$stac_extensions <- character(0)
   }
-
   if (!ext_uri %in% item$stac_extensions) {
     item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
-
-  set_bands(item, bands, asset_key = asset_key)
+  return(set_bands(item, bands, asset_key = asset_key))
 }
 
 # raster_band ----
@@ -213,118 +204,121 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
 #'   other extensions like `"common_name"`, `"center_wavelength"`.
 #' @returns An S3 class representing a raster band object.
 #' @export
-raster_band <- new_stac_class(
-  "raster_band",
-  properties = list(
-    nodata = "numeric",
-    data_type = new_stac_property(
-      "character",
-      validator = function(value) {
-        if (length(value) > 0) {
-          valid_types <- c(
-            "int8",
-            "int16",
-            "int32",
-            "int64",
-            "uint8",
-            "uint16",
-            "uint32",
-            "uint64",
-            "float16",
-            "float32",
-            "float64",
-            "cint16",
-            "cint32",
-            "cfloat32",
-            "cfloat64",
-            "other"
-          )
-
-          if (!value %in% valid_types) {
-            cli::cli_warn(c(
-              "'{value}' is not a standard data type.",
-              "i" = "Valid types: {paste(valid_types, collapse = ', ')}"
-            ))
-          }
-        }
-        return(NULL)
-      }
-    ),
-    unit = "character",
-    statistics = new_stac_property(
-      "any",
-      validator = function(value) {
-        if (!is.null(value) && !stac_inherits(value, raster_statistics)) {
-          "must be a raster_statistics object or NULL"
-        }
-      }
-    ),
-    sampling = new_stac_property(
-      "character",
-      validator = function(value) {
-        if (length(value) > 0) {
-          if (!value %in% c("area", "point")) {
-            "'sampling' must be either 'area' or 'point'"
-          }
-        }
-      }
-    ),
-    bits_per_sample = "integer",
-    spatial_resolution = new_stac_property(
-      "numeric",
-      validator = function(value) {
-        if (length(value) > 0) {
-          if (value <= 0) {
-            "'spatial_resolution' must be greater than zero"
-          }
-        }
-      }
-    ),
-    scale = new_stac_property("numeric", default = 1),
-    offset = new_stac_property("numeric", default = 0),
-    histogram = new_stac_property(
-      "any",
-      validator = function(value) {
-        if (!is.null(value) && !stac_inherits(value, raster_histogram)) {
-          "must be a raster_histogram object or NULL"
-        }
-      }
-    ),
-    extra_fields = new_stac_property("list", default = list())
-  ),
-  constructor = function(
-    nodata = NULL,
-    data_type = NULL,
-    unit = NULL,
-    statistics = NULL,
-    sampling = NULL,
-    bits_per_sample = NULL,
-    spatial_resolution = NULL,
-    scale = 1,
-    offset = 0,
-    histogram = NULL,
-    ...
-  ) {
-    new_stac_object(
-      list(),
-      nodata = nodata %||% numeric(0),
-      data_type = data_type %||% character(0),
-      unit = unit %||% character(0),
-      statistics = as_raster_statistics(statistics),
-      sampling = sampling %||% character(0),
-      bits_per_sample = if (is.null(bits_per_sample)) {
-        integer(0)
-      } else {
-        as.integer(bits_per_sample)
-      },
-      spatial_resolution = spatial_resolution %||% numeric(0),
-      scale = scale,
-      offset = offset,
-      histogram = as_raster_histogram(histogram),
-      extra_fields = list(...)
-    )
+raster_band <- function(
+  nodata = NULL,
+  data_type = NULL,
+  unit = NULL,
+  statistics = NULL,
+  sampling = NULL,
+  bits_per_sample = NULL,
+  spatial_resolution = NULL,
+  scale = 1,
+  offset = 0,
+  histogram = NULL,
+  ...
+) {
+  object <- list(
+    nodata = nodata %||% numeric(0),
+    data_type = data_type %||% character(0),
+    unit = unit %||%
+      character(0),
+    statistics = as_raster_statistics(statistics),
+    sampling = sampling %||% character(0),
+    bits_per_sample = if (is.null(bits_per_sample)) {
+      integer(0)
+    } else {
+      as.integer(bits_per_sample)
+    },
+    spatial_resolution = spatial_resolution %||% numeric(0),
+    scale = scale,
+    offset = offset,
+    histogram = as_raster_histogram(histogram),
+    extra_fields = list(...)
+  )
+  if (!is.numeric(object[["nodata"]])) {
+    cli::cli_abort("nodata must be numeric.")
   }
-)
+  if (!is.character(object[["data_type"]])) {
+    cli::cli_abort("data_type must be character.")
+  }
+  if (length(object[["data_type"]]) > 0) {
+    valid_types <- c(
+      "int8",
+      "int16",
+      "int32",
+      "int64",
+      "uint8",
+      "uint16",
+      "uint32",
+      "uint64",
+      "float16",
+      "float32",
+      "float64",
+      "cint16",
+      "cint32",
+      "cfloat32",
+      "cfloat64",
+      "other"
+    )
+    if (!object[["data_type"]] %in% valid_types) {
+      cli::cli_warn(c(
+        "'{value}' is not a standard data type.",
+        i = "Valid types: {paste(valid_types, collapse = ', ')}"
+      ))
+    }
+  }
+  if (!is.character(object[["unit"]])) {
+    cli::cli_abort("unit must be character.")
+  }
+  if (
+    !is.null(object[["statistics"]]) &&
+      !inherits(object[["statistics"]], "raster_statistics")
+  ) {
+    cli::cli_abort(paste(
+      "statistics",
+      "must be a raster_statistics object or NULL"
+    ))
+  }
+  if (!is.character(object[["sampling"]])) {
+    cli::cli_abort("sampling must be character.")
+  }
+  if (length(object[["sampling"]]) > 0) {
+    if (!object[["sampling"]] %in% c("area", "point")) {
+      cli::cli_abort("'sampling' must be either 'area' or 'point'")
+    }
+  }
+  if (!is.integer(object[["bits_per_sample"]])) {
+    cli::cli_abort("bits_per_sample must be integer.")
+  }
+  if (!is.numeric(object[["spatial_resolution"]])) {
+    cli::cli_abort("spatial_resolution must be numeric.")
+  }
+  if (length(object[["spatial_resolution"]]) > 0) {
+    if (object[["spatial_resolution"]] <= 0) {
+      cli::cli_abort("'spatial_resolution' must be greater than zero")
+    }
+  }
+  if (!is.numeric(object[["scale"]])) {
+    cli::cli_abort("scale must be numeric.")
+  }
+  if (!is.numeric(object[["offset"]])) {
+    cli::cli_abort("offset must be numeric.")
+  }
+  if (
+    !is.null(object[["histogram"]]) &&
+      !inherits(object[["histogram"]], "raster_histogram")
+  ) {
+    cli::cli_abort(paste(
+      "histogram",
+      "must be a raster_histogram object or NULL"
+    ))
+  }
+  if (!is.list(object[["extra_fields"]])) {
+    cli::cli_abort("extra_fields must be list.")
+  }
+  class(object) <- c("raster_band", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
@@ -415,7 +409,9 @@ print.raster_band <- function(x, ..., expand = NULL) {
         "statistics",
         length(statistics),
         summary = stac_preview(names(statistics)),
-        lines = function() stac_field_lines(statistics),
+        lines = function() {
+          return(stac_field_lines(statistics))
+        },
         expanded = stac_expanded(expand, "statistics"),
         width = width
       )
@@ -425,7 +421,9 @@ print.raster_band <- function(x, ..., expand = NULL) {
         "histogram",
         length(histogram),
         summary = stac_preview(names(histogram)),
-        lines = function() stac_field_lines(histogram),
+        lines = function() {
+          return(stac_field_lines(histogram))
+        },
         expanded = stac_expanded(expand, "histogram"),
         width = width
       )
@@ -433,23 +431,11 @@ print.raster_band <- function(x, ..., expand = NULL) {
   )
 
   stac_print_hint(sum(collapsed))
-  invisible(x)
+  return(invisible(x))
 }
 
 
 # raster_statistics ----
-
-raster_statistic_property <- function() {
-  new_stac_property(
-    new_stac_union(NULL, "numeric"),
-    validator = function(value) {
-      if (!is.null(value) && (length(value) != 1L || is.na(value))) {
-        "must be a single number"
-      }
-    }
-  )
-}
-
 
 #' Create Raster Statistics Object
 #'
@@ -479,35 +465,84 @@ raster_statistic_property <- function() {
 #' stats$valid_percent
 #'
 #' @export
-raster_statistics <- new_stac_class(
-  "raster_statistics",
-  properties = list(
-    minimum = raster_statistic_property(),
-    maximum = raster_statistic_property(),
-    mean = raster_statistic_property(),
-    stddev = raster_statistic_property(),
-    valid_percent = new_stac_property(
-      new_stac_union(NULL, "numeric"),
-      setter = function(self, value) {
-        if (
-          is.numeric(value) &&
-            length(value) == 1L &&
-            !is.na(value) &&
-            (value < 0 || value > 100)
-        ) {
-          cli::cli_warn("'valid_percent' should be between 0 and 100")
-        }
-        self$valid_percent <- value
-        self
-      },
-      validator = function(value) {
-        if (!is.null(value) && (length(value) != 1L || is.na(value))) {
-          "must be a single number"
-        }
-      }
-    )
+raster_statistics <- function(
+  minimum = NULL,
+  maximum = NULL,
+  mean = NULL,
+  stddev = NULL,
+  valid_percent = NULL
+) {
+  object <- list(
+    minimum = minimum,
+    maximum = maximum,
+    mean = mean,
+    stddev = stddev,
+    valid_percent = valid_percent
   )
-)
+  object <- (function(self, value) {
+    if (
+      is.numeric(value) &&
+        length(value) == 1L &&
+        !is.na(value) &&
+        (value < 0 || value > 100)
+    ) {
+      cli::cli_warn("'valid_percent' should be between 0 and 100")
+    }
+    self$valid_percent <- value
+    return(self)
+  })(object, object[["valid_percent"]])
+  if (!(is.null(object[["minimum"]]) || is.numeric(object[["minimum"]]))) {
+    cli::cli_abort("minimum must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["minimum"]]) &&
+      (length(object[["minimum"]]) != 1L || is.na(object[["minimum"]]))
+  ) {
+    cli::cli_abort("minimum must be a single number")
+  }
+  if (!(is.null(object[["maximum"]]) || is.numeric(object[["maximum"]]))) {
+    cli::cli_abort("maximum must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["maximum"]]) &&
+      (length(object[["maximum"]]) != 1L || is.na(object[["maximum"]]))
+  ) {
+    cli::cli_abort("maximum must be a single number")
+  }
+  if (!(is.null(object[["mean"]]) || is.numeric(object[["mean"]]))) {
+    cli::cli_abort("mean must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["mean"]]) &&
+      (length(object[["mean"]]) != 1L || is.na(object[["mean"]]))
+  ) {
+    cli::cli_abort("mean must be a single number")
+  }
+  if (!(is.null(object[["stddev"]]) || is.numeric(object[["stddev"]]))) {
+    cli::cli_abort("stddev must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["stddev"]]) &&
+      (length(object[["stddev"]]) != 1L || is.na(object[["stddev"]]))
+  ) {
+    cli::cli_abort("stddev must be a single number")
+  }
+  if (
+    !(is.null(object[["valid_percent"]]) ||
+      is.numeric(object[["valid_percent"]]))
+  ) {
+    cli::cli_abort("valid_percent must be NULL or numeric.")
+  }
+  if (
+    !is.null(object[["valid_percent"]]) &&
+      (length(object[["valid_percent"]]) != 1L ||
+        is.na(object[["valid_percent"]]))
+  ) {
+    cli::cli_abort(paste("valid_percent", "must be a single number"))
+  }
+  class(object) <- c("raster_statistics", "stac_object")
+  return(object)
+}
 
 raster_statistics_fields <- function(x) {
   fields <- list(
@@ -517,23 +552,23 @@ raster_statistics_fields <- function(x) {
     stddev = x$stddev,
     valid_percent = x$valid_percent
   )
-  fields[!vapply(fields, is.null, logical(1))]
+  return(fields[!vapply(fields, is.null, logical(1))])
 }
 
 #'
 #' @exportS3Method
 as.list.raster_statistics <- function(x, ...) {
-  raster_statistics_fields(x)
+  return(raster_statistics_fields(x))
 }
 
 as_raster_statistics <- function(x) {
-  if (is.null(x) || stac_inherits(x, raster_statistics)) {
+  if (is.null(x) || inherits(x, "raster_statistics")) {
     return(x)
   }
   if (!is.list(x)) {
     cli::cli_abort("'statistics' must be a raster_statistics object or a list.")
   }
-  do.call(raster_statistics, x)
+  return(do.call(raster_statistics, x))
 }
 
 
@@ -567,7 +602,7 @@ print.raster_statistics <- function(x, ...) {
     )
   }
 
-  invisible(x)
+  return(invisible(x))
 }
 
 # raster_histogram ----
@@ -600,107 +635,99 @@ print.raster_statistics <- function(x, ...) {
 #' hist$buckets
 #'
 #' @export
-raster_histogram <- new_stac_class(
-  "raster_histogram",
-  properties = list(
-    count = new_stac_property(
-      "integer",
-      default = quote(cli::cli_abort("'count' is required")),
-      setter = function(self, value) {
-        if (
-          !is.numeric(value) ||
-            length(value) != 1L ||
-            is.na(value) ||
-            value != trunc(value)
-        ) {
-          cli::cli_abort("'count' must be a single integer")
-        }
-        self$count <- as.integer(value)
-        self
-      },
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value) || value < 0L) {
-          "must be a single non-negative integer"
-        }
-      }
-    ),
-    min = new_stac_property(
-      "numeric",
-      default = quote(cli::cli_abort("'min' is required")),
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value)) {
-          "must be a single number"
-        }
-      }
-    ),
-    max = new_stac_property(
-      "numeric",
-      default = quote(cli::cli_abort("'max' is required")),
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value)) {
-          "must be a single number"
-        }
-      }
-    ),
-    buckets = new_stac_property(
-      "integer",
-      default = quote(cli::cli_abort("'buckets' is required")),
-      setter = function(self, value) {
-        if (
-          !is.numeric(value) ||
-            anyNA(value) ||
-            !all(value == trunc(value))
-        ) {
-          cli::cli_abort("'buckets' must contain only integers")
-        }
-        self$buckets <- as.integer(value)
-        self
-      }
-    )
-  ),
-  validator = function(self) {
+raster_histogram <- function(
+  count = cli::cli_abort("'count' is required"),
+  min = cli::cli_abort("'min' is required"),
+  max = cli::cli_abort("'max' is required"),
+  buckets = cli::cli_abort("'buckets' is required")
+) {
+  object <- list(count = count, min = min, max = max, buckets = buckets)
+  object <- (function(self, value) {
     if (
-      length(self$count) != 1L ||
-        is.na(self$count) ||
-        length(self$min) != 1L ||
-        is.na(self$min) ||
-        length(self$max) != 1L ||
-        is.na(self$max)
+      !is.numeric(value) ||
+        length(value) != 1L ||
+        is.na(value) ||
+        value != trunc(value)
     ) {
-      return(NULL)
+      cli::cli_abort("'count' must be a single integer")
     }
-    if (self$min >= self$max) {
-      return("'min' must be smaller than 'max'")
+    self$count <- as.integer(value)
+    return(self)
+  })(object, object[["count"]])
+  object <- (function(self, value) {
+    if (!is.numeric(value) || anyNA(value) || !all(value == trunc(value))) {
+      cli::cli_abort("'buckets' must contain only integers")
     }
-    if (length(self$buckets) != self$count) {
-      return(sprintf(
-        "'buckets' length (%d) must equal 'count' (%d)",
-        length(self$buckets),
-        self$count
-      ))
-    }
+    self$buckets <- as.integer(value)
+    return(self)
+  })(object, object[["buckets"]])
+  if (!is.integer(object[["count"]])) {
+    cli::cli_abort("count must be integer.")
+  }
+  if (
+    length(object[["count"]]) != 1L ||
+      is.na(object[["count"]]) ||
+      object[["count"]] < 0L
+  ) {
+    cli::cli_abort(paste("count", "must be a single non-negative integer"))
+  }
+  if (!is.numeric(object[["min"]])) {
+    cli::cli_abort("min must be numeric.")
+  }
+  if (length(object[["min"]]) != 1L || is.na(object[["min"]])) {
+    cli::cli_abort(paste("min", "must be a single number"))
+  }
+  if (!is.numeric(object[["max"]])) {
+    cli::cli_abort("max must be numeric.")
+  }
+  if (length(object[["max"]]) != 1L || is.na(object[["max"]])) {
+    cli::cli_abort(paste("max", "must be a single number"))
+  }
+  if (!is.integer(object[["buckets"]])) {
+    cli::cli_abort("buckets must be integer.")
+  }
+  if (
+    length(object$count) != 1L ||
+      is.na(object$count) ||
+      length(object$min) != 1L ||
+      is.na(object$min) ||
+      length(object$max) != 1L ||
+      is.na(object$max)
+  ) {
     NULL
   }
-)
+  if (object$min >= object$max) {
+    cli::cli_abort("'min' must be smaller than 'max'")
+  }
+  if (length(object$buckets) != object$count) {
+    cli::cli_abort(sprintf(
+      "'buckets' length (%d) must equal 'count' (%d)",
+      length(object$buckets),
+      object$count
+    ))
+  }
+  class(object) <- c("raster_histogram", "stac_object")
+  return(object)
+}
 
 raster_histogram_fields <- function(x) {
-  list(count = x$count, min = x$min, max = x$max, buckets = x$buckets)
+  return(list(count = x$count, min = x$min, max = x$max, buckets = x$buckets))
 }
 
 #'
 #' @exportS3Method
 as.list.raster_histogram <- function(x, ...) {
-  raster_histogram_fields(x)
+  return(raster_histogram_fields(x))
 }
 
 as_raster_histogram <- function(x) {
-  if (is.null(x) || stac_inherits(x, raster_histogram)) {
+  if (is.null(x) || inherits(x, "raster_histogram")) {
     return(x)
   }
   if (!is.list(x)) {
     cli::cli_abort("'histogram' must be a raster_histogram object or a list.")
   }
-  do.call(raster_histogram, x)
+  return(do.call(raster_histogram, x))
 }
 
 
@@ -720,7 +747,7 @@ print.raster_histogram <- function(x, ...) {
   stac_print_field("range", sprintf("%g / %g", x$min, x$max))
   stac_print_field("buckets", stac_fmt_value(x$buckets))
 
-  invisible(x)
+  return(invisible(x))
 }
 
 
@@ -774,9 +801,9 @@ band_from_file <- function(
   }
 
   r <- terra::rast(file)
-  bands_from_terra(
+  return(bands_from_terra(
     r,
     calculate_statistics = calculate_statistics,
     sample_size = sample_size
-  )
+  ))
 }

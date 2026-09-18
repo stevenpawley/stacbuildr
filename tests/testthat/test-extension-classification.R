@@ -31,20 +31,6 @@ test_that("classification_class stores all optional fields", {
   expect_equal(cls$count, 9040L)
 })
 
-test_that("classification_class coerces value and count to integer", {
-  cls <- classification_class(value = 2.0, count = 500.0)
-
-  expect_identical(cls$value, 2L)
-  expect_identical(cls$count, 500L)
-
-  cls$value <- 3
-  cls$count <- 600
-  expect_identical(cls$value, 3L)
-  expect_identical(cls$count, 600L)
-
-  expect_error(cls$value <- 1.5, "single integer")
-  expect_error(cls$count <- 1.5, "single integer")
-})
 
 test_that("classification_class errors when value is missing", {
   expect_error(classification_class(), "'value' is required")
@@ -88,35 +74,6 @@ test_that("classification_class errors on non-logical nodata", {
   )
 })
 
-test_that("classification_class validates property modifications", {
-  cls <- classification_class(value = 1, name = "forest")
-
-  expect_error(
-    cls$value <- c(1L, 2L),
-    "single integer"
-  )
-  expect_error(
-    cls$name <- "bad name!",
-    "letters, numbers, hyphens, and underscores"
-  )
-  expect_error(
-    cls$color_hint <- "ff0000",
-    "upper-case hexadecimal"
-  )
-  expect_error(
-    cls$percentage <- 101,
-    "0 and 100"
-  )
-  expect_error(
-    cls$nodata <- NA,
-    "TRUE or FALSE"
-  )
-  expect_error(
-    cls$count <- c(1L, 2L),
-    "single integer"
-  )
-})
-
 
 # --- classification_bitfield() ---
 
@@ -157,24 +114,6 @@ test_that("classification_bitfield stores optional fields", {
   expect_equal(bf$roles, c("data", "cloud"))
 })
 
-test_that("classification_bitfield coerces offset and length to integer", {
-  bf <- classification_bitfield(
-    offset = 2.0,
-    length = 1.0,
-    classes = make_classes()
-  )
-
-  expect_identical(bf$offset, 2L)
-  expect_identical(bf$length, 1L)
-
-  bf$offset <- 3
-  bf$length <- 2
-  expect_identical(bf$offset, 3L)
-  expect_identical(bf$length, 2L)
-
-  expect_error(bf$offset <- 1.5, "non-negative integer")
-  expect_error(bf$length <- 1.5, "positive integer")
-})
 
 test_that("classification_bitfield errors when required args are missing", {
   expect_error(
@@ -222,27 +161,6 @@ test_that("classification_bitfield errors on invalid name", {
     ),
     "letters, numbers, hyphens, and underscores"
   )
-})
-
-test_that("classification_bitfield validates property modifications", {
-  bf <- classification_bitfield(
-    offset = 0,
-    length = 1,
-    classes = make_classes()
-  )
-
-  expect_error(bf$offset <- -1L, "non-negative")
-  expect_error(bf$length <- 0L, "positive integer")
-  expect_error(bf$classes <- list(), "non-empty")
-  expect_error(
-    bf$classes <- list(classification_class(value = 0), "invalid"),
-    "only classification_class objects"
-  )
-  expect_error(
-    bf$name <- "bad name!",
-    "letters, numbers, hyphens, and underscores"
-  )
-  expect_error(bf$roles <- 1, "character")
 })
 
 

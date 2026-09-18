@@ -149,16 +149,6 @@ test_that("cube_variable errors when dimensions is not a character vector", {
   )
 })
 
-test_that("datacube objects validate property modifications", {
-  dim <- cube_dimension(type = "spatial", axis = "x", extent = c(0, 1))
-  expect_error(dim$axis <- "invalid", "@axis must be one of")
-  expect_error(dim$extent <- NULL, "horizontal spatial dimensions")
-
-  variable <- cube_variable(type = "data", dimensions = c("x", "y"))
-  expect_error(variable$type <- "invalid", "either 'data' or 'auxiliary'")
-  expect_error(variable$dimensions <- 1:2, "character")
-})
-
 
 # --- add_datacube_extension() ---
 

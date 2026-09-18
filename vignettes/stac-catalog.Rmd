@@ -42,8 +42,15 @@ enough to need them gets those automatically.
 
 ```{r}
 set.seed(42)
-dem <- terra::rast(nrows = 10, ncols = 10, xmin = -120, xmax = -119,
-                   ymin = 48, ymax = 49, crs = "EPSG:4326")
+dem <- terra::rast(
+  nrows = 10,
+  ncols = 10,
+  xmin = -120,
+  xmax = -119,
+  ymin = 48,
+  ymax = 49,
+  crs = "EPSG:4326"
+)
 terra::values(dem) <- runif(terra::ncell(dem), 100, 3000)
 names(dem) <- "elevation"
 
@@ -106,7 +113,12 @@ collection <- stac_collection(
   title = "Terrain Collection",
   license = "CC-BY-4.0",
   extent = stac_extent(
-    spatial_bbox = list(c(terra::xmin(r), terra::ymin(r), terra::xmax(r), terra::ymax(r))),
+    spatial_bbox = list(c(
+      terra::xmin(r),
+      terra::ymin(r),
+      terra::xmax(r),
+      terra::ymax(r)
+    )),
     temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
   )
 )
