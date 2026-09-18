@@ -193,8 +193,10 @@ combined_band <- eo_band(
 item <- item |>
   add_eo_extension(bands = list(combined_band)) |>
   add_raster_extension(
-    bands = list(raster_band(nodata = 0, data_type = "uint16",
-                             spatial_resolution = 30, scale = 0.0001))
+    bands = list(raster_band(
+      nodata = 0, data_type = "uint16",
+      spatial_resolution = 30, scale = 0.0001
+    ))
   )
 
 }

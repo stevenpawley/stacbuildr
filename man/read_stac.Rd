@@ -22,7 +22,7 @@ the write/read round-trip.
 \examples{
 \dontrun{
 catalog <- read_stac("path/to/catalog.json")
-item    <- read_stac("path/to/item.json")
+item <- read_stac("path/to/item.json")
 }
 
 }

@@ -88,8 +88,8 @@ item <- stac_item(
 
 # Define land cover classes
 classes <- list(
-  classification_class(value = 1, name = "water",  title = "Water",  color_hint = "0000FF"),
-  classification_class(value = 2, name = "urban",  title = "Urban",  color_hint = "FF0000"),
+  classification_class(value = 1, name = "water", title = "Water", color_hint = "0000FF"),
+  classification_class(value = 2, name = "urban", title = "Urban", color_hint = "FF0000"),
   classification_class(value = 3, name = "forest", title = "Forest", color_hint = "00FF00"),
   classification_class(value = 0, name = "nodata", nodata = TRUE)
 )
@@ -107,7 +107,7 @@ item <- item |>
 # Bitfield example: Landsat-style QA band
 qa_classes <- list(
   classification_class(value = 0, name = "no_fill", title = "No Fill"),
-  classification_class(value = 1, name = "fill",    title = "Fill")
+  classification_class(value = 1, name = "fill", title = "Fill")
 )
 
 qa_bitfields <- list(

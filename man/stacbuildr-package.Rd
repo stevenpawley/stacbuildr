@@ -45,7 +45,7 @@ objects backed by named lists. Use \code{$} to read or modify declared fields:\t
 
 
 Note that \code{stac_collection} extends \code{stac_catalog}, so
-\code{stac_inherits(x, stac_catalog)} is also true for a Collection.
+\code{inherits(x, "stac_catalog")} is also true for a Collection.
 }
 
 \subsection{Dictionaries (use \verb{[[ ]]} to access entries)}{

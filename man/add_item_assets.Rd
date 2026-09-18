@@ -43,8 +43,10 @@ item <- stac_item(
   bbox = c(-121, 47, -119, 49),
   datetime = "2023-07-01T00:00:00Z"
 )
-item <- add_asset(item, key = "red",
-  href = "red.tif", type = "image/tiff", roles = "data", title = "Red Band")
+item <- add_asset(item,
+  key = "red",
+  href = "red.tif", type = "image/tiff", roles = "data", title = "Red Band"
+)
 
 collection <- add_item(collection, item)
 collection <- add_item_assets(collection)
