@@ -55,8 +55,7 @@ make_r_asset <- function() {
 # EO Extension -------------------------------------------------------------
 
 test_that("add_eo_extension writes bands to item properties matching pystac", {
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
 
   reticulate::py_run_string(
     "
@@ -114,8 +113,7 @@ py_eo_result = py_item.to_dict()
 })
 
 test_that("add_eo_extension writes bands to asset matching pystac", {
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
 
   reticulate::py_run_string(
     "
@@ -195,8 +193,7 @@ py_asset_eo_result = py_item.to_dict()
 # Raster Extension ---------------------------------------------------------
 
 test_that("add_raster_extension places bands on asset matching pystac", {
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
 
   reticulate::py_run_string(
     "
@@ -270,8 +267,7 @@ py_raster_result = py_item.to_dict()
 })
 
 test_that("add_raster_extension places bands on the asset it was given", {
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
 
   reticulate::py_run_string(
     "
@@ -332,8 +328,7 @@ py_raster_props_result = py_item.to_dict()
 # Combined EO + Raster -----------------------------------------------------
 
 test_that("combined EO and raster extensions match pystac structure", {
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
 
   reticulate::py_run_string(
     "

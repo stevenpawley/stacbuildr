@@ -1,6 +1,5 @@
 test_that("write_stac output is readable and valid according to pystac", {
-  skip_if_not_installed("reticulate")
-  reticulate::py_require("pystac")
+  skip_if_no_pystac()
   pystac <- reticulate::import("pystac")
 
   item_id <- "observation-001"
