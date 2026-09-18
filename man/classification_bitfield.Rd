@@ -62,7 +62,7 @@ extracted as \code{bitwAnd(bitwShiftR(x, 2), 3L)}.
 # Single-bit cloud flag (bit 3 of Landsat QA_PIXEL)
 cloud_classes <- list(
   classification_class(value = 0, name = "not_cloud", title = "Not Cloud"),
-  classification_class(value = 1, name = "cloud",     title = "Cloud")
+  classification_class(value = 1, name = "cloud", title = "Cloud")
 )
 
 cloud_bit <- classification_bitfield(
@@ -75,10 +75,10 @@ cloud_bit <- classification_bitfield(
 
 # Two-bit cloud confidence field (bits 8–9 of Landsat QA_PIXEL)
 confidence_classes <- list(
-  classification_class(value = 0, name = "none",   title = "No Confidence"),
-  classification_class(value = 1, name = "low",    title = "Low Confidence"),
+  classification_class(value = 0, name = "none", title = "No Confidence"),
+  classification_class(value = 1, name = "low", title = "Low Confidence"),
   classification_class(value = 2, name = "medium", title = "Medium Confidence"),
-  classification_class(value = 3, name = "high",   title = "High Confidence")
+  classification_class(value = 3, name = "high", title = "High Confidence")
 )
 
 confidence_bit <- classification_bitfield(

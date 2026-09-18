@@ -5,7 +5,7 @@ test_that("assets remain S3 through extensions and disk round trips", {
     datetime = "2024-01-01T00:00:00Z",
     assets = list(data = list(href = "./a.tif", roles = list("data")))
   )
-  
+
   item <- add_raster_extension(
     item,
     list(raster_band(scale = 0.1)),

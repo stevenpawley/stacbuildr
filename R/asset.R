@@ -107,7 +107,7 @@ stac_asset <- function(
   # Check for non-empty titles
   title_is_char <- is.character(object[["title"]])
   title_is_not_null <- is.null(object[["title"]])
-  
+
   if (!(title_is_char || title_is_not_null)) {
     cli::cli_abort("title must be character or NULL.")
   }
@@ -123,7 +123,7 @@ stac_asset <- function(
   # Check for non-empty type
   type_is_char <- is.character(object[["type"]])
   type_is_not_null <- is.null(object[["type"]])
-  
+
   if (!(type_is_char || type_is_not_null)) {
     cli::cli_abort("type must be character or NULL.")
   }
@@ -131,7 +131,7 @@ stac_asset <- function(
   # Check for non-empty roles
   roles_is_char <- is.character(object[["roles"]])
   roles_is_not_null <- is.null(object[["roles"]])
-  
+
   if (!(roles_is_char || roles_is_not_null)) {
     cli::cli_abort("roles must be character or NULL.")
   }
@@ -162,7 +162,7 @@ as.list.stac_asset <- function(x, ...) {
 
 #' Coerce an Object to a STAC Asset
 #'
-#' Normalizes a plain list or parsed JSON into a [stac_asset()] object. 
+#' Normalizes a plain list or parsed JSON into a [stac_asset()] object.
 #'
 #' @param x An object to coerce. Can be:
 #'   * A `stac_asset` (returned unchanged).

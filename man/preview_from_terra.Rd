@@ -43,8 +43,10 @@ library(terra)
 r <- rast(system.file("ex/logo.tif", package = "terra"))
 asset <- preview_from_terra(r, path = "thumbnail.png")
 
-item <- item_from_terra(r, href = "image.tif",
-                        datetime = "2023-01-01T00:00:00Z")
+item <- item_from_terra(r,
+  href = "image.tif",
+  datetime = "2023-01-01T00:00:00Z"
+)
 item <- add_asset(item, key = "thumbnail", asset = asset)
 }
 

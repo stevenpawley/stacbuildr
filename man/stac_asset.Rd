@@ -74,12 +74,18 @@ asset <- stac_asset(
   type = "image/tiff; application=geotiff; profile=cloud-optimized",
   roles = c("data"),
   bands = list(
-    list(name = "B1", "eo:common_name" = "red",
-         "eo:center_wavelength" = 0.665, data_type = "uint16"),
-    list(name = "B2", "eo:common_name" = "green",
-         "eo:center_wavelength" = 0.560, data_type = "uint16"),
-    list(name = "B3", "eo:common_name" = "blue",
-         "eo:center_wavelength" = 0.490, data_type = "uint16")
+    list(
+      name = "B1", "eo:common_name" = "red",
+      "eo:center_wavelength" = 0.665, data_type = "uint16"
+    ),
+    list(
+      name = "B2", "eo:common_name" = "green",
+      "eo:center_wavelength" = 0.560, data_type = "uint16"
+    ),
+    list(
+      name = "B3", "eo:common_name" = "blue",
+      "eo:center_wavelength" = 0.490, data_type = "uint16"
+    )
   )
 )
 

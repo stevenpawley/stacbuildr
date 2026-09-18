@@ -150,6 +150,7 @@ stac_catalog <- function(
   links = list(),
   ...
 ) {
+  # Create list object as precursor to catalog
   object <- list(
     type = type,
     stac_version = stac_version,
@@ -161,21 +162,33 @@ stac_catalog <- function(
     links = normalize_links(links),
     extra_fields = list(...)
   )
-  if (!is.character(object[["id"]])) {
+
+  # Validation
+  # Catalog identifier
+  id_is_char <- is.character(object[["id"]])
+  if (!id_is_char) {
     cli::cli_abort("id must be character.")
   }
-  if (length(object[["id"]]) == 0 || nchar(object[["id"]]) == 0) {
+  id_is_nonempty <- length(object[["id"]]) > 0 && nchar(object[["id"]]) > 0
+  if (!id_is_nonempty) {
     cli::cli_abort(paste("id", "must be a non-empty character string"))
   }
-  if (!is.character(object[["description"]])) {
+
+  # Catalog description
+  description_is_char <- is.character(object[["description"]])
+  if (!description_is_char) {
     cli::cli_abort("description must be character.")
   }
-  if (
-    length(object[["description"]]) == 0 || nchar(object[["description"]]) == 0
-  ) {
+  description_is_nonempty <- length(object[["description"]]) > 0 &&
+    nchar(object[["description"]]) > 0
+  if (!description_is_nonempty) {
     cli::cli_abort(paste("description", "must be a non-empty character string"))
   }
-  if (!(is.character(object[["title"]]) || is.null(object[["title"]]))) {
+
+  # Catalog title
+  title_is_char_or_null <- is.character(object[["title"]]) ||
+    is.null(object[["title"]])
+  if (!title_is_char_or_null) {
     cli::cli_abort("title must be character or NULL.")
   }
   if (!is.character(object[["stac_version"]])) {
@@ -184,17 +197,21 @@ stac_catalog <- function(
   if (!is.character(object[["type"]])) {
     cli::cli_abort("type must be character.")
   }
-  if (
-    !(is.character(object[["stac_extensions"]]) ||
-      is.null(object[["stac_extensions"]]))
-  ) {
+
+  # Extensions
+  stac_extensions_is_char_or_null <-
+    is.character(object[["stac_extensions"]]) ||
+    is.null(object[["stac_extensions"]])
+  if (!stac_extensions_is_char_or_null) {
     cli::cli_abort("stac_extensions must be character or NULL.")
   }
-  if (
-    !(is.character(object[["conformsTo"]]) || is.null(object[["conformsTo"]]))
-  ) {
+  # Conforms
+  conforms_to_is_char_or_null <-
+    is.character(object[["conformsTo"]]) || is.null(object[["conformsTo"]])
+  if (!conforms_to_is_char_or_null) {
     cli::cli_abort("conformsTo must be character or NULL.")
   }
+  # Links
   if (!is.list(object[["links"]])) {
     cli::cli_abort("links must be list.")
   }
@@ -203,23 +220,28 @@ stac_catalog <- function(
   ) {
     cli::cli_abort(paste("links", "must contain only stac_link objects"))
   }
+  # Extra fields
   if (!is.list(object[["extra_fields"]])) {
     cli::cli_abort("extra_fields must be list.")
   }
+  # STAC version
   if (nchar(object$stac_version) == 0) {
     cli::cli_abort("'stac_version' must be a non-empty string")
   }
+  # Type
   if (!object$type %in% c("Catalog", "Collection")) {
     cli::cli_abort(sprintf(
       "'type' must be 'Catalog' or 'Collection', got '%s'",
       object$type
     ))
   }
+
+  # Assign class
   class(object) <- c("stac_catalog", "stac_object")
   return(object)
 }
 
-#'
+
 #' @exportS3Method
 as.list.stac_catalog <- function(x, ...) {
   out <- list(
@@ -402,46 +424,63 @@ stac_link <- function(
     merge = merge,
     extra_fields = list(...)
   )
-  if (!is.character(object[["rel"]])) {
+  # Validation
+  # Link relation type
+  rel_is_char <- is.character(object[["rel"]])
+  if (!rel_is_char) {
     cli::cli_abort("rel must be character.")
   }
-  if (
-    length(object[["rel"]]) != 1L ||
-      is.na(object[["rel"]]) ||
-      !nzchar(object[["rel"]])
-  ) {
+  # Link target URI
+  rel_is_nonempty <- length(object[["rel"]]) == 1L &&
+    !is.na(object[["rel"]]) &&
+    nzchar(object[["rel"]])
+  if (!rel_is_nonempty) {
     cli::cli_abort(paste("rel", "must be a non-empty string"))
   }
-  if (!is.character(object[["href"]])) {
+  # Link target URI
+  href_is_char <- is.character(object[["href"]])
+  if (!href_is_char) {
     cli::cli_abort("href must be character.")
   }
-  if (
-    length(object[["href"]]) != 1L ||
-      is.na(object[["href"]]) ||
-      !nzchar(object[["href"]])
-  ) {
+  href_is_nonempty <- length(object[["href"]]) == 1L &&
+    !is.na(object[["href"]]) &&
+    nzchar(object[["href"]])
+  if (!href_is_nonempty) {
     cli::cli_abort(paste("href", "must be a non-empty string"))
   }
-  if (!(is.character(object[["type"]]) || is.null(object[["type"]]))) {
+  # Media type of the link target
+  type_is_char_or_null <-
+    is.character(object[["type"]]) || is.null(object[["type"]])
+  if (!type_is_char_or_null) {
     cli::cli_abort("type must be character or NULL.")
   }
-  if (!(is.character(object[["title"]]) || is.null(object[["title"]]))) {
+  # Link title
+  title_is_char_or_null <-
+    is.character(object[["title"]]) || is.null(object[["title"]])
+  if (!title_is_char_or_null) {
     cli::cli_abort("title must be character or NULL.")
   }
-  if (!(is.character(object[["method"]]) || is.null(object[["method"]]))) {
+  # HTTP method for the link request
+  method_is_char_or_null <-
+    is.character(object[["method"]]) || is.null(object[["method"]])
+  if (!method_is_char_or_null) {
     cli::cli_abort("method must be character or NULL.")
   }
+  # Merge behavior for POST link bodies
   if (!is.logical(object[["merge"]])) {
     cli::cli_abort("merge must be logical.")
   }
+  # Additional unstructured fields
   if (!is.list(object[["extra_fields"]])) {
     cli::cli_abort("extra_fields must be list.")
   }
+
+  # Assign class
   class(object) <- c("stac_link", "stac_object")
   return(object)
 }
 
-#'
+
 #' @exportS3Method
 as.list.stac_link <- function(x, ...) {
   out <- list(rel = x$rel, href = x$href)
@@ -455,6 +494,20 @@ as.list.stac_link <- function(x, ...) {
   return(c(out, x$extra_fields))
 }
 
+
+#' Coerce an object to a STAC link
+#'
+#' Converts an object to a [stac_link] object. If `x` is already a
+#' `stac_link`, it is returned unchanged. Otherwise, `x` must be a list
+#' containing at least `rel` and `href` fields, which are passed to
+#' [stac_link()] along with any other fields present.
+#'
+#' @param x An object to coerce. Either a `stac_link` object or a list with
+#'   `rel` and `href` fields, as accepted by [stac_link()].
+#'
+#' @return A `stac_link` object.
+#'
+#' @noRd
 as_stac_link <- function(x) {
   if (inherits(x, "stac_link")) {
     return(x)
@@ -467,6 +520,7 @@ as_stac_link <- function(x) {
   }
   return(do.call(stac_link, x))
 }
+
 
 normalize_links <- function(x) {
   if (is.null(x)) {
