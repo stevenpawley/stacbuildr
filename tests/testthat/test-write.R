@@ -64,6 +64,22 @@ test_that("write_stac output is readable and valid according to pystac", {
 
   # Read back with pystac and check it validates without errors
   py_catalog <- pystac$read_file(catalog_file)
+  catalog_json <- jsonlite::fromJSON(
+    catalog_file,
+    simplifyVector = FALSE
+  )
+  py_catalog_json <- jsonlite::fromJSON(
+    reticulate::py_to_r(
+      reticulate::import("json")$dumps(py_catalog$to_dict())
+    ),
+    simplifyVector = FALSE
+  )
+  py_catalog_json <- py_catalog_json[names(catalog_json)]
+  # PySTAC resolves links and adds a derived absolute self link on read.
+  catalog_json$links <- NULL
+  py_catalog_json$links <- NULL
+  expect_equal(catalog_json, py_catalog_json)
+
   expect_equal(
     reticulate::py_to_r(py_catalog$id),
     catalog_id
@@ -75,6 +91,22 @@ test_that("write_stac output is readable and valid according to pystac", {
 
   # Read back the collection and check its fields
   py_collection <- pystac$read_file(collection_file)
+  collection_json <- jsonlite::fromJSON(
+    collection_file,
+    simplifyVector = FALSE
+  )
+  py_collection_json <- jsonlite::fromJSON(
+    reticulate::py_to_r(
+      reticulate::import("json")$dumps(py_collection$to_dict())
+    ),
+    simplifyVector = FALSE
+  )
+  py_collection_json <- py_collection_json[names(collection_json)]
+  # Link hrefs are tested separately below because PySTAC resolves them.
+  collection_json$links <- NULL
+  py_collection_json$links <- NULL
+  expect_equal(collection_json, py_collection_json)
+
   expect_equal(reticulate::py_to_r(py_collection$id), collection_id)
   expect_equal(
     reticulate::py_to_r(py_collection$description),
@@ -84,6 +116,33 @@ test_that("write_stac output is readable and valid according to pystac", {
 
   # Read back the item and check its fields
   py_item <- pystac$read_file(item_file)
+  item_json <- jsonlite::fromJSON(
+    item_file,
+    simplifyVector = FALSE
+  )
+  py_item_json <- jsonlite::fromJSON(
+    reticulate::py_to_r(
+      reticulate::import("json")$dumps(py_item$to_dict())
+    ),
+    simplifyVector = FALSE
+  )
+  if (identical(py_item_json$stac_extensions, list())) {
+    py_item_json$stac_extensions <- NULL
+  }
+  py_item_json <- py_item_json[names(item_json)]
+  # Link hrefs and ordering are tested separately because PySTAC resolves them.
+  item_json$links <- NULL
+  py_item_json$links <- NULL
+  if (is.character(py_item_json$assets$visual$roles)) {
+    py_item_json$assets$visual$roles <- as.list(
+      py_item_json$assets$visual$roles
+    )
+  }
+  py_item_json$assets$visual <- py_item_json$assets$visual[
+    names(item_json$assets$visual)
+  ]
+  expect_equal(item_json, py_item_json)
+
   expect_equal(reticulate::py_to_r(py_item$id), item_id)
 
   py_bbox <- reticulate::py_to_r(py_item$bbox)
