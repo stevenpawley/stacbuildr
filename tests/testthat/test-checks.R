@@ -42,6 +42,27 @@ test_that("flag checks require one non-missing logical value", {
 })
 
 
+test_that("named-list checks require complete and unique names", {
+  expect_invisible(check_named_list(list(data = 1), "x"))
+  expect_invisible(check_named_list(list(), "x"))
+  expect_invisible(check_named_list(NULL, "x", allow_null = TRUE))
+
+  expect_error(check_named_list(list(1), "x"), "non-empty name")
+  expect_error(
+    check_named_list(list(data = 1, 2), "x"),
+    "non-empty name"
+  )
+  expect_error(
+    check_named_list(setNames(list(1, 2), c("data", "data")), "x"),
+    "unique names"
+  )
+  expect_error(
+    check_named_list(list(), "x", allow_empty = FALSE),
+    "at least one named element"
+  )
+})
+
+
 test_that("core constructors use the common checks", {
   expect_error(
     stac_catalog(c("a", "b"), "description"),

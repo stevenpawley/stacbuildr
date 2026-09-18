@@ -77,6 +77,39 @@ test_that("validation catches missing datetime", {
   )
 })
 
+
+test_that("validation catches malformed asset dictionaries after mutation", {
+  asset <- stac_asset("./a.tif")
+  item <- stac_item(
+    id = "scene",
+    geometry = NULL,
+    datetime = "2024-01-01T00:00:00Z",
+    assets = list(data = asset)
+  )
+
+  item$assets <- unname(item$assets)
+  result <- validate_stac(item)
+  expect_false(result$valid)
+  expect_match(result$errors, "non-empty key")
+
+  extent <- stac_extent(
+    spatial_bbox = list(c(0, 0, 1, 1)),
+    temporal_interval = list(list(NULL, NULL))
+  )
+  collection <- stac_collection(
+    id = "collection",
+    description = "Collection",
+    license = "CC0-1.0",
+    extent = extent,
+    assets = list(data = asset)
+  )
+  collection$assets <- setNames(list(asset, asset), c("data", "data"))
+
+  result <- validate_stac(collection)
+  expect_false(result$valid)
+  expect_match(result$errors, "unique keys")
+})
+
 test_that("suppress_unknown_format_warnings muffles ajv unknown-format warnings", {
   expect_silent(
     suppress_unknown_format_warnings(

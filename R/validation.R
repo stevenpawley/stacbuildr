@@ -242,6 +242,16 @@ validate_collection <- function(collection, strict = FALSE) {
     errors <- c(errors, provider_errors)
   }
 
+  # Validate collection-level assets if present
+  if (!is.null(collection$assets)) {
+    if (!is.list(collection$assets)) {
+      errors <- c(errors, "Field 'assets' must be an object")
+    } else if (length(collection$assets) > 0L) {
+      asset_errors <- validate_assets(collection$assets)
+      errors <- c(errors, asset_errors)
+    }
+  }
+
   return(new_stac_validation(errors = errors, warnings = warnings))
 }
 
@@ -309,7 +319,7 @@ validate_item <- function(item) {
   }
 
   # Validate assets
-  if (!is.null(item$assets) && length(item$assets) > 0) {
+  if (is.list(item$assets) && length(item$assets) > 0) {
     asset_errors <- validate_assets(item$assets)
     errors <- c(errors, asset_errors)
   }
@@ -349,22 +359,55 @@ validate_links <- function(links) {
 validate_assets <- function(assets) {
   errors <- character()
   asset_keys <- names(assets)
-  for (key in asset_keys) {
-    asset <- assets[[key]]
+
+  invalid_keys <- is.null(asset_keys) ||
+    length(asset_keys) != length(assets) ||
+    anyNA(asset_keys) ||
+    any(!nzchar(asset_keys))
+  if (invalid_keys) {
+    errors <- c(
+      errors,
+      "Field 'assets' must have a non-empty key for every asset"
+    )
+  }
+
+  if (!is.null(asset_keys) && anyDuplicated(asset_keys)) {
+    duplicated_keys <- unique(asset_keys[duplicated(asset_keys)])
+    errors <- c(
+      errors,
+      paste0(
+        "Field 'assets' must have unique keys; duplicated: ",
+        paste(duplicated_keys, collapse = ", ")
+      )
+    )
+  }
+
+  for (i in seq_along(assets)) {
+    key <- if (
+      !is.null(asset_keys) &&
+        length(asset_keys) >= i &&
+        !is.na(asset_keys[[i]]) &&
+        nzchar(asset_keys[[i]])
+    ) {
+      paste0("'", asset_keys[[i]], "'")
+    } else {
+      paste0("[", i, "]")
+    }
+    asset <- assets[[i]]
     if (!inherits(asset, "stac_asset")) {
       errors <- c(
         errors,
-        paste0("Asset '", key, "' must be a stac_asset object")
+        paste0("Asset ", key, " must be a stac_asset object")
       )
       next
     }
     if (length(asset$href) != 1L || is.na(asset$href) || !nzchar(asset$href)) {
-      errors <- c(errors, paste0("Asset '", key, "' must have 'href' field"))
+      errors <- c(errors, paste0("Asset ", key, " must have 'href' field"))
     }
     if (!is.null(asset$roles) && !is.character(asset$roles)) {
       errors <- c(
         errors,
-        paste0("Asset '", key, "' 'roles' must be a character vector")
+        paste0("Asset ", key, " 'roles' must be a character vector")
       )
     }
   }
