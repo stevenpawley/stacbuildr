@@ -31,6 +31,7 @@ reference:
   - title: "Links"
     desc: "Build and manage the link graph between STAC objects."
     contents:
+      - stac_link
       - add_link
       - add_self_link
       - add_root_link
@@ -46,6 +47,7 @@ reference:
     desc: "Helper constructors for Collection fields."
     contents:
       - stac_extent
+      - stac_geometry
       - stac_provider
       - stac_summaries
       - extent_from_items
