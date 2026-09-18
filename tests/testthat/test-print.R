@@ -215,6 +215,27 @@ test_that("asset-level extension fields print under their asset", {
   expect_false(any(grepl("bands +\\[B4, B5\\]", out)))
 })
 
+test_that("classed STAC objects provide labels for object arrays", {
+  expect_identical(
+    stac_object_labels(list(eo_band(name = "B4"), eo_band(name = "B5"))),
+    c("B4", "B5")
+  )
+  expect_identical(
+    stac_object_labels(list(
+      eo_band(common_name = "red"),
+      eo_band(common_name = "nir")
+    )),
+    c("red", "nir")
+  )
+  expect_identical(
+    stac_object_labels(list(
+      classification_class(value = 1),
+      classification_class(value = 2)
+    )),
+    c("1", "2")
+  )
+})
+
 test_that("unlabelled arrays of objects fall back to a count", {
   local_reproducible_output(unicode = FALSE)
   item <- test_item()
