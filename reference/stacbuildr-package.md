@@ -6,41 +6,59 @@ common STAC extensions (Raster, EO, Classification, Scientific).
 
 ### Object Types
 
-The package uses **S7 classes** for core STAC structures and metadata
-helper objects.
+The package uses validated **S3 classes** for core STAC structures and
+metadata helper objects.
 
-#### S7 Classes (use `@` to access properties)
+#### S3 objects (use `$` to access fields)
 
-The primary STAC document types and most extension helper objects are S7
-objects. Use the `@` operator to read or modify their properties:
+The primary STAC document types and most extension helper objects are S3
+objects backed by named lists. Use `$` to read or modify declared
+fields:
 
 |  |  |  |
 |----|----|----|
 | Constructor | Class | Example access |
-| [`stac_asset()`](https://stevenpawley.github.io/stacbuildr/reference/stac_asset.md) | `stac_asset` | `asset@href`, `asset@extra_fields` |
-| [`stac_provider()`](https://stevenpawley.github.io/stacbuildr/reference/stac_provider.md) | `stac_provider` | `provider@name`, `provider@roles` |
-| [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md) | `stac_item` | `item@id`, `item@assets` |
-| [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md) | `stac_catalog` | `catalog@title` |
-| [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md) | `stac_collection` | `collection@description` |
-| [`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md) | `raster_band` | `band@data_type`, `band@scale` |
-| [`raster_statistics()`](https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.md) | `raster_statistics` | `stats@minimum` |
-| [`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md) | `raster_histogram` | `hist@buckets` |
-| [`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md) | `eo_band` | `band@common_name` |
-| [`scientific_publication()`](https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.md) | `scientific_publication` | `publication@doi` |
-| [`table_column()`](https://stevenpawley.github.io/stacbuildr/reference/table_column.md) | `table_column` | `column@name` |
-| [`pc_schema()`](https://stevenpawley.github.io/stacbuildr/reference/pc_schema.md) | `pc_schema` | `schema@size` |
-| [`pc_statistic()`](https://stevenpawley.github.io/stacbuildr/reference/pc_statistic.md) | `pc_statistic` | `statistic@minimum` |
-| [`render_object()`](https://stevenpawley.github.io/stacbuildr/reference/render_object.md) | `render_object` | `render@assets` |
-| [`cube_dimension()`](https://stevenpawley.github.io/stacbuildr/reference/cube_dimension.md) | `cube_dimension` | `dimension@axis` |
-| [`cube_variable()`](https://stevenpawley.github.io/stacbuildr/reference/cube_variable.md) | `cube_variable` | `variable@dimensions` |
-| [`classification_class()`](https://stevenpawley.github.io/stacbuildr/reference/classification_class.md) | `classification_class` | `class@value` |
-| [`classification_bitfield()`](https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.md) | `classification_bitfield` | `bitfield@classes` |
-| [`stac_summaries()`](https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.md) | `stac_summaries` | `summaries@extra_fields` |
-| [`validate_stac()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac.md) | `stac_validation` | `result@valid`, `result@errors` |
-| [`stac_extent()`](https://stevenpawley.github.io/stacbuildr/reference/stac_extent.md) | `Extent` | `extent@spatial`, `extent@temporal` |
+| [`stac_asset()`](https://stevenpawley.github.io/stacbuildr/reference/stac_asset.md) | `stac_asset` | `asset$href`, `asset$extra_fields` |
+| [`stac_provider()`](https://stevenpawley.github.io/stacbuildr/reference/stac_provider.md) | `stac_provider` | `provider$name`, `provider$roles` |
+| [`stac_item()`](https://stevenpawley.github.io/stacbuildr/reference/stac_item.md) | `stac_item` | `item$id`, `item$assets` |
+| [`stac_geometry()`](https://stevenpawley.github.io/stacbuildr/reference/stac_geometry.md) | `stac_geometry` | `geometry$type` |
+| [`stac_link()`](https://stevenpawley.github.io/stacbuildr/reference/stac_link.md) | `stac_link` | `link$rel`, `link$href` |
+| [`stac_catalog()`](https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.md) | `stac_catalog` | `catalog$title` |
+| [`stac_collection()`](https://stevenpawley.github.io/stacbuildr/reference/stac_collection.md) | `stac_collection` | `collection$description` |
+| [`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md) | `raster_band` | `band$data_type`, `band$scale` |
+| [`raster_statistics()`](https://stevenpawley.github.io/stacbuildr/reference/raster_statistics.md) | `raster_statistics` | `stats$minimum` |
+| [`raster_histogram()`](https://stevenpawley.github.io/stacbuildr/reference/raster_histogram.md) | `raster_histogram` | `hist$buckets` |
+| [`eo_band()`](https://stevenpawley.github.io/stacbuildr/reference/eo_band.md) | `eo_band` | `band$common_name` |
+| [`scientific_publication()`](https://stevenpawley.github.io/stacbuildr/reference/scientific_publication.md) | `scientific_publication` | `publication$doi` |
+| [`table_column()`](https://stevenpawley.github.io/stacbuildr/reference/table_column.md) | `table_column` | `column$name` |
+| [`pc_schema()`](https://stevenpawley.github.io/stacbuildr/reference/pc_schema.md) | `pc_schema` | `schema$size` |
+| [`pc_statistic()`](https://stevenpawley.github.io/stacbuildr/reference/pc_statistic.md) | `pc_statistic` | `statistic$minimum` |
+| [`render_object()`](https://stevenpawley.github.io/stacbuildr/reference/render_object.md) | `render_object` | `render$assets` |
+| [`cube_dimension()`](https://stevenpawley.github.io/stacbuildr/reference/cube_dimension.md) | `cube_dimension` | `dimension$axis` |
+| [`cube_variable()`](https://stevenpawley.github.io/stacbuildr/reference/cube_variable.md) | `cube_variable` | `variable$dimensions` |
+| [`classification_class()`](https://stevenpawley.github.io/stacbuildr/reference/classification_class.md) | `classification_class` | `class$value` |
+| [`classification_bitfield()`](https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.md) | `classification_bitfield` | `bitfield$classes` |
+| [`stac_summaries()`](https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.md) | `stac_summaries` | `summaries$extra_fields` |
+| [`validate_stac()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac.md) | `stac_validation` | `result$valid`, `result$errors` |
+| [`stac_extent()`](https://stevenpawley.github.io/stacbuildr/reference/stac_extent.md) | `Extent` | `extent$spatial`, `extent$temporal` |
 
 Note that `stac_collection` extends `stac_catalog`, so
-`S7::S7_inherits(x, stac_catalog)` is also true for a Collection.
+`inherits(x, "stac_catalog")` is also true for a Collection.
+
+#### Dictionaries (use `[[ ]]` to access entries)
+
+STAC permits arbitrary keys in dictionaries such as an Item's
+`properties` and `assets`, and an Asset's `extra_fields`. These
+containers remain named lists. Use `[[ ]]` when the key is held in a
+variable or is not a syntactic R name; `$` is also available for
+ordinary literal names:
+
+    item$properties[["datetime"]]
+    item$assets[["B4"]]$href
+    item$assets[["B4"]]$extra_fields[["bands"]]
+
+Both access styles are idiomatic R: `$` is convenient for known names
+and `[[ ]]` is the right choice for computed names.
 
 ### Printing
 
@@ -78,7 +96,7 @@ automatically when the console does not support them (log files, knitr,
 
     library(stacbuildr)
 
-    # 1. Create a STAC Item (S7 object)
+    # 1. Create a STAC Item (validated S3 object)
     item <- stac_item(
       id       = "my-scene",
       geometry = list(type = "Point", coordinates = c(-105, 40)),
@@ -86,7 +104,7 @@ automatically when the console does not support them (log files, knitr,
       datetime = "2024-06-01T00:00:00Z"
     )
 
-    # 2. Add an asset (S7 object embedded in the item)
+    # 2. Add an asset (S3 object embedded in the item)
     item <- add_asset(
       item,
       key   = "B4",
@@ -95,7 +113,7 @@ automatically when the console does not support them (log files, knitr,
       roles = "data"
     )
 
-    # 3. Describe the band with the Raster extension (S7 raster_band)
+    # 3. Describe the band with the Raster extension
     band <- raster_band(
       data_type          = "uint16",
       nodata             = 0,
@@ -106,12 +124,18 @@ automatically when the console does not support them (log files, knitr,
 
     item <- add_raster_extension(item, bands = list(band), asset_key = "B4")
 
-    # 4. Access S7 properties with @
-    item@id
-    band@scale
+    # 4. Access known fields with $ and dynamic dictionary entries with [[ ]]
+    item$id
+    item$geometry$type
+    item$assets[["B4"]]$href
+    band$scale
 
     # 5. Write to disk
     write_item(item, "my-scene.json")
+
+\[ \]: R:%20 \[ \]: R:%20 \["datetime"\]: R:%22datetime%22 \["B4"\]:
+R:%22B4%22 \["B4"\]: R:%22B4%22 \["bands"\]: R:%22bands%22 \[ \]: R:%20
+\[B4, B5\]: R:B4,%20B5 \[ \]: R:%20 \["B4"\]: R:%22B4%22
 
 ## References
 

@@ -33,8 +33,15 @@ a real dataset large enough to need them gets those automatically.
 ``` r
 
 set.seed(42)
-dem <- terra::rast(nrows = 10, ncols = 10, xmin = -120, xmax = -119,
-                   ymin = 48, ymax = 49, crs = "EPSG:4326")
+dem <- terra::rast(
+  nrows = 10,
+  ncols = 10,
+  xmin = -120,
+  xmax = -119,
+  ymin = 48,
+  ymax = 49,
+  crs = "EPSG:4326"
+)
 terra::values(dem) <- runif(terra::ncell(dem), 100, 3000)
 names(dem) <- "elevation"
 
@@ -94,7 +101,7 @@ item
 #> <STAC Item>
 #>   id           : dem-001
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-09-15T04:19:35Z
+#>   datetime     : 2026-09-18T20:04:09Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -115,7 +122,12 @@ collection <- stac_collection(
   title = "Terrain Collection",
   license = "CC-BY-4.0",
   extent = stac_extent(
-    spatial_bbox = list(c(terra::xmin(r), terra::ymin(r), terra::xmax(r), terra::ymax(r))),
+    spatial_bbox = list(c(
+      terra::xmin(r),
+      terra::ymin(r),
+      terra::xmax(r),
+      terra::ymax(r)
+    )),
     temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
   )
 )
@@ -168,14 +180,35 @@ immediately adds an `"item"` link containing fields such as `rel`,
 
 get_item_links(collection)
 #> [[1]]
-#> [[1]]$rel
+#> $rel
 #> [1] "item"
 #> 
-#> [[1]]$href
+#> $href
 #> [1] "./dem-001/dem-001.json"
 #> 
-#> [[1]]$type
+#> $type
 #> [1] "application/geo+json"
+#> 
+#> $title
+#> NULL
+#> 
+#> $method
+#> NULL
+#> 
+#> $headers
+#> NULL
+#> 
+#> $body
+#> NULL
+#> 
+#> $merge
+#> [1] FALSE
+#> 
+#> $extra_fields
+#> list()
+#> 
+#> attr(,"class")
+#> [1] "stac_link"   "stac_object"
 ```
 
 That link is enough for a STAC client to find an Item after the files
@@ -197,7 +230,7 @@ get_items(collection)
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-09-15T04:19:35Z
+#>   datetime     : 2026-09-18T20:04:09Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -305,7 +338,7 @@ write_stac(
   catalog_type = "self-contained",
   overwrite = TRUE
 )
-#> ✔ STAC catalog written to /tmp/Rtmp05TjAd/catalog
+#> ✔ STAC catalog written to /tmp/Rtmp5SvUoG/catalog
 ```
 
 The resulting directory structure looks like:
@@ -335,7 +368,7 @@ item_read
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-09-15T04:19:35Z
+#>   datetime     : 2026-09-18T20:04:09Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]

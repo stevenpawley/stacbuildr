@@ -64,7 +64,7 @@ classification_class(
 
 ## Value
 
-A `classification_class` S7 object. Access fields with `@`.
+A `classification_class` S3 object. Access fields with `$`.
 
 ## Details
 

@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Create SpatioTemporal Asset Catalogs">
-<meta name="description" content="Builds geospatial metadata catalogs that conform to the SpatioTemporal Asset Catalog (STAC) specification version 1.1.0, an open standard for describing geospatial assets so that they can be indexed, searched and shared &lt;https://stacspec.org/&gt;. Catalogs, Collections and Items are represented as S7 classes and serialised to STAC JSON, with support for the electro-optical, raster, projection, classification, point cloud, datacube, table, vector, render and scientific citation extensions. Items can be created directly from terra rasters, sf vector data and lidR point clouds, and catalogs can be validated against the published STAC JSON schemas.">
-<meta property="og:description" content="Builds geospatial metadata catalogs that conform to the SpatioTemporal Asset Catalog (STAC) specification version 1.1.0, an open standard for describing geospatial assets so that they can be indexed, searched and shared &lt;https://stacspec.org/&gt;. Catalogs, Collections and Items are represented as S7 classes and serialised to STAC JSON, with support for the electro-optical, raster, projection, classification, point cloud, datacube, table, vector, render and scientific citation extensions. Items can be created directly from terra rasters, sf vector data and lidR point clouds, and catalogs can be validated against the published STAC JSON schemas.">
+<meta name="description" content="Builds geospatial metadata catalogs that conform to the SpatioTemporal Asset Catalog (STAC) specification version 1.1.0, an open standard for describing geospatial assets so that they can be indexed, searched and shared &lt;https://stacspec.org/&gt;. Catalogs, Collections and Items are represented as validated S3 classes and serialised to STAC JSON, with support for the electro-optical, raster, projection, classification, point cloud, datacube, table, vector, render and scientific citation extensions. Items can be created directly from terra rasters, sf vector data and lidR point clouds, and catalogs can be validated against the published STAC JSON schemas.">
+<meta property="og:description" content="Builds geospatial metadata catalogs that conform to the SpatioTemporal Asset Catalog (STAC) specification version 1.1.0, an open standard for describing geospatial assets so that they can be indexed, searched and shared &lt;https://stacspec.org/&gt;. Catalogs, Collections and Items are represented as validated S3 classes and serialised to STAC JSON, with support for the electro-optical, raster, projection, classification, point cloud, datacube, table, vector, render and scientific citation extensions. Items can be created directly from terra rasters, sf vector data and lidR point clouds, and catalogs can be validated against the published STAC JSON schemas.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -59,7 +59,7 @@
 </h1></div>
 <!-- badges: start -->
 
-<p><strong>stacbuildr</strong> is an <em>experimental</em> R package for creating <a href="https://stacspec.org/" class="external-link">STAC (SpatioTemporal Asset Catalog)</a> metadata. STAC is an open standard for describing geospatial data in a way that makes it indexable, searchable, and interoperable. The package implements STAC specification version 1.1.0 using <a href="https://rconsortium.github.io/S7/" class="external-link">S7</a> classes and outputs valid STAC JSON.</p>
+<p><strong>stacbuildr</strong> is an <em>experimental</em> R package for creating <a href="https://stacspec.org/" class="external-link">STAC (SpatioTemporal Asset Catalog)</a> metadata. STAC is an open standard for describing geospatial data in a way that makes it indexable, searchable, and interoperable. The package implements STAC specification version 1.1.0 using validated S3 classes and outputs valid STAC JSON.</p>
 <p><em>Note</em> this package is in active development: breaking changes are expected and there is no guarantee of compliance with STACspec.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -154,11 +154,11 @@
 <span>  <span class="fu"><a href="reference/add_root_link.html">add_root_link</a></span><span class="op">(</span><span class="st">"https://example.com/catalog.json"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Add a child collection to the catalog</span></span>
-<span><span class="va">catalog</span> <span class="op">&lt;-</span> <span class="va">catalog</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">catalog</span> <span class="op">&lt;-</span> <span class="va">catalog</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/add_child.html">add_child</a></span><span class="op">(</span><span class="va">collection</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Add an item to a collection (with bidirectional links)</span></span>
-<span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="va">collection</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="va">collection</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/add_item.html">add_item</a></span><span class="op">(</span></span>
 <span>    <span class="va">item</span>,</span>
 <span>    add_parent_links <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -167,7 +167,7 @@
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Add arbitrary links</span></span>
-<span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="va">collection</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="va">collection</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/add_link.html">add_link</a></span><span class="op">(</span></span>
 <span>    rel <span class="op">=</span> <span class="st">"license"</span>,</span>
 <span>    href <span class="op">=</span> <span class="st">"https://sentinel.esa.int/legal-notice.html"</span>,</span>
@@ -212,10 +212,10 @@
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Pre-built band definitions for common sensors</span></span>
-<span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/add_eo_extension.html">add_eo_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="fu"><a href="reference/sentinel2_msi_bands.html">sentinel2_msi_bands</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/add_eo_extension.html">add_eo_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="fu"><a href="reference/landsat_oli_bands.html">landsat_oli_bands</a></span><span class="op">(</span>include_thermal <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Following v2.0.0 of the EO and Raster extensions, band objects are written to the <code>bands</code> array that STAC 1.1 shares between all band-level extensions, with each extension’s own fields prefixed (<code>eo:common_name</code>, <code>raster:scale</code>). Both <code>add_*_extension()</code> functions write to the same array, so describing the same bands with each in turn merges their fields.</p>
 </div>
@@ -367,9 +367,9 @@
 </h3>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/validate_stac.html">validate_stac</a></span><span class="op">(</span><span class="va">collection</span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">@</span><span class="va">valid</span>    <span class="co"># TRUE / FALSE</span></span>
-<span><span class="va">result</span><span class="op">@</span><span class="va">errors</span>   <span class="co"># character vector of errors</span></span>
-<span><span class="va">result</span><span class="op">@</span><span class="va">warnings</span> <span class="co"># character vector of warnings for missing recommended fields</span></span>
+<span><span class="va">result</span><span class="op">$</span><span class="va">valid</span>    <span class="co"># TRUE / FALSE</span></span>
+<span><span class="va">result</span><span class="op">$</span><span class="va">errors</span>   <span class="co"># character vector of errors</span></span>
+<span><span class="va">result</span><span class="op">$</span><span class="va">warnings</span> <span class="co"># character vector of warnings for missing recommended fields</span></span>
 <span></span>
 <span><span class="co"># Strict mode also checks recommended fields</span></span>
 <span><span class="fu"><a href="reference/validate_stac.html">validate_stac</a></span><span class="op">(</span><span class="va">item</span>, strict <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
@@ -422,8 +422,8 @@
 </tr></thead>
 <tbody>
 <tr>
-<td><code>S7</code></td>
-<td>Object-oriented class system</td>
+<td>Base R</td>
+<td>S3 object system and list-based field access</td>
 </tr>
 <tr>
 <td><code>jsonlite</code></td>

@@ -30,7 +30,7 @@ stac_extent(spatial_bbox, temporal_interval)
 
 ## Value
 
-An `Extent` S7 object formatted for STAC Collections.
+An `Extent` S3 object formatted for STAC Collections.
 
 ## Examples
 

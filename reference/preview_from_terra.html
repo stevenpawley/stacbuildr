@@ -94,7 +94,7 @@ as greyscale.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An S7 STAC asset with <code>href</code>, <code>type = "image/png"</code>, and
+    <p>An S3 STAC asset with <code>href</code>, <code>type = "image/png"</code>, and
 <code>roles = c("overview")</code>.</p>
     </div>
 
@@ -106,8 +106,10 @@ as greyscale.</p>
 <span class="r-in"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"ex/logo.tif"</span>, package <span class="op">=</span> <span class="st">"terra"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">asset</span> <span class="op">&lt;-</span> <span class="fu">preview_from_terra</span><span class="op">(</span><span class="va">r</span>, path <span class="op">=</span> <span class="st">"thumbnail.png"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="item_from_terra.html">item_from_terra</a></span><span class="op">(</span><span class="va">r</span>, href <span class="op">=</span> <span class="st">"image.tif"</span>,</span></span>
-<span class="r-in"><span>                        datetime <span class="op">=</span> <span class="st">"2023-01-01T00:00:00Z"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="item_from_terra.html">item_from_terra</a></span><span class="op">(</span><span class="va">r</span>,</span></span>
+<span class="r-in"><span>  href <span class="op">=</span> <span class="st">"image.tif"</span>,</span></span>
+<span class="r-in"><span>  datetime <span class="op">=</span> <span class="st">"2023-01-01T00:00:00Z"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="add_asset.html">add_asset</a></span><span class="op">(</span><span class="va">item</span>, key <span class="op">=</span> <span class="st">"thumbnail"</span>, asset <span class="op">=</span> <span class="va">asset</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

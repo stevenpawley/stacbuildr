@@ -24,8 +24,8 @@ stac_summaries(...)
 
 ## Value
 
-A `stac_summaries` S7 object. Summary fields are stored in
-`summaries@extra_fields`.
+A `stac_summaries` S3 object. Summary fields are stored in
+`summaries$extra_fields`.
 
 ## Examples
 

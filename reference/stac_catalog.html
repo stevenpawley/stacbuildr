@@ -121,9 +121,9 @@ is <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-links">links<a class="anchor" aria-label="anchor" href="#arg-links"></a></dt>
-<dd><p>(list, optional) Initial list of link objects. Links are
-typically managed via <code><a href="add_link.html">add_link()</a></code>, <code><a href="add_child.html">add_child()</a></code>, and related helpers
-after construction. Default is an empty list.</p></dd>
+<dd><p>(list, optional) Initial list of <code><a href="stac_link.html">stac_link()</a></code> objects or plain
+link lists. Plain lists are converted to S3 link objects. Links are
+typically managed via <code><a href="add_link.html">add_link()</a></code>, <code><a href="add_child.html">add_child()</a></code>, and related helpers.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -134,7 +134,7 @@ extensions or additional metadata beyond the core specification.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An S7 object of class <code>stac_catalog</code> containing the catalog metadata.
+    <p>An S3 object of class <code>stac_catalog</code> containing the catalog metadata.
 Convert to a plain list for JSON serialization with <code><a href="https://rspatial.github.io/terra/reference/as.list.html" class="external-link">as.list()</a></code>, or write
 directly to disk using <code><a href="write_stac.html">write_stac()</a></code>.</p>
     </div>

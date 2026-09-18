@@ -38,7 +38,7 @@ thumbnail_from_sf(sf_obj, path, width = 256, height = 256, title = NULL, ...)
 
 ## Value
 
-An S7 STAC asset with `href`, `type = "image/png"`, and
+An S3 STAC asset with `href`, `type = "image/png"`, and
 `roles = c("thumbnail")`.
 
 ## Examples

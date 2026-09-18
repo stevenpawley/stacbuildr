@@ -59,7 +59,7 @@ pc_statistic(
 
 ## Value
 
-A `pc_statistic` S7 object. Access fields with `@`.
+A `pc_statistic` S3 object. Access fields with `$`.
 
 ## Details
 

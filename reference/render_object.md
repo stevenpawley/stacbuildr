@@ -85,7 +85,7 @@ render_object(
 
 ## Value
 
-A `render_object` S7 object. Access fields with `@`.
+A `render_object` S3 object. Access fields with `$`.
 
 ## Details
 

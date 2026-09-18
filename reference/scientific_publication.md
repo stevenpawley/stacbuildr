@@ -28,7 +28,7 @@ scientific_publication(doi = NULL, citation = NULL)
 
 ## Value
 
-A `scientific_publication` S7 object. Access fields with `@`.
+A `scientific_publication` S3 object. Access fields with `$`.
 
 ## Examples
 

@@ -117,8 +117,10 @@ extension added to <code>stac_extensions</code>.</p>
 <span class="r-in"><span>  bbox <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">121</span>, <span class="fl">47</span>, <span class="op">-</span><span class="fl">119</span>, <span class="fl">49</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  datetime <span class="op">=</span> <span class="st">"2023-07-01T00:00:00Z"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="add_asset.html">add_asset</a></span><span class="op">(</span><span class="va">item</span>, key <span class="op">=</span> <span class="st">"red"</span>,</span></span>
-<span class="r-in"><span>  href <span class="op">=</span> <span class="st">"red.tif"</span>, type <span class="op">=</span> <span class="st">"image/tiff"</span>, roles <span class="op">=</span> <span class="st">"data"</span>, title <span class="op">=</span> <span class="st">"Red Band"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu"><a href="add_asset.html">add_asset</a></span><span class="op">(</span><span class="va">item</span>,</span></span>
+<span class="r-in"><span>  key <span class="op">=</span> <span class="st">"red"</span>,</span></span>
+<span class="r-in"><span>  href <span class="op">=</span> <span class="st">"red.tif"</span>, type <span class="op">=</span> <span class="st">"image/tiff"</span>, roles <span class="op">=</span> <span class="st">"data"</span>, title <span class="op">=</span> <span class="st">"Red Band"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu"><a href="add_item.html">add_item</a></span><span class="op">(</span><span class="va">collection</span>, <span class="va">item</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="fu">add_item_assets</span><span class="op">(</span><span class="va">collection</span><span class="op">)</span></span></span>

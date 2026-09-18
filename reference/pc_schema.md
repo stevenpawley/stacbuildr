@@ -34,7 +34,7 @@ pc_schema(
 
 ## Value
 
-A `pc_schema` S7 object. Access fields with `@`.
+A `pc_schema` S3 object. Access fields with `$`.
 
 ## Details
 

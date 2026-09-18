@@ -76,9 +76,10 @@ add_projection_extension(
 
 - geometry:
 
-  (list, optional) A GeoJSON geometry giving the footprint in the native
-  CRS, as a named list with `type` and `coordinates`. Unlike the Item's
-  own `geometry`, this is *not* reprojected to WGS84.
+  (stac_geometry or list, optional) A GeoJSON geometry giving the
+  footprint in the native CRS. Plain lists are converted to S3 geometry
+  objects. Unlike the Item's own `geometry`, this is *not* reprojected
+  to WGS84.
 
 - bbox:
 
@@ -156,7 +157,7 @@ item <- add_projection_extension(
   bbox = c(712710, 5487090, 999480, 5654790)
 )
 
-item@properties$`proj:code`
+item$properties[["proj:code"]]
 #> [1] "EPSG:32612"
 
 # Per-asset placement, for assets at different resolutions

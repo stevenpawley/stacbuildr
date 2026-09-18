@@ -36,8 +36,8 @@ raster_histogram(
 
 ## Value
 
-An S7 raster histogram object. Access its properties with `@`, for
-example `hist@count` and `hist@buckets`.
+An S3 raster histogram object. Access its fields with `$`, for example
+`hist$count` and `hist$buckets`.
 
 ## Examples
 
@@ -49,8 +49,8 @@ hist <- raster_histogram(
   max = 100,
   buckets = c(1500, 3200, 4100, 2800, 1400)
 )
-hist@count
+hist$count
 #> [1] 5
-hist@buckets
+hist$buckets
 #> [1] 1500 3200 4100 2800 1400
 ```

@@ -37,7 +37,7 @@ add_item(
 - href:
 
   (character, optional) Href for each Item link. If `NULL`, uses
-  `"./{item@id}/{item@id}.json"`. Supply one href per Item.
+  `"./{item$id}/{item$id}.json"`. Supply one href per Item.
   [`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
   regenerates these hrefs for its output layout and `catalog_type`.
 
@@ -100,15 +100,35 @@ item <- stac_item(
 catalog <- add_item(catalog, item)
 get_item_links(catalog)
 #> [[1]]
-#> [[1]]$rel
+#> $rel
 #> [1] "item"
 #> 
-#> [[1]]$href
+#> $href
 #> [1] "./item-1/item-1.json"
 #> 
-#> [[1]]$type
+#> $type
 #> [1] "application/geo+json"
 #> 
+#> $title
+#> NULL
+#> 
+#> $method
+#> NULL
+#> 
+#> $headers
+#> NULL
+#> 
+#> $body
+#> NULL
+#> 
+#> $merge
+#> [1] FALSE
+#> 
+#> $extra_fields
+#> list()
+#> 
+#> attr(,"class")
+#> [1] "stac_link"   "stac_object"
 #> 
 get_items(catalog)
 #> [[1]]

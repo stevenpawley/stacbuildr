@@ -33,7 +33,7 @@ table_column(name, description = NULL, type = NULL, ...)
 
 ## Value
 
-A `table_column` S7 object. Access fields with `@`.
+A `table_column` S3 object. Access fields with `$`.
 
 ## Examples
 

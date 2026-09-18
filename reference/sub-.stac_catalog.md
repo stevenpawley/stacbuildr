@@ -49,7 +49,7 @@ collection <- add_item(collection, stac_item(
   datetime = "2024-06-01T00:00:00Z"
 ))
 
-collection[["scene-1"]]@id
+collection[["scene-1"]]$id
 #> [1] "scene-1"
 length(collection[1])
 #> [1] 1

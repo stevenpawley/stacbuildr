@@ -82,8 +82,8 @@ Length must equal <code>count</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An S7 raster histogram object. Access its properties with <code>@</code>, for
-example <code>hist@count</code> and <code>hist@buckets</code>.</p>
+    <p>An S3 raster histogram object. Access its fields with <code>$</code>, for
+example <code>hist$count</code> and <code>hist$buckets</code>.</p>
     </div>
 
     <div class="section level2">
@@ -95,9 +95,9 @@ example <code>hist@count</code> and <code>hist@buckets</code>.</p>
 <span class="r-in"><span>  max <span class="op">=</span> <span class="fl">100</span>,</span></span>
 <span class="r-in"><span>  buckets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1500</span>, <span class="fl">3200</span>, <span class="fl">4100</span>, <span class="fl">2800</span>, <span class="fl">1400</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">hist</span><span class="op">@</span><span class="va">count</span></span></span>
+<span class="r-in"><span><span class="va">hist</span><span class="op">$</span><span class="va">count</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 5</span>
-<span class="r-in"><span><span class="va">hist</span><span class="op">@</span><span class="va">buckets</span></span></span>
+<span class="r-in"><span><span class="va">hist</span><span class="op">$</span><span class="va">buckets</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1500 3200 4100 2800 1400</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

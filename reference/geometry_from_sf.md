@@ -1,8 +1,9 @@
 # Convert sf Geometry to GeoJSON
 
-Converts an sf object's geometry to a GeoJSON-compatible list structure.
-If the sf object contains multiple features, they are unioned into a
-single geometry, since a STAC item has one geometry.
+Converts an sf object's geometry to a
+[`stac_geometry()`](https://stevenpawley.github.io/stacbuildr/reference/stac_geometry.md)
+S3 object. If the sf object contains multiple features, they are unioned
+into a single geometry, since a STAC item has one geometry.
 
 ## Usage
 
@@ -18,7 +19,7 @@ geometry_from_sf(sf_obj)
 
 ## Value
 
-A GeoJSON geometry object (list).
+A `stac_geometry` S3 object.
 
 ## Examples
 
@@ -27,6 +28,7 @@ if (FALSE) { # \dontrun{
 library(sf)
 
 polygon <- st_read("boundary.shp")
-geojson <- geometry_from_sf(polygon)
+geometry <- geometry_from_sf(polygon)
+geometry$type
 } # }
 ```

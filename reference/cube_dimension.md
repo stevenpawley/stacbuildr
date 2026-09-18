@@ -99,7 +99,7 @@ cube_dimension(
 
 ## Value
 
-A `cube_dimension` S7 object. Access fields with `@`.
+A `cube_dimension` S3 object. Access fields with `$`.
 
 ## Details
 

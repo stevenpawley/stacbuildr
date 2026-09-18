@@ -15,7 +15,8 @@ stac_link(
   method = NULL,
   headers = NULL,
   body = NULL,
-  merge = FALSE
+  merge = FALSE,
+  ...
 )
 ```
 
@@ -64,9 +65,15 @@ stac_link(
   (logical, optional) Whether to merge the link body with the current
   resource when following the link. Default is `FALSE`.
 
+- ...:
+
+  Additional link fields retained in `link$extra_fields` and included
+  during JSON serialization.
+
 ## Value
 
-A list representing a STAC link object with NULL values removed.
+A `stac_link` S3 object. Access fields with `$`, for example `link$rel`
+and `link$href`.
 
 ## References
 
@@ -81,3 +88,13 @@ STAC Link Object specification:
 - [`add_self_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_self_link.md),
   [`add_root_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_root_link.md)
   for convenience functions
+
+## Examples
+
+``` r
+link <- stac_link("self", "https://example.com/catalog.json")
+link$rel
+#> [1] "self"
+link$href
+#> [1] "https://example.com/catalog.json"
+```

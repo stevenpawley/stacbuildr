@@ -66,8 +66,10 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_catalog.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_collection.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_extent.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_geometry.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_item.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_link.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_provider.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/stacbuildr-package.html</loc></url>

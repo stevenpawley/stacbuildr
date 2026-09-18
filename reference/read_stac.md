@@ -1,7 +1,7 @@
 # Read a STAC Catalog from Disk
 
 Reads a STAC Catalog, Collection, or Item from a JSON file and returns
-the corresponding S7 object (`stac_catalog`, `stac_collection`, or
+the corresponding S3 object (`stac_catalog`, `stac_collection`, or
 `stac_item`). The returned object is fully usable with all package
 functions, completing the write/read round-trip.
 
@@ -19,7 +19,7 @@ read_stac(file)
 
 ## Value
 
-An S7 object of class `stac_catalog`, `stac_collection`, or `stac_item`,
+An S3 object of class `stac_catalog`, `stac_collection`, or `stac_item`,
 depending on the `type` field in the JSON.
 
 ## Examples
@@ -27,6 +27,6 @@ depending on the `type` field in the JSON.
 ``` r
 if (FALSE) { # \dontrun{
 catalog <- read_stac("path/to/catalog.json")
-item    <- read_stac("path/to/item.json")
+item <- read_stac("path/to/item.json")
 } # }
 ```

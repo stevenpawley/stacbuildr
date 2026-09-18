@@ -99,15 +99,15 @@ metadata such as <code>"bands"</code> and extension-specific properties like
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An S7 asset. Access core fields with <code>asset@href</code> and arbitrary
-metadata with <code>asset@extra_fields</code>.</p>
+    <p>An S3 asset. Access core fields with <code>asset$href</code> and arbitrary
+metadata with <code>asset$extra_fields</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>roles</code> is a character vector in memory and a JSON array when serialized.
-Assets retain their S7 class when attached to Items or Collections and when
+Assets retain their S3 class when attached to Items or Collections and when
 restored with <code><a href="read_stac.html">read_stac()</a></code>. The assets dictionary remains a named list:
-use <code>item@assets[["data"]]@href</code> to access an asset's URL.
+use <code>item$assets[["data"]]$href</code> to access an asset's URL.
 Use <code>as.list(asset)</code> to obtain the JSON-ready representation.</p>
     </div>
 
@@ -127,9 +127,9 @@ Use <code>as.list(asset)</code> to obtain the JSON-ready representation.</p>
 <span class="r-in"><span>  type <span class="op">=</span> <span class="st">"image/tiff; application=geotiff"</span>,</span></span>
 <span class="r-in"><span>  roles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"reflectance"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">asset</span><span class="op">@</span><span class="va">href</span></span></span>
+<span class="r-in"><span><span class="va">asset</span><span class="op">$</span><span class="va">href</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "./data/LC08_B4.tif"</span>
-<span class="r-in"><span><span class="va">asset</span><span class="op">@</span><span class="va">roles</span></span></span>
+<span class="r-in"><span><span class="va">asset</span><span class="op">$</span><span class="va">roles</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "data"        "reflectance"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Asset with extension properties</span></span></span>
@@ -138,12 +138,18 @@ Use <code>as.list(asset)</code> to obtain the JSON-ready representation.</p>
 <span class="r-in"><span>  type <span class="op">=</span> <span class="st">"image/tiff; application=geotiff; profile=cloud-optimized"</span>,</span></span>
 <span class="r-in"><span>  roles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B1"</span>, <span class="st">"eo:common_name"</span> <span class="op">=</span> <span class="st">"red"</span>,</span></span>
-<span class="r-in"><span>         <span class="st">"eo:center_wavelength"</span> <span class="op">=</span> <span class="fl">0.665</span>, data_type <span class="op">=</span> <span class="st">"uint16"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B2"</span>, <span class="st">"eo:common_name"</span> <span class="op">=</span> <span class="st">"green"</span>,</span></span>
-<span class="r-in"><span>         <span class="st">"eo:center_wavelength"</span> <span class="op">=</span> <span class="fl">0.560</span>, data_type <span class="op">=</span> <span class="st">"uint16"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"B3"</span>, <span class="st">"eo:common_name"</span> <span class="op">=</span> <span class="st">"blue"</span>,</span></span>
-<span class="r-in"><span>         <span class="st">"eo:center_wavelength"</span> <span class="op">=</span> <span class="fl">0.490</span>, data_type <span class="op">=</span> <span class="st">"uint16"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      name <span class="op">=</span> <span class="st">"B1"</span>, <span class="st">"eo:common_name"</span> <span class="op">=</span> <span class="st">"red"</span>,</span></span>
+<span class="r-in"><span>      <span class="st">"eo:center_wavelength"</span> <span class="op">=</span> <span class="fl">0.665</span>, data_type <span class="op">=</span> <span class="st">"uint16"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      name <span class="op">=</span> <span class="st">"B2"</span>, <span class="st">"eo:common_name"</span> <span class="op">=</span> <span class="st">"green"</span>,</span></span>
+<span class="r-in"><span>      <span class="st">"eo:center_wavelength"</span> <span class="op">=</span> <span class="fl">0.560</span>, data_type <span class="op">=</span> <span class="st">"uint16"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      name <span class="op">=</span> <span class="st">"B3"</span>, <span class="st">"eo:common_name"</span> <span class="op">=</span> <span class="st">"blue"</span>,</span></span>
+<span class="r-in"><span>      <span class="st">"eo:center_wavelength"</span> <span class="op">=</span> <span class="fl">0.490</span>, data_type <span class="op">=</span> <span class="st">"uint16"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

@@ -136,8 +136,8 @@ item <- stac_item(
 
 item <- item |>
   add_pointcloud_extension(
-    count   = 10653336,
-    type    = "lidar",
+    count = 10653336,
+    type = "lidar",
     density = 4.664,
     schemas = list(
       pc_schema("X", size = 8, type = "floating"),

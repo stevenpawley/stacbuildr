@@ -83,7 +83,7 @@ recommended to use the data provider's existing identification scheme.</p></dd>
 
 
 <dt id="arg-geometry">geometry<a class="anchor" aria-label="anchor" href="#arg-geometry"></a></dt>
-<dd><p>(list, required) Defines the full footprint of the asset
+<dd><p>(stac_geometry or list, required) Defines the full footprint of the asset
 represented by this Item, formatted according to RFC 7946, section 3.1 (for
 geometry) or section 3.2 (if no geometry). Must be a valid GeoJSON
 geometry object (e.g., Point, Polygon, MultiPolygon) or <code>NULL</code> for non-spatial
@@ -123,7 +123,8 @@ empty list.</p></dd>
 
 
 <dt id="arg-links">links<a class="anchor" aria-label="anchor" href="#arg-links"></a></dt>
-<dd><p>(list, optional) List of link objects to resources and related URLs.
+<dd><p>(list, optional) List of <code><a href="stac_link.html">stac_link()</a></code> objects or plain link
+lists. Plain lists are converted to S3 link objects.
 Items are strongly recommended to provide a link to a STAC Collection.
 Use <code><a href="add_link.html">add_link()</a></code> or related helper functions to add links after creation.
 Default is an empty list.</p></dd>
@@ -171,7 +172,7 @@ be merged with the <code>properties</code> parameter.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An S7 object of class <code>stac_item</code> containing the Item metadata
+    <p>An S3 object of class <code>stac_item</code> containing the Item metadata
 formatted as a GeoJSON Feature. Convert to a plain list for JSON
 serialization with <code><a href="https://rspatial.github.io/terra/reference/as.list.html" class="external-link">as.list()</a></code>, or write directly to disk using
 <code><a href="write_item.html">write_item()</a></code>.</p>

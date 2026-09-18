@@ -4,9 +4,8 @@
 (SpatioTemporal Asset Catalog)](https://stacspec.org/) metadata. STAC is
 an open standard for describing geospatial data in a way that makes it
 indexable, searchable, and interoperable. The package implements STAC
-specification version 1.1.0 using
-[S7](https://rconsortium.github.io/S7/) classes and outputs valid STAC
-JSON.
+specification version 1.1.0 using validated S3 classes and outputs valid
+STAC JSON.
 
 *Note* this package is in active development: breaking changes are
 expected and there is no guarantee of compliance with STACspec.
@@ -88,11 +87,11 @@ catalog <- catalog |>
   add_root_link("https://example.com/catalog.json")
 
 # Add a child collection to the catalog
-catalog <- catalog |> 
+catalog <- catalog |>
   add_child(collection)
 
 # Add an item to a collection (with bidirectional links)
-collection <- collection |> 
+collection <- collection |>
   add_item(
     item,
     add_parent_links = TRUE,
@@ -101,7 +100,7 @@ collection <- collection |>
   )
 
 # Add arbitrary links
-collection <- collection |> 
+collection <- collection |>
   add_link(
     rel = "license",
     href = "https://sentinel.esa.int/legal-notice.html",
@@ -147,10 +146,10 @@ item <- item |>
   )
 
 # Pre-built band definitions for common sensors
-item <- item |> 
+item <- item |>
   add_eo_extension(bands = sentinel2_msi_bands())
 
-item <- item |> 
+item <- item |>
   add_eo_extension(bands = landsat_oli_bands(include_thermal = TRUE))
 ```
 
@@ -301,9 +300,9 @@ The written directory structure follows STAC conventions:
 ``` r
 
 result <- validate_stac(collection)
-result@valid    # TRUE / FALSE
-result@errors   # character vector of errors
-result@warnings # character vector of warnings for missing recommended fields
+result$valid    # TRUE / FALSE
+result$errors   # character vector of errors
+result$warnings # character vector of warnings for missing recommended fields
 
 # Strict mode also checks recommended fields
 validate_stac(item, strict = TRUE)
@@ -365,12 +364,12 @@ through a `plumber` router.
 
 ## Dependencies
 
-| Package     | Role                         |
-|-------------|------------------------------|
-| `S7`        | Object-oriented class system |
-| `jsonlite`  | JSON serialisation           |
-| `sf`        | Vector geometry handling     |
-| `geojsonsf` | sf ↔︎ GeoJSON conversion      |
+| Package     | Role                                         |
+|-------------|----------------------------------------------|
+| Base R      | S3 object system and list-based field access |
+| `jsonlite`  | JSON serialisation                           |
+| `sf`        | Vector geometry handling                     |
+| `geojsonsf` | sf ↔︎ GeoJSON conversion                      |
 
 Optional: `terra` (raster integration — `item_from_terra`,
 `band_from_file`, `preview_from_terra`), `lidR` (point-cloud integration

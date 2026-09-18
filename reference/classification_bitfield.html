@@ -106,7 +106,7 @@ bitfield. Uses the same role vocabulary as STAC asset roles.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>classification_bitfield</code> S7 object. Access fields with <code>@</code>.</p>
+    <p>A <code>classification_bitfield</code> S3 object. Access fields with <code>$</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -129,7 +129,7 @@ extracted as <code>bitwAnd(bitwShiftR(x, 2), 3L)</code>.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Single-bit cloud flag (bit 3 of Landsat QA_PIXEL)</span></span></span>
 <span class="r-in"><span><span class="va">cloud_classes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">0</span>, name <span class="op">=</span> <span class="st">"not_cloud"</span>, title <span class="op">=</span> <span class="st">"Not Cloud"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  <span class="fu"><a href="classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">1</span>, name <span class="op">=</span> <span class="st">"cloud"</span>,     title <span class="op">=</span> <span class="st">"Cloud"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">1</span>, name <span class="op">=</span> <span class="st">"cloud"</span>, title <span class="op">=</span> <span class="st">"Cloud"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cloud_bit</span> <span class="op">&lt;-</span> <span class="fu">classification_bitfield</span><span class="op">(</span></span></span>
@@ -142,10 +142,10 @@ extracted as <code>bitwAnd(bitwShiftR(x, 2), 3L)</code>.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Two-bit cloud confidence field (bits 8–9 of Landsat QA_PIXEL)</span></span></span>
 <span class="r-in"><span><span class="va">confidence_classes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">0</span>, name <span class="op">=</span> <span class="st">"none"</span>,   title <span class="op">=</span> <span class="st">"No Confidence"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  <span class="fu"><a href="classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">1</span>, name <span class="op">=</span> <span class="st">"low"</span>,    title <span class="op">=</span> <span class="st">"Low Confidence"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="fu"><a href="classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">0</span>, name <span class="op">=</span> <span class="st">"none"</span>, title <span class="op">=</span> <span class="st">"No Confidence"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="fu"><a href="classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">1</span>, name <span class="op">=</span> <span class="st">"low"</span>, title <span class="op">=</span> <span class="st">"Low Confidence"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  <span class="fu"><a href="classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">2</span>, name <span class="op">=</span> <span class="st">"medium"</span>, title <span class="op">=</span> <span class="st">"Medium Confidence"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  <span class="fu"><a href="classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">3</span>, name <span class="op">=</span> <span class="st">"high"</span>,   title <span class="op">=</span> <span class="st">"High Confidence"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="classification_class.html">classification_class</a></span><span class="op">(</span>value <span class="op">=</span> <span class="fl">3</span>, name <span class="op">=</span> <span class="st">"high"</span>, title <span class="op">=</span> <span class="st">"High Confidence"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">confidence_bit</span> <span class="op">&lt;-</span> <span class="fu">classification_bitfield</span><span class="op">(</span></span></span>

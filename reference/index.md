@@ -30,6 +30,8 @@ Create and attach data assets to STAC Items and Collections.
 
 Build and manage the link graph between STAC objects.
 
+- [`stac_link()`](https://stevenpawley.github.io/stacbuildr/reference/stac_link.md)
+  : Create a STAC link object
 - [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
   : Add a link to a STAC catalog
 - [`add_self_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_self_link.md)
@@ -57,6 +59,8 @@ Helper constructors for Collection fields.
 
 - [`stac_extent()`](https://stevenpawley.github.io/stacbuildr/reference/stac_extent.md)
   : Create a STAC Extent Object
+- [`stac_geometry()`](https://stevenpawley.github.io/stacbuildr/reference/stac_geometry.md)
+  : Create a GeoJSON Geometry
 - [`stac_provider()`](https://stevenpawley.github.io/stacbuildr/reference/stac_provider.md)
   : Create a STAC Provider Object
 - [`stac_summaries()`](https://stevenpawley.github.io/stacbuildr/reference/stac_summaries.md)
@@ -252,18 +256,19 @@ Item directly.
 - [`length.stac_catalog`](https://stevenpawley.github.io/stacbuildr/reference/length.stac_catalog.md)
   : Number of Items in a STAC Catalog or Collection
 - [`as.data.frame.stac_catalog`](https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.md)
-  [`as.data.frame,stacbuildr::stac_item-method`](https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.md)
+  [`as.data.frame.stac_item`](https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.md)
   : Coerce a STAC Catalog, Collection or Item to a Data Frame
 - [`st_as_sf.stac_catalog`](https://stevenpawley.github.io/stacbuildr/reference/st_as_sf.stac_catalog.md)
-  [`st_as_sf,stacbuildr::stac_item-method`](https://stevenpawley.github.io/stacbuildr/reference/st_as_sf.stac_catalog.md)
+  [`st_as_sf.stac_item`](https://stevenpawley.github.io/stacbuildr/reference/st_as_sf.stac_catalog.md)
   : Coerce a STAC Catalog, Collection or Item to an sf Object
 - [`stac_item_sf_accessors`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
-  [`st_geometry,stacbuildr::stac_item-method`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
-  [`st_bbox,stacbuildr::stac_item-method`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
-  [`st_crs,stacbuildr::stac_item-method`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
+  [`st_geometry.stac_item`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
+  [`st_bbox.stac_item`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
+  [`st_crs.stac_item`](https://stevenpawley.github.io/stacbuildr/reference/stac_item_sf_accessors.md)
   : sf Accessors for a STAC Item
 - [`sub-.stac_catalog`](https://stevenpawley.github.io/stacbuildr/reference/sub-.stac_catalog.md)
-  [`[[,stacbuildr::stac_catalog-method`](https://stevenpawley.github.io/stacbuildr/reference/sub-.stac_catalog.md)
+  [`[.stac_catalog`](https://stevenpawley.github.io/stacbuildr/reference/sub-.stac_catalog.md)
+  [`[[.stac_catalog`](https://stevenpawley.github.io/stacbuildr/reference/sub-.stac_catalog.md)
   : Extract Items from a STAC Catalog or Collection
 
 ## Validation

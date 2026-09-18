@@ -63,7 +63,7 @@ eo_band(
 
 ## Value
 
-An `eo_band` S7 object. Access fields with `@`. The EO-specific fields
+An `eo_band` S3 object. Access fields with `$`. The EO-specific fields
 are written with an `eo:` prefix, as required by version 2.0.0 of the
 extension; `name` and `description` come from STAC Common Metadata and
 stay unprefixed.

@@ -36,12 +36,13 @@ stac_item(
 
 - geometry:
 
-  (list, required) Defines the full footprint of the asset represented
-  by this Item, formatted according to RFC 7946, section 3.1 (for
-  geometry) or section 3.2 (if no geometry). Must be a valid GeoJSON
-  geometry object (e.g., Point, Polygon, MultiPolygon) or `NULL` for
-  non-spatial items. Coordinates should be in WGS 84 (EPSG:4326) as
-  (longitude, latitude) or (longitude, latitude, elevation).
+  (stac_geometry or list, required) Defines the full footprint of the
+  asset represented by this Item, formatted according to RFC 7946,
+  section 3.1 (for geometry) or section 3.2 (if no geometry). Must be a
+  valid GeoJSON geometry object (e.g., Point, Polygon, MultiPolygon) or
+  `NULL` for non-spatial items. Coordinates should be in WGS 84
+  (EPSG:4326) as (longitude, latitude) or (longitude, latitude,
+  elevation).
 
 - bbox:
 
@@ -79,9 +80,11 @@ stac_item(
 
 - links:
 
-  (list, optional) List of link objects to resources and related URLs.
-  Items are strongly recommended to provide a link to a STAC Collection.
-  Use
+  (list, optional) List of
+  [`stac_link()`](https://stevenpawley.github.io/stacbuildr/reference/stac_link.md)
+  objects or plain link lists. Plain lists are converted to S3 link
+  objects. Items are strongly recommended to provide a link to a STAC
+  Collection. Use
   [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md)
   or related helper functions to add links after creation. Default is an
   empty list.
@@ -131,7 +134,7 @@ stac_item(
 
 ## Value
 
-An S7 object of class `stac_item` containing the Item metadata formatted
+An S3 object of class `stac_item` containing the Item metadata formatted
 as a GeoJSON Feature. Convert to a plain list for JSON serialization
 with
 [`as.list()`](https://rspatial.github.io/terra/reference/as.list.html),

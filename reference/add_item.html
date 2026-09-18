@@ -77,7 +77,7 @@ list of Items to add multiple items at once.</p></dd>
 
 <dt id="arg-href">href<a class="anchor" aria-label="anchor" href="#arg-href"></a></dt>
 <dd><p>(character, optional) Href for each Item link. If <code>NULL</code>, uses
-<code>"./{item@id}/{item@id}.json"</code>. Supply one href per Item. <code><a href="write_stac.html">write_stac()</a></code>
+<code>"./{item$id}/{item$id}.json"</code>. Supply one href per Item. <code><a href="write_stac.html">write_stac()</a></code>
 regenerates these hrefs for its output layout and <code>catalog_type</code>.</p></dd>
 
 
@@ -133,15 +133,35 @@ them. See <code><a href="../articles/stac-catalog.html">vignette("stac-catalog")
 <span class="r-in"><span><span class="va">catalog</span> <span class="op">&lt;-</span> <span class="fu">add_item</span><span class="op">(</span><span class="va">catalog</span>, <span class="va">item</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="get_item_links.html">get_item_links</a></span><span class="op">(</span><span class="va">catalog</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$rel</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $rel</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "item"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$href</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $href</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "./item-1/item-1.json"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "application/geo+json"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $title</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $method</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $headers</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $body</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $merge</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $extra_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "stac_link"   "stac_object"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu"><a href="get_items.html">get_items</a></span><span class="op">(</span><span class="va">catalog</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>

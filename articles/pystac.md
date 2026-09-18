@@ -37,7 +37,7 @@ item <- stac_item(
   datetime = "2023-07-06T08:00:00Z"
 )
 
-catalog <- catalog |> 
+catalog <- catalog |>
   add_item(item)
 ```
 
@@ -92,7 +92,7 @@ online home.
 
 r_path <- file.path(tempdir(), "r-stac")
 write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
-#> ✔ STAC catalog written to /tmp/RtmpXoH4WW/r-stac
+#> ✔ STAC catalog written to /tmp/Rtmp3drWfw/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 py_path <- file.path(tempdir(), "py-stac")
@@ -268,10 +268,10 @@ asset <- stac_asset(
   type = "image/tiff; application=geotiff"
 )
 
-item <- item |> 
+item <- item |>
   add_asset("temperature", asset)
 
-catalog <- catalog |> 
+catalog <- catalog |>
   add_item(item)
 ```
 
@@ -293,7 +293,7 @@ JSON:
 ``` r
 
 write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
-#> ✔ STAC catalog written to /tmp/RtmpXoH4WW/r-stac
+#> ✔ STAC catalog written to /tmp/Rtmp3drWfw/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 catalog_py$normalize_hrefs(py_path)

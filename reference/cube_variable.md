@@ -70,7 +70,7 @@ cube_variable(
 
 ## Value
 
-A `cube_variable` S7 object. Access fields with `@`.
+A `cube_variable` S3 object. Access fields with `$`.
 
 ## Examples
 

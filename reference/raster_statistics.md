@@ -40,8 +40,8 @@ raster_statistics(
 
 ## Value
 
-An S7 raster statistics object. Access its properties with `@`, for
-example `stats@minimum` and `stats@valid_percent`.
+An S3 raster statistics object. Access its fields with `$`, for example
+`stats$minimum` and `stats$valid_percent`.
 
 ## Examples
 
@@ -53,8 +53,8 @@ stats <- raster_statistics(
   stddev = 1200,
   valid_percent = 99.8
 )
-stats@minimum
+stats$minimum
 #> [1] 0
-stats@valid_percent
+stats$valid_percent
 #> [1] 99.8
 ```

@@ -72,11 +72,13 @@ stac_catalog(
 
 - links:
 
-  (list, optional) Initial list of link objects. Links are typically
-  managed via
+  (list, optional) Initial list of
+  [`stac_link()`](https://stevenpawley.github.io/stacbuildr/reference/stac_link.md)
+  objects or plain link lists. Plain lists are converted to S3 link
+  objects. Links are typically managed via
   [`add_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_link.md),
   [`add_child()`](https://stevenpawley.github.io/stacbuildr/reference/add_child.md),
-  and related helpers after construction. Default is an empty list.
+  and related helpers.
 
 - ...:
 
@@ -86,7 +88,7 @@ stac_catalog(
 
 ## Value
 
-An S7 object of class `stac_catalog` containing the catalog metadata.
+An S3 object of class `stac_catalog` containing the catalog metadata.
 Convert to a plain list for JSON serialization with
 [`as.list()`](https://rspatial.github.io/terra/reference/as.list.html),
 or write directly to disk using

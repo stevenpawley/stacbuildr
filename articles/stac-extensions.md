@@ -72,7 +72,7 @@ item <- item |>
 Nearly every `add_*_extension()` function takes an `asset_key` argument,
 and the choice it controls matters more than it first appears.
 
-- **Omit `asset_key`** and the fields land in `item@properties`. This
+- **Omit `asset_key`** and the fields land in `item$properties`. This
   says the metadata describes the whole scene.
 - **Pass `asset_key`** and the fields land on that asset. This says the
   metadata describes only that file.
@@ -141,9 +141,9 @@ item <- item |>
     asset_key = "nir"
   )
 
-item@properties$`eo:cloud_cover`
+item$properties[["eo:cloud_cover"]]
 #> [1] 12.5
-item@assets$red@extra_fields$bands
+item$assets[["red"]]$extra_fields[["bands"]]
 #> [[1]]
 #> <EO Band>
 #>   name                   : B4
@@ -182,9 +182,9 @@ bands <- landsat_oli_bands()
 length(bands)
 #> [1] 9
 list(
-  name = bands[[4]]@name,
-  `eo:common_name` = bands[[4]]@common_name,
-  `eo:center_wavelength` = bands[[4]]@center_wavelength
+  name = bands[[4]]$name,
+  `eo:common_name` = bands[[4]]$common_name,
+  `eo:center_wavelength` = bands[[4]]$center_wavelength
 )
 #> $name
 #> [1] "B4"
@@ -213,7 +213,7 @@ extension](https://github.com/stac-extensions/raster) describes the
 scale/offset needed to turn stored integers into physical units.
 
 [`raster_band()`](https://stevenpawley.github.io/stacbuildr/reference/raster_band.md)
-is an S7 object rather than a plain list, so typos in `data_type` are
+is an S3 object rather than a plain list, so typos in `data_type` are
 caught as they are written.
 
 ``` r
@@ -236,7 +236,7 @@ red_band <- raster_band(
 
 item <- add_raster_extension(item, bands = list(red_band), asset_key = "red")
 
-item@assets$red@extra_fields$bands[[1]]$`raster:scale`
+item$assets$red$extra_fields$bands[[1]][["raster:scale"]]
 #> [1] 2.75e-05
 ```
 
@@ -269,23 +269,18 @@ if (requireNamespace("terra", quietly = TRUE) && nzchar(tif)) {
   bands <- band_from_file(tif, calculate_statistics = TRUE)
   str(bands[[1]], max.level = 1)
 }
-#> <stacbuildr::raster_band>
-#>  @ nodata            : num(0) 
-#>  @ data_type         : chr "int16"
-#>  @ unit              : chr(0) 
-#>  @ statistics        : <stacbuildr::raster_statistics>
-#>  .. @ minimum      : num 146
-#>  .. @ maximum      : num 543
-#>  .. @ mean         : num 348
-#>  .. @ stddev       : num 79.4
-#>  .. @ valid_percent: num 51.8
-#>  @ sampling          : chr(0) 
-#>  @ bits_per_sample   : int(0) 
-#>  @ spatial_resolution: num 0.00833
-#>  @ scale             : num 1
-#>  @ offset            : num 0
-#>  @ histogram         : NULL
-#>  @ extra_fields      : list()
+#> List of 11
+#>  $ nodata            : num(0) 
+#>  $ data_type         : chr "int16"
+#>  $ unit              : chr(0) 
+#>  $ statistics        :List of 5
+#>  $ sampling          : chr(0) 
+#>  $ bits_per_sample   : int(0) 
+#>  $ spatial_resolution: num 0.00833
+#>  $ scale             : num 1
+#>  $ offset            : num 0
+#>  $ histogram         : NULL
+#>  $ extra_fields      : list()
 ```
 
 [`band_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/band_from_file.md)
@@ -332,7 +327,7 @@ combined_item <- item |>
     asset_key = "red"
   )
 
-names(combined_item@assets$red@extra_fields$bands[[1]])
+names(combined_item$assets[["red"]]$extra_fields[["bands"]][[1]])
 #>  [1] "name"                      "eo:common_name"           
 #>  [3] "eo:center_wavelength"      "eo:full_width_half_max"   
 #>  [5] "nodata"                    "data_type"                
@@ -360,7 +355,9 @@ combined <- eo_band(
 )
 
 names(combined)
-#> NULL
+#> [1] "name"                "common_name"         "description"        
+#> [4] "center_wavelength"   "full_width_half_max" "solar_illumination" 
+#> [7] "extra_fields"
 ```
 
 ## Classification
@@ -421,9 +418,8 @@ upper-case hex digits with no leading `#`.
 ``` r
 
 classification_class(value = 11, name = "open water")
-#> Error:
-#> ! <stacbuildr::classification_class> object properties are invalid:
-#> - @name must consist only of letters, numbers, hyphens, and underscores
+#> Error in `classification_class()`:
+#> ! name must consist only of letters, numbers, hyphens, and underscores
 ```
 
 **Bitfields** describe QA bands where several flags are packed into one
@@ -456,8 +452,8 @@ qa_item <- add_classification_extension(
 )
 
 vapply(
-  qa_item@properties$`classification:bitfields`,
-  function(bitfield) bitfield@name,
+  qa_item$properties[["classification:bitfields"]],
+  function(bitfield) bitfield$name,
   character(1)
 )
 #> [1] "fill"  "cloud"
@@ -496,7 +492,7 @@ item <- add_render_extension(
   )
 )
 
-names(item@properties$renders)
+names(item$properties[["renders"]])
 #> [1] "natural_color" "ndvi"
 ```
 
@@ -549,7 +545,7 @@ item <- add_scientific_extension(
   )
 )
 
-item@properties$`sci:doi`
+item$properties[["sci:doi"]]
 #> [1] "10.5066/P9OGBGM6"
 ```
 
@@ -620,10 +616,10 @@ parcels <- stac_item(
     asset_key = "data"
   )
 
-vapply(parcels@properties$`table:columns`, function(column) column@name,
+vapply(parcels$properties[["table:columns"]], function(column) column$name,
        character(1))
 #> [1] "geometry"  "parcel_id" "area_ha"   "zoning"
-names(parcels@assets$data@extra_fields$`table:storage_options`)
+names(parcels$assets[["data"]]$extra_fields[["table:storage_options"]])
 #> [1] "account_name"
 ```
 
@@ -655,8 +651,8 @@ multi <- stac_item(
     asset_key = "persons"
   )
 
-vapply(multi@assets$persons@extra_fields$`table:columns`,
-       function(column) column@name, character(1))
+vapply(multi$assets[["persons"]]$extra_fields[["table:columns"]],
+       function(column) column$name, character(1))
 #> [1] "person_id" "age"
 ```
 
@@ -687,7 +683,7 @@ parcels <- add_vector_extension(
   reference_scale = 50000
 )
 
-parcels@properties[c("vector:geometry_types", "vector:reference_scale")]
+parcels$properties[c("vector:geometry_types", "vector:reference_scale")]
 #> $`vector:geometry_types`
 #> $`vector:geometry_types`[[1]]
 #> [1] "Polygon"
@@ -770,7 +766,7 @@ cube <- stac_item(
     )
   )
 
-names(cube@properties$`cube:dimensions`)
+names(cube$properties[["cube:dimensions"]])
 #> [1] "lon"   "lat"   "time"  "level"
 ```
 
@@ -828,7 +824,7 @@ cloud <- add_pointcloud_extension(
   )
 )
 
-cloud@properties[c("pc:count", "pc:type", "pc:density")]
+cloud$properties[c("pc:count", "pc:type", "pc:density")]
 #> $`pc:count`
 #> [1] 81590
 #> 
@@ -878,7 +874,7 @@ f <- system.file("extdata", "Megaplot.laz", package = "lidR")
 
 tile <- item_from_lidr(f, datetime = "2023-06-15T00:00:00Z")
 
-tile@properties[c("pc:count", "pc:density", "proj:code")]
+tile$properties[c("pc:count", "pc:density", "proj:code")]
 #> $`pc:count`
 #> [1] 81590
 #> 
@@ -894,7 +890,7 @@ and from any Extra Bytes record it declares:
 
 ``` r
 
-vapply(tile@properties$`pc:schemas`, function(s) s@name, character(1))
+vapply(tile$properties[["pc:schemas"]], function(s) s$name, character(1))
 #>  [1] "X"                 "Y"                 "Z"                
 #>  [4] "Intensity"         "ReturnNumber"      "NumberOfReturns"  
 #>  [7] "ScanDirectionFlag" "EdgeOfFlightLine"  "Classification"   
@@ -955,7 +951,7 @@ proj_item <- stac_item(
     bbox = c(712710, 5487090, 999480, 5654790)
   )
 
-proj_item@properties[c("proj:code", "proj:shape")]
+proj_item$properties[c("proj:code", "proj:shape")]
 #> $`proj:code`
 #> [1] "EPSG:32612"
 #> 
@@ -985,7 +981,7 @@ runs the package’s own structural rules and needs no extra dependencies:
 ``` r
 
 result <- validate_stac(item)
-result@valid
+result$valid
 #> [1] TRUE
 ```
 
@@ -1023,7 +1019,7 @@ Here is the finished set of extensions on our scene:
 
 ``` r
 
-item@stac_extensions
+item$stac_extensions
 #> [1] "https://stac-extensions.github.io/eo/v2.0.0/schema.json"        
 #> [2] "https://stac-extensions.github.io/raster/v2.0.0/schema.json"    
 #> [3] "https://stac-extensions.github.io/render/v2.0.0/schema.json"    

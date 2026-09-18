@@ -54,17 +54,17 @@ stac_asset(
 
 ## Value
 
-An S7 asset. Access core fields with `asset@href` and arbitrary metadata
-with `asset@extra_fields`.
+An S3 asset. Access core fields with `asset$href` and arbitrary metadata
+with `asset$extra_fields`.
 
 ## Details
 
 `roles` is a character vector in memory and a JSON array when
-serialized. Assets retain their S7 class when attached to Items or
+serialized. Assets retain their S3 class when attached to Items or
 Collections and when restored with
 [`read_stac()`](https://stevenpawley.github.io/stacbuildr/reference/read_stac.md).
 The assets dictionary remains a named list: use
-`item@assets[["data"]]@href` to access an asset's URL. Use
+`item$assets[["data"]]$href` to access an asset's URL. Use
 `as.list(asset)` to obtain the JSON-ready representation.
 
 ## Examples
@@ -84,9 +84,9 @@ asset <- stac_asset(
   type = "image/tiff; application=geotiff",
   roles = c("data", "reflectance")
 )
-asset@href
+asset$href
 #> [1] "./data/LC08_B4.tif"
-asset@roles
+asset$roles
 #> [1] "data"        "reflectance"
 
 # Asset with extension properties
@@ -95,12 +95,18 @@ asset <- stac_asset(
   type = "image/tiff; application=geotiff; profile=cloud-optimized",
   roles = c("data"),
   bands = list(
-    list(name = "B1", "eo:common_name" = "red",
-         "eo:center_wavelength" = 0.665, data_type = "uint16"),
-    list(name = "B2", "eo:common_name" = "green",
-         "eo:center_wavelength" = 0.560, data_type = "uint16"),
-    list(name = "B3", "eo:common_name" = "blue",
-         "eo:center_wavelength" = 0.490, data_type = "uint16")
+    list(
+      name = "B1", "eo:common_name" = "red",
+      "eo:center_wavelength" = 0.665, data_type = "uint16"
+    ),
+    list(
+      name = "B2", "eo:common_name" = "green",
+      "eo:center_wavelength" = 0.560, data_type = "uint16"
+    ),
+    list(
+      name = "B3", "eo:common_name" = "blue",
+      "eo:center_wavelength" = 0.490, data_type = "uint16"
+    )
   )
 )
 ```
