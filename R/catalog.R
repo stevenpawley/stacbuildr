@@ -1,22 +1,3 @@
-property_id <- new_stac_property(
-  class = "character",
-  validator = function(value) {
-    if (length(value) == 0 || nchar(value) == 0) {
-      return("'id' must be a non-empty character string")
-    }
-  }
-)
-
-property_description <- new_stac_property(
-  class = "character",
-  validator = function(value) {
-    if (length(value) == 0 || nchar(value) == 0) {
-      return("'description' must be a non-empty character string")
-    }
-  }
-)
-
-
 #' Create a STAC Catalog
 #'
 #' @description
@@ -158,80 +139,85 @@ property_description <- new_stac_property(
 #' cat(catalog_json)
 #'
 #' @export
-stac_catalog <- new_stac_class(
-  "stac_catalog",
-  properties = list(
-    id = property_id,
-    description = property_description,
-    title = new_stac_property(
-      new_stac_union("character", NULL),
-      default = NULL
-    ),
-    stac_version = new_stac_property("character", default = "1.1.0"),
-    type = new_stac_property("character", default = "Catalog"),
-    stac_extensions = new_stac_property(
-      new_stac_union("character", NULL),
-      default = NULL
-    ),
-    conformsTo = new_stac_property(
-      new_stac_union("character", NULL),
-      default = NULL
-    ),
-    links = new_stac_property(
-      "list",
-      default = list(),
-      validator = function(value) {
-        if (!all(vapply(
-          value,
-          stac_inherits,
-          logical(1),
-          class = stac_link
-        ))) {
-          "must contain only stac_link objects"
-        }
-      }
-    ),
-    extra_fields = new_stac_property("list", default = list())
-  ),
-  constructor = function(
-    id,
-    description,
-    title = NULL,
-    stac_version = "1.1.0",
-    type = "Catalog",
-    stac_extensions = NULL,
-    conformsTo = NULL,
-    links = list(),
-    ...
-  ) {
-    new_stac_object(
-      list(),
-      type = type,
-      stac_version = stac_version,
-      id = id,
-      description = description,
-      title = title,
-      stac_extensions = stac_extensions,
-      conformsTo = conformsTo,
-      links = normalize_links(links),
-      extra_fields = list(...)
-    )
-  },
-  validator = function(self) {
-    if (nchar(self$stac_version) == 0) {
-      return("'stac_version' must be a non-empty string")
-    }
-    # type is enforced by each concrete subclass ("Catalog" / "Collection");
-    # here we just guard against values that are clearly wrong
-    if (!self$type %in% c("Catalog", "Collection")) {
-      return(sprintf(
-        "'type' must be 'Catalog' or 'Collection', got '%s'",
-        self$type
-      ))
-    }
-    NULL
+stac_catalog <- function(
+  id,
+  description,
+  title = NULL,
+  stac_version = "1.1.0",
+  type = "Catalog",
+  stac_extensions = NULL,
+  conformsTo = NULL,
+  links = list(),
+  ...
+) {
+  object <- list(
+    type = type,
+    stac_version = stac_version,
+    id = id,
+    description = description,
+    title = title,
+    stac_extensions = stac_extensions,
+    conformsTo = conformsTo,
+    links = normalize_links(links),
+    extra_fields = list(...)
+  )
+  if (!is.character(object[["id"]])) {
+    cli::cli_abort("id must be character.")
   }
-)
+  if (length(object[["id"]]) == 0 || nchar(object[["id"]]) == 0) {
+    cli::cli_abort(paste("id", "must be a non-empty character string"))
+  }
+  if (!is.character(object[["description"]])) {
+    cli::cli_abort("description must be character.")
+  }
+  if (
+    length(object[["description"]]) == 0 || nchar(object[["description"]]) == 0
+  ) {
+    cli::cli_abort(paste("description", "must be a non-empty character string"))
+  }
+  if (!(is.character(object[["title"]]) || is.null(object[["title"]]))) {
+    cli::cli_abort("title must be character or NULL.")
+  }
+  if (!is.character(object[["stac_version"]])) {
+    cli::cli_abort("stac_version must be character.")
+  }
+  if (!is.character(object[["type"]])) {
+    cli::cli_abort("type must be character.")
+  }
+  if (
+    !(is.character(object[["stac_extensions"]]) ||
+      is.null(object[["stac_extensions"]]))
+  ) {
+    cli::cli_abort("stac_extensions must be character or NULL.")
+  }
+  if (
+    !(is.character(object[["conformsTo"]]) || is.null(object[["conformsTo"]]))
+  ) {
+    cli::cli_abort("conformsTo must be character or NULL.")
+  }
+  if (!is.list(object[["links"]])) {
+    cli::cli_abort("links must be list.")
+  }
+  if (
+    !all(vapply(object[["links"]], inherits, logical(1), what = "stac_link"))
+  ) {
+    cli::cli_abort(paste("links", "must contain only stac_link objects"))
+  }
+  if (!is.list(object[["extra_fields"]])) {
+    cli::cli_abort("extra_fields must be list.")
+  }
+  if (nchar(object$stac_version) == 0) {
+    cli::cli_abort("'stac_version' must be a non-empty string")
+  }
+  if (!object$type %in% c("Catalog", "Collection")) {
+    cli::cli_abort(sprintf(
+      "'type' must be 'Catalog' or 'Collection', got '%s'",
+      object$type
+    ))
+  }
+  class(object) <- c("stac_catalog", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
@@ -258,7 +244,7 @@ as.list.stac_catalog <- function(x, ...) {
   if (length(x$extra_fields) > 0) {
     out <- c(out, x$extra_fields)
   }
-  out
+  return(out)
 }
 
 #' Print a STAC Catalog
@@ -293,7 +279,9 @@ print.stac_catalog <- function(x, ..., expand = NULL) {
         "extensions",
         length(extensions),
         summary = stac_preview(stac_extension_names(extensions)),
-        lines = function() stac_extension_lines(extensions),
+        lines = function() {
+          return(stac_extension_lines(extensions))
+        },
         expanded = stac_expanded(expand, "extensions")
       )
     },
@@ -302,25 +290,39 @@ print.stac_catalog <- function(x, ..., expand = NULL) {
       length(x$links),
       summary = stac_preview(vapply(
         x$links,
-        function(l) l$rel,
+        function(l) {
+          return(l$rel)
+        },
         character(1)
       )),
-      lines = function() stac_link_lines(x$links),
+      lines = function() {
+        return(stac_link_lines(x$links))
+      },
       expanded = stac_expanded(expand, "links")
     ),
     stac_print_section(
       "children",
       length(children),
       summary = stac_preview(names(children)),
-      lines = function() stac_child_lines(children),
+      lines = function() {
+        return(stac_child_lines(children))
+      },
       expanded = stac_expanded(expand, "children")
     ),
     if (length(items) > 0) {
       stac_print_section(
         "items",
         length(items),
-        summary = stac_preview(vapply(items, function(i) i$id, character(1))),
-        lines = function() stac_item_lines(items),
+        summary = stac_preview(vapply(
+          items,
+          function(i) {
+            return(i$id)
+          },
+          character(1)
+        )),
+        lines = function() {
+          return(stac_item_lines(items))
+        },
         expanded = stac_expanded(expand, "items")
       )
     }
@@ -328,7 +330,7 @@ print.stac_catalog <- function(x, ..., expand = NULL) {
 
   stac_print_hint(sum(collapsed))
 
-  invisible(x)
+  return(invisible(x))
 }
 
 
@@ -378,52 +380,66 @@ print.stac_catalog <- function(x, ..., expand = NULL) {
 #' link$href
 #'
 #' @export
-stac_link <- new_stac_class(
-  "stac_link",
-  properties = list(
-    rel = new_stac_property("character", validator = function(value) {
-      if (length(value) != 1L || is.na(value) || !nzchar(value)) {
-        "must be a non-empty string"
-      }
-    }),
-    href = new_stac_property("character", validator = function(value) {
-      if (length(value) != 1L || is.na(value) || !nzchar(value)) {
-        "must be a non-empty string"
-      }
-    }),
-    type = new_stac_union("character", NULL),
-    title = new_stac_union("character", NULL),
-    method = new_stac_union("character", NULL),
-    headers = new_stac_property("any", default = NULL),
-    body = new_stac_property("any", default = NULL),
-    merge = new_stac_property("logical", default = FALSE),
-    extra_fields = new_stac_property("list", default = list())
-  ),
-  constructor = function(
-    rel,
-    href,
-    type = NULL,
-    title = NULL,
-    method = NULL,
-    headers = NULL,
-    body = NULL,
-    merge = FALSE,
-    ...
-  ) {
-    new_stac_object(
-      list(),
-      rel = rel,
-      href = href,
-      type = type,
-      title = title,
-      method = method,
-      headers = headers,
-      body = body,
-      merge = merge,
-      extra_fields = list(...)
-    )
+stac_link <- function(
+  rel,
+  href,
+  type = NULL,
+  title = NULL,
+  method = NULL,
+  headers = NULL,
+  body = NULL,
+  merge = FALSE,
+  ...
+) {
+  object <- list(
+    rel = rel,
+    href = href,
+    type = type,
+    title = title,
+    method = method,
+    headers = headers,
+    body = body,
+    merge = merge,
+    extra_fields = list(...)
+  )
+  if (!is.character(object[["rel"]])) {
+    cli::cli_abort("rel must be character.")
   }
-)
+  if (
+    length(object[["rel"]]) != 1L ||
+      is.na(object[["rel"]]) ||
+      !nzchar(object[["rel"]])
+  ) {
+    cli::cli_abort(paste("rel", "must be a non-empty string"))
+  }
+  if (!is.character(object[["href"]])) {
+    cli::cli_abort("href must be character.")
+  }
+  if (
+    length(object[["href"]]) != 1L ||
+      is.na(object[["href"]]) ||
+      !nzchar(object[["href"]])
+  ) {
+    cli::cli_abort(paste("href", "must be a non-empty string"))
+  }
+  if (!(is.character(object[["type"]]) || is.null(object[["type"]]))) {
+    cli::cli_abort("type must be character or NULL.")
+  }
+  if (!(is.character(object[["title"]]) || is.null(object[["title"]]))) {
+    cli::cli_abort("title must be character or NULL.")
+  }
+  if (!(is.character(object[["method"]]) || is.null(object[["method"]]))) {
+    cli::cli_abort("method must be character or NULL.")
+  }
+  if (!is.logical(object[["merge"]])) {
+    cli::cli_abort("merge must be logical.")
+  }
+  if (!is.list(object[["extra_fields"]])) {
+    cli::cli_abort("extra_fields must be list.")
+  }
+  class(object) <- c("stac_link", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
@@ -433,27 +449,33 @@ as.list.stac_link <- function(x, ...) {
     value <- x[[field]]
     if (!is.null(value)) out[[field]] <- value
   }
-  if (isTRUE(x$merge)) out[["merge"]] <- TRUE
-  c(out, x$extra_fields)
+  if (isTRUE(x$merge)) {
+    out[["merge"]] <- TRUE
+  }
+  return(c(out, x$extra_fields))
 }
 
 as_stac_link <- function(x) {
-  if (stac_inherits(x, stac_link)) {
+  if (inherits(x, "stac_link")) {
     return(x)
   }
   if (!is.list(x) || is.null(x[["rel"]]) || is.null(x[["href"]])) {
     cli::cli_abort(c(
       "Each link must be a stac_link or a list with 'rel' and 'href' fields.",
-      "i" = "Use stac_link() to build one."
+      i = "Use stac_link() to build one."
     ))
   }
-  do.call(stac_link, x)
+  return(do.call(stac_link, x))
 }
 
 normalize_links <- function(x) {
-  if (is.null(x)) return(list())
-  if (!is.list(x)) cli::cli_abort("'links' must be a list of link objects.")
-  lapply(x, as_stac_link)
+  if (is.null(x)) {
+    return(list())
+  }
+  if (!is.list(x)) {
+    cli::cli_abort("'links' must be a list of link objects.")
+  }
+  return(lapply(x, as_stac_link))
 }
 
 
@@ -507,7 +529,7 @@ normalize_links <- function(x) {
 add_link <- function(catalog, rel, href, ...) {
   new_link <- stac_link(rel = rel, href = href, ...)
   catalog$links <- c(catalog$links, list(new_link))
-  catalog
+  return(catalog)
 }
 
 
@@ -551,41 +573,39 @@ add_link <- function(catalog, rel, href, ...) {
 #'
 #' @export
 add_child <- function(catalog, child, href = NULL, title = NULL) {
-  if (!stac_inherits(child, stac_catalog)) {
+  if (!inherits(child, "stac_catalog")) {
     cli::cli_abort("'child' must be a stac_catalog or stac_collection object")
   }
-
   check_duplicate_ids(
     new_ids = child$id,
-    existing_ids = names(attr(catalog, "stac_children") %||% list()),
+    existing_ids = names(
+      attr(catalog, "stac_children") %||%
+        list()
+    ),
     what = "a child"
   )
-
   if (is.null(href)) {
-    if (stac_inherits(child, stac_collection)) {
+    if (inherits(child, "stac_collection")) {
       href <- paste0("./", child$id, "/collection.json")
     } else {
       href <- paste0("./", child$id, "/catalog.json")
     }
   }
-
   catalog <- add_link(
     catalog,
     rel = "child",
     href = href,
     type = "application/json",
-    title = title %||% child$title
+    title = title %||%
+      child$title
   )
-
-  # Store child object so write_stac() can recurse into it
   stored_children <- attr(catalog, "stac_children")
   if (is.null(stored_children)) {
     stored_children <- list()
   }
   stored_children[[child$id]] <- child
   attr(catalog, "stac_children") <- stored_children
-
-  catalog
+  return(catalog)
 }
 
 
@@ -621,7 +641,7 @@ add_self_link <- function(catalog, href) {
     href = href,
     type = "application/json"
   )
-  catalog
+  return(catalog)
 }
 
 
@@ -658,7 +678,7 @@ add_root_link <- function(catalog, href) {
     href = href,
     type = "application/json"
   )
-  catalog
+  return(catalog)
 }
 
 
@@ -688,5 +708,5 @@ add_parent_link <- function(catalog, href) {
     href = href,
     type = "application/json"
   )
-  catalog
+  return(catalog)
 }

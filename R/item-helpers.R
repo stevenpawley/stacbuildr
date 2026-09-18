@@ -58,22 +58,16 @@ add_item <- function(
   parent_href = NULL,
   root_href = NULL
 ) {
-  # Validate catalog
-  if (!stac_inherits(catalog, stac_catalog)) {
-    cli::cli_abort(
-      "'catalog' must be a stac_catalog or stac_collection object"
-    )
+  if (!inherits(catalog, "stac_catalog")) {
+    cli::cli_abort("'catalog' must be a stac_catalog or stac_collection object")
   }
-
-  # Handle single item vs list of items
   is_list_of_items <- is.list(item) &&
-    !stac_inherits(item, stac_item) &&
-    all(vapply(item, stac_inherits, logical(1), class = stac_item))
-
+    !inherits(item, "stac_item") &&
+    all(vapply(item, inherits, logical(1), what = "stac_item"))
   if (is_list_of_items) {
     items_list <- item
     n_items <- length(items_list)
-  } else if (stac_inherits(item, stac_item)) {
+  } else if (inherits(item, "stac_item")) {
     items_list <- list(item)
     n_items <- 1
   } else {
@@ -81,18 +75,27 @@ add_item <- function(
       "'item' must be a stac_item object or a list of stac_item objects"
     )
   }
-
   check_duplicate_ids(
-    new_ids = vapply(items_list, function(it) it$id, character(1)),
+    new_ids = vapply(
+      items_list,
+      function(it) {
+        return(it$id)
+      },
+      character(1)
+    ),
     existing_ids = vapply(
-      attr(catalog, "stac_items") %||% list(),
-      function(it) it$id,
+      attr(
+        catalog,
+        "stac_items"
+      ) %||%
+        list(),
+      function(it) {
+        return(it$id)
+      },
       character(1)
     ),
     what = "an item"
   )
-
-  # Validate href if provided
   if (!is.null(href)) {
     if (length(href) != n_items) {
       cli::cli_abort(
@@ -100,50 +103,37 @@ add_item <- function(
       )
     }
   } else {
-    # Auto-generate hrefs (each item lives in its own subdirectory)
     href <- vapply(
       items_list,
       function(it) {
-        paste0("./", it$id, "/", it$id, ".json")
+        return(paste0("./", it$id, "/", it$id, ".json"))
       },
       character(1)
     )
   }
-
-  # Determine if catalog is a Collection
-  is_collection <- stac_inherits(catalog, stac_collection)
-
-  # Get parent and root hrefs for backlinks
+  is_collection <- inherits(catalog, "stac_collection")
   if (add_parent_links) {
     if (is.null(parent_href)) {
-      # Try to find self link
       self_link <- find_link(catalog, "self")
       parent_href <- if (!is.null(self_link)) {
         self_link$href
       } else {
-        "./catalog.json" # Placeholder
+        "./catalog.json"
       }
     }
-
     if (is.null(root_href)) {
-      # Try to find root link
       root_link <- find_link(catalog, "root")
       root_href <- if (!is.null(root_link)) {
         root_link$href
       } else {
-        parent_href # Use parent as root if no root link
+        parent_href
       }
     }
   }
-
-  # Process each item
   updated_items <- list()
-
   for (i in seq_along(items_list)) {
     current_item <- items_list[[i]]
     current_href <- href[i]
-
-    # Add item link to catalog
     catalog <- add_link(
       catalog,
       rel = "item",
@@ -151,32 +141,22 @@ add_item <- function(
       type = "application/geo+json",
       title = current_item$properties[["title"]]
     )
-
-    # Always set top-level collection field when parent is a collection
-    # (STAC 1.1 requires this whenever a collection link is present)
     if (is_collection) {
       current_item$collection <- catalog$id
     }
-
-    # Add parent links to item if requested
     if (add_parent_links) {
-      # Add parent link
       current_item <- add_link(
         current_item,
         rel = "parent",
         href = parent_href,
         type = "application/json"
       )
-
-      # Add root link
       current_item <- add_link(
         current_item,
         rel = "root",
         href = root_href,
         type = "application/json"
       )
-
-      # If parent is a collection, add collection link
       if (is_collection) {
         current_item <- add_link(
           current_item,
@@ -186,21 +166,15 @@ add_item <- function(
         )
       }
     }
-
     updated_items[[i]] <- current_item
   }
-
-  # Store items in catalog for later retrieval (e.g., by write_stac)
   stored_items <- attr(catalog, "stac_items")
   if (is.null(stored_items)) {
     stored_items <- list()
   }
-
   stored_items <- c(stored_items, updated_items)
-
   attr(catalog, "stac_items") <- stored_items
-
-  catalog
+  return(catalog)
 }
 
 
@@ -227,7 +201,7 @@ find_link <- function(stac_object, rel) {
     }
   }
 
-  NULL
+  return(NULL)
 }
 
 
@@ -267,55 +241,59 @@ find_link <- function(stac_object, rel) {
 #'
 #' @export
 remove_item <- function(catalog, item_id = NULL, href = NULL, all = FALSE) {
-  if (!stac_inherits(catalog, stac_catalog)) {
-    cli::cli_abort(
-      "'catalog' must be a stac_catalog or stac_collection object"
-    )
+  if (!inherits(catalog, "stac_catalog")) {
+    cli::cli_abort("'catalog' must be a stac_catalog or stac_collection object")
   }
-
   if (!all && is.null(item_id) && is.null(href)) {
     cli::cli_abort("Must specify 'item_id', 'href', or set 'all = TRUE'")
   }
-
   if (all) {
-    catalog$links <- Filter(function(link) link$rel != "item", catalog$links)
+    catalog$links <- Filter(
+      function(link) {
+        return(link$rel != "item")
+      },
+      catalog$links
+    )
     return(drop_stored_items(catalog, keep = character(0)))
   }
-
-  # Build a filter function
   should_keep <- function(link) {
     if (link$rel != "item") {
-      return(TRUE) # Keep non-item links
+      return(TRUE)
     }
-
-    # Check href match
     if (!is.null(href) && link$href %in% href) {
       return(FALSE)
     }
-
-    # Check item_id match (extract from href)
     if (!is.null(item_id)) {
-      # Extract potential ID from href (e.g., "./items/my-item.json" -> "my-item")
       extracted_id <- sub("\\.json$", "", basename(link$href))
       if (extracted_id %in% item_id) {
         return(FALSE)
       }
     }
-
-    TRUE
+    return(TRUE)
   }
-
   removed <- vapply(
-    Filter(function(l) !should_keep(l), catalog$links),
+    Filter(
+      function(l) {
+        return(!should_keep(l))
+      },
+      catalog$links
+    ),
     stac_id_from_link,
     character(1)
   )
-
   catalog$links <- Filter(should_keep, catalog$links)
-
   stored <- attr(catalog, "stac_items") %||% list()
-  keep <- setdiff(vapply(stored, function(it) it$id, character(1)), removed)
-  drop_stored_items(catalog, keep = keep)
+  keep <- setdiff(
+    vapply(
+      stored,
+      function(it) {
+        return(it$id)
+      },
+      character(1)
+    ),
+    removed
+  )
+  return(drop_stored_items(catalog, keep = keep))
 }
 
 # The id an item link points at, taken from the href the same way should_keep()
@@ -323,7 +301,7 @@ remove_item <- function(catalog, item_id = NULL, href = NULL, all = FALSE) {
 #
 # @keywords internal
 stac_id_from_link <- function(link) {
-  sub("\\.json$", "", basename(link$href))
+  return(sub("\\.json$", "", basename(link$href)))
 }
 
 # Keep only the stored Items whose ids are in `keep`.
@@ -340,9 +318,15 @@ drop_stored_items <- function(catalog, keep) {
     return(catalog)
   }
 
-  ids <- vapply(stored, function(it) it$id, character(1))
+  ids <- vapply(
+    stored,
+    function(it) {
+      return(it$id)
+    },
+    character(1)
+  )
   attr(catalog, "stac_items") <- stored[ids %in% keep]
-  catalog
+  return(catalog)
 }
 
 
@@ -365,23 +349,19 @@ drop_stored_items <- function(catalog, keep) {
 #'
 #' @export
 count_items <- function(catalog) {
-  if (!stac_inherits(catalog, stac_catalog)) {
-    cli::cli_abort(
-      "'catalog' must be a stac_catalog or stac_collection object"
-    )
+  if (!inherits(catalog, "stac_catalog")) {
+    cli::cli_abort("'catalog' must be a stac_catalog or stac_collection object")
   }
-
   if (is.null(catalog$links) || length(catalog$links) == 0) {
     return(0L)
   }
-
-  sum(vapply(
+  return(sum(vapply(
     catalog$links,
     function(link) {
-      link$rel == "item"
+      return(link$rel == "item")
     },
     logical(1)
-  ))
+  )))
 }
 
 
@@ -412,39 +392,49 @@ count_items <- function(catalog) {
 #'
 #' @export
 get_item_links <- function(catalog, as_dataframe = FALSE) {
-  if (!stac_inherits(catalog, stac_catalog)) {
-    cli::cli_abort(
-      "'catalog' must be a stac_catalog or stac_collection object"
-    )
+  if (!inherits(catalog, "stac_catalog")) {
+    cli::cli_abort("'catalog' must be a stac_catalog or stac_collection object")
   }
-
   if (is.null(catalog$links) || length(catalog$links) == 0) {
     return(if (as_dataframe) data.frame() else list())
   }
-
   item_links <- Filter(
     function(link) {
-      link$rel == "item"
+      return(link$rel == "item")
     },
     catalog$links
   )
-
-  if (as_dataframe && length(item_links) > 0) {
-    data.frame(
-      href = vapply(item_links, function(x) x$href, character(1)),
-      type = vapply(
-        item_links,
-        function(x) x$type %||% NA_character_,
-        character(1)
-      ),
-      title = vapply(
-        item_links,
-        function(x) x$title %||% NA_character_,
-        character(1)
-      ),
-      stringsAsFactors = FALSE
-    )
-  } else {
-    item_links
-  }
+  return(
+    if (as_dataframe && length(item_links) > 0) {
+      data.frame(
+        href = vapply(
+          item_links,
+          function(x) {
+            return(x$href)
+          },
+          character(1)
+        ),
+        type = vapply(
+          item_links,
+          function(x) {
+            return(x$type %||% NA_character_)
+          },
+          character(1)
+        ),
+        title = vapply(
+          item_links,
+          function(x) {
+            return(
+              x$title %||%
+                NA_character_
+            )
+          },
+          character(1)
+        ),
+        stringsAsFactors = FALSE
+      )
+    } else {
+      item_links
+    }
+  )
 }

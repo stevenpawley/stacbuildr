@@ -63,23 +63,36 @@ las_wave_dimensions <- c(
 # Which dimensions each LAS point data record format carries. Formats 6-10 are
 # the LAS 1.4 "extended" records, which always carry GPS time and add the scan
 # channel and class flag bytes.
-las_point_formats <- local({
-  base <- las_base_dimensions
-  ext <- c(base, "GpsTime", "ScanChannel", "ClassFlags")
-  list(
-    `0` = base,
-    `1` = c(base, "GpsTime"),
-    `2` = c(base, las_rgb_dimensions),
-    `3` = c(base, "GpsTime", las_rgb_dimensions),
-    `4` = c(base, "GpsTime", las_wave_dimensions),
-    `5` = c(base, "GpsTime", las_rgb_dimensions, las_wave_dimensions),
-    `6` = ext,
-    `7` = c(ext, las_rgb_dimensions),
-    `8` = c(ext, las_rgb_dimensions, "Infrared"),
-    `9` = c(ext, las_wave_dimensions),
-    `10` = c(ext, las_rgb_dimensions, "Infrared", las_wave_dimensions)
+las_extended_dimensions <- c(
+  las_base_dimensions,
+  "GpsTime",
+  "ScanChannel",
+  "ClassFlags"
+)
+
+las_point_formats <- list(
+  `0` = las_base_dimensions,
+  `1` = c(las_base_dimensions, "GpsTime"),
+  `2` = c(las_base_dimensions, las_rgb_dimensions),
+  `3` = c(las_base_dimensions, "GpsTime", las_rgb_dimensions),
+  `4` = c(las_base_dimensions, "GpsTime", las_wave_dimensions),
+  `5` = c(
+    las_base_dimensions,
+    "GpsTime",
+    las_rgb_dimensions,
+    las_wave_dimensions
+  ),
+  `6` = las_extended_dimensions,
+  `7` = c(las_extended_dimensions, las_rgb_dimensions),
+  `8` = c(las_extended_dimensions, las_rgb_dimensions, "Infrared"),
+  `9` = c(las_extended_dimensions, las_wave_dimensions),
+  `10` = c(
+    las_extended_dimensions,
+    las_rgb_dimensions,
+    "Infrared",
+    las_wave_dimensions
   )
-})
+)
 
 # Extra Bytes VLR data type codes, from the LAS 1.4 specification. Codes 11-30
 # described arrays and were deprecated, so they are not mapped.
@@ -116,7 +129,7 @@ lidr_dimension_names <- c(
 # and both lookups below are routinely absent: a channel may have no schema to
 # index into, and most lidR column names need no translation.
 pc_lookup <- function(table, name) {
-  if (name %in% names(table)) table[[name]] else NULL
+  return(if (name %in% names(table)) table[[name]] else NULL)
 }
 
 
@@ -172,10 +185,10 @@ schemas_from_lidr <- function(header) {
 
   schemas <- lapply(dimensions, function(name) {
     spec <- las_dimension_sizes[[name]]
-    pc_schema(name, size = as.integer(spec[[1]]), type = spec[[2]])
+    return(pc_schema(name, size = as.integer(spec[[1]]), type = spec[[2]]))
   })
 
-  c(schemas, extra_byte_schemas(header))
+  return(c(schemas, extra_byte_schemas(header)))
 }
 
 
@@ -211,7 +224,7 @@ extra_byte_schemas <- function(header) {
     )
   }
 
-  schemas
+  return(schemas)
 }
 
 
@@ -230,9 +243,9 @@ as_lidr_header <- function(x, arg = "header") {
     return(lidR::readLASheader(x))
   }
 
-  cli::cli_abort(
+  return(cli::cli_abort(
     "'{arg}' must be a LASheader, a LAS object, or a path to a LAS/LAZ file"
-  )
+  ))
 }
 
 
@@ -250,14 +263,18 @@ validate_las_signature <- function(path) {
       on.exit(close(connection))
       readBin(connection, what = "raw", n = 4L)
     },
-    error = function(e) raw()
+    error = function(e) {
+      return(raw())
+    }
   )
 
   if (!identical(signature, charToRaw("LASF"))) {
-    cli::cli_abort("Not a valid LAS/LAZ file (missing LASF signature): {.path {path}}")
+    cli::cli_abort(
+      "Not a valid LAS/LAZ file (missing LASF signature): {.path {path}}"
+    )
   }
 
-  invisible(TRUE)
+  return(invisible(TRUE))
 }
 
 
@@ -268,7 +285,7 @@ check_lidr_installed <- function() {
       "i" = "Install with: install.packages('lidR')"
     ))
   }
-  invisible(TRUE)
+  return(invisible(TRUE))
 }
 
 
@@ -280,7 +297,13 @@ header_statistics <- function(header, schemas) {
 
   positions <- stats::setNames(
     seq_along(schemas) - 1L,
-    vapply(schemas, function(s) s$name, character(1))
+    vapply(
+      schemas,
+      function(s) {
+        return(s$name)
+      },
+      character(1)
+    )
   )
 
   stats_list <- list()
@@ -300,7 +323,7 @@ header_statistics <- function(header, schemas) {
     )
   }
 
-  if (length(stats_list) == 0) NULL else stats_list
+  return(if (length(stats_list) == 0) NULL else stats_list)
 }
 
 
@@ -308,7 +331,13 @@ header_statistics <- function(header, schemas) {
 point_statistics <- function(las, schemas) {
   positions <- stats::setNames(
     seq_along(schemas) - 1L,
-    vapply(schemas, function(s) s$name, character(1))
+    vapply(
+      schemas,
+      function(s) {
+        return(s$name)
+      },
+      character(1)
+    )
   )
 
   stats_list <- list()
@@ -342,7 +371,7 @@ point_statistics <- function(las, schemas) {
     )
   }
 
-  if (length(stats_list) == 0) NULL else stats_list
+  return(if (length(stats_list) == 0) NULL else stats_list)
 }
 
 
@@ -377,11 +406,11 @@ extract_lidr_spatial_metadata <- function(header, reproject_to_wgs84 = TRUE) {
     }
   }
 
-  list(
+  return(list(
     geometry = geometry_from_sf(bbox_sf),
     bbox = bbox_from_sf(bbox_sf),
     crs = crs
-  )
+  ))
 }
 
 
@@ -404,13 +433,15 @@ datetime_from_lidr <- function(header) {
 
   date <- tryCatch(
     as.Date(doy - 1, origin = paste0(year, "-01-01")),
-    error = function(e) NULL
+    error = function(e) {
+      return(NULL)
+    }
   )
   if (is.null(date) || is.na(date)) {
     return(NULL)
   }
 
-  format(date, "%Y-%m-%dT00:00:00Z")
+  return(format(date, "%Y-%m-%dT00:00:00Z"))
 }
 
 
@@ -436,7 +467,7 @@ add_projection_metadata_lidr <- function(item, header, crs) {
 
   phb <- header@PHB
 
-  add_projection_extension(
+  return(add_projection_extension(
     item,
     code = code,
     wkt2 = wkt2,
@@ -448,7 +479,7 @@ add_projection_metadata_lidr <- function(item, header, crs) {
       phb[["Max Y"]],
       phb[["Max Z"]]
     )
-  )
+  ))
 }
 
 
@@ -640,18 +671,20 @@ item_from_lidr <- function(
     )
   }
 
-  item
+  return(item)
 }
 
 
 # lidR::density() errors on a degenerate (zero-area) extent, which a
 # single-point or single-column file can produce.
 density_from_lidr <- function(header) {
-  value <- tryCatch(lidR::density(header), error = function(e) NULL)
+  value <- tryCatch(lidR::density(header), error = function(e) {
+    return(NULL)
+  })
   if (is.null(value) || !is.finite(value)) {
     return(NULL)
   }
-  value
+  return(value)
 }
 
 
@@ -752,7 +785,9 @@ items_from_lascatalog <- function(
       },
       error = function(e) {
         failed <<- c(failed, basename(file))
-        cli::cli_warn("Failed to create item for {basename(file)}: {e$message}")
+        return(cli::cli_warn(
+          "Failed to create item for {basename(file)}: {e$message}"
+        ))
       }
     )
   }
@@ -763,5 +798,5 @@ items_from_lascatalog <- function(
     cli::cli_warn("Failed to create items for {length(failed)} file{?s}")
   }
 
-  items
+  return(items)
 }

@@ -110,10 +110,9 @@ add_table_extension <- function(
   storage_options = NULL,
   asset_key = NULL
 ) {
-  if (!stac_inherits(item, stac_item)) {
+  if (!inherits(item, "stac_item")) {
     cli::cli_abort("'item' must be a stac_item object")
   }
-
   if (
     is.null(columns) &&
       is.null(primary_geometry) &&
@@ -124,31 +123,27 @@ add_table_extension <- function(
       "At least one of 'columns', 'primary_geometry', 'row_count', or 'storage_options' must be provided"
     )
   }
-
   if (!is.null(columns)) {
     if (!is.list(columns) || length(columns) == 0) {
       cli::cli_abort(
         "'columns' must be a non-empty list of table_column objects"
       )
     }
-    not_col <- !vapply(columns, stac_inherits, logical(1), table_column)
+    not_col <- !vapply(columns, inherits, logical(1), "table_column")
     if (any(not_col)) {
       cli::cli_abort("All elements of 'columns' must be table_column objects")
     }
   }
-
   if (!is.null(primary_geometry)) {
     if (!is.character(primary_geometry) || length(primary_geometry) != 1) {
       cli::cli_abort("'primary_geometry' must be a single character string")
     }
   }
-
   if (!is.null(row_count)) {
     if (!is.numeric(row_count) || length(row_count) != 1 || row_count < 0) {
       cli::cli_abort("'row_count' must be a single non-negative number")
     }
   }
-
   if (!is.null(storage_options)) {
     if (!is.list(storage_options)) {
       cli::cli_abort("'storage_options' must be a list")
@@ -156,11 +151,10 @@ add_table_extension <- function(
     if (is.null(asset_key)) {
       cli::cli_abort(c(
         "'asset_key' must be provided when 'storage_options' is supplied.",
-        "i" = "'table:storage_options' is an asset-level field."
+        i = "'table:storage_options' is an asset-level field."
       ))
     }
   }
-
   if (!is.null(asset_key)) {
     if (!is.character(asset_key) || length(asset_key) != 1) {
       cli::cli_abort("'asset_key' must be a single character string")
@@ -169,23 +163,14 @@ add_table_extension <- function(
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
   }
-
-  # Add extension to stac_extensions if not already present
   ext_uri <- "https://stac-extensions.github.io/table/v1.2.0/schema.json"
-
   if (is.null(item$stac_extensions)) {
     item$stac_extensions <- character(0)
   }
-
   if (!ext_uri %in% item$stac_extensions) {
     item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
-
-  # table:columns, table:primary_geometry and table:row_count follow
-  # `asset_key`, as in the other add_*_extension() functions. Omitting it gives
-  # the item-level placement the Table Extension README describes.
   fields <- list()
-
   if (!is.null(columns)) {
     fields$`table:columns` <- columns
   }
@@ -195,7 +180,6 @@ add_table_extension <- function(
   if (!is.null(row_count)) {
     fields$`table:row_count` <- row_count
   }
-
   if (is.null(asset_key)) {
     for (field_name in names(fields)) {
       item$properties[[field_name]] <- fields[[field_name]]
@@ -207,15 +191,12 @@ add_table_extension <- function(
       ]]
     }
   }
-
-  # table:storage_options is always an asset-level field
   if (!is.null(storage_options)) {
-    item$assets[[
-      asset_key
-    ]]$extra_fields[["table:storage_options"]] <- storage_options
+    item$assets[[asset_key]]$extra_fields[[
+      "table:storage_options"
+    ]] <- storage_options
   }
-
-  item
+  return(item)
 }
 
 
@@ -248,47 +229,48 @@ add_table_extension <- function(
 #' col <- table_column(name = "elevation", type = "double")
 #'
 #' @export
-table_column <- new_stac_class(
-  "table_column",
-  properties = list(
-    name = new_stac_property(
-      "character",
-      validator = function(value) {
-        if (length(value) != 1L) {
-          "must be a single character string"
-        }
-      }
-    ),
-    description = new_stac_union("character", NULL),
-    type = new_stac_union("character", NULL),
-    extra_fields = new_stac_property("list", default = list())
-  ),
-  constructor = function(name, description = NULL, type = NULL, ...) {
-    if (missing(name)) {
-      cli::cli_abort("'name' is required")
-    }
-
-    new_stac_object(
-      list(),
-      name = name,
-      description = description,
-      type = type,
-      extra_fields = list(...)
-    )
+table_column <- function(name, description = NULL, type = NULL, ...) {
+  if (missing(name)) {
+    cli::cli_abort("'name' is required")
   }
-)
+  object <- list(
+    name = name,
+    description = description,
+    type = type,
+    extra_fields = list(...)
+  )
+  if (!is.character(object[["name"]])) {
+    cli::cli_abort("name must be character.")
+  }
+  if (length(object[["name"]]) != 1L) {
+    cli::cli_abort(paste("name", "must be a single character string"))
+  }
+  if (
+    !(is.character(object[["description"]]) || is.null(object[["description"]]))
+  ) {
+    cli::cli_abort("description must be character or NULL.")
+  }
+  if (!(is.character(object[["type"]]) || is.null(object[["type"]]))) {
+    cli::cli_abort("type must be character or NULL.")
+  }
+  if (!is.list(object[["extra_fields"]])) {
+    cli::cli_abort("extra_fields must be list.")
+  }
+  class(object) <- c("table_column", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
 as.list.table_column <- function(x, ...) {
-  c(
+  return(c(
     compact_nulls(list(
       name = x$name,
       description = x$description,
       type = x$type
     )),
     x$extra_fields
-  )
+  ))
 }
 
 
@@ -313,5 +295,5 @@ print.table_column <- function(x, ...) {
     ),
     styles = list(name = stac_style_id, type = stac_style_key)
   )
-  invisible(x)
+  return(invisible(x))
 }

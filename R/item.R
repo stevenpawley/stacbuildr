@@ -213,192 +213,170 @@
 #' cat(item_json)
 #'
 #' @export
-stac_item <- new_stac_class(
-  "stac_item",
-  properties = list(
-    type = new_stac_property("character", default = "Feature"),
-    stac_version = new_stac_property("character", default = "1.1.0"),
-    id = "character",
-    geometry = new_stac_property(
-      new_stac_union(stac_geometry, NULL),
-      default = NULL
-    ),
-    bbox = new_stac_property(
-      new_stac_union("numeric", NULL),
-      default = NULL
-    ),
-    properties = new_stac_property("list", default = list()),
-    links = new_stac_property(
-      "list",
-      default = list(),
-      validator = function(value) {
-        if (!all(vapply(
-          value,
-          stac_inherits,
-          logical(1),
-          class = stac_link
-        ))) {
-          "must contain only stac_link objects"
-        }
-      }
-    ),
-    assets = new_stac_property("list", default = list()),
-    stac_extensions = new_stac_property(
-      new_stac_union("character", NULL),
-      default = NULL
-    ),
-    collection = new_stac_property(
-      new_stac_union("character", NULL),
-      default = NULL
-    )
-  ),
-  constructor = function(
-    id,
-    geometry,
-    bbox = NULL,
-    datetime = NULL,
-    properties = list(),
-    assets = list(),
-    links = list(),
-    stac_version = "1.1.0",
-    type = "Feature",
-    stac_extensions = NULL,
-    collection = NULL,
-    start_datetime = NULL,
-    end_datetime = NULL,
-    ...
+stac_item <- function(
+  id,
+  geometry,
+  bbox = NULL,
+  datetime = NULL,
+  properties = list(),
+  assets = list(),
+  links = list(),
+  stac_version = "1.1.0",
+  type = "Feature",
+  stac_extensions = NULL,
+  collection = NULL,
+  start_datetime = NULL,
+  end_datetime = NULL,
+  ...
+) {
+  if (
+    !is.null(datetime) && (!is.null(start_datetime) || !is.null(end_datetime))
   ) {
-    # Resolve datetime: start/end takes precedence if both provided
-    if (
-      !is.null(datetime) && (!is.null(start_datetime) || !is.null(end_datetime))
-    ) {
-      cli::cli_warn(c(
-        "Both 'datetime' and 'start_datetime'/'end_datetime' provided.",
-        "i" = "Using 'start_datetime' and 'end_datetime'."
-      ))
-      datetime <- NULL
-    }
-
-    # Merge datetime into properties. 'datetime' is always present: the STAC
-    # Item spec requires the field even for a date range, where it is null and
-    # start_datetime/end_datetime carry the range. Assigning NULL to a list
-    # element drops it in R, so use single-bracket assignment to store a
-    # literal null.
-    props <- properties
-    if (!is.null(datetime)) {
-      props$datetime <- datetime
-    } else {
-      props["datetime"] <- list(NULL)
-      props$start_datetime <- start_datetime
-      props$end_datetime <- end_datetime
-    }
-
-    # Merge ... into properties (not top-level, unlike catalog/collection)
-    extra_props <- list(...)
-    if (length(extra_props) > 0) {
-      props <- c(props, extra_props)
-    }
-
-    props <- normalize_common_arrays(props)
-
-    new_stac_object(
-      list(),
-      type = type,
-      stac_version = stac_version,
-      id = id,
-      geometry = as_stac_geometry(geometry),
-      bbox = bbox,
-      properties = props,
-      links = normalize_links(links),
-      assets = normalize_assets(assets),
-      stac_extensions = stac_extensions,
-      collection = collection
-    )
-  },
-  validator = function(self) {
-    if (length(self$id) == 0 || nchar(self$id) == 0) {
-      return("'id' must be a non-empty string")
-    }
-    if (self$type != "Feature") {
-      return("'type' must be 'Feature'")
-    }
-
-    # geometry / bbox consistency
-    if (!is.null(self$geometry) && is.null(self$bbox)) {
-      return("'bbox' is required when 'geometry' is not NULL")
-    }
-    if (is.null(self$geometry) && !is.null(self$bbox)) {
-      return("'bbox' is prohibited when 'geometry' is NULL")
-    }
-    if (!is.null(self$bbox) && !length(self$bbox) %in% c(4, 6)) {
-      return("'bbox' must have length 4 (2D) or 6 (3D)")
-    }
-
-    # 2D bbox coordinate ranges (WGS84)
-    if (!is.null(self$bbox) && length(self$bbox) == 4L) {
-      west <- self$bbox[1]
-      east <- self$bbox[3]
-      south <- self$bbox[2]
-      north <- self$bbox[4]
-      if (west < -180 || east > 180) {
-        return(sprintf(
-          "'bbox' longitudes must be in [-180, 180] (got west = %g, east = %g)",
-          west,
-          east
-        ))
-      }
-      if (south < -90 || north > 90) {
-        return(sprintf(
-          "'bbox' latitudes must be in [-90, 90] (got south = %g, north = %g)",
-          south,
-          north
-        ))
-      }
-    }
-
-    # datetime presence
-    dt <- self$properties[["datetime"]]
-    start_dt <- self$properties[["start_datetime"]]
-    end_dt <- self$properties[["end_datetime"]]
-
-    if (is.null(dt) && !((!is.null(start_dt)) && (!is.null(end_dt)))) {
-      return(
-        "'properties' must contain 'datetime' or both 'start_datetime' and 'end_datetime'"
-      )
-    }
-
-    # RFC 3339 format checks
-    if (!is.null(dt) && !is_rfc3339(dt)) {
-      return(sprintf(
-        "'datetime' must be an RFC 3339 string (e.g. '2023-01-01T00:00:00Z'), got: '%s'",
-        dt
-      ))
-    }
-    if (!is.null(start_dt) && !is_rfc3339(start_dt)) {
-      return(sprintf(
-        "'start_datetime' must be an RFC 3339 string, got: '%s'",
-        start_dt
-      ))
-    }
-    if (!is.null(end_dt) && !is_rfc3339(end_dt)) {
-      return(sprintf(
-        "'end_datetime' must be an RFC 3339 string, got: '%s'",
-        end_dt
-      ))
-    }
-
-    # end_datetime must be >= start_datetime
-    if (!is.null(start_dt) && !is.null(end_dt) && end_dt < start_dt) {
-      return(sprintf(
-        "'end_datetime' ('%s') must be >= 'start_datetime' ('%s')",
-        end_dt,
-        start_dt
-      ))
-    }
-
-    NULL
+    cli::cli_warn(c(
+      "Both 'datetime' and 'start_datetime'/'end_datetime' provided.",
+      i = "Using 'start_datetime' and 'end_datetime'."
+    ))
+    datetime <- NULL
   }
-)
+  props <- properties
+  if (!is.null(datetime)) {
+    props$datetime <- datetime
+  } else {
+    props["datetime"] <- list(NULL)
+    props$start_datetime <- start_datetime
+    props$end_datetime <- end_datetime
+  }
+  extra_props <- list(...)
+  if (length(extra_props) > 0) {
+    props <- c(props, extra_props)
+  }
+  props <- normalize_common_arrays(props)
+  object <- list(
+    type = type,
+    stac_version = stac_version,
+    id = id,
+    geometry = as_stac_geometry(geometry),
+    bbox = bbox,
+    properties = props,
+    links = normalize_links(links),
+    assets = normalize_assets(assets),
+    stac_extensions = stac_extensions,
+    collection = collection
+  )
+  if (!is.character(object[["type"]])) {
+    cli::cli_abort("type must be character.")
+  }
+  if (!is.character(object[["stac_version"]])) {
+    cli::cli_abort("stac_version must be character.")
+  }
+  if (!is.character(object[["id"]])) {
+    cli::cli_abort("id must be character.")
+  }
+  if (
+    !(inherits(object[["geometry"]], "stac_geometry") ||
+      is.null(object[["geometry"]]))
+  ) {
+    cli::cli_abort("geometry must be stac_geometry or NULL.")
+  }
+  if (!(is.numeric(object[["bbox"]]) || is.null(object[["bbox"]]))) {
+    cli::cli_abort("bbox must be numeric or NULL.")
+  }
+  if (!is.list(object[["properties"]])) {
+    cli::cli_abort("properties must be list.")
+  }
+  if (!is.list(object[["links"]])) {
+    cli::cli_abort("links must be list.")
+  }
+  if (
+    !all(vapply(object[["links"]], inherits, logical(1), what = "stac_link"))
+  ) {
+    cli::cli_abort(paste("links", "must contain only stac_link objects"))
+  }
+  if (!is.list(object[["assets"]])) {
+    cli::cli_abort("assets must be list.")
+  }
+  if (
+    !(is.character(object[["stac_extensions"]]) ||
+      is.null(object[["stac_extensions"]]))
+  ) {
+    cli::cli_abort("stac_extensions must be character or NULL.")
+  }
+  if (
+    !(is.character(object[["collection"]]) || is.null(object[["collection"]]))
+  ) {
+    cli::cli_abort("collection must be character or NULL.")
+  }
+  if (length(object$id) == 0 || nchar(object$id) == 0) {
+    cli::cli_abort("'id' must be a non-empty string")
+  }
+  if (object$type != "Feature") {
+    cli::cli_abort("'type' must be 'Feature'")
+  }
+  if (!is.null(object$geometry) && is.null(object$bbox)) {
+    cli::cli_abort("'bbox' is required when 'geometry' is not NULL")
+  }
+  if (is.null(object$geometry) && !is.null(object$bbox)) {
+    cli::cli_abort("'bbox' is prohibited when 'geometry' is NULL")
+  }
+  if (!is.null(object$bbox) && !length(object$bbox) %in% c(4, 6)) {
+    cli::cli_abort("'bbox' must have length 4 (2D) or 6 (3D)")
+  }
+  if (!is.null(object$bbox) && length(object$bbox) == 4L) {
+    west <- object$bbox[1]
+    east <- object$bbox[3]
+    south <- object$bbox[2]
+    north <- object$bbox[4]
+    if (west < -180 || east > 180) {
+      cli::cli_abort(sprintf(
+        "'bbox' longitudes must be in [-180, 180] (got west = %g, east = %g)",
+        west,
+        east
+      ))
+    }
+    if (south < -90 || north > 90) {
+      cli::cli_abort(sprintf(
+        "'bbox' latitudes must be in [-90, 90] (got south = %g, north = %g)",
+        south,
+        north
+      ))
+    }
+  }
+  dt <- object$properties[["datetime"]]
+  start_dt <- object$properties[["start_datetime"]]
+  end_dt <- object$properties[["end_datetime"]]
+  if (is.null(dt) && !((!is.null(start_dt)) && (!is.null(end_dt)))) {
+    cli::cli_abort(
+      "'properties' must contain 'datetime' or both 'start_datetime' and 'end_datetime'"
+    )
+  }
+  if (!is.null(dt) && !is_rfc3339(dt)) {
+    cli::cli_abort(sprintf(
+      "'datetime' must be an RFC 3339 string (e.g. '2023-01-01T00:00:00Z'), got: '%s'",
+      dt
+    ))
+  }
+  if (!is.null(start_dt) && !is_rfc3339(start_dt)) {
+    cli::cli_abort(sprintf(
+      "'start_datetime' must be an RFC 3339 string, got: '%s'",
+      start_dt
+    ))
+  }
+  if (!is.null(end_dt) && !is_rfc3339(end_dt)) {
+    cli::cli_abort(sprintf(
+      "'end_datetime' must be an RFC 3339 string, got: '%s'",
+      end_dt
+    ))
+  }
+  if (!is.null(start_dt) && !is.null(end_dt) && end_dt < start_dt) {
+    cli::cli_abort(sprintf(
+      "'end_datetime' ('%s') must be >= 'start_datetime' ('%s')",
+      end_dt,
+      start_dt
+    ))
+  }
+  class(object) <- c("stac_item", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
@@ -426,7 +404,7 @@ as.list.stac_item <- function(x, ...) {
   if (!is.null(x$collection)) {
     out$collection <- x$collection
   }
-  out
+  return(out)
 }
 
 #' Print a STAC Item
@@ -497,7 +475,9 @@ print.stac_item <- function(x, ..., expand = NULL) {
         "properties",
         length(props),
         summary = stac_preview(names(props)),
-        lines = function() stac_field_lines(props),
+        lines = function() {
+          return(stac_field_lines(props))
+        },
         expanded = stac_expanded(expand, "properties")
       )
     },
@@ -505,7 +485,9 @@ print.stac_item <- function(x, ..., expand = NULL) {
       "assets",
       length(x$assets),
       summary = stac_preview(names(x$assets)),
-      lines = function() stac_asset_lines(x$assets),
+      lines = function() {
+        return(stac_asset_lines(x$assets))
+      },
       expanded = stac_expanded(expand, "assets")
     ),
     if (length(extensions) > 0) {
@@ -513,7 +495,9 @@ print.stac_item <- function(x, ..., expand = NULL) {
         "extensions",
         length(extensions),
         summary = stac_preview(stac_extension_names(extensions)),
-        lines = function() stac_extension_lines(extensions),
+        lines = function() {
+          return(stac_extension_lines(extensions))
+        },
         expanded = stac_expanded(expand, "extensions")
       )
     },
@@ -522,15 +506,19 @@ print.stac_item <- function(x, ..., expand = NULL) {
       length(x$links),
       summary = stac_preview(vapply(
         x$links,
-        function(l) l$rel,
+        function(l) {
+          return(l$rel)
+        },
         character(1)
       )),
-      lines = function() stac_link_lines(x$links),
+      lines = function() {
+        return(stac_link_lines(x$links))
+      },
       expanded = stac_expanded(expand, "links")
     )
   )
 
   stac_print_hint(sum(collapsed))
 
-  invisible(x)
+  return(invisible(x))
 }

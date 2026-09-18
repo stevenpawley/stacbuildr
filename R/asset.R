@@ -54,86 +54,163 @@
 #'   type = "image/tiff; application=geotiff; profile=cloud-optimized",
 #'   roles = c("data"),
 #'   bands = list(
-#'     list(name = "B1", "eo:common_name" = "red",
-#'          "eo:center_wavelength" = 0.665, data_type = "uint16"),
-#'     list(name = "B2", "eo:common_name" = "green",
-#'          "eo:center_wavelength" = 0.560, data_type = "uint16"),
-#'     list(name = "B3", "eo:common_name" = "blue",
-#'          "eo:center_wavelength" = 0.490, data_type = "uint16")
+#'     list(
+#'       name = "B1", "eo:common_name" = "red",
+#'       "eo:center_wavelength" = 0.665, data_type = "uint16"
+#'     ),
+#'     list(
+#'       name = "B2", "eo:common_name" = "green",
+#'       "eo:center_wavelength" = 0.560, data_type = "uint16"
+#'     ),
+#'     list(
+#'       name = "B3", "eo:common_name" = "blue",
+#'       "eo:center_wavelength" = 0.490, data_type = "uint16"
+#'     )
 #'   )
 #' )
 #'
 #' @export
-stac_asset <- new_stac_class(
-  "stac_asset",
-  properties = list(
-    href = new_stac_property("character", validator = function(value) {
-      if (length(value) != 1L || is.na(value) || !nzchar(value)) {
-        "'href' must be a non-empty string"
-      }
-    }),
-    title = new_stac_union("character", NULL),
-    description = new_stac_union("character", NULL),
-    type = new_stac_union("character", NULL),
-    roles = new_stac_union("character", NULL),
-    extra_fields = new_stac_property("list", default = list())
-  ),
-  constructor = function(
-    href,
-    title = NULL,
-    description = NULL,
-    type = NULL,
-    roles = NULL,
-    ...
-  ) {
-    if (is.list(roles)) {
-      roles <- unlist(roles, use.names = FALSE)
-    }
-    new_stac_object(
-      list(),
-      href = href,
-      title = title,
-      description = description,
-      type = type,
-      roles = roles,
-      extra_fields = normalize_common_arrays(list(...))
-    )
+stac_asset <- function(
+  href,
+  title = NULL,
+  description = NULL,
+  type = NULL,
+  roles = NULL,
+  ...
+) {
+  if (is.list(roles)) {
+    roles <- unlist(roles, use.names = FALSE)
   }
-)
+  object <- list(
+    href = href,
+    title = title,
+    description = description,
+    type = type,
+    roles = roles,
+    extra_fields = normalize_common_arrays(list(...))
+  )
 
-#'
+  # Validations
+  if (!is.character(object[["href"]])) {
+    cli::cli_abort("href must be character.")
+  }
+
+  # href must be a single, non-NA, non-empty string
+  if (
+    length(object[["href"]]) != 1 ||
+      is.na(object[["href"]]) ||
+      !nzchar(object[["href"]])
+  ) {
+    cli::cli_abort("'href' must be a single non-empty string")
+  }
+
+  # Check for non-empty titles
+  title_is_char <- is.character(object[["title"]])
+  title_is_not_null <- is.null(object[["title"]])
+  
+  if (!(title_is_char || title_is_not_null)) {
+    cli::cli_abort("title must be character or NULL.")
+  }
+
+  # Check for non-empty description
+  desc_is_char <- is.character(object[["description"]])
+  desc_is_not_null <- is.null(object[["description"]])
+
+  if (!(desc_is_char || desc_is_not_null)) {
+    cli::cli_abort("description must be character or NULL.")
+  }
+
+  # Check for non-empty type
+  type_is_char <- is.character(object[["type"]])
+  type_is_not_null <- is.null(object[["type"]])
+  
+  if (!(type_is_char || type_is_not_null)) {
+    cli::cli_abort("type must be character or NULL.")
+  }
+
+  # Check for non-empty roles
+  roles_is_char <- is.character(object[["roles"]])
+  roles_is_not_null <- is.null(object[["roles"]])
+  
+  if (!(roles_is_char || roles_is_not_null)) {
+    cli::cli_abort("roles must be character or NULL.")
+  }
+
+  # Check for non-list extra_fields
+  if (!is.list(object[["extra_fields"]])) {
+    cli::cli_abort("extra_fields must be list.")
+  }
+
+  # Assign stac_asset class
+  class(object) <- c("stac_asset", "stac_object")
+  return(object)
+}
+
+
 #' @exportS3Method
 as.list.stac_asset <- function(x, ...) {
   out <- list(href = x$href)
+
   for (field in c("title", "description", "type", "roles")) {
     value <- x[[field]]
     if (!is.null(value)) out[[field]] <- value
   }
-  normalize_common_arrays(c(out, x$extra_fields))
+
+  return(normalize_common_arrays(c(out, x$extra_fields)))
 }
 
-# Normalize legacy lists and parsed JSON at object boundaries.
+
+#' Coerce an Object to a STAC Asset
+#'
+#' Normalizes a plain list or parsed JSON into a [stac_asset()] object. 
+#'
+#' @param x An object to coerce. Can be:
+#'   * A `stac_asset` (returned unchanged).
+#'   * A named list with at least an `href` field, e.g.
+#'     `list(href = "./image.tif", title = "Image")`. Field names must match
+#'     the arguments of [stac_asset()]; unrecognized names are collected into
+#'     `extra_fields` via `...`.
+#'
+#' @return A `stac_asset` object.
+#'
+#' @details
+#' When `roles` is provided as a list (as it can be after JSON parsing), it is
+#' flattened to a character vector with [unlist()] before validation. Passing
+#' a list without an `href` field, or any non-list object other than a
+#' `stac_asset`, is an error.
+#'
+#' This function is internal; [normalize_assets()] applies it element-wise to
+#' an Item's or Collection's assets dictionary.
+#'
+#' @seealso [stac_asset()]
+#'
+#' @noRd
 as_stac_asset <- function(x) {
-  if (stac_inherits(x, stac_asset)) {
+  if (inherits(x, "stac_asset")) {
     return(x)
   }
+
   if (!is.list(x) || is.null(x[["href"]])) {
     cli::cli_abort(c(
       "'asset' must be a stac_asset or a list with an 'href' field",
-      "i" = "Use stac_asset() to build one."
+      i = "Use stac_asset() to build one."
     ))
   }
+
   if (!is.null(x[["roles"]])) {
     x[["roles"]] <- unlist(x[["roles"]], use.names = FALSE)
   }
-  do.call(stac_asset, x)
+
+  return(do.call(stac_asset, x))
 }
+
 
 normalize_assets <- function(x) {
   if (is.null(x)) {
     return(NULL)
   }
-  lapply(x, as_stac_asset)
+
+  return(lapply(x, as_stac_asset))
 }
 
 
@@ -157,9 +234,11 @@ print.stac_asset <- function(x, ..., expand = NULL) {
   if (!is.null(x$title)) {
     stac_print_field("title", x$title)
   }
+
   if (!is.null(x$type)) {
     stac_print_field("type", x$type, stac_style_key)
   }
+
   if (!is.null(x$roles)) {
     stac_print_field(
       "roles",
@@ -169,17 +248,21 @@ print.stac_asset <- function(x, ..., expand = NULL) {
       )
     )
   }
+
   if (!is.null(x$description)) {
     stac_print_field("description", x$description)
   }
 
   fields <- x$extra_fields
+
   collapsed <- if (length(fields) > 0) {
     stac_print_section(
       "fields",
       length(fields),
       summary = stac_preview(names(fields)),
-      lines = function() stac_field_lines(fields),
+      lines = function() {
+        return(stac_field_lines(fields))
+      },
       expanded = stac_expanded(expand, "fields")
     )
   } else {
@@ -188,7 +271,7 @@ print.stac_asset <- function(x, ..., expand = NULL) {
 
   stac_print_hint(sum(collapsed))
 
-  invisible(x)
+  return(invisible(x))
 }
 
 
@@ -240,7 +323,7 @@ add_asset <- function(
   roles = NULL,
   ...
 ) {
-  if (!stac_inherits(item, stac_item)) {
+  if (!inherits(item, "stac_item")) {
     cli::cli_abort("'item' must be a stac_item object")
   }
 
@@ -248,11 +331,9 @@ add_asset <- function(
     cli::cli_abort("'key' is required and must be a non-empty string")
   }
 
-  # If an asset object is provided, validate it
   if (!is.null(asset)) {
     asset <- as_stac_asset(asset)
   } else {
-    # Alternatively, create an asset from the provided fields
     asset <- stac_asset(
       href = href,
       title = title,
@@ -263,12 +344,10 @@ add_asset <- function(
     )
   }
 
-  # Initialize the assets list if it doesn't exist in the item
   if (is.null(item$assets)) {
     item$assets <- list()
   }
 
-  # Assign the asset to the specified key in the item's assets
   item$assets[[key]] <- asset
 
   return(item)

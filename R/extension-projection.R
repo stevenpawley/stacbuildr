@@ -113,10 +113,9 @@ add_projection_extension <- function(
   transform = NULL,
   asset_key = NULL
 ) {
-  if (!stac_inherits(item, stac_item)) {
+  if (!inherits(item, "stac_item")) {
     cli::cli_abort("'item' must be a stac_item object")
   }
-
   supplied <- list(
     code = code,
     wkt2 = wkt2,
@@ -128,68 +127,54 @@ add_projection_extension <- function(
     transform = transform
   )
   supplied <- Filter(Negate(is.null), supplied)
-
   if (length(supplied) == 0) {
     cli::cli_abort(c(
       "At least one projection field must be provided.",
-      "i" = "Supply one or more of {.arg code}, {.arg wkt2}, {.arg projjson},
-             {.arg geometry}, {.arg bbox}, {.arg centroid}, {.arg shape} or
-             {.arg transform}."
+      i = "Supply one or more of {.arg code}, {.arg wkt2}, {.arg projjson},\n             {.arg geometry}, {.arg bbox}, {.arg centroid}, {.arg shape} or\n             {.arg transform}."
     ))
   }
-
   if (!is.null(code)) {
     if (!is.character(code) || length(code) != 1 || !nzchar(code)) {
       cli::cli_abort("'code' must be a single non-empty character string")
     }
-    # v2.0.0 replaced the bare-integer `proj:epsg` with an authority-qualified
-    # `proj:code`, so a lone number is the mistake to expect here.
     if (!grepl("^[A-Za-z][A-Za-z0-9_-]*:[A-Za-z0-9_-]+$", code)) {
       cli::cli_abort(c(
         "'code' must be an {.val AUTHORITY:CODE} string, not {.val {code}}.",
-        "i" = "{.field proj:code} replaced the deprecated {.field proj:epsg} in
-               v2.0.0 of the extension, so the authority is required.",
-        ">" = "Use {.val EPSG:{code}} for an EPSG code, or {.val OGC:CRS84} for
-               WGS84 longitude/latitude."
+        i = "{.field proj:code} replaced the deprecated {.field proj:epsg} in\n               v2.0.0 of the extension, so the authority is required.",
+        `>` = "Use {.val EPSG:{code}} for an EPSG code, or {.val OGC:CRS84} for\n               WGS84 longitude/latitude."
       ))
     }
   }
-
   if (!is.null(wkt2)) {
     if (!is.character(wkt2) || length(wkt2) != 1 || !nzchar(wkt2)) {
       cli::cli_abort("'wkt2' must be a single non-empty character string")
     }
   }
-
   if (!is.null(projjson)) {
     if (!is.list(projjson) || length(projjson) == 0) {
       cli::cli_abort("'projjson' must be a non-empty list")
     }
   }
-
   if (!is.null(geometry)) {
     geometry <- as_stac_geometry(geometry)
   }
-
   if (!is.null(bbox)) {
     if (!is.numeric(bbox) || !length(bbox) %in% c(4L, 6L)) {
       cli::cli_abort(c(
         "'bbox' must be a numeric vector of length 4 or 6.",
-        "i" = "Use 4 values for 2D data (xmin, ymin, xmax, ymax) and 6 for 3D
-               (xmin, ymin, zmin, xmax, ymax, zmax)."
+        i = "Use 4 values for 2D data (xmin, ymin, xmax, ymax) and 6 for 3D\n               (xmin, ymin, zmin, xmax, ymax, zmax)."
       ))
     }
     if (anyNA(bbox)) {
       cli::cli_abort("'bbox' must not contain missing values")
     }
   }
-
   if (!is.null(centroid)) {
     centroid <- as.list(centroid)
     if (!all(c("lat", "lon") %in% names(centroid))) {
       cli::cli_abort(c(
         "'centroid' must have 'lat' and 'lon' elements.",
-        "i" = "For example: {.code c(lat = 51.05, lon = -114.07)}."
+        i = "For example: {.code c(lat = 51.05, lon = -114.07)}."
       ))
     }
     centroid <- list(
@@ -202,11 +187,10 @@ add_projection_extension <- function(
     if (abs(centroid$lat) > 90 || abs(centroid$lon) > 180) {
       cli::cli_abort(c(
         "'centroid' must be in WGS84 degrees.",
-        "i" = "'lat' must be within [-90, 90] and 'lon' within [-180, 180]."
+        i = "'lat' must be within [-90, 90] and 'lon' within [-180, 180]."
       ))
     }
   }
-
   if (!is.null(shape)) {
     if (!is.numeric(shape) || length(shape) != 2 || anyNA(shape)) {
       cli::cli_abort("'shape' must be a numeric vector of length 2")
@@ -214,26 +198,21 @@ add_projection_extension <- function(
     if (any(shape <= 0) || any(shape != round(shape))) {
       cli::cli_abort(c(
         "'shape' must be two positive whole numbers.",
-        "i" = "The order is {.code c(rows, columns)}: height first."
+        i = "The order is {.code c(rows, columns)}: height first."
       ))
     }
   }
-
   if (!is.null(transform)) {
     if (!is.numeric(transform) || !length(transform) %in% c(6L, 9L)) {
       cli::cli_abort(c(
         "'transform' must be a numeric vector of length 6 or 9.",
-        "i" = "The first six values are
-               {.code c(xscale, rowrot, xmin, colrot, yscale, ymax)}; the
-               remaining three are the constant bottom row
-               {.code c(0, 0, 1)}."
+        i = "The first six values are\n               {.code c(xscale, rowrot, xmin, colrot, yscale, ymax)}; the\n               remaining three are the constant bottom row\n               {.code c(0, 0, 1)}."
       ))
     }
     if (anyNA(transform)) {
       cli::cli_abort("'transform' must not contain missing values")
     }
   }
-
   if (!is.null(asset_key)) {
     if (!is.character(asset_key) || length(asset_key) != 1) {
       cli::cli_abort("'asset_key' must be a single character string")
@@ -242,20 +221,13 @@ add_projection_extension <- function(
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
   }
-
   ext_uri <- "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
-
   if (is.null(item$stac_extensions)) {
     item$stac_extensions <- character(0)
   }
-
   if (!ext_uri %in% item$stac_extensions) {
     item$stac_extensions <- c(item$stac_extensions, ext_uri)
   }
-
-  # The numeric fields are JSON arrays, and terra hands back named vectors
-  # (an extent carries xmin/ymin/xmax/ymax names), so names are dropped here
-  # rather than left to the writer to ignore.
   fields <- list()
   if (!is.null(code)) {
     fields$`proj:code` <- code
@@ -281,7 +253,6 @@ add_projection_extension <- function(
   if (!is.null(transform)) {
     fields$`proj:transform` <- unname(transform)
   }
-
   if (is.null(asset_key)) {
     for (field_name in names(fields)) {
       item$properties[[field_name]] <- fields[[field_name]]
@@ -293,6 +264,5 @@ add_projection_extension <- function(
       ]]
     }
   }
-
-  item
+  return(item)
 }

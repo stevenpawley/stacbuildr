@@ -15,14 +15,14 @@ item_row <- function(item) {
     names(props)
   )
 
-  c(
+  return(c(
     list(
       id = item$id,
       collection = item$collection %||% NA_character_
     ),
     props[lead],
     props[setdiff(names(props), lead)]
-  )
+  ))
 }
 
 # Bind rows that may not share names, filling the gaps with NA. A column whose
@@ -32,21 +32,25 @@ rows_to_df <- function(rows) {
   cols <- unique(unlist(lapply(rows, names)))
 
   out <- lapply(cols, function(nm) {
-    vals <- lapply(rows, function(r) if (is.null(r[[nm]])) NA else r[[nm]])
+    vals <- lapply(rows, function(r) {
+      return(if (is.null(r[[nm]])) NA else r[[nm]])
+    })
     simple <- all(vapply(
       vals,
-      function(v) is.atomic(v) && length(v) == 1L,
+      function(v) {
+        return(is.atomic(v) && length(v) == 1L)
+      },
       logical(1)
     ))
-    if (simple) unlist(vals, use.names = FALSE) else I(vals)
+    return(if (simple) unlist(vals, use.names = FALSE) else I(vals))
   })
 
   names(out) <- cols
-  structure(
+  return(structure(
     out,
     class = "data.frame",
     row.names = seq_along(rows)
-  )
+  ))
 }
 
 # The items of a catalog, or NULL. Kept in one place so every method below
@@ -66,7 +70,7 @@ catalog_items <- function(x, resolve, base_path) {
     ))
   }
 
-  items
+  return(items)
 }
 
 # An Item's geometry as a length-1 sfc. STAC types an Item's geometry as
@@ -77,13 +81,13 @@ item_sfc <- function(item) {
   if (is.null(item$geometry)) {
     return(sf::st_sfc(sf::st_geometrycollection(), crs = 4326))
   }
-  geojsonsf::geojson_sfc(
+  return(geojsonsf::geojson_sfc(
     jsonlite::toJSON(
       stac_json_value(item$geometry),
       auto_unbox = TRUE,
       digits = 15
     )
-  )
+  ))
 }
 
 
@@ -111,7 +115,7 @@ item_sfc <- function(item) {
 #'
 #' @exportS3Method
 length.stac_catalog <- function(x) {
-  count_items(x)
+  return(count_items(x))
 }
 
 
@@ -186,7 +190,7 @@ as.data.frame.stac_catalog <- function(
     ))
   }
 
-  rows_to_df(lapply(items, item_row))
+  return(rows_to_df(lapply(items, item_row)))
 }
 
 #' @rdname as.data.frame.stac_catalog
@@ -199,7 +203,7 @@ as.data.frame.stac_item <- function(
   optional = FALSE,
   ...
 ) {
-  rows_to_df(list(item_row(x)))
+  return(rows_to_df(list(item_row(x))))
 }
 
 
@@ -268,7 +272,7 @@ st_as_sf.stac_catalog <- function(
 
   df <- rows_to_df(lapply(items, item_row))
   geometry <- do.call(c, lapply(items, item_sfc))
-  sf::st_sf(df, geometry = geometry)
+  return(sf::st_sf(df, geometry = geometry))
 }
 
 #' @rdname st_as_sf.stac_catalog
@@ -276,7 +280,7 @@ st_as_sf.stac_catalog <- function(
 #'
 #' @exportS3Method
 st_as_sf.stac_item <- function(x, ...) {
-  sf::st_sf(rows_to_df(list(item_row(x))), geometry = item_sfc(x))
+  return(sf::st_sf(rows_to_df(list(item_row(x))), geometry = item_sfc(x)))
 }
 
 
@@ -320,7 +324,7 @@ NULL
 #'
 #' @exportS3Method
 st_geometry.stac_item <- function(obj, ...) {
-  item_sfc(obj)
+  return(item_sfc(obj))
 }
 
 #' @rdname stac_item_sf_accessors
@@ -340,7 +344,7 @@ st_bbox.stac_item <- function(obj, ...) {
       crs = sf::st_crs(4326)
     ))
   }
-  sf::st_bbox(item_sfc(obj))
+  return(sf::st_bbox(item_sfc(obj)))
 }
 
 #' @rdname stac_item_sf_accessors
@@ -348,7 +352,7 @@ st_bbox.stac_item <- function(obj, ...) {
 #'
 #' @exportS3Method
 st_crs.stac_item <- function(x, ...) {
-  sf::st_crs(4326)
+  return(sf::st_crs(4326))
 }
 
 
@@ -397,7 +401,7 @@ st_crs.stac_item <- function(x, ...) {
 #' @export
 `[.stac_catalog` <- function(x, i) {
   items <- catalog_items(x, resolve = FALSE, base_path = ".")
-  items[stac_item_index(items, i, multiple = TRUE)]
+  return(items[stac_item_index(items, i, multiple = TRUE)])
 }
 
 #' @rdname sub-.stac_catalog
@@ -407,7 +411,7 @@ st_crs.stac_item <- function(x, ...) {
 `[[.stac_catalog` <- function(x, i) {
   items <- catalog_items(x, resolve = FALSE, base_path = ".")
   idx <- stac_item_index(items, i, multiple = FALSE)
-  items[[idx]]
+  return(items[[idx]])
 }
 
 # Resolve a subsetting index against a list of Items, allowing ids as well as
@@ -417,7 +421,13 @@ stac_item_index <- function(items, i, multiple) {
     return(i)
   }
 
-  ids <- vapply(items, function(it) it$id, character(1))
+  ids <- vapply(
+    items,
+    function(it) {
+      return(it$id)
+    },
+    character(1)
+  )
   idx <- match(i, ids)
 
   if (anyNA(idx)) {
@@ -435,5 +445,5 @@ stac_item_index <- function(items, i, multiple) {
     cli::cli_abort("Subscript must select exactly one item.")
   }
 
-  idx
+  return(idx)
 }

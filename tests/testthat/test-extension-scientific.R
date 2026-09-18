@@ -65,27 +65,6 @@ test_that("scientific_publication errors when citation is not a single string", 
   )
 })
 
-test_that("scientific_publication remains valid when properties are modified", {
-  pub <- scientific_publication(doi = "10.1000/abc456")
-
-  expect_error(
-    pub$doi <- "https://doi.org/10.1000/abc456",
-    "not a URL"
-  )
-  expect_error(
-    pub$doi <- c("10.1000/a", "10.1000/b"),
-    "single character string"
-  )
-  expect_error(
-    pub$citation <- c("a", "b"),
-    "single character string"
-  )
-  expect_error(
-    pub$doi <- NULL,
-    "At least one of @doi or @citation"
-  )
-})
-
 
 # --- add_scientific_extension() ---
 

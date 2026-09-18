@@ -212,93 +212,56 @@
 #' cat(collection_json)
 #'
 #' @export
-stac_collection <- new_stac_class(
-  "stac_collection",
-  parent = stac_catalog,
-  properties = list(
-    license = "character",
-    extent = Extent,
-    keywords = new_stac_property(
-      new_stac_union("character", NULL),
-      default = NULL
-    ),
-    providers = new_stac_property(
-      new_stac_union("list", NULL),
-      default = NULL,
-      validator = function(value) {
-        if (
-          !is.null(value) &&
-            !all(vapply(
-              value,
-              stac_inherits,
-              logical(1),
-              class = stac_provider
-            ))
-        ) {
-          "must contain only stac_provider objects"
-        }
-      }
-    ),
-    summaries = new_stac_property("any", default = NULL),
-    assets = new_stac_property(
-      new_stac_union("list", NULL),
-      default = NULL
-    )
-  ),
-  constructor = function(
-    id,
-    description,
-    license,
-    extent,
-    title = NULL,
-    stac_version = "1.1.0",
-    type = "Collection",
-    stac_extensions = NULL,
-    keywords = NULL,
-    providers = NULL,
-    links = list(),
-    summaries = NULL,
-    assets = NULL,
-    conformsTo = NULL,
-    ...
-  ) {
-    # "proprietary" was deprecated in STAC 1.1.0; guide users to "other"
-    if (identical(license, "proprietary")) {
-      cli::cli_inform(c(
-        "'proprietary' is deprecated as a license identifier in STAC 1.1.0.",
-        "i" = paste(
-          "Use 'other' instead, and add a link with rel='license' pointing",
-          "to the license document."
-        )
-      ))
-    }
-
-    # Accept a plain list for backwards compatibility, converting to Extent
-    if (!stac_inherits(extent, Extent)) {
-      if (
-        !is.list(extent) || !all(c("spatial", "temporal") %in% names(extent))
-      ) {
-        cli::cli_abort(
-          "'extent' must be an Extent object (from stac_extent()) or a list with 'spatial' and 'temporal' elements"
-        )
-      }
-      extent <- Extent(
-        spatial = SpatialExtent(bbox = extent$spatial$bbox),
-        temporal = TemporalExtent(interval = extent$temporal$interval)
+stac_collection <- function(
+  id,
+  description,
+  license,
+  extent,
+  title = NULL,
+  stac_version = "1.1.0",
+  type = "Collection",
+  stac_extensions = NULL,
+  keywords = NULL,
+  providers = NULL,
+  links = list(),
+  summaries = NULL,
+  assets = NULL,
+  conformsTo = NULL,
+  ...
+) {
+  if (identical(license, "proprietary")) {
+    cli::cli_inform(c(
+      "'proprietary' is deprecated as a license identifier in STAC 1.1.0.",
+      i = paste(
+        "Use 'other' instead, and add a link with rel='license' pointing",
+        "to the license document."
+      )
+    ))
+  }
+  if (!inherits(extent, "Extent")) {
+    if (!is.list(extent) || !all(c("spatial", "temporal") %in% names(extent))) {
+      cli::cli_abort(
+        "'extent' must be an Extent object (from stac_extent()) or a list with 'spatial' and 'temporal' elements"
       )
     }
-    new_stac_object(
-      stac_catalog(
-        id = id,
-        description = description,
-        title = title,
-        stac_version = stac_version,
-        type = type,
-        stac_extensions = stac_extensions,
-        conformsTo = conformsTo,
-        links = links,
-        ...
-      ),
+    extent <- Extent(
+      spatial = SpatialExtent(bbox = extent$spatial$bbox),
+      temporal = TemporalExtent(interval = extent$temporal$interval)
+    )
+  }
+  object <- c(
+    unclass(stac_catalog(
+      id = id,
+      description = description,
+      title = title,
+      stac_version = stac_version,
+      type = type,
+      stac_extensions = stac_extensions,
+      conformsTo = conformsTo,
+      links = links,
+      ...
+    )),
+    list(
       license = license,
       extent = extent,
       keywords = keywords,
@@ -306,17 +269,45 @@ stac_collection <- new_stac_class(
       summaries = as_stac_summaries(summaries),
       assets = normalize_assets(assets)
     )
-  },
-  validator = function(self) {
-    if (length(self$license) == 0 || nchar(self$license) == 0) {
-      return("'license' must be a non-empty string")
-    }
-    if (self$type != "Collection") {
-      return("'type' must be 'Collection'")
-    }
-    NULL
+  )
+  if (!is.character(object[["license"]])) {
+    cli::cli_abort("license must be character.")
   }
-)
+  if (!inherits(object[["extent"]], "Extent")) {
+    cli::cli_abort("extent must be Extent.")
+  }
+  if (!(is.character(object[["keywords"]]) || is.null(object[["keywords"]]))) {
+    cli::cli_abort("keywords must be character or NULL.")
+  }
+  if (!(is.list(object[["providers"]]) || is.null(object[["providers"]]))) {
+    cli::cli_abort("providers must be list or NULL.")
+  }
+  if (
+    !is.null(object[["providers"]]) &&
+      !all(vapply(
+        object[["providers"]],
+        inherits,
+        logical(1),
+        what = "stac_provider"
+      ))
+  ) {
+    cli::cli_abort(paste(
+      "providers",
+      "must contain only stac_provider objects"
+    ))
+  }
+  if (!(is.list(object[["assets"]]) || is.null(object[["assets"]]))) {
+    cli::cli_abort("assets must be list or NULL.")
+  }
+  if (length(object$license) == 0 || nchar(object$license) == 0) {
+    cli::cli_abort("'license' must be a non-empty string")
+  }
+  if (object$type != "Collection") {
+    cli::cli_abort("'type' must be 'Collection'")
+  }
+  class(object) <- c("stac_collection", "stac_catalog", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
@@ -354,7 +345,7 @@ as.list.stac_collection <- function(x, ...) {
   if (length(x$extra_fields) > 0) {
     out <- c(out, stac_json_value(x$extra_fields))
   }
-  out
+  return(out)
 }
 
 #' Print a STAC Collection
@@ -423,10 +414,14 @@ print.stac_collection <- function(x, ..., expand = NULL) {
         length(providers),
         summary = stac_preview(vapply(
           providers,
-          function(p) p$name,
+          function(p) {
+            return(p$name)
+          },
           character(1)
         )),
-        lines = function() stac_provider_lines(providers),
+        lines = function() {
+          return(stac_provider_lines(providers))
+        },
         expanded = stac_expanded(expand, "providers")
       )
     },
@@ -435,7 +430,9 @@ print.stac_collection <- function(x, ..., expand = NULL) {
         "summaries",
         length(summaries),
         summary = stac_preview(names(summaries)),
-        lines = function() stac_field_lines(summaries),
+        lines = function() {
+          return(stac_field_lines(summaries))
+        },
         expanded = stac_expanded(expand, "summaries")
       )
     },
@@ -444,7 +441,9 @@ print.stac_collection <- function(x, ..., expand = NULL) {
         "assets",
         length(assets),
         summary = stac_preview(names(assets)),
-        lines = function() stac_asset_lines(assets),
+        lines = function() {
+          return(stac_asset_lines(assets))
+        },
         expanded = stac_expanded(expand, "assets")
       )
     },
@@ -453,7 +452,9 @@ print.stac_collection <- function(x, ..., expand = NULL) {
         "extensions",
         length(extensions),
         summary = stac_preview(stac_extension_names(extensions)),
-        lines = function() stac_extension_lines(extensions),
+        lines = function() {
+          return(stac_extension_lines(extensions))
+        },
         expanded = stac_expanded(expand, "extensions")
       )
     },
@@ -462,10 +463,14 @@ print.stac_collection <- function(x, ..., expand = NULL) {
       length(x$links),
       summary = stac_preview(vapply(
         x$links,
-        function(l) l$rel,
+        function(l) {
+          return(l$rel)
+        },
         character(1)
       )),
-      lines = function() stac_link_lines(x$links),
+      lines = function() {
+        return(stac_link_lines(x$links))
+      },
       expanded = stac_expanded(expand, "links")
     ),
     if (length(children) > 0) {
@@ -473,7 +478,9 @@ print.stac_collection <- function(x, ..., expand = NULL) {
         "children",
         length(children),
         summary = stac_preview(names(children)),
-        lines = function() stac_child_lines(children),
+        lines = function() {
+          return(stac_child_lines(children))
+        },
         expanded = stac_expanded(expand, "children")
       )
     },
@@ -481,8 +488,16 @@ print.stac_collection <- function(x, ..., expand = NULL) {
       stac_print_section(
         "items",
         length(items),
-        summary = stac_preview(vapply(items, function(i) i$id, character(1))),
-        lines = function() stac_item_lines(items),
+        summary = stac_preview(vapply(
+          items,
+          function(i) {
+            return(i$id)
+          },
+          character(1)
+        )),
+        lines = function() {
+          return(stac_item_lines(items))
+        },
         expanded = stac_expanded(expand, "items")
       )
     }
@@ -490,7 +505,7 @@ print.stac_collection <- function(x, ..., expand = NULL) {
 
   stac_print_hint(sum(collapsed))
 
-  invisible(x)
+  return(invisible(x))
 }
 
 
@@ -535,10 +550,10 @@ print.stac_collection <- function(x, ..., expand = NULL) {
 #'
 #' @export
 stac_extent <- function(spatial_bbox, temporal_interval) {
-  Extent(
+  return(Extent(
     spatial = SpatialExtent(bbox = spatial_bbox),
     temporal = TemporalExtent(interval = temporal_interval)
-  )
+  ))
 }
 
 
@@ -567,45 +582,50 @@ stac_extent <- function(spatial_bbox, temporal_interval) {
 #' provider$roles
 #'
 #' @export
-stac_provider <- new_stac_class(
-  "stac_provider",
-  properties = list(
-    name = new_stac_property(
-      "character",
-      validator = function(value) {
-        if (length(value) != 1L || is.na(value) || !nzchar(value)) {
-          "must be a non-empty string"
-        }
-      }
-    ),
-    description = new_stac_union("character", NULL),
-    roles = new_stac_property(
-      new_stac_union("character", NULL),
-      validator = function(value) {
-        invalid <- setdiff(
-          value %||% character(0),
-          c("producer", "licensor", "processor", "host")
-        )
-        if (length(invalid) > 0) {
-          sprintf("contains invalid roles: %s", paste(invalid, collapse = ", "))
-        }
-      }
-    ),
-    url = new_stac_union("character", NULL)
-  ),
-  constructor = function(name, description = NULL, roles = NULL, url = NULL) {
-    if (is.list(roles)) {
-      roles <- unlist(roles, use.names = FALSE)
-    }
-    new_stac_object(
-      list(),
-      name = name,
-      description = description,
-      roles = roles,
-      url = url
-    )
+stac_provider <- function(name, description = NULL, roles = NULL, url = NULL) {
+  if (is.list(roles)) {
+    roles <- unlist(roles, use.names = FALSE)
   }
-)
+  object <- list(
+    name = name,
+    description = description,
+    roles = roles,
+    url = url
+  )
+  if (!is.character(object[["name"]])) {
+    cli::cli_abort("name must be character.")
+  }
+  if (
+    length(object[["name"]]) != 1L ||
+      is.na(object[["name"]]) ||
+      !nzchar(object[["name"]])
+  ) {
+    cli::cli_abort(paste("name", "must be a non-empty string"))
+  }
+  if (
+    !(is.character(object[["description"]]) || is.null(object[["description"]]))
+  ) {
+    cli::cli_abort("description must be character or NULL.")
+  }
+  if (!(is.character(object[["roles"]]) || is.null(object[["roles"]]))) {
+    cli::cli_abort("roles must be character or NULL.")
+  }
+  invalid <- setdiff(
+    object[["roles"]] %||% character(0),
+    c("producer", "licensor", "processor", "host")
+  )
+  if (length(invalid) > 0) {
+    cli::cli_abort(paste(
+      "roles",
+      sprintf("contains invalid roles: %s", paste(invalid, collapse = ", "))
+    ))
+  }
+  if (!(is.character(object[["url"]]) || is.null(object[["url"]]))) {
+    cli::cli_abort("url must be character or NULL.")
+  }
+  class(object) <- c("stac_provider", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
@@ -617,23 +637,23 @@ as.list.stac_provider <- function(x, ...) {
       out[[field]] <- if (field == "roles") as_json_array(value) else value
     }
   }
-  out
+  return(out)
 }
 
 as_stac_provider <- function(x) {
-  if (stac_inherits(x, stac_provider)) {
+  if (inherits(x, "stac_provider")) {
     return(x)
   }
   if (!is.list(x) || is.null(x$name)) {
     cli::cli_abort(c(
       "'provider' must be a stac_provider or a list with a 'name' field.",
-      "i" = "Use stac_provider() to build one."
+      i = "Use stac_provider() to build one."
     ))
   }
   if (!is.null(x$roles)) {
     x$roles <- unlist(x$roles, use.names = FALSE)
   }
-  do.call(stac_provider, x)
+  return(do.call(stac_provider, x))
 }
 
 normalize_providers <- function(x) {
@@ -643,7 +663,7 @@ normalize_providers <- function(x) {
   if (!is.list(x)) {
     cli::cli_abort("'providers' must be a list of provider objects.")
   }
-  lapply(x, as_stac_provider)
+  return(lapply(x, as_stac_provider))
 }
 
 
@@ -677,7 +697,7 @@ print.stac_provider <- function(x, ...) {
     stac_print_field("description", x$description)
   }
 
-  invisible(x)
+  return(invisible(x))
 }
 
 
@@ -707,35 +727,30 @@ print.stac_provider <- function(x, ...) {
 #' )
 #'
 #' @export
-stac_summaries <- new_stac_class(
-  "stac_summaries",
-  properties = list(
-    extra_fields = new_stac_property("list", default = list())
-  ),
-  constructor = function(...) {
-    # Atomic summaries represent sets of values and must remain JSON arrays.
-    summaries <- lapply(list(...), as_json_array)
-    new_stac_object(
-      list(),
-      extra_fields = summaries
-    )
+stac_summaries <- function(...) {
+  summaries <- lapply(list(...), as_json_array)
+  object <- list(extra_fields = summaries)
+  if (!is.list(object[["extra_fields"]])) {
+    cli::cli_abort("extra_fields must be list.")
   }
-)
+  class(object) <- c("stac_summaries", "stac_object")
+  return(object)
+}
 
 #'
 #' @exportS3Method
 as.list.stac_summaries <- function(x, ...) {
-  x$extra_fields
+  return(x$extra_fields)
 }
 
 as_stac_summaries <- function(x) {
-  if (is.null(x) || stac_inherits(x, stac_summaries)) {
+  if (is.null(x) || inherits(x, "stac_summaries")) {
     return(x)
   }
   if (!is.list(x)) {
     cli::cli_abort("'summaries' must be a stac_summaries object or named list")
   }
-  do.call(stac_summaries, x)
+  return(do.call(stac_summaries, x))
 }
 
 
@@ -768,7 +783,7 @@ print.stac_summaries <- function(x, ...) {
     )
   }
 
-  invisible(x)
+  return(invisible(x))
 }
 
 
@@ -820,8 +835,10 @@ print.stac_summaries <- function(x, ...) {
 #'   bbox = c(-121, 47, -119, 49),
 #'   datetime = "2023-07-01T00:00:00Z"
 #' )
-#' item <- add_asset(item, key = "red",
-#'   href = "red.tif", type = "image/tiff", roles = "data", title = "Red Band")
+#' item <- add_asset(item,
+#'   key = "red",
+#'   href = "red.tif", type = "image/tiff", roles = "data", title = "Red Band"
+#' )
 #'
 #' collection <- add_item(collection, item)
 #' collection <- add_item_assets(collection)
@@ -829,19 +846,18 @@ print.stac_summaries <- function(x, ...) {
 #'
 #' @export
 add_item_assets <- function(collection) {
-  if (!stac_inherits(collection, stac_collection)) {
+  if (!inherits(collection, "stac_collection")) {
     cli::cli_abort("'collection' must be a stac_collection object")
   }
-
   items <- attr(collection, "stac_items")
   if (is.null(items) || length(items) == 0) {
     cli::cli_abort(
       "Collection has no items - add items with add_item() before calling add_item_assets()"
     )
   }
-
-  all_keys <- unique(unlist(lapply(items, function(item) names(item$assets))))
-
+  all_keys <- unique(unlist(lapply(items, function(item) {
+    return(names(item$assets))
+  })))
   item_assets <- lapply(stats::setNames(all_keys, all_keys), function(key) {
     for (item in items) {
       asset <- item$assets[[key]]
@@ -860,21 +876,16 @@ add_item_assets <- function(collection) {
         item_asset <- c(item_asset, asset$extra_fields)
         if (!is.null(item_asset$bands)) {
           item_asset$bands <- lapply(item_asset$bands, function(band) {
-            band[setdiff(names(band), "statistics")]
+            return(band[setdiff(names(band), "statistics")])
           })
         }
         return(item_asset)
       }
     }
-    NULL
+    return(NULL)
   })
-
   item_assets <- Filter(Negate(is.null), item_assets)
-
   collection$extra_fields[["item_assets"]] <- item_assets
-
-  # `item_assets` moved into the Collection spec in STAC 1.1.0, which
-  # deprecated the extension. Only declare it for older collections.
   if (utils::compareVersion(collection$stac_version, "1.1.0") < 0) {
     ext_uri <- "https://stac-extensions.github.io/item-assets/v1.0.0/schema.json"
     if (
@@ -884,6 +895,5 @@ add_item_assets <- function(collection) {
       collection$stac_extensions <- c(collection$stac_extensions, ext_uri)
     }
   }
-
-  collection
+  return(collection)
 }

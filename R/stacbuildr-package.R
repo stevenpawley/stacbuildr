@@ -42,7 +42,7 @@
 #' | [stac_extent()] | `Extent` | `extent$spatial`, `extent$temporal` |
 #'
 #' Note that `stac_collection` extends `stac_catalog`, so
-#' `stac_inherits(x, stac_catalog)` is also true for a Collection.
+#' `inherits(x, "stac_catalog")` is also true for a Collection.
 #'
 #' ### Dictionaries (use `[[ ]]` to access entries)
 #'

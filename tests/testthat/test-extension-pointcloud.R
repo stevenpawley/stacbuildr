@@ -124,30 +124,6 @@ test_that("pc_schema validates name, size and type", {
   expect_error(pc_schema("", size = 1, type = "signed"), "empty string")
 })
 
-test_that("pointcloud sub-objects validate property modifications", {
-  schema <- pc_schema("X", size = 8, type = "floating")
-  schema$size <- 4
-  expect_identical(schema$size, 4L)
-  expect_error(schema$name <- "", "non-empty string")
-  expect_error(schema$size <- 0L, "greater than 0")
-  expect_error(schema$size <- 1.5, "whole number")
-  expect_error(schema$type <- "double", "floating, unsigned, or signed")
-
-  statistic <- pc_statistic("Z", minimum = 0)
-  statistic$position <- 2
-  statistic$count <- 10
-  expect_identical(statistic$position, 2L)
-  expect_identical(statistic$count, 10L)
-  expect_error(statistic$name <- "", "non-empty string")
-  expect_error(statistic$position <- -1L, "greater than or equal to 0")
-  expect_error(statistic$position <- 1.5, "whole number")
-  expect_error(statistic$minimum <- c(0, 1), "single number")
-  expect_error(statistic$count <- 1.5, "whole number")
-
-  statistic$count <- NULL
-  statistic$position <- NULL
-  expect_error(statistic$minimum <- NULL, "at least one statistic")
-})
 
 test_that("pc_statistic needs at least one statistic beside the name", {
   expect_error(pc_statistic("Z"), "at least one statistic")
