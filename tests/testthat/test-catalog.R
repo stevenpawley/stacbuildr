@@ -30,23 +30,13 @@ test_that("catalog structure matches pystac output", {
 
   py_dict <- py_catalog$to_dict()
   py_json <- jsonlite::fromJSON(
-    reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(
-      py_dict,
-      auto_unbox = TRUE
-    ))),
+    reticulate::py_to_r(reticulate::import("json")$dumps(py_dict)),
     simplifyVector = FALSE
   )
+  py_json <- py_json[names(r_json)]
 
-  # Compare required fields
-  expect_equal(r_json$type, py_json$type)
-  expect_equal(r_json$stac_version, py_json$stac_version)
-  expect_equal(r_json$id, py_json$id)
-  expect_equal(r_json$description, py_json$description)
-  expect_equal(r_json$title, py_json$title)
-
-  # Check that both have links field (even if empty)
-  expect_true("links" %in% names(r_json))
-  expect_true("links" %in% names(py_json))
+  # Compare the complete serialized catalog, not only selected fields.
+  expect_equal(r_json, py_json)
 
   # Validate both catalogs
   r_validation <- validate_stac(r_catalog)
@@ -96,25 +86,13 @@ test_that("collection structure matches pystac output", {
 
   py_dict <- py_collection$to_dict()
   py_json <- jsonlite::fromJSON(
-    reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(
-      py_dict,
-      auto_unbox = TRUE
-    ))),
+    reticulate::py_to_r(reticulate::import("json")$dumps(py_dict)),
     simplifyVector = FALSE
   )
+  py_json <- py_json[names(r_json)]
 
-  # Compare required fields
-  expect_equal(r_json$type, py_json$type)
-  expect_equal(r_json$stac_version, py_json$stac_version)
-  expect_equal(r_json$id, py_json$id)
-  expect_equal(r_json$description, py_json$description)
-  expect_equal(r_json$license, py_json$license)
-
-  # Check extent structure exists
-  expect_true("extent" %in% names(r_json))
-  expect_true("extent" %in% names(py_json))
-  expect_true("spatial" %in% names(r_json$extent))
-  expect_true("temporal" %in% names(r_json$extent))
+  # Compare the complete serialized collection, not only selected fields.
+  expect_equal(r_json, py_json)
 
   # Validate both collections
   r_validation <- validate_stac(r_collection)
@@ -168,24 +146,16 @@ test_that("item structure matches pystac output", {
 
   py_dict <- py_item$to_dict()
   py_json <- jsonlite::fromJSON(
-    reticulate::py_to_r(reticulate::r_to_py(jsonlite::toJSON(
-      py_dict,
-      auto_unbox = TRUE
-    ))),
+    reticulate::py_to_r(reticulate::import("json")$dumps(py_dict)),
     simplifyVector = FALSE
   )
+  if (identical(py_json$stac_extensions, list())) {
+    py_json$stac_extensions <- NULL
+  }
+  py_json <- py_json[names(r_json)]
 
-  # Compare required fields
-  expect_equal(r_json$type, py_json$type)
-  expect_equal(r_json$stac_version, py_json$stac_version)
-  expect_equal(r_json$id, py_json$id)
-  expect_equal(r_json$bbox, py_json$bbox)
-
-  # Check required fields exist
-  expect_true("geometry" %in% names(r_json))
-  expect_true("properties" %in% names(r_json))
-  expect_true("links" %in% names(r_json))
-  expect_true("assets" %in% names(r_json))
+  # Compare the complete serialized item, not only selected fields.
+  expect_equal(r_json, py_json)
 
   # Validate both items
   r_validation <- validate_stac(r_item)
