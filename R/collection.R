@@ -249,6 +249,7 @@ stac_collection <- function(
       temporal = TemporalExtent(interval = extent$temporal$interval)
     )
   }
+
   object <- c(
     unclass(stac_catalog(
       id = id,
@@ -270,46 +271,40 @@ stac_collection <- function(
       assets = normalize_assets(assets)
     )
   )
-  if (!is.character(object[["license"]])) {
-    cli::cli_abort("license must be character.")
-  }
+
+  # Validation
+  check_single_character(object$license, "license")
   if (!inherits(object[["extent"]], "Extent")) {
     cli::cli_abort("extent must be Extent.")
   }
-  if (!(is.character(object[["keywords"]]) || is.null(object[["keywords"]]))) {
-    cli::cli_abort("keywords must be character or NULL.")
-  }
+  check_character_vector(object$keywords, "keywords", allow_null = TRUE)
   if (!(is.list(object[["providers"]]) || is.null(object[["providers"]]))) {
     cli::cli_abort("providers must be list or NULL.")
   }
-  if (
-    !is.null(object[["providers"]]) &&
-      !all(vapply(
-        object[["providers"]],
-        inherits,
-        logical(1),
-        what = "stac_provider"
-      ))
-  ) {
-    cli::cli_abort(paste(
-      "providers",
-      "must contain only stac_provider objects"
-    ))
+
+  is_stac_provider <- vapply(
+    object[["providers"]],
+    FUN = inherits,
+    FUN.VALUE = logical(1),
+    what = "stac_provider"
+  )
+
+  if (!is.null(object[["providers"]]) && !all(is_stac_provider)) {
+    cli::cli_abort(paste("providers must contain only stac_provider objects"))
   }
   if (!(is.list(object[["assets"]]) || is.null(object[["assets"]]))) {
     cli::cli_abort("assets must be list or NULL.")
   }
-  if (length(object$license) == 0 || nchar(object$license) == 0) {
-    cli::cli_abort("'license' must be a non-empty string")
-  }
   if (object$type != "Collection") {
     cli::cli_abort("'type' must be 'Collection'")
   }
+
+  # Assign class
   class(object) <- c("stac_collection", "stac_catalog", "stac_object")
   return(object)
 }
 
-#'
+
 #' @exportS3Method
 as.list.stac_collection <- function(x, ...) {
   out <- list(
@@ -592,24 +587,14 @@ stac_provider <- function(name, description = NULL, roles = NULL, url = NULL) {
     roles = roles,
     url = url
   )
-  if (!is.character(object[["name"]])) {
-    cli::cli_abort("name must be character.")
-  }
-  if (
-    length(object[["name"]]) != 1L ||
-      is.na(object[["name"]]) ||
-      !nzchar(object[["name"]])
-  ) {
-    cli::cli_abort(paste("name", "must be a non-empty string"))
-  }
-  if (
-    !(is.character(object[["description"]]) || is.null(object[["description"]]))
-  ) {
-    cli::cli_abort("description must be character or NULL.")
-  }
-  if (!(is.character(object[["roles"]]) || is.null(object[["roles"]]))) {
-    cli::cli_abort("roles must be character or NULL.")
-  }
+  check_single_character(object$name, "name")
+  check_single_character(
+    object$description,
+    "description",
+    allow_null = TRUE,
+    allow_empty = TRUE
+  )
+  check_character_vector(object$roles, "roles", allow_null = TRUE)
   invalid <- setdiff(
     object[["roles"]] %||% character(0),
     c("producer", "licensor", "processor", "host")
@@ -620,9 +605,12 @@ stac_provider <- function(name, description = NULL, roles = NULL, url = NULL) {
       sprintf("contains invalid roles: %s", paste(invalid, collapse = ", "))
     ))
   }
-  if (!(is.character(object[["url"]]) || is.null(object[["url"]]))) {
-    cli::cli_abort("url must be character or NULL.")
-  }
+  check_single_character(
+    object$url,
+    "url",
+    allow_null = TRUE,
+    allow_empty = TRUE
+  )
   class(object) <- c("stac_provider", "stac_object")
   return(object)
 }

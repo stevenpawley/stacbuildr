@@ -91,50 +91,26 @@ stac_asset <- function(
   )
 
   # Validations
-  if (!is.character(object[["href"]])) {
-    cli::cli_abort("href must be character.")
-  }
-
-  # href must be a single, non-NA, non-empty string
-  if (
-    length(object[["href"]]) != 1 ||
-      is.na(object[["href"]]) ||
-      !nzchar(object[["href"]])
-  ) {
-    cli::cli_abort("'href' must be a single non-empty string")
-  }
-
-  # Check for non-empty titles
-  title_is_char <- is.character(object[["title"]])
-  title_is_not_null <- is.null(object[["title"]])
-
-  if (!(title_is_char || title_is_not_null)) {
-    cli::cli_abort("title must be character or NULL.")
-  }
-
-  # Check for non-empty description
-  desc_is_char <- is.character(object[["description"]])
-  desc_is_not_null <- is.null(object[["description"]])
-
-  if (!(desc_is_char || desc_is_not_null)) {
-    cli::cli_abort("description must be character or NULL.")
-  }
-
-  # Check for non-empty type
-  type_is_char <- is.character(object[["type"]])
-  type_is_not_null <- is.null(object[["type"]])
-
-  if (!(type_is_char || type_is_not_null)) {
-    cli::cli_abort("type must be character or NULL.")
-  }
-
-  # Check for non-empty roles
-  roles_is_char <- is.character(object[["roles"]])
-  roles_is_not_null <- is.null(object[["roles"]])
-
-  if (!(roles_is_char || roles_is_not_null)) {
-    cli::cli_abort("roles must be character or NULL.")
-  }
+  check_single_character(object$href, "href")
+  check_single_character(
+    object$title,
+    "title",
+    allow_null = TRUE,
+    allow_empty = TRUE
+  )
+  check_single_character(
+    object$description,
+    "description",
+    allow_null = TRUE,
+    allow_empty = TRUE
+  )
+  check_single_character(
+    object$type,
+    "type",
+    allow_null = TRUE,
+    allow_empty = TRUE
+  )
+  check_character_vector(object$roles, "roles", allow_null = TRUE)
 
   # Check for non-list extra_fields
   if (!is.list(object[["extra_fields"]])) {
