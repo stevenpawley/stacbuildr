@@ -6,9 +6,15 @@
 [![R-universe version](https://stevenpawley.r-universe.dev/stacbuildr/badges/version)](https://stevenpawley.r-universe.dev/stacbuildr)
 <!-- badges: end -->
 
-**stacbuildr** is an *experimental* R package for creating [STAC (SpatioTemporal Asset Catalog)](https://stacspec.org/) metadata. STAC is an open standard for describing geospatial data in a way that makes it indexable, searchable, and interoperable. The package implements STAC specification version 1.1.0 using validated S3 classes and outputs valid STAC JSON.
+**stacbuildr** is an *experimental* R package for creating
+[STAC (SpatioTemporal Asset Catalog)](https://stacspec.org/) metadata. STAC is
+an open standard for describing geospatial data in a way that makes it
+indexable, searchable, and interoperable. The package implements STAC
+specification version 1.1.0 using validated S3 classes and outputs valid STAC
+JSON.
 
-*Note* this package is in active development: breaking changes are expected and there is no guarantee of compliance with STACspec.
+*Note* this package is in active development: breaking changes are expected and
+there is no guarantee of compliance with STACspec.
 
 ## Installation
 
@@ -28,7 +34,8 @@ A STAC catalog is a hierarchy of three object types:
 | **Collection** | A Catalog extended with spatial/temporal extents, license, and summaries |
 | **Item** | A GeoJSON Feature representing an individual asset (e.g. a single satellite scene) |
 
-Each object contains **links** (JSON pointers connecting the hierarchy) and Items contain **assets** (references to the actual data files).
+Each object contains **links** (JSON pointers connecting the hierarchy) and
+Items contain **assets** (references to the actual data files).
 
 ## Core functions
 
@@ -261,9 +268,9 @@ catalog <- read_stac("output/stac/catalog.json")
 collection <- read_stac("output/stac/collection/collection.json")
 ```
 
-The `catalog_type` values correspond one-to-one with the link layouts in
-[Use of links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links) in the STAC best-practices document, and with
-PySTAC's `CatalogType`:
+The `catalog_type` values correspond one-to-one with the link layouts in [Use of
+links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links)
+in the STAC best-practices document, and with PySTAC's `CatalogType`:
 
 | `catalog_type` | STAC best practices | PySTAC |
 | --- | --- | --- |
