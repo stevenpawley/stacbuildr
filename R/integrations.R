@@ -578,14 +578,7 @@ is_copc <- function(file) {
 #'
 #' @noRd
 is_cog <- function(file) {
-  if (grepl("://", file, fixed = TRUE)) {
-    return(FALSE)
-  }
-  local_path <- normalizePath(file, mustWork = FALSE)
-  if (!file.exists(local_path)) {
-    return(FALSE)
-  }
-  return(tryCatch(
+  result <- tryCatch(
     {
       info <- sf::gdal_utils("info", source = local_path, quiet = TRUE)
       grepl("LAYOUT=COG", info, fixed = TRUE)
@@ -593,7 +586,8 @@ is_cog <- function(file) {
     error = function(e) {
       return(FALSE)
     }
-  ))
+  )
+  return(result)
 }
 
 
