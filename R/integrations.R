@@ -581,7 +581,9 @@ is_cog <- function(file) {
   result <- tryCatch(
     {
       info <- sf::gdal_utils("info", source = file, quiet = TRUE)
-      grepl("LAYOUT=COG", info, fixed = TRUE)
+      # gdal_utils returns character(0) rather than erroring for unreadable
+      # files, so grepl() can yield logical(0); isTRUE() coerces to FALSE
+      isTRUE(grepl("LAYOUT=COG", info, fixed = TRUE))
     },
     error = function(e) {
       return(FALSE)
