@@ -62,7 +62,7 @@
 #' }
 #'
 #' @export
-ç <- function(
+item_from_terra <- function(
   terra_obj,
   href = NULL,
   id = NULL,
