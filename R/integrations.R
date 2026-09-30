@@ -580,7 +580,7 @@ is_copc <- function(file) {
 is_cog <- function(file) {
   result <- tryCatch(
     {
-      info <- sf::gdal_utils("info", source = local_path, quiet = TRUE)
+      info <- sf::gdal_utils("info", source = file, quiet = TRUE)
       grepl("LAYOUT=COG", info, fixed = TRUE)
     },
     error = function(e) {
