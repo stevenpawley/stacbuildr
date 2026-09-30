@@ -62,7 +62,7 @@
 #' }
 #'
 #' @export
-item_from_terra <- function(
+ç <- function(
   terra_obj,
   href = NULL,
   id = NULL,
@@ -124,17 +124,22 @@ item_from_terra <- function(
 
   # Add the main raster as an asset if href provided
   if (!is.null(href)) {
+    src <- terra::sources(terra_obj)
+    has_local <- length(src) > 0 && nchar(src[1]) > 0 && file.exists(src[1])
+    # The href may be the future remote location of the asset, so inspect the
+    # local file backing the SpatRaster for the COG check instead
+    media_file <- if (has_local) src[1] else href
+
     item <- add_asset(
       item,
       key = asset_key,
       href = normalize_href(href),
-      type = get_media_type(href),
+      type = get_media_type(media_file),
       roles = asset_roles
     )
 
     # Add nodata for file-backed rasters
-    src <- terra::sources(terra_obj)
-    if (length(src) > 0 && nchar(src[1]) > 0 && file.exists(src[1])) {
+    if (has_local) {
       nodata_val <- gdal_nodata(src[1])
       if (!is.null(nodata_val)) {
         item$assets[[asset_key]]$extra_fields[["nodata"]] <- nodata_val
@@ -578,6 +583,11 @@ is_copc <- function(file) {
 #'
 #' @noRd
 is_cog <- function(file) {
+  # Checking a URL would make GDAL attempt a network request; the structural
+  # check is only meaningful for local files, so short-circuit for URLs
+  if (grepl("://", file, fixed = TRUE)) {
+    return(FALSE)
+  }
   result <- tryCatch(
     {
       info <- sf::gdal_utils("info", source = file, quiet = TRUE)
