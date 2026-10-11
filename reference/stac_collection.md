@@ -54,9 +54,9 @@ stac_collection(
 
 - extent:
 
-  (list, required) Spatial and temporal extents that describe the bounds
-  of all Items contained within this Collection. Must be a named list
-  with two elements:
+  (stac_extent or list, required) Spatial and temporal extents that
+  describe the bounds of all Items contained within this Collection. Can
+  be a `stac_extent` object or a named list with two elements:
 
   - `spatial`: A list with element `bbox` - a list of one or more
     bounding boxes. Each bbox is a numeric vector of 4 or 6 numbers:

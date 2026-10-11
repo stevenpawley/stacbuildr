@@ -100,9 +100,9 @@ is deprecated in favor of <code>"other"</code>. Examples: <code>"CC-BY-4.0"</cod
 
 
 <dt id="arg-extent">extent<a class="anchor" aria-label="anchor" href="#arg-extent"></a></dt>
-<dd><p>(list, required) Spatial and temporal extents that describe the
-bounds of all Items contained within this Collection. Must be a named list
-with two elements:</p><ul><li><p><code>spatial</code>: A list with element <code>bbox</code> - a list of one or more bounding boxes.
+<dd><p>(stac_extent or list, required) Spatial and temporal extents that
+describe the bounds of all Items contained within this Collection. Can be a
+<code>stac_extent</code> object or a named list with two elements:</p><ul><li><p><code>spatial</code>: A list with element <code>bbox</code> - a list of one or more bounding boxes.
 Each bbox is a numeric vector of 4 or 6 numbers: <code>c(west, south, east, north)</code>
 for 2D or <code>c(west, south, min_elev, east, north, max_elev)</code> for 3D. The
 first bbox describes the overall spatial extent.</p></li>
