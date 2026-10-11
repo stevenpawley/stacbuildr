@@ -19,9 +19,9 @@
 #'   use `"various"` and add a link for each license. In STAC 1.1.0, `"proprietary"`
 #'   is deprecated in favor of `"other"`. Examples: `"CC-BY-4.0"`, `"MIT"`,
 #'   `"other"`.
-#' @param extent (list, required) Spatial and temporal extents that describe the
-#'   bounds of all Items contained within this Collection. Must be a named list
-#'   with two elements:
+#' @param extent (stac_extent or list, required) Spatial and temporal extents that
+#'   describe the bounds of all Items contained within this Collection. Can be a 
+#'   `stac_extent` object or a named list with two elements:
 #'   * `spatial`: A list with element `bbox` - a list of one or more bounding boxes.
 #'     Each bbox is a numeric vector of 4 or 6 numbers: `c(west, south, east, north)`
 #'     for 2D or `c(west, south, min_elev, east, north, max_elev)` for 3D. The
