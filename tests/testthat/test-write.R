@@ -546,3 +546,90 @@ test_that("write_stac allows ids with spaces and non-ASCII characters", {
   expect_no_error(write_stac(catalog, path, overwrite = TRUE))
   expect_true(file.exists(file.path(path, "my item", "my item.json")))
 })
+
+test_that("write_stac preserves child/item links that are not attached objects", {
+  # Simulate a read-back catalog with links to resources that were never
+  # attached: write must keep them while regenerating attached ones.
+  catalog <- stac_catalog(id = "root", description = "d")
+  catalog$links <- list(
+    stac_link("root", "./catalog.json", type = "application/json"),
+    stac_link(
+      "child",
+      "./collection-only/collection.json",
+      type = "application/json",
+      title = "unattached"
+    ),
+    stac_link(
+      "item",
+      "./features/some-item.json",
+      type = "application/geo+json",
+      title = "unattached item"
+    )
+  )
+  item <- stac_item(
+    id = "attached-item",
+    geometry = NULL,
+    bbox = NULL,
+    datetime = "2020-01-01T00:00:00Z"
+  )
+  catalog <- add_item(catalog, item)
+
+  path <- withr::local_tempdir()
+  write_stac(catalog, path, overwrite = TRUE)
+
+  out <- jsonlite::fromJSON(
+    file.path(path, "catalog.json"),
+    simplifyVector = FALSE
+  )
+  hrefs <- vapply(out$links, function(l) l$href, "")
+  expect_true("./collection-only/collection.json" %in% hrefs)
+  expect_true("./features/some-item.json" %in% hrefs)
+  expect_true("./attached-item/attached-item.json" %in% hrefs)
+  # exactly one root link, one attached item link, no duplicates
+  expect_length(hrefs, 4)
+  expect_equal(sum(duplicated(vapply(
+    out$links,
+    function(l) paste(l$rel, l$href),
+    ""
+  ))), 0)
+})
+
+test_that("write_stac regenerates attached hrefs but preserves unattributable ones", {
+  item <- stac_item(
+    id = "it1",
+    geometry = NULL,
+    bbox = NULL,
+    datetime = "2020-01-01T00:00:00Z"
+  )
+  catalog <- stac_catalog(id = "root", description = "d")
+  catalog <- add_item(catalog, item)
+  # A stale href in the canonical layout (e.g. from a previous write with a
+  # different catalog_type) is attributed to the attached item and regenerated
+  catalog <- add_link(
+    catalog,
+    "item",
+    "./it1/it1.json",
+    type = "application/geo+json"
+  )
+  # A hand-made href whose filename is not the item id cannot be attributed to
+  # any attached item, so it is preserved rather than silently dropped
+  catalog <- add_link(
+    catalog,
+    "item",
+    "./archive/some-other-item.json",
+    type = "application/geo+json"
+  )
+
+  path <- withr::local_tempdir()
+  write_stac(catalog, path, overwrite = TRUE)
+
+  out <- jsonlite::fromJSON(
+    file.path(path, "catalog.json"),
+    simplifyVector = FALSE
+  )
+  item_links <- Filter(function(l) l$rel == "item", out$links)
+  hrefs <- vapply(item_links, function(l) l$href, "")
+  expect_length(item_links, 2)
+  expect_true("./it1/it1.json" %in% hrefs)
+  expect_true("./archive/some-other-item.json" %in% hrefs)
+})

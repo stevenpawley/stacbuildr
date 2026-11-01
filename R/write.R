@@ -429,9 +429,15 @@ update_catalog_links <- function(
   }
   stored_children <- attr(catalog, "stac_children")
   if (!is.null(stored_children) && length(stored_children) > 0) {
+    attached_ids <- names(stored_children)
+    # Only remove child links for attached children; links to resources that
+    # were never attached (e.g. read back from disk) are kept as-is.
     catalog$links <- Filter(
       function(x) {
-        return(x$rel != "child")
+        return(!(
+          x$rel == "child" &&
+            stac_child_id_from_link(x) %in% attached_ids
+        ))
       },
       catalog$links
     )
@@ -458,9 +464,21 @@ update_catalog_links <- function(
   }
   stored_items <- attr(catalog, "stac_items")
   if (!is.null(stored_items) && length(stored_items) > 0) {
+    attached_ids <- vapply(
+      stored_items,
+      function(x) {
+        return(x$id)
+      },
+      character(1)
+    )
+    # Only remove item links for attached items; links to resources that were
+    # never attached (e.g. read back from disk) are kept as-is.
     catalog$links <- Filter(
       function(x) {
-        return(x$rel != "item")
+        return(!(
+          x$rel == "item" &&
+            stac_id_from_link(x) %in% attached_ids
+        ))
       },
       catalog$links
     )

@@ -304,6 +304,15 @@ stac_id_from_link <- function(link) {
   return(sub("\\.json$", "", basename(link$href)))
 }
 
+# The child id a child link points at, taken from the first path segment of the
+# href (the "<child_id>/" written by add_child() and write_stac()).
+#
+# @keywords internal
+stac_child_id_from_link <- function(link) {
+  segments <- strsplit(sub("^[.]/", "", link$href), "/", fixed = TRUE)[[1]]
+  return(segments[[1]])
+}
+
 # Keep only the stored Items whose ids are in `keep`.
 #
 # remove_item() drops item links, but write_stac() rebuilds those links from
