@@ -523,7 +523,28 @@ normalize_links <- function(x) {
 #' @export
 add_link <- function(catalog, rel, href, ...) {
   new_link <- stac_link(rel = rel, href = href, ...)
-  catalog$links <- c(catalog$links, list(new_link))
+  links <- catalog$links %||% list()
+  # A link is identified by (rel, href): replace the first match and drop any
+  # further duplicates so re-adding links to a read catalog cannot accumulate
+  # copies.
+  matches <- vapply(
+    links,
+    function(x) {
+      inherits(x, "stac_link") && identical(x$rel, rel) &&
+        identical(x$href, href)
+    },
+    logical(1)
+  )
+  if (any(matches)) {
+    matched <- which(matches)
+    links[[matched[[1]]]] <- new_link
+    if (length(matched) > 1) {
+      links[matched[-1]] <- NULL
+    }
+  } else {
+    links <- c(links, list(new_link))
+  }
+  catalog$links <- links
   return(catalog)
 }
 

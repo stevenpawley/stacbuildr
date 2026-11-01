@@ -214,3 +214,80 @@ test_that("add_child rejects duplicate child ids", {
 
   expect_no_error(add_child(add_child(catalog, child("x")), child("y")))
 })
+
+test_that("add_link appends a new link", {
+  catalog <- stac_catalog(id = "root", description = "d")
+  catalog <- add_link(catalog, "related", "https://example.com/a")
+  expect_length(catalog$links, 1)
+  expect_equal(catalog$links[[1]]$rel, "related")
+  expect_equal(catalog$links[[1]]$href, "https://example.com/a")
+})
+
+test_that("add_link replaces an existing (rel, href) link instead of duplicating", {
+  catalog <- stac_catalog(id = "root", description = "d")
+  catalog <- add_link(
+    catalog,
+    "related",
+    "https://example.com/a",
+    title = "old"
+  )
+  catalog <- add_link(
+    catalog,
+    "related",
+    "https://example.com/a",
+    title = "new"
+  )
+  expect_length(catalog$links, 1)
+  expect_equal(catalog$links[[1]]$title, "new")
+})
+
+test_that("add_link keeps links that differ in rel or href", {
+  catalog <- stac_catalog(id = "root", description = "d")
+  catalog <- add_link(catalog, "related", "https://example.com/a")
+  catalog <- add_link(catalog, "related", "https://example.com/b")
+  catalog <- add_link(catalog, "self", "https://example.com/a")
+  expect_length(catalog$links, 3)
+})
+
+test_that("add_link collapses pre-existing duplicate links", {
+  catalog <- stac_catalog(id = "root", description = "d")
+  catalog$links <- list(
+    stac_link("child", "./a/catalog.json", type = "application/json"),
+    stac_link("child", "./a/catalog.json", type = "application/json"),
+    stac_link("self", "https://example.com/catalog.json")
+  )
+  catalog <- add_link(
+    catalog,
+    "child",
+    "./a/catalog.json",
+    type = "application/json",
+    title = "A"
+  )
+  expect_length(catalog$links, 2)
+  child_links <- Filter(function(x) x$rel == "child", catalog$links)
+  expect_length(child_links, 1)
+  expect_equal(child_links[[1]]$title, "A")
+})
+
+test_that("round-tripping a read catalog through add_link does not duplicate", {
+  skip_if_not_installed("jsonlite")
+  path <- file.path(tempdir(), "stacbuildr-dedup-test")
+  dir.create(path, recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(path, recursive = TRUE), add = TRUE)
+
+  parent <- stac_catalog(id = "parent", description = "d")
+  parent <- add_child(parent, stac_catalog(id = "child", description = "d"))
+  write_stac(parent, path)
+
+  read_catalog <- read_stac(file.path(path, "catalog.json"))
+  read_catalog <- add_child(
+    read_catalog,
+    stac_catalog(id = "child2", description = "d")
+  )
+  n_child_links <- sum(vapply(
+    read_catalog$links,
+    function(x) x$rel == "child",
+    logical(1)
+  ))
+  expect_equal(n_child_links, 2)
+})
