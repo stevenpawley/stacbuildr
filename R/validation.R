@@ -940,7 +940,7 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
     ))
   }
   json <- stac_to_json(stac_object)
-  stac_version <- stac_object$stac_version %||% "1.0.0"
+  stac_version <- stac_object$stac_version %||% "1.1.0"
   core_url <- stac_core_schema_url(stac_object, stac_version)
   errors <- run_schema_validation(json, core_url)
   ext_errors <- character()

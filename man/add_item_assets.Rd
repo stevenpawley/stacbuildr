@@ -11,19 +11,32 @@ add_item_assets(collection)
 \code{add_item()}.}
 }
 \value{
-The collection with \code{item_assets} populated and the Item Assets
-extension added to \code{stac_extensions}.
+The collection with \code{item_assets} populated.
 }
 \description{
-Inspects the items already added to a collection and derives the
-\code{item_assets} field automatically, using the assets present on those items.
+Item assets serve two purposes:
+\enumerate{
+\item To provide a human-readable definition of the assets available on the
+items in a collection.
+\item To provide a means to programmatically query what assets are available
+in a collection without crawling through every item.
+}
+
+The \code{item_assets} field is created by inspecting the items already added
+to a collection and using the assets present on those items.
 For each unique asset key, the definition is taken from the first item that
 contains it (minus the \code{href} field, which is item-specific).
 
-\code{item_assets} is part of the Collection spec from STAC 1.1.0 onwards, so no
-extension is needed. For a collection declaring an earlier \code{stac_version},
-the deprecated Item Assets extension URI is added to \code{stac_extensions}
-automatically.
+An item asset is almost the same as a regular \code{stac_asset} object except it
+doesn't include an \code{href} field because it is only used to describe assets
+and does not point to the data itself.
+}
+\note{
+Item assets are intended to describe the complete set of assets in a
+collection, so they include every asset key found on any item. Because a
+single shared definition is derived per key (from the first item that
+contains it), fields such as \code{title}, \code{description}, \code{type}, and \code{roles}
+should ideally be consistent across all items in a collection.
 }
 \examples{
 \dontrun{
@@ -56,9 +69,6 @@ collection <- add_item_assets(collection)
 \references{
 STAC Collection Specification (\code{item_assets}):
 \url{https://github.com/radiantearth/stac-spec/tree/master/collection-spec}
-
-STAC Item Assets Definition Extension (deprecated, STAC 1.0 only):
-\url{https://stac-extensions.github.io/item-assets/v1.0.0/schema.json}
 }
 \seealso{
 \itemize{

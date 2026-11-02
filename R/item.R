@@ -265,6 +265,7 @@ stac_item <- function(
   )
   check_single_character(object$type, "type")
   check_single_character(object$stac_version, "stac_version")
+  warn_unsupported_stac_version(object$stac_version)
   check_single_character(object$id, "id")
   if (
     !(inherits(object[["geometry"]], "stac_geometry") ||

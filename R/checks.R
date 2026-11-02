@@ -4,6 +4,18 @@
 # distinguish a single character value from a character vector. They return
 # their input invisibly so callers can use them either as statements or inline.
 
+# The package targets STAC 1.1.0. Other versions are accepted but warned
+# about, since support for them is not maintained.
+warn_unsupported_stac_version <- function(stac_version) {
+  if (!identical(stac_version, "1.1.0")) {
+    cli::cli_warn(c(
+      "stac_version {.val {stac_version}} is not supported by this package.",
+      i = "stacbuildr targets STAC {.val 1.1.0}; output for other versions may not validate."
+    ))
+  }
+  invisible(stac_version)
+}
+
 check_single_character <- function(
   x,
   arg,

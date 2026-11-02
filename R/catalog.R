@@ -173,6 +173,7 @@ stac_catalog <- function(
     allow_empty = TRUE
   )
   check_single_character(object$stac_version, "stac_version")
+  warn_unsupported_stac_version(object$stac_version)
   check_single_character(object$type, "type")
   check_character_vector(
     object$stac_extensions,
