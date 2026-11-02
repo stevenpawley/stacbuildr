@@ -229,6 +229,7 @@ stac_collection <- function(
   conformsTo = NULL,
   ...
 ) {
+  # Basic argument checks
   if (identical(license, "proprietary")) {
     cli::cli_inform(c(
       "'proprietary' is deprecated as a license identifier in STAC 1.1.0.",
@@ -238,6 +239,7 @@ stac_collection <- function(
       )
     ))
   }
+
   if (!inherits(extent, "Extent")) {
     if (!is.list(extent) || !all(c("spatial", "temporal") %in% names(extent))) {
       cli::cli_abort(
@@ -250,6 +252,7 @@ stac_collection <- function(
     )
   }
 
+  # Use catalog to initiate collection (but unclassed)
   object <- c(
     unclass(stac_catalog(
       id = id,
@@ -274,6 +277,7 @@ stac_collection <- function(
 
   # Validation
   check_single_character(object$license, "license")
+  warn_unsupported_stac_version(object$stac_version)
   if (!inherits(object[["extent"]], "Extent")) {
     cli::cli_abort("extent must be Extent.")
   }
@@ -307,6 +311,7 @@ stac_collection <- function(
 
 #' @exportS3Method
 as.list.stac_collection <- function(x, ...) {
+  # Initiate list with required fields
   out <- list(
     type = x$type,
     stac_version = x$stac_version,
@@ -315,31 +320,41 @@ as.list.stac_collection <- function(x, ...) {
     license = x$license,
     extent = as.list(x$extent)
   )
+
+  # Add optional fields
   if (!is.null(x$title)) {
     out$title <- x$title
   }
+
   if (!is.null(x$keywords) && length(x$keywords) > 0) {
     out$keywords <- as_json_array(x$keywords)
   }
+
   if (!is.null(x$providers) && length(x$providers) > 0) {
     out$providers <- stac_to_nested_list(x$providers)
   }
+
   if (!is.null(x$stac_extensions) && length(x$stac_extensions) > 0) {
     out$stac_extensions <- as.list(x$stac_extensions)
   }
+
   out$links <- stac_to_nested_list(x$links)
   if (!is.null(x$summaries) && length(x$summaries$extra_fields) > 0) {
     out$summaries <- stac_to_nested_list(x$summaries)
   }
+
   if (!is.null(x$assets) && length(x$assets) > 0) {
     out$assets <- stac_to_nested_list(x$assets)
   }
+
   if (!is.null(x$conformsTo) && length(x$conformsTo) > 0) {
     out$conformsTo <- as_json_array(x$conformsTo)
   }
+
   if (length(x$extra_fields) > 0) {
     out <- c(out, stac_to_nested_list(x$extra_fields))
   }
+
   return(out)
 }
 
@@ -615,7 +630,7 @@ stac_provider <- function(name, description = NULL, roles = NULL, url = NULL) {
   return(object)
 }
 
-#'
+
 #' @exportS3Method
 as.list.stac_provider <- function(x, ...) {
   out <- list(name = x$name)
@@ -716,16 +731,21 @@ print.stac_provider <- function(x, ...) {
 #'
 #' @export
 stac_summaries <- function(...) {
+
+  # Ensure that all objects containing atomic vectors are coerced to lists
   summaries <- lapply(list(...), as_json_array)
+  
   object <- list(extra_fields = summaries)
+  
   if (!is.list(object[["extra_fields"]])) {
     cli::cli_abort("extra_fields must be list.")
   }
+  
   class(object) <- c("stac_summaries", "stac_object")
   return(object)
 }
 
-#'
+
 #' @exportS3Method
 as.list.stac_summaries <- function(x, ...) {
   return(x$extra_fields)
@@ -774,32 +794,40 @@ print.stac_summaries <- function(x, ...) {
   return(invisible(x))
 }
 
-
 #' Add Item Asset Definitions to a Collection
 #'
 #' @description
-#' Inspects the items already added to a collection and derives the
-#' `item_assets` field automatically, using the assets present on those items.
+#' Item assets serve two purposes:
+#' 
+#' 1. To provide a human-readable definition of the assets available on the 
+#' items in a collection.
+#' 2. To provide a means to programmatically query what assets are available
+#' in a collection without crawling through every item.
+#' 
+#' The `item_assets` field is created by inspecting the items already added 
+#' to a collection and using the assets present on those items.
 #' For each unique asset key, the definition is taken from the first item that
 #' contains it (minus the `href` field, which is item-specific).
-#'
-#' `item_assets` is part of the Collection spec from STAC 1.1.0 onwards, so no
-#' extension is needed. For a collection declaring an earlier `stac_version`,
-#' the deprecated Item Assets extension URI is added to `stac_extensions`
-#' automatically.
+#' 
+#' An item asset is almost the same as a regular `stac_asset` object except it
+#' doesn't include an `href` field because it is only used to describe assets
+#' and does not point to the data itself.
+#' 
+#' @note
+#' Item assets are intended to describe the complete set of assets in a
+#' collection, so they include every asset key found on any item. Because a
+#' single shared definition is derived per key (from the first item that
+#' contains it), fields such as `title`, `description`, `type`, and `roles`
+#' should ideally be consistent across all items in a collection.
 #'
 #' @param collection A `stac_collection` object with items added via
 #'   `add_item()`.
 #'
-#' @return The collection with `item_assets` populated and the Item Assets
-#'   extension added to `stac_extensions`.
+#' @return The collection with `item_assets` populated.
 #'
 #' @references
 #' STAC Collection Specification (`item_assets`):
 #' \url{https://github.com/radiantearth/stac-spec/tree/master/collection-spec}
-#'
-#' STAC Item Assets Definition Extension (deprecated, STAC 1.0 only):
-#' \url{https://stac-extensions.github.io/item-assets/v1.0.0/schema.json}
 #'
 #' @seealso
 #' * [add_item()] for adding items to a collection
@@ -834,23 +862,32 @@ print.stac_summaries <- function(x, ...) {
 #'
 #' @export
 add_item_assets <- function(collection) {
+  # Basic checks
   if (!inherits(collection, "stac_collection")) {
     cli::cli_abort("'collection' must be a stac_collection object")
   }
+
+  # Get the objects `stac_items` attribute
   items <- attr(collection, "stac_items")
   if (is.null(items) || length(items) == 0) {
     cli::cli_abort(
       "Collection has no items - add items with add_item() before calling add_item_assets()"
     )
   }
+
+  # Get a list of unique keys across all items, e.g., union of keys for all items
   all_keys <- unique(unlist(lapply(items, function(item) {
     return(names(item$assets))
   })))
+
+  # For each key, take the definition from the first item that contains it
   item_assets <- lapply(stats::setNames(all_keys, all_keys), function(key) {
     for (item in items) {
       asset <- item$assets[[key]]
+      
       if (!is.null(asset)) {
         item_asset <- list()
+        # Copy only the fields allowed on item_assets - `href` must not be carried over
         for (field in c("title", "description", "type", "roles")) {
           value <- asset[[field]]
           if (!is.null(value)) {
@@ -861,7 +898,12 @@ add_item_assets <- function(collection) {
             }
           }
         }
+
+        # Carry over any additional asset fields (e.g. `nodata`, `bands`)
         item_asset <- c(item_asset, asset$extra_fields)
+        
+        # Statistics are per-asset measurements, so they don't belong in a
+        # shared definition - drop them from any band entries
         if (!is.null(item_asset$bands)) {
           item_asset$bands <- lapply(item_asset$bands, function(band) {
             return(band[setdiff(names(band), "statistics")])
@@ -870,18 +912,17 @@ add_item_assets <- function(collection) {
         return(item_asset)
       }
     }
+
     return(NULL)
   })
+
+  # Drop keys whose definition could not be built
   item_assets <- Filter(Negate(is.null), item_assets)
+
+  # Store under `item_assets` in the collection's extra fields. The package
+  # targets STAC 1.1.0, where `item_assets` is part of the core spec, so no
+  # extension URI is needed.
   collection$extra_fields[["item_assets"]] <- item_assets
-  if (utils::compareVersion(collection$stac_version, "1.1.0") < 0) {
-    ext_uri <- "https://stac-extensions.github.io/item-assets/v1.0.0/schema.json"
-    if (
-      is.null(collection$stac_extensions) ||
-        !ext_uri %in% collection$stac_extensions
-    ) {
-      collection$stac_extensions <- c(collection$stac_extensions, ext_uri)
-    }
-  }
+
   return(collection)
 }
