@@ -66,5 +66,5 @@ Collate:
     'zzz.R'
 URL: https://github.com/stevenpawley/stacbuildr, https://stevenpawley.github.io/stacbuildr/
 BugReports: https://github.com/stevenpawley/stacbuildr/issues
-Config/roxygen2/version: 8.1.0
+Config/roxygen2/version: 8.1.1
 VignetteBuilder: knitr

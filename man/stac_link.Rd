@@ -10,9 +10,7 @@ stac_link(
   type = NULL,
   title = NULL,
   method = NULL,
-  headers = NULL,
   body = NULL,
-  merge = FALSE,
   ...
 )
 }
@@ -35,14 +33,8 @@ Default is \code{NULL}.}
 \item{method}{(character, optional) The HTTP method to use when following the
 link (e.g., \code{"GET"}, \code{"POST"}). Default is \code{NULL}.}
 
-\item{headers}{(list or named vector, optional) HTTP headers to include when
-following the link. Default is \code{NULL}.}
-
 \item{body}{(list, optional) The HTTP body to include when following the link
 (typically used with POST requests). Default is \code{NULL}.}
-
-\item{merge}{(logical, optional) Whether to merge the link body with the
-current resource when following the link. Default is \code{FALSE}.}
 
 \item{...}{Additional link fields retained in \code{link$extra_fields} and
 included during JSON serialization.}
@@ -52,9 +44,9 @@ A \code{stac_link} S3 object. Access fields with \code{$}, for example
 \code{link$rel} and \code{link$href}.
 }
 \description{
-Creates a link object following the STAC specification. Links are used to
-connect STAC resources (catalogs, collections, and items) and establish
-relationships between them.
+Constructor to create a link object following the STAC specification. Links
+are used to connect STAC resources (catalogs, collections, and items) and
+establish relationships between them.
 }
 \examples{
 link <- stac_link("self", "https://example.com/catalog.json")

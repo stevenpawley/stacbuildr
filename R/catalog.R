@@ -331,9 +331,9 @@ print.stac_catalog <- function(x, ..., expand = NULL) {
 #' Create a STAC link object
 #'
 #' @description
-#' Creates a link object following the STAC specification. Links are used to
-#' connect STAC resources (catalogs, collections, and items) and establish
-#' relationships between them.
+#' Constructor to create a link object following the STAC specification. Links 
+#' are used to connect STAC resources (catalogs, collections, and items) and 
+#' establish relationships between them.
 #'
 #' @param rel (character, required) The link relation type. Common values
 #'   include `"self"`, `"root"`, `"parent"`, `"child"`, `"item"`,
@@ -348,12 +348,8 @@ print.stac_catalog <- function(x, ..., expand = NULL) {
 #'   Default is `NULL`.
 #' @param method (character, optional) The HTTP method to use when following the
 #'   link (e.g., `"GET"`, `"POST"`). Default is `NULL`.
-#' @param headers (list or named vector, optional) HTTP headers to include when
-#'   following the link. Default is `NULL`.
 #' @param body (list, optional) The HTTP body to include when following the link
 #'   (typically used with POST requests). Default is `NULL`.
-#' @param merge (logical, optional) Whether to merge the link body with the
-#'   current resource when following the link. Default is `FALSE`.
 #' @param ... Additional link fields retained in `link$extra_fields` and
 #'   included during JSON serialization.
 #'
@@ -380,44 +376,27 @@ stac_link <- function(
   type = NULL,
   title = NULL,
   method = NULL,
-  headers = NULL,
   body = NULL,
-  merge = FALSE,
   ...
 ) {
+  # Create initial link object
   object <- list(
     rel = rel,
     href = href,
     type = type,
     title = title,
     method = method,
-    headers = headers,
     body = body,
-    merge = merge,
     extra_fields = list(...)
   )
+
   # Validation
   check_single_character(object$rel, "rel")
   check_single_character(object$href, "href")
-  check_single_character(
-    object$type,
-    "type",
-    allow_null = TRUE,
-    allow_empty = TRUE
-  )
-  check_single_character(
-    object$title,
-    "title",
-    allow_null = TRUE,
-    allow_empty = TRUE
-  )
-  check_single_character(
-    object$method,
-    "method",
-    allow_null = TRUE,
-    allow_empty = TRUE
-  )
-  check_flag(object$merge, "merge")
+  check_single_character(object$type, "type", allow_null = TRUE, allow_empty = TRUE)
+  check_single_character(object$title, "title", allow_null = TRUE, allow_empty = TRUE)
+  check_single_character(object$method, "method", allow_null = TRUE, allow_empty = TRUE)
+
   # Additional unstructured fields
   if (!is.list(object[["extra_fields"]])) {
     cli::cli_abort("extra_fields must be list.")
@@ -431,15 +410,18 @@ stac_link <- function(
 
 #' @exportS3Method
 as.list.stac_link <- function(x, ...) {
+  # Create list from required fields
   out <- list(rel = x$rel, href = x$href)
-  for (field in c("type", "title", "method", "headers", "body")) {
+
+  # Add optional fields if they are not NULL
+  for (field in c("type", "title", "method", "body")) {
     value <- x[[field]]
     if (!is.null(value)) out[[field]] <- value
   }
-  if (isTRUE(x$merge)) {
-    out[["merge"]] <- TRUE
-  }
-  return(c(out, x$extra_fields))
+
+  # Append extra fields
+  out <- c(out, x$extra_fields)
+  return(out)
 }
 
 
@@ -495,7 +477,7 @@ normalize_links <- function(x) {
 #' @param href (character, required) The URL or path to the linked resource.
 #'   Can be absolute or relative.
 #' @param ... Additional link properties passed to `stac_link()`, such as
-#'   `type`, `title`, `method`, `headers`, `body`, or `merge`.
+#'   `type`, `title`, `method`, or `body`.
 #'
 #' @return The modified catalog object with the new link added.
 #'

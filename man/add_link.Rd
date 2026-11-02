@@ -17,7 +17,7 @@ STAC specification for a full list of relation types.}
 Can be absolute or relative.}
 
 \item{...}{Additional link properties passed to \code{stac_link()}, such as
-\code{type}, \code{title}, \code{method}, \code{headers}, \code{body}, or \code{merge}.}
+\code{type}, \code{title}, \code{method}, or \code{body}.}
 }
 \value{
 The modified catalog object with the new link added.

@@ -81,7 +81,7 @@ test_that("core constructors use the common checks", {
     "single character value"
   )
   expect_error(
-    stac_link("self", "catalog.json", merge = c(TRUE, FALSE)),
+    stac_validation(valid = c(TRUE, FALSE)),
     "TRUE or FALSE"
   )
 })
