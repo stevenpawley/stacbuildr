@@ -27,6 +27,7 @@
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_table_extension.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/add_vector_extension.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/as.data.frame.stac_catalog.html</loc></url>
+<url><loc>https://stevenpawley.github.io/stacbuildr/reference/as_json_array.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/band_from_file.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/bands_from_terra.html</loc></url>
 <url><loc>https://stevenpawley.github.io/stacbuildr/reference/classification_bitfield.html</loc></url>
