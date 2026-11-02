@@ -533,11 +533,16 @@ normalize_links <- function(x) {
 #'
 #' @export
 add_link <- function(catalog, rel, href, ...) {
+  # Create a link object
   new_link <- stac_link(rel = rel, href = href, ...)
+
+  # Get existing links from the catalog (coalesce with empty list if NULL)
   links <- catalog$links %||% list()
-  # A link is identified by (rel, href): replace the first match and drop any
-  # further duplicates so re-adding links to a read catalog cannot accumulate
-  # copies.
+
+  # A link is identified by (rel, href). Find existing links that correspond
+  # to the same link that is being added
+  # This deduplicates links where a new link matches an existing link. Otherwise,
+  # a catalog can accumulate duplicated links
   matches <- vapply(
     links,
     function(x) {
@@ -546,15 +551,20 @@ add_link <- function(catalog, rel, href, ...) {
     },
     logical(1)
   )
+
+  # Perform the deduplication
   if (any(matches)) {
     matched <- which(matches)
     links[[matched[[1]]]] <- new_link
+    
     if (length(matched) > 1) {
       links[matched[-1]] <- NULL
     }
   } else {
     links <- c(links, list(new_link))
   }
+
+  # Insert the link back into the catalog
   catalog$links <- links
   return(catalog)
 }
@@ -600,17 +610,20 @@ add_link <- function(catalog, rel, href, ...) {
 #'
 #' @export
 add_child <- function(catalog, child, href = NULL, title = NULL) {
+  # Basic checks
   if (!inherits(child, "stac_catalog")) {
     cli::cli_abort("'child' must be a stac_catalog or stac_collection object")
   }
+
+  # Check that the ID for the child to be added does not collide with an existing child ID
   check_duplicate_ids(
-    new_ids = child$id,
-    existing_ids = names(
-      attr(catalog, "stac_children") %||%
-        list()
-    ),
+    new_ids = child$id, # IF of the child being added
+    existing_ids = names(attr(catalog, "stac_children") %||% list()), # IDs of already registered children
     what = "a child"
   )
+
+  # Build a default href for the child if not supplied
+  # (constructs a relative URL)
   if (is.null(href)) {
     if (inherits(child, "stac_collection")) {
       href <- paste0("./", child$id, "/collection.json")
@@ -618,6 +631,8 @@ add_child <- function(catalog, child, href = NULL, title = NULL) {
       href <- paste0("./", child$id, "/catalog.json")
     }
   }
+
+  # Add link to child
   catalog <- add_link(
     catalog,
     rel = "child",
@@ -626,6 +641,10 @@ add_child <- function(catalog, child, href = NULL, title = NULL) {
     title = title %||%
       child$title
   )
+
+  # Store the child objects (by their ID) within the catalog object attribute
+  # The child objects need to be stored in R memory - the links only point to
+  # files that might not exist yet. This is needed for `write_stac`
   stored_children <- attr(catalog, "stac_children")
   if (is.null(stored_children)) {
     stored_children <- list()
