@@ -81,6 +81,8 @@ stac_asset <- function(
   if (is.list(roles)) {
     roles <- unlist(roles, use.names = FALSE)
   }
+
+  # Create initial asset/list
   object <- list(
     href = href,
     title = title,
@@ -308,6 +310,8 @@ add_asset <- function(
     cli::cli_abort("'key' is required and must be a non-empty string")
   }
 
+  # Potentially create the asset object if the asset is supplied by individual
+  # arguments rather than passing an asset object
   if (!is.null(asset)) {
     asset <- as_stac_asset(asset)
   } else {
