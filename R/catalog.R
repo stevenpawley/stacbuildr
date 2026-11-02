@@ -180,19 +180,21 @@ stac_catalog <- function(
     allow_null = TRUE
   )
   check_character_vector(object$conformsTo, "conformsTo", allow_null = TRUE)
+  
   # Links
   if (!is.list(object[["links"]])) {
     cli::cli_abort("links must be list.")
   }
-  if (
-    !all(vapply(object[["links"]], inherits, logical(1), what = "stac_link"))
-  ) {
+
+  if (!all(vapply(object[["links"]], inherits, logical(1), what = "stac_link"))) {
     cli::cli_abort(paste("links", "must contain only stac_link objects"))
   }
+  
   # Extra fields
   if (!is.list(object[["extra_fields"]])) {
     cli::cli_abort("extra_fields must be list.")
   }
+  
   # Type
   if (!object$type %in% c("Catalog", "Collection")) {
     cli::cli_abort(sprintf(
@@ -209,28 +211,32 @@ stac_catalog <- function(
 
 #' @exportS3Method
 as.list.stac_catalog <- function(x, ...) {
+  # Create initial list object from required fields
   out <- list(
     type = x$type,
     stac_version = x$stac_version,
     id = x$id,
     description = x$description
   )
+
+  # Add optional attributes to list
   if (!is.null(x$title)) {
     out$title <- x$title
   }
-  if (
-    !is.null(x$stac_extensions) &&
-      length(x$stac_extensions) > 0
-  ) {
+
+  if (!is.null(x$stac_extensions) && length(x$stac_extensions) > 0) {
     out$stac_extensions <- as.list(x$stac_extensions)
   }
+
   if (!is.null(x$conformsTo) && length(x$conformsTo) > 0) {
     out$conformsTo <- as_json_array(x$conformsTo)
   }
+
   out$links <- stac_json_value(x$links)
   if (length(x$extra_fields) > 0) {
     out <- c(out, x$extra_fields)
   }
+
   return(out)
 }
 
