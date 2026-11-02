@@ -20,7 +20,7 @@ test_that("assets remain S3 through extensions and disk round trips", {
   expect_identical(restored$assets$data$roles, "data")
   expect_equal(
     as.list(restored$assets$data),
-    stacbuildr:::stac_json_value(as.list(item$assets$data))
+    stacbuildr:::stac_to_nested_list(as.list(item$assets$data))
   )
 })
 

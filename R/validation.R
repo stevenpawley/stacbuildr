@@ -546,7 +546,7 @@ validate_bbox <- function(bbox, prefix = "bbox") {
 #'
 #' @noRd
 validate_geometry <- function(geometry) {
-  geometry <- stac_json_value(geometry)
+  geometry <- stac_to_nested_list(geometry)
   if (!is.list(geometry)) {
     return("Field 'geometry' must be a GeoJSON geometry object")
   }

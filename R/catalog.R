@@ -232,7 +232,8 @@ as.list.stac_catalog <- function(x, ...) {
     out$conformsTo <- as_json_array(x$conformsTo)
   }
 
-  out$links <- stac_json_value(x$links)
+  out$links <- stac_to_nested_list(x$links)
+  
   if (length(x$extra_fields) > 0) {
     out <- c(out, x$extra_fields)
   }

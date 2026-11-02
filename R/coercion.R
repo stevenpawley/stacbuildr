@@ -83,7 +83,7 @@ item_sfc <- function(item) {
   }
   return(geojsonsf::geojson_sfc(
     jsonlite::toJSON(
-      stac_json_value(item$geometry),
+      stac_to_nested_list(item$geometry),
       auto_unbox = TRUE,
       digits = 15
     )

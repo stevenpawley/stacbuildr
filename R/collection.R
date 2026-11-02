@@ -322,23 +322,23 @@ as.list.stac_collection <- function(x, ...) {
     out$keywords <- as_json_array(x$keywords)
   }
   if (!is.null(x$providers) && length(x$providers) > 0) {
-    out$providers <- stac_json_value(x$providers)
+    out$providers <- stac_to_nested_list(x$providers)
   }
   if (!is.null(x$stac_extensions) && length(x$stac_extensions) > 0) {
     out$stac_extensions <- as.list(x$stac_extensions)
   }
-  out$links <- stac_json_value(x$links)
+  out$links <- stac_to_nested_list(x$links)
   if (!is.null(x$summaries) && length(x$summaries$extra_fields) > 0) {
-    out$summaries <- stac_json_value(x$summaries)
+    out$summaries <- stac_to_nested_list(x$summaries)
   }
   if (!is.null(x$assets) && length(x$assets) > 0) {
-    out$assets <- stac_json_value(x$assets)
+    out$assets <- stac_to_nested_list(x$assets)
   }
   if (!is.null(x$conformsTo) && length(x$conformsTo) > 0) {
     out$conformsTo <- as_json_array(x$conformsTo)
   }
   if (length(x$extra_fields) > 0) {
-    out <- c(out, stac_json_value(x$extra_fields))
+    out <- c(out, stac_to_nested_list(x$extra_fields))
   }
   return(out)
 }

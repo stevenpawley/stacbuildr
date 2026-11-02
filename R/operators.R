@@ -69,12 +69,12 @@ normalize_common_arrays <- function(x) {
 
 # Recursively reduce S3 metadata objects to their JSON-ready list forms.
 # Named and unnamed lists retain their shape; atomic values pass through.
-stac_json_value <- function(x) {
+stac_to_nested_list <- function(x) {
   if (inherits(x, "stac_object")) {
     x <- as.list(x)
   }
   if (is.list(x)) {
-    return(lapply(x, stac_json_value))
+    return(lapply(x, stac_to_nested_list))
   }
   return(x)
 }
@@ -122,8 +122,8 @@ merge_bands <- function(existing, bands) {
 
   return(Map(
     function(old, new) {
-      old <- stac_json_value(old)
-      new <- stac_json_value(new)
+      old <- stac_to_nested_list(old)
+      new <- stac_to_nested_list(new)
       old[names(new)] <- new
       return(old)
     },

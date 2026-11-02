@@ -371,14 +371,14 @@ as.list.stac_item <- function(x, ...) {
     type = x$type,
     stac_version = x$stac_version,
     id = x$id,
-    geometry = stac_json_value(x$geometry),
-    properties = stac_json_value(x$properties),
-    links = stac_json_value(x$links),
+    geometry = stac_to_nested_list(x$geometry),
+    properties = stac_to_nested_list(x$properties),
+    links = stac_to_nested_list(x$links),
     # Ensure assets serializes as {} not [] when empty
     assets = if (length(x$assets) == 0) {
       setNames(list(), character(0))
     } else {
-      stac_json_value(x$assets)
+      stac_to_nested_list(x$assets)
     }
   )
   if (!is.null(x$bbox)) {

@@ -577,7 +577,7 @@ as.list.classification_bitfield <- function(x, ...) {
   return(compact_nulls(list(
     offset = x$offset,
     length = x$length,
-    classes = stac_json_value(x$classes),
+    classes = stac_to_nested_list(x$classes),
     name = x$name,
     description = x$description,
     roles = if (is.null(x$roles)) NULL else as_json_array(x$roles)
