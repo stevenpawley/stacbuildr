@@ -45,12 +45,14 @@ stac_collection(
 
 - license:
 
-  (character, required) Collection's license(s) as a [SPDX License
-  identifier](https://spdx.org/licenses/), `"various"`, or `"other"`. If
-  the collection includes data with multiple different licenses, use
-  `"various"` and add a link for each license. In STAC 1.1.0,
-  `"proprietary"` is deprecated in favor of `"other"`. Examples:
-  `"CC-BY-4.0"`, `"MIT"`, `"other"`.
+  (character, required) Collection's license(s) as an [SPDX License
+  expression](https://spdx.org/licenses/), `"various"`, or `"other"`.
+  SPDX expressions such as `"MIT OR CC-BY-4.0"` are allowed. If the
+  collection includes data with multiple different licenses, use
+  `"various"` and add a link for each license. In STAC 1.1.0, both
+  `"proprietary"` and `"various"` are deprecated in favor of SPDX
+  expressions, or `"other"` with license links. Examples: `"CC-BY-4.0"`,
+  `"MIT OR Apache-2.0"`, `"other"`.
 
 - extent:
 
@@ -211,16 +213,17 @@ The extent object must contain both `spatial` and `temporal` extents:
 
 The license field was updated in STAC 1.1.0:
 
-- Use SPDX identifiers when possible (e.g., "CC-BY-4.0", "MIT")
+- Use SPDX expressions when possible (e.g., "CC-BY-4.0", "MIT OR
+  Apache-2.0")
 
 - Use `"other"` for custom/proprietary licenses (replaces deprecated
   "proprietary")
 
-- Use `"various"` when the collection contains data with multiple
-  licenses
+- `"various"` and `"proprietary"` are deprecated in STAC 1.1.0; SPDX
+  expressions (e.g. "CC-BY-4.0 OR MIT") can express multiple licenses
 
-- When using `"other"` or `"various"`, add license link(s) in the links
-  array
+- When using `"other"`, `"various"`, or multiple sources, add license
+  link(s) in the links array
 
 ### Summaries
 
@@ -236,7 +239,7 @@ without inspecting all Items. Three formats are supported:
 ## References
 
 STAC Collection Specification:
-<https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md>
+<https://github.com/radiantearth/stac-spec/blob/v1.1.0/collection-spec/collection-spec.md>
 
 ## See also
 
@@ -280,7 +283,7 @@ collection <- stac_collection(
     "Sentinel-2 Level-2A provides Bottom-Of-Atmosphere (BOA) reflectance",
     "images derived from the associated Level-1C products."
   ),
-  license = "proprietary",
+  license = "other",
   extent = stac_extent(
     spatial_bbox = list(c(-180, -90, 180, 90)),
     temporal_interval = list(list("2015-06-27T00:00:00Z", NULL))
@@ -304,9 +307,6 @@ collection <- stac_collection(
     )
   )
 )
-#> 'proprietary' is deprecated as a license identifier in STAC 1.1.0.
-#> ℹ Use 'other' instead, and add a link with rel='license' pointing to the
-#>   license document.
 
 # Add links
 collection <- collection |>
@@ -323,7 +323,7 @@ collection <- collection |>
 multi_license_collection <- stac_collection(
   id = "mixed-sources",
   description = "Collection with data from multiple sources with different licenses",
-  license = "various",
+  license = "CC-BY-4.0 OR MIT",
   extent = stac_extent(
     spatial_bbox = list(c(-120, 30, -110, 40)),
     temporal_interval = list(c("2020-01-01T00:00:00Z", "2023-12-31T23:59:59Z"))
@@ -332,8 +332,8 @@ multi_license_collection <- stac_collection(
   add_link("license", "https://creativecommons.org/licenses/by/4.0/",
     title = "CC-BY-4.0 for Landsat data"
   ) |>
-  add_link("license", "https://example.com/custom-license.txt",
-    title = "Custom license for commercial data"
+  add_link("license", "https://opensource.org/license/mit",
+    title = "MIT for auxiliary data"
   )
 
 # Convert to JSON
@@ -344,7 +344,7 @@ cat(collection_json)
 #>   "stac_version": "1.1.0",
 #>   "id": "sentinel-2-l2a",
 #>   "description": "Sentinel-2 Level-2A provides Bottom-Of-Atmosphere (BOA) reflectance images derived from the associated Level-1C products.",
-#>   "license": "proprietary",
+#>   "license": "other",
 #>   "extent": {
 #>     "spatial": {
 #>       "bbox": [

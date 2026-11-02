@@ -79,7 +79,7 @@ catalog-type comparison.
 ## References
 
 STAC best practices, [Use of
-links](https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links),
+links](https://github.com/radiantearth/stac-spec/blob/v1.1.0/best-practices.md#use-of-links),
 which defines the self-contained, relative published and absolute
 published layouts. See <https://stacspec.org/> for the specification as
 a whole.

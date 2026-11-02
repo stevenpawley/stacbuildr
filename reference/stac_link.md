@@ -66,7 +66,7 @@ and `link$href`.
 ## References
 
 STAC Link Object specification:
-<https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md#link-object>
+<https://github.com/radiantearth/stac-spec/blob/v1.1.0/catalog-spec/catalog-spec.md#link-object>
 
 ## See also
 

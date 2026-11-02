@@ -213,7 +213,7 @@ with `add_parent_links = TRUE` to properly establish this relationship.
 ## References
 
 STAC Item Specification:
-<https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md>
+<https://github.com/radiantearth/stac-spec/blob/v1.1.0/item-spec/item-spec.md>
 
 ## See also
 

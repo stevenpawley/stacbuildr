@@ -91,12 +91,14 @@ collection's contents, purpose, and scope.</p></dd>
 
 
 <dt id="arg-license">license<a class="anchor" aria-label="anchor" href="#arg-license"></a></dt>
-<dd><p>(character, required) Collection's license(s) as a
-<a href="https://spdx.org/licenses/" class="external-link">SPDX License identifier</a>, <code>"various"</code>, or
-<code>"other"</code>. If the collection includes data with multiple different licenses,
-use <code>"various"</code> and add a link for each license. In STAC 1.1.0, <code>"proprietary"</code>
-is deprecated in favor of <code>"other"</code>. Examples: <code>"CC-BY-4.0"</code>, <code>"MIT"</code>,
-<code>"other"</code>.</p></dd>
+<dd><p>(character, required) Collection's license(s) as an
+<a href="https://spdx.org/licenses/" class="external-link">SPDX License expression</a>, <code>"various"</code>, or
+<code>"other"</code>. SPDX expressions such as <code>"MIT OR CC-BY-4.0"</code> are allowed. If
+the collection includes data with multiple different licenses, use
+<code>"various"</code> and add a link for each license. In STAC 1.1.0, both
+<code>"proprietary"</code> and <code>"various"</code> are deprecated in favor of SPDX
+expressions, or <code>"other"</code> with license links. Examples: <code>"CC-BY-4.0"</code>,
+<code>"MIT OR Apache-2.0"</code>, <code>"other"</code>.</p></dd>
 
 
 <dt id="arg-extent">extent<a class="anchor" aria-label="anchor" href="#arg-extent"></a></dt>
@@ -236,10 +238,12 @@ serialization with <code><a href="https://rspatial.github.io/terra/reference/as.
 <h3 id="license-values-in-stac-">License Values in STAC 1.1.0<a class="anchor" aria-label="anchor" href="#license-values-in-stac-"></a></h3>
 
 
-<p>The license field was updated in STAC 1.1.0:</p><ul><li><p>Use SPDX identifiers when possible (e.g., "CC-BY-4.0", "MIT")</p></li>
+<p>The license field was updated in STAC 1.1.0:</p><ul><li><p>Use SPDX expressions when possible (e.g., "CC-BY-4.0", "MIT OR Apache-2.0")</p></li>
 <li><p>Use <code>"other"</code> for custom/proprietary licenses (replaces deprecated "proprietary")</p></li>
-<li><p>Use <code>"various"</code> when the collection contains data with multiple licenses</p></li>
-<li><p>When using <code>"other"</code> or <code>"various"</code>, add license link(s) in the links array</p></li>
+<li><p><code>"various"</code> and <code>"proprietary"</code> are deprecated in STAC 1.1.0; SPDX
+expressions (e.g. "CC-BY-4.0 OR MIT") can express multiple licenses</p></li>
+<li><p>When using <code>"other"</code>, <code>"various"</code>, or multiple sources, add license
+link(s) in the links array</p></li>
 </ul></div>
 
 <div class="section">
@@ -256,7 +260,7 @@ inspecting all Items. Three formats are supported:</p><ul><li><p>Array of unique
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>STAC Collection Specification:
-<a href="https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md" class="external-link">https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md</a></p>
+<a href="https://github.com/radiantearth/stac-spec/blob/v1.1.0/collection-spec/collection-spec.md" class="external-link">https://github.com/radiantearth/stac-spec/blob/v1.1.0/collection-spec/collection-spec.md</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -291,7 +295,7 @@ inspecting all Items. Three formats are supported:</p><ul><li><p>Array of unique
 <span class="r-in"><span>    <span class="st">"Sentinel-2 Level-2A provides Bottom-Of-Atmosphere (BOA) reflectance"</span>,</span></span>
 <span class="r-in"><span>    <span class="st">"images derived from the associated Level-1C products."</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span>,</span></span>
-<span class="r-in"><span>  license <span class="op">=</span> <span class="st">"proprietary"</span>,</span></span>
+<span class="r-in"><span>  license <span class="op">=</span> <span class="st">"other"</span>,</span></span>
 <span class="r-in"><span>  extent <span class="op">=</span> <span class="fu"><a href="stac_extent.html">stac_extent</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    spatial_bbox <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">180</span>, <span class="op">-</span><span class="fl">90</span>, <span class="fl">180</span>, <span class="fl">90</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    temporal_interval <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"2015-06-27T00:00:00Z"</span>, <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -315,9 +319,6 @@ inspecting all Items. Three formats are supported:</p><ul><li><p>Array of unique
 <span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 'proprietary' is deprecated as a license identifier in STAC 1.1.0.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Use 'other' instead, and add a link with rel='license' pointing to the</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   license document.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add links</span></span></span>
 <span class="r-in"><span><span class="va">collection</span> <span class="op">&lt;-</span> <span class="va">collection</span> <span class="op">|&gt;</span></span></span>
@@ -334,7 +335,7 @@ inspecting all Items. Three formats are supported:</p><ul><li><p>Array of unique
 <span class="r-in"><span><span class="va">multi_license_collection</span> <span class="op">&lt;-</span> <span class="fu">stac_collection</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  id <span class="op">=</span> <span class="st">"mixed-sources"</span>,</span></span>
 <span class="r-in"><span>  description <span class="op">=</span> <span class="st">"Collection with data from multiple sources with different licenses"</span>,</span></span>
-<span class="r-in"><span>  license <span class="op">=</span> <span class="st">"various"</span>,</span></span>
+<span class="r-in"><span>  license <span class="op">=</span> <span class="st">"CC-BY-4.0 OR MIT"</span>,</span></span>
 <span class="r-in"><span>  extent <span class="op">=</span> <span class="fu"><a href="stac_extent.html">stac_extent</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    spatial_bbox <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">120</span>, <span class="fl">30</span>, <span class="op">-</span><span class="fl">110</span>, <span class="fl">40</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    temporal_interval <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2020-01-01T00:00:00Z"</span>, <span class="st">"2023-12-31T23:59:59Z"</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -343,8 +344,8 @@ inspecting all Items. Three formats are supported:</p><ul><li><p>Array of unique
 <span class="r-in"><span>  <span class="fu"><a href="add_link.html">add_link</a></span><span class="op">(</span><span class="st">"license"</span>, <span class="st">"https://creativecommons.org/licenses/by/4.0/"</span>,</span></span>
 <span class="r-in"><span>    title <span class="op">=</span> <span class="st">"CC-BY-4.0 for Landsat data"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="add_link.html">add_link</a></span><span class="op">(</span><span class="st">"license"</span>, <span class="st">"https://example.com/custom-license.txt"</span>,</span></span>
-<span class="r-in"><span>    title <span class="op">=</span> <span class="st">"Custom license for commercial data"</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="add_link.html">add_link</a></span><span class="op">(</span><span class="st">"license"</span>, <span class="st">"https://opensource.org/license/mit"</span>,</span></span>
+<span class="r-in"><span>    title <span class="op">=</span> <span class="st">"MIT for auxiliary data"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Convert to JSON</span></span></span>
@@ -355,7 +356,7 @@ inspecting all Items. Three formats are supported:</p><ul><li><p>Array of unique
 <span class="r-out co"><span class="r-pr">#&gt;</span>   "stac_version": "1.1.0",</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   "id": "sentinel-2-l2a",</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   "description": "Sentinel-2 Level-2A provides Bottom-Of-Atmosphere (BOA) reflectance images derived from the associated Level-1C products.",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   "license": "proprietary",</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   "license": "other",</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   "extent": {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     "spatial": {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       "bbox": [</span>

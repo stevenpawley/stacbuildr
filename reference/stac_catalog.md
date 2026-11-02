@@ -147,7 +147,7 @@ Items or Collections rather than Catalogs.
 ## References
 
 STAC Catalog Specification:
-<https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md>
+<https://github.com/radiantearth/stac-spec/blob/v1.1.0/catalog-spec/catalog-spec.md>
 
 ## See also
 
