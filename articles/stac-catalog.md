@@ -101,7 +101,7 @@ item
 #> <STAC Item>
 #>   id           : dem-001
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-11-02T17:08:12Z
+#>   datetime     : 2026-11-02T17:30:41Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -195,14 +195,8 @@ get_item_links(collection)
 #> $method
 #> NULL
 #> 
-#> $headers
-#> NULL
-#> 
 #> $body
 #> NULL
-#> 
-#> $merge
-#> [1] FALSE
 #> 
 #> $extra_fields
 #> list()
@@ -230,7 +224,7 @@ get_items(collection)
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-11-02T17:08:12Z
+#>   datetime     : 2026-11-02T17:30:41Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -338,7 +332,7 @@ write_stac(
   catalog_type = "self-contained",
   overwrite = TRUE
 )
-#> ✔ STAC catalog written to /tmp/RtmpfKSJQO/catalog
+#> ✔ STAC catalog written to /tmp/Rtmp3SDfA8/catalog
 ```
 
 The resulting directory structure looks like:
@@ -368,7 +362,7 @@ item_read
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-11-02T17:08:12Z
+#>   datetime     : 2026-11-02T17:30:41Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]

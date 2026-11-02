@@ -115,14 +115,8 @@ get_item_links(catalog)
 #> $method
 #> NULL
 #> 
-#> $headers
-#> NULL
-#> 
 #> $body
 #> NULL
-#> 
-#> $merge
-#> [1] FALSE
 #> 
 #> $extra_fields
 #> list()

@@ -1,8 +1,8 @@
 # Create a STAC link object
 
-Creates a link object following the STAC specification. Links are used
-to connect STAC resources (catalogs, collections, and items) and
-establish relationships between them.
+Constructor to create a link object following the STAC specification.
+Links are used to connect STAC resources (catalogs, collections, and
+items) and establish relationships between them.
 
 ## Usage
 
@@ -13,9 +13,7 @@ stac_link(
   type = NULL,
   title = NULL,
   method = NULL,
-  headers = NULL,
   body = NULL,
-  merge = FALSE,
   ...
 )
 ```
@@ -50,20 +48,10 @@ stac_link(
   (character, optional) The HTTP method to use when following the link
   (e.g., `"GET"`, `"POST"`). Default is `NULL`.
 
-- headers:
-
-  (list or named vector, optional) HTTP headers to include when
-  following the link. Default is `NULL`.
-
 - body:
 
   (list, optional) The HTTP body to include when following the link
   (typically used with POST requests). Default is `NULL`.
-
-- merge:
-
-  (logical, optional) Whether to merge the link body with the current
-  resource when following the link. Default is `FALSE`.
 
 - ...:
 
