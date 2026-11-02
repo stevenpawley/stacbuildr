@@ -83,7 +83,7 @@
 #'
 #' @references
 #' STAC Catalog Specification:
-#' \url{https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md}
+#' \url{https://github.com/radiantearth/stac-spec/blob/v1.1.0/catalog-spec/catalog-spec.md}
 #'
 #' @examples
 #' # Create a basic catalog
@@ -363,7 +363,7 @@ print.stac_catalog <- function(x, ..., expand = NULL) {
 #'
 #' @references
 #' STAC Link Object specification:
-#' \url{https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md#link-object}
+#' \url{https://github.com/radiantearth/stac-spec/blob/v1.1.0/catalog-spec/catalog-spec.md#link-object}
 #'
 #' @examples
 #' link <- stac_link("self", "https://example.com/catalog.json")

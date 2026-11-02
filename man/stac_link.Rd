@@ -56,7 +56,7 @@ link$href
 }
 \references{
 STAC Link Object specification:
-\url{https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md#link-object}
+\url{https://github.com/radiantearth/stac-spec/blob/v1.1.0/catalog-spec/catalog-spec.md#link-object}
 }
 \seealso{
 \itemize{

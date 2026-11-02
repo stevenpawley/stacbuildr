@@ -256,7 +256,7 @@ cat(item_json)
 }
 \references{
 STAC Item Specification:
-\url{https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md}
+\url{https://github.com/radiantearth/stac-spec/blob/v1.1.0/item-spec/item-spec.md}
 }
 \seealso{
 \itemize{

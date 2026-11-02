@@ -75,7 +75,7 @@ write_stac(
 
 }
 \references{
-STAC best practices, \href{https://github.com/radiantearth/stac-spec/blob/master/best-practices.md#use-of-links}{Use of links},
+STAC best practices, \href{https://github.com/radiantearth/stac-spec/blob/v1.1.0/best-practices.md#use-of-links}{Use of links},
 which defines the self-contained, relative published and absolute published
 layouts. See \url{https://stacspec.org/} for the specification as a whole.
 }

@@ -13,12 +13,14 @@
 #'   fully explain the Collection. CommonMark 0.29 syntax may be used for rich
 #'   text representation. This should provide comprehensive information about the
 #'   collection's contents, purpose, and scope.
-#' @param license (character, required) Collection's license(s) as a
-#'   [SPDX License identifier](https://spdx.org/licenses/), `"various"`, or
-#'   `"other"`. If the collection includes data with multiple different licenses,
-#'   use `"various"` and add a link for each license. In STAC 1.1.0, `"proprietary"`
-#'   is deprecated in favor of `"other"`. Examples: `"CC-BY-4.0"`, `"MIT"`,
-#'   `"other"`.
+#' @param license (character, required) Collection's license(s) as an
+#'   [SPDX License expression](https://spdx.org/licenses/), `"various"`, or
+#'   `"other"`. SPDX expressions such as `"MIT OR CC-BY-4.0"` are allowed. If
+#'   the collection includes data with multiple different licenses, use
+#'   `"various"` and add a link for each license. In STAC 1.1.0, both
+#'   `"proprietary"` and `"various"` are deprecated in favor of SPDX
+#'   expressions, or `"other"` with license links. Examples: `"CC-BY-4.0"`,
+#'   `"MIT OR Apache-2.0"`, `"other"`.
 #' @param extent (stac_extent or list, required) Spatial and temporal extents that
 #'   describe the bounds of all Items contained within this Collection. Can be a 
 #'   `stac_extent` object or a named list with two elements:
@@ -106,10 +108,12 @@
 #'
 #' ## License Values in STAC 1.1.0
 #' The license field was updated in STAC 1.1.0:
-#' * Use SPDX identifiers when possible (e.g., "CC-BY-4.0", "MIT")
+#' * Use SPDX expressions when possible (e.g., "CC-BY-4.0", "MIT OR Apache-2.0")
 #' * Use `"other"` for custom/proprietary licenses (replaces deprecated "proprietary")
-#' * Use `"various"` when the collection contains data with multiple licenses
-#' * When using `"other"` or `"various"`, add license link(s) in the links array
+#' * `"various"` and `"proprietary"` are deprecated in STAC 1.1.0; SPDX
+#'   expressions (e.g. "CC-BY-4.0 OR MIT") can express multiple licenses
+#' * When using `"other"`, `"various"`, or multiple sources, add license
+#'   link(s) in the links array
 #'
 #' ## Summaries
 #' Summaries help users understand the range of values in the collection without
@@ -132,7 +136,7 @@
 #'
 #' @references
 #' STAC Collection Specification:
-#' \url{https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md}
+#' \url{https://github.com/radiantearth/stac-spec/blob/v1.1.0/collection-spec/collection-spec.md}
 #'
 #' @examples
 #' # Basic collection with minimal required fields
@@ -154,7 +158,7 @@
 #'     "Sentinel-2 Level-2A provides Bottom-Of-Atmosphere (BOA) reflectance",
 #'     "images derived from the associated Level-1C products."
 #'   ),
-#'   license = "proprietary",
+#'   license = "other",
 #'   extent = stac_extent(
 #'     spatial_bbox = list(c(-180, -90, 180, 90)),
 #'     temporal_interval = list(list("2015-06-27T00:00:00Z", NULL))
@@ -194,7 +198,7 @@
 #' multi_license_collection <- stac_collection(
 #'   id = "mixed-sources",
 #'   description = "Collection with data from multiple sources with different licenses",
-#'   license = "various",
+#'   license = "CC-BY-4.0 OR MIT",
 #'   extent = stac_extent(
 #'     spatial_bbox = list(c(-120, 30, -110, 40)),
 #'     temporal_interval = list(c("2020-01-01T00:00:00Z", "2023-12-31T23:59:59Z"))
@@ -203,8 +207,8 @@
 #'   add_link("license", "https://creativecommons.org/licenses/by/4.0/",
 #'     title = "CC-BY-4.0 for Landsat data"
 #'   ) |>
-#'   add_link("license", "https://example.com/custom-license.txt",
-#'     title = "Custom license for commercial data"
+#'   add_link("license", "https://opensource.org/license/mit",
+#'     title = "MIT for auxiliary data"
 #'   )
 #'
 #' # Convert to JSON
@@ -230,12 +234,23 @@ stac_collection <- function(
   ...
 ) {
   # Basic argument checks
+  # Both "proprietary" and "various" are deprecated in STAC 1.1.0
   if (identical(license, "proprietary")) {
     cli::cli_inform(c(
       "'proprietary' is deprecated as a license identifier in STAC 1.1.0.",
       i = paste(
         "Use 'other' instead, and add a link with rel='license' pointing",
         "to the license document."
+      )
+    ))
+  }
+
+  if (identical(license, "various")) {
+    cli::cli_inform(c(
+      "'various' is deprecated as a license identifier in STAC 1.1.0.",
+      i = paste(
+        "Use an SPDX expression (e.g. 'CC-BY-4.0 OR MIT') when the licenses",
+        "are known, or 'other' with links with rel='license' for each license."
       )
     ))
   }
@@ -827,7 +842,7 @@ print.stac_summaries <- function(x, ...) {
 #'
 #' @references
 #' STAC Collection Specification (`item_assets`):
-#' \url{https://github.com/radiantearth/stac-spec/tree/master/collection-spec}
+#' \url{https://github.com/radiantearth/stac-spec/tree/v1.1.0/collection-spec}
 #'
 #' @seealso
 #' * [add_item()] for adding items to a collection
@@ -838,7 +853,7 @@ print.stac_summaries <- function(x, ...) {
 #' collection <- stac_collection(
 #'   id = "landsat",
 #'   description = "Landsat imagery",
-#'   license = "proprietary",
+#'   license = "other",
 #'   extent = stac_extent(
 #'     spatial_bbox = list(c(-180, -90, 180, 90)),
 #'     temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))

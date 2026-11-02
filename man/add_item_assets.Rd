@@ -43,7 +43,7 @@ should ideally be consistent across all items in a collection.
 collection <- stac_collection(
   id = "landsat",
   description = "Landsat imagery",
-  license = "proprietary",
+  license = "other",
   extent = stac_extent(
     spatial_bbox = list(c(-180, -90, 180, 90)),
     temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
@@ -68,7 +68,7 @@ collection <- add_item_assets(collection)
 }
 \references{
 STAC Collection Specification (\code{item_assets}):
-\url{https://github.com/radiantearth/stac-spec/tree/master/collection-spec}
+\url{https://github.com/radiantearth/stac-spec/tree/v1.1.0/collection-spec}
 }
 \seealso{
 \itemize{

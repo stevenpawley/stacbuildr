@@ -32,12 +32,14 @@ fully explain the Collection. CommonMark 0.29 syntax may be used for rich
 text representation. This should provide comprehensive information about the
 collection's contents, purpose, and scope.}
 
-\item{license}{(character, required) Collection's license(s) as a
-\href{https://spdx.org/licenses/}{SPDX License identifier}, \code{"various"}, or
-\code{"other"}. If the collection includes data with multiple different licenses,
-use \code{"various"} and add a link for each license. In STAC 1.1.0, \code{"proprietary"}
-is deprecated in favor of \code{"other"}. Examples: \code{"CC-BY-4.0"}, \code{"MIT"},
-\code{"other"}.}
+\item{license}{(character, required) Collection's license(s) as an
+\href{https://spdx.org/licenses/}{SPDX License expression}, \code{"various"}, or
+\code{"other"}. SPDX expressions such as \code{"MIT OR CC-BY-4.0"} are allowed. If
+the collection includes data with multiple different licenses, use
+\code{"various"} and add a link for each license. In STAC 1.1.0, both
+\code{"proprietary"} and \code{"various"} are deprecated in favor of SPDX
+expressions, or \code{"other"} with license links. Examples: \code{"CC-BY-4.0"},
+\code{"MIT OR Apache-2.0"}, \code{"other"}.}
 
 \item{extent}{(stac_extent or list, required) Spatial and temporal extents that
 describe the bounds of all Items contained within this Collection. Can be a
@@ -160,10 +162,12 @@ The extent object must contain both \code{spatial} and \code{temporal} extents:
 
 The license field was updated in STAC 1.1.0:
 \itemize{
-\item Use SPDX identifiers when possible (e.g., "CC-BY-4.0", "MIT")
+\item Use SPDX expressions when possible (e.g., "CC-BY-4.0", "MIT OR Apache-2.0")
 \item Use \code{"other"} for custom/proprietary licenses (replaces deprecated "proprietary")
-\item Use \code{"various"} when the collection contains data with multiple licenses
-\item When using \code{"other"} or \code{"various"}, add license link(s) in the links array
+\item \code{"various"} and \code{"proprietary"} are deprecated in STAC 1.1.0; SPDX
+expressions (e.g. "CC-BY-4.0 OR MIT") can express multiple licenses
+\item When using \code{"other"}, \code{"various"}, or multiple sources, add license
+link(s) in the links array
 }
 }
 
@@ -198,7 +202,7 @@ collection <- stac_collection(
     "Sentinel-2 Level-2A provides Bottom-Of-Atmosphere (BOA) reflectance",
     "images derived from the associated Level-1C products."
   ),
-  license = "proprietary",
+  license = "other",
   extent = stac_extent(
     spatial_bbox = list(c(-180, -90, 180, 90)),
     temporal_interval = list(list("2015-06-27T00:00:00Z", NULL))
@@ -238,7 +242,7 @@ collection <- collection |>
 multi_license_collection <- stac_collection(
   id = "mixed-sources",
   description = "Collection with data from multiple sources with different licenses",
-  license = "various",
+  license = "CC-BY-4.0 OR MIT",
   extent = stac_extent(
     spatial_bbox = list(c(-120, 30, -110, 40)),
     temporal_interval = list(c("2020-01-01T00:00:00Z", "2023-12-31T23:59:59Z"))
@@ -247,8 +251,8 @@ multi_license_collection <- stac_collection(
   add_link("license", "https://creativecommons.org/licenses/by/4.0/",
     title = "CC-BY-4.0 for Landsat data"
   ) |>
-  add_link("license", "https://example.com/custom-license.txt",
-    title = "Custom license for commercial data"
+  add_link("license", "https://opensource.org/license/mit",
+    title = "MIT for auxiliary data"
   )
 
 # Convert to JSON
@@ -258,7 +262,7 @@ cat(collection_json)
 }
 \references{
 STAC Collection Specification:
-\url{https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md}
+\url{https://github.com/radiantearth/stac-spec/blob/v1.1.0/collection-spec/collection-spec.md}
 }
 \seealso{
 \itemize{

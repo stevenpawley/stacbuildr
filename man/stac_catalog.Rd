@@ -169,7 +169,7 @@ cat(catalog_json)
 }
 \references{
 STAC Catalog Specification:
-\url{https://github.com/radiantearth/stac-spec/blob/master/catalog-spec/catalog-spec.md}
+\url{https://github.com/radiantearth/stac-spec/blob/v1.1.0/catalog-spec/catalog-spec.md}
 }
 \seealso{
 \itemize{
