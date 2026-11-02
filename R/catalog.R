@@ -425,7 +425,7 @@ as.list.stac_link <- function(x, ...) {
 }
 
 
-#' Coerce an object to a STAC link
+#' Coerce a list-like object to a STAC link
 #'
 #' Converts an object to a [stac_link] object. If `x` is already a
 #' `stac_link`, it is returned unchanged. Otherwise, `x` must be a list
@@ -439,26 +439,48 @@ as.list.stac_link <- function(x, ...) {
 #'
 #' @noRd
 as_stac_link <- function(x) {
+  # Return as-is if already a `stac_link` object
   if (inherits(x, "stac_link")) {
     return(x)
   }
+
+  # Checks
   if (!is.list(x) || is.null(x[["rel"]]) || is.null(x[["href"]])) {
     cli::cli_abort(c(
       "Each link must be a stac_link or a list with 'rel' and 'href' fields.",
       i = "Use stac_link() to build one."
     ))
   }
+
+  # Create stac link
   return(do.call(stac_link, x))
 }
 
 
+#' Normalize a collection of links
+#'
+#' Coerces user-supplied `links` input into a well-formed list of
+#' `stac_link` objects, ensuring that catalog, collection, and item
+#' constructors always store links in a consistent representation.
+#'
+#' @param x Input to normalize. Either `NULL`, or a list whose elements are
+#'   `stac_link` objects or lists with `rel` and `href` fields, as accepted by
+#'   `as_stac_link()`.
+#'
+#' @return A list of `stac_link` objects (empty if `x` is `NULL`).
+#' @noRd
 normalize_links <- function(x) {
+  # Return empty list for a NULL
   if (is.null(x)) {
     return(list())
   }
+
+  # Error if non-list
   if (!is.list(x)) {
     cli::cli_abort("'links' must be a list of link objects.")
   }
+
+  # Coerce to stac_link
   return(lapply(x, as_stac_link))
 }
 

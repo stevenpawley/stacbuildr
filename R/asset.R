@@ -155,7 +155,7 @@ as.list.stac_asset <- function(x, ...) {
 #' a list without an `href` field, or any non-list object other than a
 #' `stac_asset`, is an error.
 #'
-#' This function is internal; [normalize_assets()] applies it element-wise to
+#' This function is internal; `normalize_assets()` applies it element-wise to
 #' an Item's or Collection's assets dictionary.
 #'
 #' @seealso [stac_asset()]
