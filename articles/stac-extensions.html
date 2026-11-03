@@ -592,7 +592,7 @@ opening one specific file, so it has no meaning at item level.</p>
 <span>  <span class="fu"><a href="../reference/add_asset.html">add_asset</a></span><span class="op">(</span></span>
 <span>    key <span class="op">=</span> <span class="st">"data"</span>,</span>
 <span>    href <span class="op">=</span> <span class="st">"https://example.com/parcels.parquet"</span>,</span>
-<span>    type <span class="op">=</span> <span class="st">"application/x-parquet"</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">"application/vnd.apache.parquet"</span>,</span>
 <span>    roles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_table_extension.html">add_table_extension</a></span><span class="op">(</span></span>
@@ -626,9 +626,9 @@ opening one specific file, so it has no meaning at item level.</p>
 <span>  datetime <span class="op">=</span> <span class="st">"2021-01-01T00:00:00Z"</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_asset.html">add_asset</a></span><span class="op">(</span>key <span class="op">=</span> <span class="st">"households"</span>, href <span class="op">=</span> <span class="st">"https://example.com/hh.parquet"</span>,</span>
-<span>            type <span class="op">=</span> <span class="st">"application/x-parquet"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>            type <span class="op">=</span> <span class="st">"application/vnd.apache.parquet"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_asset.html">add_asset</a></span><span class="op">(</span>key <span class="op">=</span> <span class="st">"persons"</span>, href <span class="op">=</span> <span class="st">"https://example.com/persons.parquet"</span>,</span>
-<span>            type <span class="op">=</span> <span class="st">"application/x-parquet"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>            type <span class="op">=</span> <span class="st">"application/vnd.apache.parquet"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_table_extension.html">add_table_extension</a></span><span class="op">(</span></span>
 <span>    columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_column.html">table_column</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"household_id"</span>, type <span class="op">=</span> <span class="st">"int64"</span><span class="op">)</span>,</span>
 <span>                   <span class="fu"><a href="../reference/table_column.html">table_column</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"tenure"</span>, type <span class="op">=</span> <span class="st">"string"</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -889,7 +889,10 @@ read rather than abandoning the run. Pass the result to
 <code>application/vnd.laszip+copc</code>. Only the COPC type is listed
 in the STAC best practices — it is the cloud-optimized point cloud
 format, and the one worth reaching for if the data will be read over
-HTTP.</p>
+HTTP. LAS and LAZ are typed <code>application/vnd.las</code> and
+<code>application/vnd.laszip</code>. Those are not IANA-registered, but
+they are the long-standing convention in the point cloud community and
+the closest thing to a standard for the formats.</p>
 </div>
 </div>
 <div class="section level2">
