@@ -32,10 +32,19 @@ write_stac(
 
 - catalog_type:
 
-  (character, optional) Link layout: `"self-contained"` uses relative
-  links without `self` links; `"relative"` adds an absolute `self` link
-  to the root; and `"absolute"` uses absolute URLs throughout. The
-  latter two require `base_url`. Default is `"self-contained"`.
+  (character, optional) Link layout:
+
+  - `"self-contained"` uses relative links without `self` links. This
+    makes the catalog portable because `self` has to refer to an
+    absolute file path;
+
+  - `"relative"` adds an absolute `self` link to the root. Identical to
+    `"self-contained"` except the root catalog gets one absolute `self`
+    link built from the `base_url`;
+
+  - `"absolute"` uses absolute URLs throughout. This is where every link
+    is a full URL starting at `base_url`. Remote clients need absolute.
+    The latter two require `base_url`. Default is `"self-contained"`.
 
 - overwrite:
 

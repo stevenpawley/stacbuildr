@@ -73,10 +73,15 @@ be written. Will be created if it doesn't exist.</p></dd>
 
 
 <dt id="arg-catalog-type">catalog_type<a class="anchor" aria-label="anchor" href="#arg-catalog-type"></a></dt>
-<dd><p>(character, optional) Link layout: <code>"self-contained"</code>
-uses relative links without <code>self</code> links; <code>"relative"</code> adds an absolute
-<code>self</code> link to the root; and <code>"absolute"</code> uses absolute URLs throughout.
-The latter two require <code>base_url</code>. Default is <code>"self-contained"</code>.</p></dd>
+<dd><p>(character, optional) Link layout:</p><ul><li><p><code>"self-contained"</code> uses relative links without <code>self</code> links. This makes the
+catalog portable because <code>self</code> has to refer to an absolute file path;</p></li>
+<li><p><code>"relative"</code>  adds an absolute <code>self</code> link to the root. Identical to
+<code>"self-contained"</code> except the root catalog gets one absolute <code>self</code> link
+built from the <code>base_url</code>;</p></li>
+<li><p><code>"absolute"</code> uses absolute URLs throughout. This is where every link is a
+full URL starting at <code>base_url</code>. Remote clients need absolute.
+The latter two require <code>base_url</code>. Default is <code>"self-contained"</code>.</p></li>
+</ul></dd>
 
 
 <dt id="arg-overwrite">overwrite<a class="anchor" aria-label="anchor" href="#arg-overwrite"></a></dt>
