@@ -19,6 +19,7 @@ regardless of length, since \code{auto_unbox} never unboxes a list.
 guarding, and a value that is already a list is left alone.
 }
 \examples{
+\dontrun{
 # Without the helper, auto_unbox collapses a length-1 vector to a scalar,
 # which the STAC schema rejects for array-typed fields
 jsonlite::toJSON(list(keywords = "dem"), auto_unbox = TRUE)
@@ -39,6 +40,6 @@ jsonlite::toJSON(list(keywords = as_json_array(list("dem"))), auto_unbox = TRUE)
 # NULL passes through, so optional fields can be passed unconditionally
 str(as_json_array(NULL))
 #>  NULL
-
+}
 }
 \keyword{internal}

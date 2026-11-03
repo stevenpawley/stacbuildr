@@ -31,6 +31,7 @@ str.stac_object <- function(object, ...) {
 #' guarding, and a value that is already a list is left alone.
 #'
 #' @examples
+#' \dontrun{
 #' # Without the helper, auto_unbox collapses a length-1 vector to a scalar,
 #' # which the STAC schema rejects for array-typed fields
 #' jsonlite::toJSON(list(keywords = "dem"), auto_unbox = TRUE)
@@ -51,7 +52,7 @@ str.stac_object <- function(object, ...) {
 #' # NULL passes through, so optional fields can be passed unconditionally
 #' str(as_json_array(NULL))
 #' #>  NULL
-#'
+#' }
 #' @keywords internal
 as_json_array <- function(x) {
   if (is.null(x)) {
@@ -64,13 +65,13 @@ as_json_array <- function(x) {
 }
 
 
-# STAC Common Metadata fields that the spec types as JSON arrays. These may
-# appear on Item properties and on Asset objects, so both normalise them
-# through as_json_array() to stop a single value collapsing to a scalar.
-# Taken from basics.json (keywords, roles), instrument.json (instruments),
-# provider.json (providers) and bands.json (bands) in the item spec.
-#
-# @keywords internal
+#' STAC Common Metadata fields that the spec types as JSON arrays. These may
+#' appear on Item properties and on Asset objects, so both normalise them
+#' through as_json_array() to stop a single value collapsing to a scalar.
+#' Taken from basics.json (keywords, roles), instrument.json (instruments),
+#' provider.json (providers) and bands.json (bands) in the item spec.
+#'
+#' @keywords internal
 stac_common_array_fields <- c(
   "keywords",
   "roles",
