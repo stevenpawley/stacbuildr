@@ -61,6 +61,7 @@ add_item <- function(
   if (!inherits(catalog, "stac_catalog")) {
     cli::cli_abort("'catalog' must be a stac_catalog or stac_collection object")
   }
+
   is_list_of_items <- is.list(item) &&
     !inherits(item, "stac_item") &&
     all(vapply(item, inherits, logical(1), what = "stac_item"))
@@ -75,6 +76,7 @@ add_item <- function(
       "'item' must be a stac_item object or a list of stac_item objects"
     )
   }
+
   check_duplicate_ids(
     new_ids = vapply(
       items_list,
@@ -96,6 +98,7 @@ add_item <- function(
     ),
     what = "an item"
   )
+
   if (!is.null(href)) {
     if (length(href) != n_items) {
       cli::cli_abort(
@@ -111,7 +114,9 @@ add_item <- function(
       character(1)
     )
   }
+
   is_collection <- inherits(catalog, "stac_collection")
+
   if (add_parent_links) {
     if (is.null(parent_href)) {
       self_link <- find_link(catalog, "self")
@@ -130,7 +135,9 @@ add_item <- function(
       }
     }
   }
+
   updated_items <- list()
+
   for (i in seq_along(items_list)) {
     current_item <- items_list[[i]]
     current_href <- href[i]
@@ -141,9 +148,11 @@ add_item <- function(
       type = "application/geo+json",
       title = current_item$properties[["title"]]
     )
+
     if (is_collection) {
       current_item$collection <- catalog$id
     }
+
     if (add_parent_links) {
       current_item <- add_link(
         current_item,
@@ -168,10 +177,13 @@ add_item <- function(
     }
     updated_items[[i]] <- current_item
   }
+
   stored_items <- attr(catalog, "stac_items")
+
   if (is.null(stored_items)) {
     stored_items <- list()
   }
+
   stored_items <- c(stored_items, updated_items)
   attr(catalog, "stac_items") <- stored_items
   return(catalog)

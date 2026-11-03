@@ -239,6 +239,7 @@ stac_item <- function(
     datetime <- NULL
   }
   props <- properties
+
   if (!is.null(datetime)) {
     props$datetime <- datetime
   } else {
@@ -246,10 +247,12 @@ stac_item <- function(
     props$start_datetime <- start_datetime
     props$end_datetime <- end_datetime
   }
+
   extra_props <- list(...)
   if (length(extra_props) > 0) {
     props <- c(props, extra_props)
   }
+
   props <- normalize_common_arrays(props)
   object <- list(
     type = type,
@@ -263,10 +266,12 @@ stac_item <- function(
     stac_extensions = stac_extensions,
     collection = collection
   )
+
   check_single_character(object$type, "type")
   check_single_character(object$stac_version, "stac_version")
   warn_unsupported_stac_version(object$stac_version)
   check_single_character(object$id, "id")
+
   if (
     !(inherits(object[["geometry"]], "stac_geometry") ||
       is.null(object[["geometry"]]))
@@ -290,29 +295,36 @@ stac_item <- function(
   if (!is.list(object[["assets"]])) {
     cli::cli_abort("assets must be list.")
   }
+
   check_character_vector(
     object$stac_extensions,
     "stac_extensions",
     allow_null = TRUE
   )
+
   check_single_character(object$collection, "collection", allow_null = TRUE)
   if (object$type != "Feature") {
     cli::cli_abort("'type' must be 'Feature'")
   }
+
   if (!is.null(object$geometry) && is.null(object$bbox)) {
     cli::cli_abort("'bbox' is required when 'geometry' is not NULL")
   }
+
   if (is.null(object$geometry) && !is.null(object$bbox)) {
     cli::cli_abort("'bbox' is prohibited when 'geometry' is NULL")
   }
+
   if (!is.null(object$bbox) && !length(object$bbox) %in% c(4, 6)) {
     cli::cli_abort("'bbox' must have length 4 (2D) or 6 (3D)")
   }
+
   if (!is.null(object$bbox) && length(object$bbox) == 4L) {
     west <- object$bbox[1]
     east <- object$bbox[3]
     south <- object$bbox[2]
     north <- object$bbox[4]
+
     if (west < -180 || east > 180) {
       cli::cli_abort(sprintf(
         "'bbox' longitudes must be in [-180, 180] (got west = %g, east = %g)",
@@ -320,6 +332,7 @@ stac_item <- function(
         east
       ))
     }
+
     if (south < -90 || north > 90) {
       cli::cli_abort(sprintf(
         "'bbox' latitudes must be in [-90, 90] (got south = %g, north = %g)",
@@ -328,32 +341,38 @@ stac_item <- function(
       ))
     }
   }
+
   dt <- object$properties[["datetime"]]
   start_dt <- object$properties[["start_datetime"]]
   end_dt <- object$properties[["end_datetime"]]
+
   if (is.null(dt) && !((!is.null(start_dt)) && (!is.null(end_dt)))) {
     cli::cli_abort(
       "'properties' must contain 'datetime' or both 'start_datetime' and 'end_datetime'"
     )
   }
+
   if (!is.null(dt) && !is_rfc3339(dt)) {
     cli::cli_abort(sprintf(
       "'datetime' must be an RFC 3339 string (e.g. '2023-01-01T00:00:00Z'), got: '%s'",
       dt
     ))
   }
+
   if (!is.null(start_dt) && !is_rfc3339(start_dt)) {
     cli::cli_abort(sprintf(
       "'start_datetime' must be an RFC 3339 string, got: '%s'",
       start_dt
     ))
   }
+
   if (!is.null(end_dt) && !is_rfc3339(end_dt)) {
     cli::cli_abort(sprintf(
       "'end_datetime' must be an RFC 3339 string, got: '%s'",
       end_dt
     ))
   }
+
   if (!is.null(start_dt) && !is.null(end_dt) && end_dt < start_dt) {
     cli::cli_abort(sprintf(
       "'end_datetime' ('%s') must be >= 'start_datetime' ('%s')",
@@ -361,6 +380,7 @@ stac_item <- function(
       start_dt
     ))
   }
+  
   class(object) <- c("stac_item", "stac_object")
   return(object)
 }

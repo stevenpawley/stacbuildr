@@ -75,7 +75,9 @@ write_stac <- function(
   if (!inherits(catalog, "stac_catalog")) {
     cli::cli_abort("'catalog' must be a stac_catalog or stac_collection object")
   }
+
   catalog_type <- match.arg(catalog_type)
+
   if (catalog_type %in% c("absolute", "relative") && is.null(base_url)) {
     cli::cli_abort(c(
       "{.arg base_url} is required when {.arg catalog_type} is {.val {catalog_type}}.",
@@ -87,9 +89,11 @@ write_stac <- function(
       `>` = "Use {.code catalog_type = \"self-contained\"} for a portable\n             catalog with no published location."
     ))
   }
+
   if (!dir.exists(path)) {
     dir.create(path, recursive = TRUE)
   }
+
   write_catalog_recursive(
     catalog,
     path,
@@ -100,6 +104,7 @@ write_stac <- function(
     is_root = TRUE,
     parent_href = NULL
   )
+  
   cli::cli_alert_success("STAC catalog written to {.file {path}}")
   return(invisible(path))
 }
