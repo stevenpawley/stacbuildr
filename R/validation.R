@@ -933,6 +933,7 @@ validate_stac_schema <- function(stac_object, validate_extensions = TRUE) {
   }
   if (
     !inherits(stac_object, "stac_item") &&
+      !inherits(stac_object, "stac_collection") &&
       !inherits(stac_object, "stac_catalog")
   ) {
     return(new_stac_validation(
