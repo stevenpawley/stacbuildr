@@ -20,10 +20,17 @@ or \code{stac_collection()}.}
 \item{path}{(character, required) Root directory path where the catalog should
 be written. Will be created if it doesn't exist.}
 
-\item{catalog_type}{(character, optional) Link layout: \code{"self-contained"}
-uses relative links without \code{self} links; \code{"relative"} adds an absolute
-\code{self} link to the root; and \code{"absolute"} uses absolute URLs throughout.
-The latter two require \code{base_url}. Default is \code{"self-contained"}.}
+\item{catalog_type}{(character, optional) Link layout:
+\itemize{
+\item \code{"self-contained"} uses relative links without \code{self} links. This makes the
+catalog portable because \code{self} has to refer to an absolute file path;
+\item \code{"relative"}  adds an absolute \code{self} link to the root. Identical to
+\code{"self-contained"} except the root catalog gets one absolute \code{self} link
+built from the \code{base_url};
+\item \code{"absolute"} uses absolute URLs throughout. This is where every link is a
+full URL starting at \code{base_url}. Remote clients need absolute.
+The latter two require \code{base_url}. Default is \code{"self-contained"}.
+}}
 
 \item{overwrite}{(logical, optional) If \code{TRUE}, overwrites existing files. If
 \code{FALSE}, throws an error if files already exist. Default is \code{FALSE}.}
