@@ -682,11 +682,18 @@ add_child <- function(catalog, child, href = NULL, title = NULL) {
 #'
 #' @export
 add_self_link <- function(catalog, href) {
+  # Items are GeoJSON Features, so their self link advertises geo+json rather
+  # than the application/json used by Catalogs and Collections.
+  type <- if (inherits(catalog, "stac_item")) {
+    "application/geo+json"
+  } else {
+    "application/json"
+  }
   catalog <- add_link(
     catalog,
     rel = "self",
     href = href,
-    type = "application/json"
+    type = type
   )
   return(catalog)
 }

@@ -519,19 +519,23 @@ normalize_href <- function(href) {
 #'
 #' @noRd
 get_media_type <- function(file) {
-  ext <- tolower(tools::file_ext(file))
+  # Drop any query string or fragment so signed URLs still yield an extension
+  ext <- tolower(tools::file_ext(sub("[?#].*$", "", file)))
 
   base_type <- switch(
     ext,
     "tif" = "image/tiff; application=geotiff",
     "tiff" = "image/tiff; application=geotiff",
-    "nc" = "application/netcdf",
+    "nc" = "application/x-netcdf",
     "hdf" = "application/x-hdf",
     "hdf5" = "application/x-hdf5",
     "h5" = "application/x-hdf5",
     "json" = "application/json",
     "geojson" = "application/geo+json",
-    "shp" = "application/x-shapefile",
+    # No registered shapefile type exists. A .shp is only usable alongside its
+    # .dbf/.shx/.prj siblings, so the zipped-bundle convention is used. .zip is
+    # deliberately not mapped, since a zip need not contain a shapefile.
+    "shp" = "application/zipped-shapefile",
     "png" = "image/png",
     "jpg" = "image/jpeg",
     "jpeg" = "image/jpeg",

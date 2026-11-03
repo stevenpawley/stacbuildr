@@ -90,7 +90,7 @@
 #'   add_asset(
 #'     "data",
 #'     href = "https://example.com/data.parquet",
-#'     type = "application/x-parquet",
+#'     type = "application/vnd.apache.parquet",
 #'     roles = c("data")
 #'   ) |>
 #'   add_table_extension(

@@ -223,6 +223,21 @@ test_that("add_link appends a new link", {
   expect_equal(catalog$links[[1]]$href, "https://example.com/a")
 })
 
+test_that("add_self_link uses geo+json for items and json for catalogs", {
+  catalog <- stac_catalog(id = "root", description = "d") |>
+    add_self_link("https://example.com/catalog.json")
+  expect_equal(catalog$links[[1]]$type, "application/json")
+
+  item <- stac_item(
+    id = "item-1",
+    geometry = list(type = "Point", coordinates = c(-105, 40)),
+    bbox = c(-105, 40, -105, 40),
+    datetime = "2020-01-01T00:00:00Z"
+  ) |>
+    add_self_link("https://example.com/item-1.json")
+  expect_equal(item$links[[1]]$type, "application/geo+json")
+})
+
 test_that("add_link replaces an existing (rel, href) link instead of duplicating", {
   catalog <- stac_catalog(id = "root", description = "d")
   catalog <- add_link(

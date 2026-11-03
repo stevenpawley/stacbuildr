@@ -502,7 +502,7 @@ parcels <- stac_item(
   add_asset(
     key = "data",
     href = "https://example.com/parcels.parquet",
-    type = "application/x-parquet",
+    type = "application/vnd.apache.parquet",
     roles = c("data")
   ) |>
   add_table_extension(
@@ -537,9 +537,9 @@ multi <- stac_item(
   datetime = "2021-01-01T00:00:00Z"
 ) |>
   add_asset(key = "households", href = "https://example.com/hh.parquet",
-            type = "application/x-parquet") |>
+            type = "application/vnd.apache.parquet") |>
   add_asset(key = "persons", href = "https://example.com/persons.parquet",
-            type = "application/x-parquet") |>
+            type = "application/vnd.apache.parquet") |>
   add_table_extension(
     columns = list(table_column(name = "household_id", type = "int64"),
                    table_column(name = "tenure", type = "string")),
@@ -764,6 +764,9 @@ A note on media types: `get_media_type()` recognises `.las` and `.laz`, and maps
 the `.copc.laz` convention to `application/vnd.laszip+copc`. Only the COPC type
 is listed in the STAC best practices — it is the cloud-optimized point cloud
 format, and the one worth reaching for if the data will be read over HTTP.
+LAS and LAZ are typed `application/vnd.las` and `application/vnd.laszip`. Those
+are not IANA-registered, but they are the long-standing convention in the point
+cloud community and the closest thing to a standard for the formats.
 
 ## Projection
 
