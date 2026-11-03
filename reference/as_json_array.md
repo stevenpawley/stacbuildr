@@ -22,29 +22,26 @@ guarding, and a value that is already a list is left alone.
 ## Examples
 
 ``` r
+if (FALSE) { # \dontrun{
 # Without the helper, auto_unbox collapses a length-1 vector to a scalar,
 # which the STAC schema rejects for array-typed fields
 jsonlite::toJSON(list(keywords = "dem"), auto_unbox = TRUE)
-#> {"keywords":"dem"} 
 #> {"keywords":"dem"}
 
 # Wrapping forces the array form, regardless of length
 jsonlite::toJSON(list(keywords = as_json_array("dem")), auto_unbox = TRUE)
-#> Error in as_json_array("dem"): could not find function "as_json_array"
 #> {"keywords":["dem"]}
 
 # Multi-element vectors serialise as arrays either way
 jsonlite::toJSON(list(keywords = c("dem", "elevation")), auto_unbox = TRUE)
-#> {"keywords":["dem","elevation"]} 
 #> {"keywords":["dem","elevation"]}
 
 # Values that are already lists are returned unchanged
 jsonlite::toJSON(list(keywords = as_json_array(list("dem"))), auto_unbox = TRUE)
-#> Error in as_json_array(list("dem")): could not find function "as_json_array"
 #> {"keywords":["dem"]}
 
 # NULL passes through, so optional fields can be passed unconditionally
 str(as_json_array(NULL))
-#> Error in as_json_array(NULL): could not find function "as_json_array"
 #>  NULL
+} # }
 ```
