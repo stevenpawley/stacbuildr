@@ -6,8 +6,6 @@ This vignette demonstrates how to build a STAC catalog with
 1.  Creating a catalog, collection, and item from a raster file
 2.  Understanding how linked objects are retained for recursive writing
 3.  Writing a static catalog to disk
-4.  Loading into a PostgreSQL database and serving a STAC API *(requires
-    infrastructure)*
 
 ## Setup
 
@@ -101,7 +99,7 @@ item
 #> <STAC Item>
 #>   id           : dem-001
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-11-03T20:26:56Z
+#>   datetime     : 2026-11-06T19:21:49Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -224,7 +222,7 @@ get_items(collection)
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-11-03T20:26:56Z
+#>   datetime     : 2026-11-06T19:21:49Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -332,7 +330,7 @@ write_stac(
   catalog_type = "self-contained",
   overwrite = TRUE
 )
-#> ✔ STAC catalog written to /tmp/RtmpTst0tY/catalog
+#> ✔ STAC catalog written to /tmp/RtmpNh3MoJ/catalog
 ```
 
 The resulting directory structure looks like:
@@ -362,7 +360,7 @@ item_read
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-11-03T20:26:56Z
+#>   datetime     : 2026-11-06T19:21:49Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -372,11 +370,3 @@ item_read
 #>   ℹ 4 collapsed sections - use print(x, expand = TRUE) to show
 #> 
 ```
-
-## Serving the catalog as a STAC API
-
-A static catalog on disk is enough for many uses, but a searchable STAC
-API needs a database behind it. That is the job of the companion package
-[stacserver](https://github.com/stevenpawley/stacserver), which ingests
-the collections and items built here into PostgreSQL/PostGIS and serves
-them through a `plumber` router. See its “Serving a STAC API” vignette.

@@ -6,19 +6,6 @@ First development cycle. The package has not been released, so
 everything below is new, and breaking changes are still expected between
 commits.
 
-### STAC API server moved to its own package
-
-- The database backend and `plumber` router that served a STAC API now
-  live in [stacserver](https://github.com/stevenpawley/stacserver).
-  `stac_api_router()`, the `stac_db_*()` functions and the
-  `sign_azure_ad()` / `sign_gcp()` / `sign_aws_s3()` asset signers moved
-  there unchanged. stacbuildr builds and writes static catalogs;
-  stacserver serves them.
-
-- As a result stacbuildr no longer suggests `DBI`, `RPostgres`,
-  `plumber`, `pool`, `httr2`, `AzureStor`, `AzureAuth`,
-  `googleCloudStorageR` or `paws.storage`.
-
 ### Specification updates
 
 - The EO and Raster extensions were migrated to v2.0.0. Both dropped

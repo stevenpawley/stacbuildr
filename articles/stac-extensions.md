@@ -1033,5 +1033,4 @@ item$stac_extensions
 
 See
 [`vignette("stac-catalog")`](https://stevenpawley.github.io/stacbuildr/articles/stac-catalog.md)
-for assembling items into a catalog, writing it to disk, and serving it
-through a STAC API.
+for assembling items into a catalog and writing it to disk.
