@@ -859,5 +859,5 @@ item$stac_extensions
 
 ## Where to go next
 
-See `vignette("stac-catalog")` for assembling items into a catalog, writing it
-to disk, and serving it through a STAC API.
+See `vignette("stac-catalog")` for assembling items into a catalog and writing
+it to disk.

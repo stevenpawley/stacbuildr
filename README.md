@@ -340,14 +340,6 @@ get_items(collection)                            # list of stored item objects
 get_children(catalog)                            # named list of child catalogs
 ```
 
-## Serving a STAC API
-
-Serving these catalogs as a live [STAC API](https://github.com/radiantearth/stac-api-spec)
-is handled by the companion package
-[stacserver](https://github.com/stevenpawley/stacserver), which ingests
-stacbuildr objects into a PostgreSQL/PostGIS database and exposes them through
-a `plumber` router.
-
 ## Dependencies
 
 | Package | Role |

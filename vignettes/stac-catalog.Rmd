@@ -19,7 +19,6 @@ This vignette demonstrates how to build a STAC catalog with `stacbuildr`, coveri
 1. Creating a catalog, collection, and item from a raster file
 2. Understanding how linked objects are retained for recursive writing
 3. Writing a static catalog to disk
-4. Loading into a PostgreSQL database and serving a STAC API *(requires infrastructure)*
 
 ## Setup
 
@@ -264,11 +263,3 @@ item_read <- read_stac(file.path(
 
 item_read
 ```
-
-## Serving the catalog as a STAC API
-
-A static catalog on disk is enough for many uses, but a searchable STAC API
-needs a database behind it. That is the job of the companion package
-[stacserver](https://github.com/stevenpawley/stacserver), which ingests the
-collections and items built here into PostgreSQL/PostGIS and serves them
-through a `plumber` router. See its "Serving a STAC API" vignette.
