@@ -4,12 +4,12 @@ skip_if_not_installed("sf")
 tif <- test_path("testdata", "L7_ETMs.tif")
 sf_file <- system.file("shape/nc.shp", package = "sf")
 
-test_that("preview_from_terra returns a valid thumbnail asset", {
+test_that("thumbnail_from_terra returns a valid thumbnail asset", {
   r <- terra::rast(tif)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  asset <- preview_from_terra(r, path = path)
+  asset <- thumbnail_from_terra(r, path = path)
 
   expect_true(file.exists(path))
   expect_equal(asset$type, "image/png")
@@ -17,38 +17,66 @@ test_that("preview_from_terra returns a valid thumbnail asset", {
   expect_equal(asset$href, gsub("\\\\", "/", normalizePath(path)))
 })
 
-test_that("preview_from_terra accepts a title", {
+test_that("thumbnail_from_terra accepts a title", {
   r <- terra::rast(tif)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  asset <- preview_from_terra(r, path = path, title = "Preview")
+  asset <- thumbnail_from_terra(r, path = path, title = "Preview")
 
   expect_equal(asset$title, "Preview")
 })
 
-test_that("preview_from_terra accepts custom dimensions", {
+test_that("thumbnail_from_terra accepts custom dimensions", {
   r <- terra::rast(tif)
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path))
 
-  preview_from_terra(r, path = path, width = 128, height = 128)
+  thumbnail_from_terra(r, path = path, width = 128, height = 128)
 
   expect_true(file.exists(path))
   expect_gt(file.size(path), 0)
 })
 
-test_that("preview_from_terra errors on non-SpatRaster input", {
+test_that("thumbnail_from_terra errors on non-SpatRaster input", {
   path <- tempfile(fileext = ".png")
   expect_error(
-    preview_from_terra(list(), path = path),
+    thumbnail_from_terra(list(), path = path),
     "must be a SpatRaster object"
   )
 })
 
-test_that("preview_from_terra errors when path is missing", {
+test_that("thumbnail_from_terra errors when path is missing", {
   r <- terra::rast(tif)
-  expect_error(preview_from_terra(r, path = ""), "'path' is required")
+  expect_error(thumbnail_from_terra(r, path = ""), "'path' is required")
+})
+
+test_that("preview_from_terra is a deprecated alias of thumbnail_from_terra", {
+  r <- terra::rast(tif)
+  path <- tempfile(fileext = ".png")
+  on.exit(unlink(path))
+
+  expect_warning(
+    asset <- preview_from_terra(r, path = path, title = "Preview"),
+    "deprecated"
+  )
+
+  # Same behaviour as the new name: file written, asset fields set
+  expect_true(file.exists(path))
+  expect_equal(asset$type, "image/png")
+  expect_equal(asset$roles, "thumbnail")
+  expect_equal(asset$title, "Preview")
+  expect_equal(asset$href, gsub("\\\\", "/", normalizePath(path)))
+
+  # Argument errors still surface through the alias (after the warning)
+  expect_error(
+    suppressWarnings(preview_from_terra(r, path = "")),
+    "'path' is required"
+  )
+  expect_error(
+    suppressWarnings(preview_from_terra(list(), path = path)),
+    "must be a SpatRaster object"
+  )
 })
 
 test_that("thumbnail_from_sf returns a valid thumbnail asset", {
@@ -95,7 +123,7 @@ test_that("thumbnail asset can be added to a stac item", {
     id = "L7_ETMs",
     datetime = "2023-06-15T10:30:00Z"
   )
-  asset <- preview_from_terra(r, path = path)
+  asset <- thumbnail_from_terra(r, path = path)
   item <- add_asset(item, key = "thumbnail", asset = asset)
 
   expect_true("thumbnail" %in% names(item$assets))

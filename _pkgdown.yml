@@ -60,7 +60,7 @@ reference:
     contents:
       - item_from_terra
       - bands_from_terra
-      - preview_from_terra
+      - thumbnail_from_terra
 
   - title: "sf Integration"
     desc: "Create STAC Items and thumbnails from `sf` vector objects."

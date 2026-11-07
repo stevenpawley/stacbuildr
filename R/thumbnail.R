@@ -6,6 +6,8 @@
 #' RGB composite using the first three bands; single-band rasters are rendered
 #' as greyscale.
 #'
+#' `preview_from_terra()` is a deprecated alias for this function.
+#'
 #' @param terra_obj A `SpatRaster` object (from the `terra` package).
 #' @param path (character, required) File path for the output PNG.
 #' @param width (integer) Image width in pixels. Default is 256.
@@ -21,7 +23,7 @@
 #' library(terra)
 #'
 #' r <- rast(system.file("ex/logo.tif", package = "terra"))
-#' asset <- preview_from_terra(r, path = "thumbnail.png")
+#' asset <- thumbnail_from_terra(r, path = "thumbnail.png")
 #'
 #' item <- item_from_terra(r,
 #'   href = "image.tif",
@@ -31,7 +33,7 @@
 #' }
 #'
 #' @export
-preview_from_terra <- function(
+thumbnail_from_terra <- function(
   terra_obj,
   path,
   width = 256,
@@ -75,6 +77,17 @@ preview_from_terra <- function(
     type = "image/png",
     roles = "thumbnail"
   ))
+}
+
+
+#' @rdname thumbnail_from_terra
+#' @export
+preview_from_terra <- function(...) {
+  cli::cli_warn(c(
+    "{.fn preview_from_terra} is deprecated.",
+    i = "Use {.fn thumbnail_from_terra} instead."
+  ))
+  thumbnail_from_terra(...)
 }
 
 
