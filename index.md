@@ -225,7 +225,7 @@ item <- item |>
 
 # Generate a thumbnail PNG from a SpatRaster and attach it as an asset
 item <- item |>
-  add_asset("thumbnail", preview_from_terra(r, tempfile(fileext = ".png")))
+  add_asset("thumbnail", thumbnail_from_terra(r, tempfile(fileext = ".png")))
 
 # Create a STAC Item from an sf object
 library(sf)
@@ -363,9 +363,9 @@ get_children(catalog)                            # named list of child catalogs
 | `geojsonsf` | sf ↔︎ GeoJSON conversion                      |
 
 Optional: `terra` (raster integration — `item_from_terra`,
-`band_from_file`, `preview_from_terra`), `lidR` (point-cloud integration
-— `item_from_lidr`, `items_from_lascatalog`), `jsonvalidate` (schema
-validation)
+`band_from_file`, `thumbnail_from_terra`), `lidR` (point-cloud
+integration — `item_from_lidr`, `items_from_lascatalog`), `jsonvalidate`
+(schema validation)
 
 ## References
 

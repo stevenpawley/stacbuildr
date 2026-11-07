@@ -109,13 +109,20 @@ commits.
 - [`item_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_terra.md),
   [`band_from_file()`](https://stevenpawley.github.io/stacbuildr/reference/band_from_file.md)
   and
-  [`preview_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/preview_from_terra.md)
+  [`thumbnail_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_terra.md)
   build Items from rasters, and
   [`item_from_sf()`](https://stevenpawley.github.io/stacbuildr/reference/item_from_sf.md),
   [`geometry_from_sf()`](https://stevenpawley.github.io/stacbuildr/reference/geometry_from_sf.md)
   and
   [`thumbnail_from_sf()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_sf.md)
   from vector data.
+
+- [`preview_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_terra.md)
+  was renamed to
+  [`thumbnail_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_terra.md),
+  to match
+  [`thumbnail_from_sf()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_sf.md).
+  The old name still works but raises a deprecation warning.
 
 ### Writing and validation
 

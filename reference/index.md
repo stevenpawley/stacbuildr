@@ -79,7 +79,8 @@ objects, and extract band metadata.
   : Create a STAC Item from a Terra SpatRaster Object
 - [`bands_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/bands_from_terra.md)
   : Extract Raster Band Metadata from a Terra SpatRaster
-- [`preview_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/preview_from_terra.md)
+- [`thumbnail_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_terra.md)
+  [`preview_from_terra()`](https://stevenpawley.github.io/stacbuildr/reference/thumbnail_from_terra.md)
   : Generate a Thumbnail PNG from a Terra SpatRaster Object
 
 ## sf Integration

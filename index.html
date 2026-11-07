@@ -276,7 +276,7 @@
 <span></span>
 <span><span class="co"># Generate a thumbnail PNG from a SpatRaster and attach it as an asset</span></span>
 <span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/add_asset.html">add_asset</a></span><span class="op">(</span><span class="st">"thumbnail"</span>, <span class="fu"><a href="reference/preview_from_terra.html">preview_from_terra</a></span><span class="op">(</span><span class="va">r</span>, <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".png"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="reference/add_asset.html">add_asset</a></span><span class="op">(</span><span class="st">"thumbnail"</span>, <span class="fu"><a href="reference/thumbnail_from_terra.html">thumbnail_from_terra</a></span><span class="op">(</span><span class="va">r</span>, <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".png"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create a STAC Item from an sf object</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
@@ -433,7 +433,7 @@
 </tr>
 </tbody>
 </table>
-<p>Optional: <code>terra</code> (raster integration — <code>item_from_terra</code>, <code>band_from_file</code>, <code>preview_from_terra</code>), <code>lidR</code> (point-cloud integration — <code>item_from_lidr</code>, <code>items_from_lascatalog</code>), <code>jsonvalidate</code> (schema validation)</p>
+<p>Optional: <code>terra</code> (raster integration — <code>item_from_terra</code>, <code>band_from_file</code>, <code>thumbnail_from_terra</code>), <code>lidR</code> (point-cloud integration — <code>item_from_lidr</code>, <code>items_from_lascatalog</code>), <code>jsonvalidate</code> (schema validation)</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
