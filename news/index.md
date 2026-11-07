@@ -134,6 +134,12 @@ commits.
   correspond to PySTAC’s `SELF_CONTAINED`, `RELATIVE_PUBLISHED` and
   `ABSOLUTE_PUBLISHED`.
 
+- [`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+  now titles `root`, `parent` and `collection` links with the linked
+  object’s `title`, matching PySTAC’s output.
+  [`add_root_link()`](https://stevenpawley.github.io/stacbuildr/reference/add_root_link.md)
+  gained a `title` argument for the same reason.
+
 - [`validate_stac()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac.md)
   runs offline structural checks;
   [`validate_stac_schema()`](https://stevenpawley.github.io/stacbuildr/reference/validate_stac_schema.md)
@@ -146,6 +152,10 @@ commits.
   print as readable reports rather than S7 internals.
 
 ### Bug fixes
+
+- JSON output no longer carries floating-point noise: serialization now
+  uses 15 significant digits, so a coordinate like `54.34` is written as
+  `54.34` rather than `54.340000000000003`, matching PySTAC’s output.
 
 - [`remove_item()`](https://stevenpawley.github.io/stacbuildr/reference/remove_item.md)
   now drops the Item itself, not just its link.

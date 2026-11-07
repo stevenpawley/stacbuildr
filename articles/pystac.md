@@ -92,7 +92,7 @@ online home.
 
 r_path <- file.path(tempdir(), "r-stac")
 write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
-#> ✔ STAC catalog written to /tmp/RtmpB3osYB/r-stac
+#> ✔ STAC catalog written to /tmp/Rtmp17KZnQ/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 py_path <- file.path(tempdir(), "py-stac")
@@ -118,7 +118,8 @@ jsonlite::toJSON(catalog_rjson, pretty = TRUE, auto_unbox = TRUE)
 #>     {
 #>       "rel": "root",
 #>       "href": "./catalog.json",
-#>       "type": "application/json"
+#>       "type": "application/json",
+#>       "title": "Environmental Data Catalog"
 #>     },
 #>     {
 #>       "rel": "item",
@@ -180,12 +181,14 @@ jsonlite::toJSON(r_item, pretty = TRUE, auto_unbox = TRUE)
 #>     {
 #>       "rel": "parent",
 #>       "href": "../catalog.json",
-#>       "type": "application/json"
+#>       "type": "application/json",
+#>       "title": "Environmental Data Catalog"
 #>     },
 #>     {
 #>       "rel": "root",
 #>       "href": "../catalog.json",
-#>       "type": "application/json"
+#>       "type": "application/json",
+#>       "title": "Environmental Data Catalog"
 #>     }
 #>   ],
 #>   "assets": {},
@@ -293,7 +296,7 @@ JSON:
 ``` r
 
 write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
-#> ✔ STAC catalog written to /tmp/RtmpB3osYB/r-stac
+#> ✔ STAC catalog written to /tmp/Rtmp17KZnQ/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 catalog_py$normalize_hrefs(py_path)
@@ -329,12 +332,14 @@ jsonlite::toJSON(r_item, pretty = TRUE, auto_unbox = TRUE)
 #>     {
 #>       "rel": "parent",
 #>       "href": "../catalog.json",
-#>       "type": "application/json"
+#>       "type": "application/json",
+#>       "title": "Environmental Data Catalog"
 #>     },
 #>     {
 #>       "rel": "root",
 #>       "href": "../catalog.json",
-#>       "type": "application/json"
+#>       "type": "application/json",
+#>       "title": "Environmental Data Catalog"
 #>     }
 #>   ],
 #>   "assets": {

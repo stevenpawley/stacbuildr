@@ -51,7 +51,7 @@ by the STAC specification.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">add_root_link</span><span class="op">(</span><span class="va">catalog</span>, <span class="va">href</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">add_root_link</span><span class="op">(</span><span class="va">catalog</span>, <span class="va">href</span>, title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -65,6 +65,12 @@ by the STAC specification.</p>
 <dt id="arg-href">href<a class="anchor" aria-label="anchor" href="#arg-href"></a></dt>
 <dd><p>(character, required) The URL to the root catalog. Can be
 absolute or relative.</p></dd>
+
+
+<dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
+<dd><p>(character, optional) A human-readable title for the link, taken
+from the root object's <code>title</code> when known. <code><a href="write_stac.html">write_stac()</a></code> fills this in
+automatically. Default is <code>NULL</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -7,7 +7,7 @@ strongly recommended by the STAC specification.
 ## Usage
 
 ``` r
-add_root_link(catalog, href)
+add_root_link(catalog, href, title = NULL)
 ```
 
 ## Arguments
@@ -20,6 +20,13 @@ add_root_link(catalog, href)
 
   (character, required) The URL to the root catalog. Can be absolute or
   relative.
+
+- title:
+
+  (character, optional) A human-readable title for the link, taken from
+  the root object's `title` when known.
+  [`write_stac()`](https://stevenpawley.github.io/stacbuildr/reference/write_stac.md)
+  fills this in automatically. Default is `NULL`.
 
 ## Value
 
