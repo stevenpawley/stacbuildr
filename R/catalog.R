@@ -709,6 +709,9 @@ add_self_link <- function(catalog, href) {
 #' @param catalog A STAC catalog, collection, or item object.
 #' @param href (character, required) The URL to the root catalog. Can be
 #'   absolute or relative.
+#' @param title (character, optional) A human-readable title for the link, taken
+#'   from the root object's `title` when known. `write_stac()` fills this in
+#'   automatically. Default is `NULL`.
 #'
 #' @return The modified catalog object with the root link added.
 #'
@@ -725,12 +728,13 @@ add_self_link <- function(catalog, href) {
 #' catalog <- add_root_link(catalog, "https://example.com/catalog.json")
 #'
 #' @export
-add_root_link <- function(catalog, href) {
+add_root_link <- function(catalog, href, title = NULL) {
   catalog <- add_link(
     catalog,
     rel = "root",
     href = href,
-    type = "application/json"
+    type = "application/json",
+    title = title
   )
   return(catalog)
 }
@@ -755,12 +759,13 @@ add_root_link <- function(catalog, href) {
 #' * [add_link()] for adding arbitrary links
 #'
 #' @noRd
-add_parent_link <- function(catalog, href) {
+add_parent_link <- function(catalog, href, title = NULL) {
   catalog <- add_link(
     catalog,
     rel = "parent",
     href = href,
-    type = "application/json"
+    type = "application/json",
+    title = title
   )
   return(catalog)
 }

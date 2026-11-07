@@ -133,7 +133,10 @@ stac_to_json <- function(x, pretty = FALSE) {
     auto_unbox = TRUE,
     pretty = pretty,
     null = "null",
-    digits = 15
+    # I() makes this 15 significant digits, so doubles serialise at their
+    # shortest round-trip form (54.34, not 54.340000000000003) while small
+    # values like 2.75e-5 keep full precision
+    digits = I(15)
   ))
 }
 
@@ -274,7 +277,9 @@ write_catalog_recursive <- function(
   parent_href = NULL,
   root_href = NULL,
   depth = 0L,
-  root_file = NULL
+  root_file = NULL,
+  parent_title = NULL,
+  root_title = NULL
 ) {
   # Get filename based on class of the object (catalog or collection)
   catalog_file <- if (inherits(catalog, "stac_collection")) {
@@ -288,6 +293,7 @@ write_catalog_recursive <- function(
   # - ./catalog.json for relative and self-contained
   if (is_root) {
     root_file <- catalog_file
+    root_title <- catalog$title
     root_href <- if (catalog_type == "absolute") {
       paste0(base_url, "/", catalog_file)
     } else {
@@ -307,7 +313,9 @@ write_catalog_recursive <- function(
     base_url,
     is_root,
     parent_href,
-    root_href
+    root_href,
+    parent_title = parent_title,
+    root_title = root_title
   )
 
   # Recursion over children. For each attr(catalo, "stac_children") it creates
@@ -347,7 +355,9 @@ write_catalog_recursive <- function(
         root_href = root_href,
         depth = depth +
           1L,
-        root_file = root_file
+        root_file = root_file,
+        parent_title = catalog$title,
+        root_title = root_title
       )
     }
   }
@@ -376,7 +386,9 @@ write_catalog_recursive <- function(
             catalog_file
           ),
           root_href,
-          parent_is_collection = inherits(catalog, "stac_collection")
+          parent_is_collection = inherits(catalog, "stac_collection"),
+          parent_title = catalog$title,
+          root_title = root_title
         )
       } else {
         item <- update_item_links(
@@ -390,7 +402,9 @@ write_catalog_recursive <- function(
             ),
             root_file
           ),
-          parent_is_collection = inherits(catalog, "stac_collection")
+          parent_is_collection = inherits(catalog, "stac_collection"),
+          parent_title = catalog$title,
+          root_title = root_title
         )
       }
 
@@ -429,7 +443,9 @@ update_catalog_links <- function(
   base_url = NULL,
   is_root = FALSE,
   parent_href = NULL,
-  root_href = NULL
+  root_href = NULL,
+  parent_title = NULL,
+  root_title = NULL
 ) {
   # Choose filename based of object class
   if (inherits(catalog, "stac_collection")) {
@@ -462,8 +478,8 @@ update_catalog_links <- function(
     catalog$links
   )
   
-  catalog <- add_root_link(catalog, root_href)
-  
+  catalog <- add_root_link(catalog, root_href, title = root_title)
+
   if (!is_root && !is.null(parent_href)) {
     catalog$links <- Filter(
       function(x) {
@@ -471,7 +487,7 @@ update_catalog_links <- function(
       },
       catalog$links
     )
-    catalog <- add_parent_link(catalog, parent_href)
+    catalog <- add_parent_link(catalog, parent_href, title = parent_title)
   }
   
   stored_children <- attr(catalog, "stac_children")
@@ -566,7 +582,9 @@ update_item_links <- function(
   self_href,
   parent_href,
   root_href,
-  parent_is_collection = FALSE
+  parent_is_collection = FALSE,
+  parent_title = NULL,
+  root_title = NULL
 ) {
   # Update self link. `self_href` is NULL for self-contained and relative
   # catalogs, where items carry no self link because it would have to be
@@ -598,7 +616,8 @@ update_item_links <- function(
       item,
       rel = "parent",
       href = parent_href,
-      type = "application/json"
+      type = "application/json",
+      title = parent_title
     )
 
     # Only add collection link when parent is actually a collection
@@ -613,7 +632,8 @@ update_item_links <- function(
         item,
         rel = "collection",
         href = parent_href,
-        type = "application/json"
+        type = "application/json",
+        title = parent_title
       )
     }
   }
@@ -630,7 +650,8 @@ update_item_links <- function(
       item,
       rel = "root",
       href = root_href,
-      type = "application/json"
+      type = "application/json",
+      title = root_title
     )
   }
 

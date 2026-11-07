@@ -83,6 +83,10 @@ is new, and breaking changes are still expected between commits.
   root) and `"absolute"` (absolute links, for web hosting). These correspond to
   PySTAC's `SELF_CONTAINED`, `RELATIVE_PUBLISHED` and `ABSOLUTE_PUBLISHED`.
 
+* `write_stac()` now titles `root`, `parent` and `collection` links with the
+  linked object's `title`, matching PySTAC's output. `add_root_link()` gained a
+  `title` argument for the same reason.
+
 * `validate_stac()` runs offline structural checks; `validate_stac_schema()`
   validates serialised output against the published schemas at
   `schemas.stacspec.org`. Repeated errors produced by walking the schema are
@@ -93,6 +97,10 @@ is new, and breaking changes are still expected between commits.
   readable reports rather than S7 internals.
 
 ## Bug fixes
+
+* JSON output no longer carries floating-point noise: serialization now uses 15
+  significant digits, so a coordinate like `54.34` is written as `54.34` rather
+  than `54.340000000000003`, matching PySTAC's output.
 
 * `remove_item()` now drops the Item itself, not just its link. `write_stac()`
   rebuilds item links from the Items a catalog holds, so removing the link

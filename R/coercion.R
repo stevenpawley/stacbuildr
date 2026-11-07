@@ -85,7 +85,7 @@ item_sfc <- function(item) {
     jsonlite::toJSON(
       stac_to_nested_list(item$geometry),
       auto_unbox = TRUE,
-      digits = 15
+      digits = I(15)
     )
   ))
 }

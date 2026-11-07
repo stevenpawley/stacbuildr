@@ -4,13 +4,17 @@
 \alias{add_root_link}
 \title{Add a root link to a STAC catalog}
 \usage{
-add_root_link(catalog, href)
+add_root_link(catalog, href, title = NULL)
 }
 \arguments{
 \item{catalog}{A STAC catalog, collection, or item object.}
 
 \item{href}{(character, required) The URL to the root catalog. Can be
 absolute or relative.}
+
+\item{title}{(character, optional) A human-readable title for the link, taken
+from the root object's \code{title} when known. \code{write_stac()} fills this in
+automatically. Default is \code{NULL}.}
 }
 \value{
 The modified catalog object with the root link added.
