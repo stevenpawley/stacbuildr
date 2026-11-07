@@ -120,13 +120,7 @@ add_datacube_extension <- function(
       )
     }
   }
-  ext_uri <- "https://stac-extensions.github.io/datacube/v2.3.0/schema.json"
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
-  }
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
-  }
+  item <- add_stac_extension(item, "datacube")
   fields <- list()
   if (!is.null(dimensions)) {
     fields$`cube:dimensions` <- dimensions

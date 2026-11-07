@@ -256,13 +256,7 @@ add_render_extension <- function(item, renders) {
     cli::cli_abort("'item' must be a stac_item or stac_collection object")
   }
   renders <- validate_render_named_list(renders)
-  ext_uri <- "https://stac-extensions.github.io/render/v2.0.0/schema.json"
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
-  }
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
-  }
+  item <- add_stac_extension(item, "render")
   merge_renders <- function(existing) {
     existing[names(renders)] <- renders
     return(existing)

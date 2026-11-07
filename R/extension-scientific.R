@@ -131,13 +131,7 @@ add_scientific_extension <- function(
       )
     }
   }
-  ext_uri <- "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
-  }
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
-  }
+  item <- add_stac_extension(item, "scientific")
   if (!is.null(doi)) {
     item$properties[["sci:doi"]] <- doi
     doi_link <- stac_link(

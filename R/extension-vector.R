@@ -142,13 +142,7 @@ add_vector_extension <- function(
       cli::cli_abort("'reference_scale' must be a single number greater than 0")
     }
   }
-  ext_uri <- "https://stac-extensions.github.io/vector/v0.1.0/schema.json"
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
-  }
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
-  }
+  item <- add_stac_extension(item, "vector")
   fields <- list()
   if (!is.null(geometry_types)) {
     fields$`vector:geometry_types` <- as_json_array(geometry_types)

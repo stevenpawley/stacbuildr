@@ -156,13 +156,7 @@ add_classification_extension <- function(
       "'bitfields' must be a list of classification_bitfield objects"
     )
   }
-  ext_uri <- "https://stac-extensions.github.io/classification/v2.0.0/schema.json"
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
-  }
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
-  }
+  item <- add_stac_extension(item, "classification")
   if (!is.null(asset_key)) {
     if (is.null(item$assets[[asset_key]])) {
       cli::cli_abort("Asset '{asset_key}' does not exist in item")

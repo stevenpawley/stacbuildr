@@ -193,13 +193,7 @@ add_eo_extension <- function(
       cli::cli_abort("'snow_cover' must be between 0 and 100")
     }
   }
-  ext_uri <- "https://stac-extensions.github.io/eo/v2.0.0/schema.json"
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
-  }
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
-  }
+  item <- add_stac_extension(item, "eo")
   if (!is.null(cloud_cover)) {
     item$properties[["eo:cloud_cover"]] <- cloud_cover
   }

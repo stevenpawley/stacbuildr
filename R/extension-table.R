@@ -163,13 +163,7 @@ add_table_extension <- function(
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
   }
-  ext_uri <- "https://stac-extensions.github.io/table/v1.2.0/schema.json"
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
-  }
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
-  }
+  item <- add_stac_extension(item, "table")
   fields <- list()
   if (!is.null(columns)) {
     fields$`table:columns` <- columns

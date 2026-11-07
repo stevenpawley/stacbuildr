@@ -221,13 +221,7 @@ add_projection_extension <- function(
       cli::cli_abort("Asset '{asset_key}' does not exist in item")
     }
   }
-  ext_uri <- "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
-  }
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
-  }
+  item <- add_stac_extension(item, "projection")
   fields <- list()
   if (!is.null(code)) {
     fields$`proj:code` <- code

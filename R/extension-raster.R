@@ -152,13 +152,7 @@ add_raster_extension <- function(item, bands, asset_key = NULL) {
       i = "Use bands = band_from_file(...), not bands = list(band_from_file(...))."
     ))
   }
-  ext_uri <- "https://stac-extensions.github.io/raster/v2.0.0/schema.json"
-  if (is.null(item$stac_extensions)) {
-    item$stac_extensions <- character(0)
-  }
-  if (!ext_uri %in% item$stac_extensions) {
-    item$stac_extensions <- c(item$stac_extensions, ext_uri)
-  }
+  item <- add_stac_extension(item, "raster")
   return(set_bands(item, bands, asset_key = asset_key))
 }
 
