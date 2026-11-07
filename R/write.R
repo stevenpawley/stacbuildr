@@ -680,23 +680,35 @@ reconcile_item_collection <- function(item) {
 
 #' Compute a relative path from a directory to a target file
 #'
-#' @param target Absolute path to the target file.
+#' @param target Absolute path to the target file: POSIX `/...`, Windows
+#'   drive-letter `C:/...` or `C:\...`, or UNC `\\server\share\...`.
 #' @param from_dir Absolute path to the directory to compute relative to.
-#' @return A relative path string, or `target` unchanged if it is a URL or
-#'   already relative.
+#' @return A relative path string with `/` separators, or `target` unchanged if
+#'   it is a URL or already relative. A target on a different root than
+#'   `from_dir` (e.g. another Windows drive or UNC server) cannot be expressed
+#'   as a relative path, so it is returned as an absolute path with `/`
+#'   separators.
 #'
 #' @noRd
 make_relative_href <- function(target, from_dir) {
   if (
     is.null(target) ||
       grepl("://", target, fixed = TRUE) ||
-      !startsWith(target, "/")
+      !is_absolute_local_path(target)
   ) {
     return(target)
   }
 
-  target <- normalizePath(target, mustWork = FALSE)
-  from_dir <- normalizePath(from_dir, mustWork = FALSE)
+  # normalizePath() returns backslashes on Windows; use forward slashes
+  # throughout so the segment split below works on every platform
+  target <- gsub("\\\\", "/", normalizePath(target, mustWork = FALSE))
+  from_dir <- gsub("\\\\", "/", normalizePath(from_dir, mustWork = FALSE))
+
+  # A relative path cannot cross roots (POSIX "/", a Windows drive letter, or
+  # a UNC server), so a target on a different root stays absolute
+  if (!identical(path_root(target), path_root(from_dir))) {
+    return(target)
+  }
 
   target_parts <- Filter(nchar, strsplit(target, "/")[[1]])
   from_parts <- Filter(nchar, strsplit(from_dir, "/")[[1]])
@@ -711,6 +723,36 @@ make_relative_href <- function(target, from_dir) {
   down <- tail(target_parts, length(target_parts) - common_len)
   parts <- c(up, down)
   return(if (length(parts) == 0) "." else paste(parts, collapse = "/"))
+}
+
+
+# TRUE for absolute local paths on any platform: POSIX "/...", Windows
+# drive-letter paths "C:/..." or "C:\...", and UNC paths "\\server\share\...".
+#
+# @keywords internal
+is_absolute_local_path <- function(x) {
+  return(
+    startsWith(x, "/") ||
+      startsWith(x, "\\\\") ||
+      grepl("^[A-Za-z]:[/\\\\]", x)
+  )
+}
+
+
+# The root a normalized (forward-slash) absolute path hangs from: "c:" for a
+# Windows drive, the server name for a UNC path "//server/share/...", or "/"
+# for POSIX. Two paths with different roots cannot be relativized against each
+# other (a relative path cannot cross drives or servers).
+#
+# @keywords internal
+path_root <- function(path) {
+  if (grepl("^[A-Za-z]:/", path)) {
+    return(tolower(substr(path, 1L, 2L)))
+  }
+  if (startsWith(path, "//")) {
+    return(tolower(strsplit(path, "/", fixed = TRUE)[[1]][[3L]]))
+  }
+  return("/")
 }
 
 
@@ -781,7 +823,7 @@ absolutize_asset_hrefs <- function(item, item_base_url) {
       return(a)
     }
 
-    if (startsWith(a$href, "/")) {
+    if (is_absolute_local_path(a$href)) {
       unresolved <<- c(unresolved, a$href)
       return(a)
     }

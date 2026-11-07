@@ -369,6 +369,43 @@ test_that("absolute catalogs warn about local asset paths", {
 })
 
 
+test_that("absolute catalogs warn about Windows local asset paths", {
+  dir <- tempfile("absolute_local_win_")
+  on.exit(unlink(dir, recursive = TRUE))
+
+  item <- stac_item(
+    id = "i1",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  )
+  item <- add_asset(
+    item,
+    key = "dem",
+    asset = stac_asset(href = "C:\\data\\dem.tif", type = "image/tiff")
+  )
+  catalog <- add_item(stac_catalog(id = "root", description = "d"), item)
+
+  # A Windows absolute path has no URL equivalent either, so it must warn
+  # rather than be joined onto the base URL
+  expect_warning(
+    write_stac(
+      catalog,
+      dir,
+      catalog_type = "absolute",
+      base_url = "https://example.com/stac"
+    ),
+    "cannot be made absolute"
+  )
+
+  assets <- jsonlite::fromJSON(
+    file.path(dir, "i1", "i1.json"),
+    simplifyVector = FALSE
+  )$assets
+  expect_equal(assets$dem$href, "C:\\data\\dem.tif")
+})
+
+
 test_that("url_join collapses relative segments", {
   expect_equal(
     url_join("https://example.com/stac/mid/sub/i1", "../../data/dem.tif"),
@@ -381,6 +418,66 @@ test_that("url_join collapses relative segments", {
   expect_equal(
     url_join("https://example.com", "dem.tif"),
     "https://example.com/dem.tif"
+  )
+})
+
+
+test_that("make_relative_href computes POSIX relative paths", {
+  expect_equal(
+    make_relative_href("/stac/data/dem.tif", "/stac/i1"),
+    "../data/dem.tif"
+  )
+  expect_equal(make_relative_href("/stac/i1/dem.tif", "/stac/i1"), "dem.tif")
+  expect_equal(
+    make_relative_href("/stac/catalog.json", "/stac/mid/sub/i1"),
+    "../../../catalog.json"
+  )
+  expect_equal(make_relative_href("/a/b", "/a/b"), ".")
+
+  # URLs, already-relative hrefs, and NULL pass through unchanged
+  expect_equal(
+    make_relative_href("https://example.com/dem.tif", "/stac/i1"),
+    "https://example.com/dem.tif"
+  )
+  expect_equal(make_relative_href("s3://bucket/dem.tif", "/stac/i1"), "s3://bucket/dem.tif")
+  expect_equal(make_relative_href("data/dem.tif", "/stac/i1"), "data/dem.tif")
+  expect_equal(make_relative_href(NULL, "/stac/i1"), NULL)
+})
+
+
+test_that("make_relative_href handles Windows paths", {
+  # Drive-letter paths, with forward slashes, backslashes, or mixed
+  expect_equal(
+    make_relative_href("C:/stac/data/dem.tif", "C:/stac/i1"),
+    "../data/dem.tif"
+  )
+  expect_equal(
+    make_relative_href("C:\\stac\\data\\dem.tif", "C:\\stac\\i1"),
+    "../data/dem.tif"
+  )
+  expect_equal(
+    make_relative_href("C:/stac/data/dem.tif", "C:\\stac\\i1"),
+    "../data/dem.tif"
+  )
+
+  # UNC paths sharing a server relativize; the result uses forward slashes
+  expect_equal(
+    make_relative_href("\\\\server\\share\\data\\dem.tif", "\\\\server\\share\\i1"),
+    "../data/dem.tif"
+  )
+
+  # A relative path cannot cross drives or servers, so those stay absolute
+  expect_equal(
+    make_relative_href("D:/data/dem.tif", "C:/stac/i1"),
+    "D:/data/dem.tif"
+  )
+  expect_equal(
+    make_relative_href("d:/data/dem.tif", "C:/stac/i1"),
+    "d:/data/dem.tif"
+  )
+  expect_equal(
+    make_relative_href("\\\\other\\share\\dem.tif", "\\\\server\\share\\i1"),
+    "//other/share/dem.tif"
   )
 })
 
