@@ -207,11 +207,14 @@ test_that("item_from_terra records the CRS authority in proj:code", {
 
   # OGC:CRS84 is WGS84 lon/lat and has no EPSG code; proj:code carries the
   # authority alongside the code, so it is recorded as-is
+  # (add_raster_bands = FALSE: without an href the bands would land in
+  # properties, which warns because no asset declares bands)
   item <- expect_no_warning(
     item_from_terra(
       make("OGC:CRS84"),
       id = "crs84",
-      datetime = "2020-01-01T00:00:00Z"
+      datetime = "2020-01-01T00:00:00Z",
+      add_raster_bands = FALSE
     )
   )
   expect_equal(item$properties$`proj:code`, "OGC:CRS84")

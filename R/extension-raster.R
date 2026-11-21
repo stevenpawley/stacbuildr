@@ -14,7 +14,10 @@
 #'   asset has multiple bands, provide a list with one entry per band in order.
 #' @param asset_key (character, optional) If provided, adds the bands to a
 #'   specific asset rather than to the item properties. Useful when different
-#'   assets have different band structures.
+#'   assets have different band structures. Note that under STAC 1.1.0 core,
+#'   `bands` in item `properties` is only valid when at least one asset also
+#'   declares `bands`, so passing `asset_key` is recommended; a warning is
+#'   raised when bands are written to properties with no asset bands.
 #'
 #' @details
 #' ## Extension Schema URI
