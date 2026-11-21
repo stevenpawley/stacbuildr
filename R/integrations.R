@@ -829,12 +829,22 @@ gdal_nodata <- function(file) {
   return(tryCatch(
     {
       info <- sf::gdal_utils("info", source = file, quiet = TRUE)
-      m <- regmatches(info, regexpr("NoData Value=([^\\n\\r]+)", info))
+      # Capture only the value token. TRE does not treat \n/\r inside a
+      # character class as newline/carriage-return escapes, so the previous
+      # "[^\\n\\r]+" swallowed the rest of the gdalinfo output, as.numeric()
+      # returned NA, and the asset serialised as the string "NA" instead of a
+      # number. \S+ with perl = TRUE stops at the first whitespace.
+      m <- regmatches(info, regexpr("NoData Value=(\\S+)", info, perl = TRUE))
       if (length(m) == 0) {
         return(NULL)
       }
-      val <- trimws(sub("NoData Value=", "", m[[1]]))
-      as.numeric(val)
+      val <- as.numeric(sub("NoData Value=", "", m[[1]]))
+      # "nan" (float rasters) is not representable as a JSON number, so treat
+      # it as no usable nodata rather than emitting an invalid value
+      if (!is.finite(val)) {
+        return(NULL)
+      }
+      return(val)
     },
     error = function(e) {
       return(NULL)
