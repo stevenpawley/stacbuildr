@@ -104,6 +104,36 @@ R_OUT <- file.path(OUT_DIR, "r_out")
 dir.create(DATA_DIR, recursive = TRUE, showWarnings = FALSE)
 cat("Output dir:", OUT_DIR, "\n")
 
+# lidR fixtures: small LAS files the python side reads back with laspy
+if (requireNamespace("lidR", quietly = TRUE)) {
+  set.seed(42)
+  mk_las_fixture <- function(f) {
+    n <- 500L
+    df <- data.frame(
+      X = runif(n, 712710, 713310),
+      Y = runif(n, 5487090, 5487390),
+      Z = runif(n, 400, 700),
+      Intensity = as.integer(runif(n, 0, 255)),
+      ReturnNumber = sample(1:3, n, TRUE),
+      Classification = rep(2L, n),
+      GpsTime = runif(n, 100000, 200000)
+    )
+    df$NumberOfReturns <- pmin(sample(1:3, n, TRUE), df$ReturnNumber + 2L)
+    df$NumberOfReturns <- pmax(df$NumberOfReturns, df$ReturnNumber)
+    las <- lidR::LAS(df)
+    lidR::crs(las) <- "EPSG:32612"
+    las@header@PHB[["File Creation Year"]] <- 2023L
+    las@header@PHB[["File Creation Day of Year"]] <- 166L
+    las@header@PHB[["Point Data Format ID"]] <- 1L
+    lidR::writeLAS(las, f, index = FALSE)
+  }
+  mk_las_fixture(file.path(DATA_DIR, "test.las"))
+  ctg_dir <- file.path(DATA_DIR, "las_ctg")
+  dir.create(ctg_dir, showWarnings = FALSE)
+  mk_las_fixture(file.path(ctg_dir, "plot_a.las"))
+  mk_las_fixture(file.path(ctg_dir, "plot_b.las"))
+}
+
 # Serialization identical to stacbuildr:::stac_to_json(x, pretty = FALSE)
 ser <- function(x) {
   x <- stacbuildr:::strip_stored_objects(x)
@@ -1009,13 +1039,40 @@ scenarios[["validate_stac_schema_collection"]] <- function() {
   validate_stac_schema(mk_collection())
 }
 
-# ---- lidR-dependent (expected to error without lidR) ---------------------------
+# ---- lidR integrations (need lidR; the python side reads the same files with laspy)
 scenarios[["item_from_lidr"]] <- function() {
-  item_from_lidr("nonexistent.las")
+  if (!requireNamespace("lidR", quietly = TRUE)) stop("lidR not installed")
+  item_from_lidr(file.path(DATA_DIR, "test.las"), datetime = "2023-06-15T10:30:00Z")
+}
+
+scenarios[["item_from_lidr_datetime_from_header"]] <- function() {
+  if (!requireNamespace("lidR", quietly = TRUE)) stop("lidR not installed")
+  # datetime = NULL -> derived from the LAS header creation year/day-of-year
+  item_from_lidr(file.path(DATA_DIR, "test.las"))
+}
+
+scenarios[["item_from_lidr_stats"]] <- function() {
+  if (!requireNamespace("lidR", quietly = TRUE)) stop("lidR not installed")
+  f <- file.path(DATA_DIR, "test.las")
+  item_from_lidr(
+    lidR::readLAS(f), href = f, calculate_statistics = TRUE,
+    datetime = "2023-06-15T10:30:00Z"
+  )
 }
 
 scenarios[["items_from_lascatalog"]] <- function() {
-  items_from_lascatalog("nonexistent_catalog")
+  if (!requireNamespace("lidR", quietly = TRUE)) stop("lidR not installed")
+  # NB: a fixed datetime must go through datetime_from_filename; a bare
+  # `datetime = ...` would partial-match the datetime_from_filename formal.
+  unname(items_from_lascatalog(
+    file.path(DATA_DIR, "las_ctg"),
+    datetime_from_filename = function(f) "2023-06-15T10:30:00Z"
+  ))
+}
+
+scenarios[["schemas_from_lidr"]] <- function() {
+  if (!requireNamespace("lidR", quietly = TRUE)) stop("lidR not installed")
+  schemas_from_lidr(file.path(DATA_DIR, "test.las"))
 }
 
 # ---- run R scenarios ------------------------------------------------------------
@@ -1067,6 +1124,12 @@ mask_dirs <- mask_dirs[order(nchar(mask_dirs), decreasing = TRUE)]
 mask_strings <- function(x) {
   if (is.character(x)) {
     for (d in mask_dirs) x <- gsub(d, "<DIR>", x, fixed = TRUE)
+    # WKT strings differ cosmetically between PROJ consumers (sf/terra vs
+    # pyproj/rasterio): same CRS, different whitespace/quoting. Mask them.
+    wkt_roots <- c("PROJCRS[", "DERIVEDPROJCRS[", "GEOGCRS[", "GEODCRS[",
+                   "PROJCS[", "GEOGCS[", "VERTCRS[", "COMPOUNDCRS[",
+                   "BOUNDCRS[", "ENGCRS[", "LOCAL_CS[")
+    if (any(startsWith(x, wkt_roots))) return("<WKT>")
     return(x)
   }
   if (is.list(x)) return(lapply(x, mask_strings))

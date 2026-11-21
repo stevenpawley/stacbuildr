@@ -957,8 +957,154 @@ def _validate_schema_item():
 scenarios["validate_stac_schema_item"] = _validate_schema_item
 scenarios["validate_stac_schema_collection"] = lambda: _validate(mk_collection())
 
-scenarios["item_from_lidr"] = lambda: {"__error__": "N/A: lidR not installed in R; pystac has no LAS reader in this venv"}
-scenarios["items_from_lascatalog"] = lambda: {"__error__": "N/A: lidR not installed in R; pystac has no LAS reader in this venv"}
+# ---- lidR integrations -----------------------------------------------------------
+# The R side builds these with lidR (item_from_lidr / items_from_lascatalog /
+# schemas_from_lidr); here we read the same LAS files with laspy and mirror the
+# same JSON. Dimension tables mirror las_dimension_sizes / las_point_formats in
+# R/integrations-lidr.R.
+PROJ_V2 = "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
+
+LAS_DIM_SIZES = {
+    "X": (8, "floating"), "Y": (8, "floating"), "Z": (8, "floating"),
+    "Intensity": (2, "unsigned"), "ReturnNumber": (1, "unsigned"),
+    "NumberOfReturns": (1, "unsigned"), "ScanDirectionFlag": (1, "unsigned"),
+    "EdgeOfFlightLine": (1, "unsigned"), "Classification": (1, "unsigned"),
+    "ScanAngleRank": (4, "floating"), "UserData": (1, "unsigned"),
+    "PointSourceId": (2, "unsigned"), "GpsTime": (8, "floating"),
+    "ScanChannel": (1, "unsigned"), "ClassFlags": (1, "unsigned"),
+    "Red": (2, "unsigned"), "Green": (2, "unsigned"), "Blue": (2, "unsigned"),
+    "Infrared": (2, "unsigned"),
+    "WavePacketDescriptorIndex": (1, "unsigned"), "WaveformDataOffset": (8, "unsigned"),
+    "WaveformPacketSize": (4, "unsigned"), "WaveformLocation": (4, "floating"),
+    "WaveformXt": (4, "floating"), "WaveformYt": (4, "floating"), "WaveformZt": (4, "floating"),
+}
+LAS_BASE = ["X", "Y", "Z", "Intensity", "ReturnNumber", "NumberOfReturns",
+            "ScanDirectionFlag", "EdgeOfFlightLine", "Classification", "ScanAngleRank",
+            "UserData", "PointSourceId"]
+LAS_RGB = ["Red", "Green", "Blue"]
+LAS_WAVE = ["WavePacketDescriptorIndex", "WaveformDataOffset", "WaveformPacketSize",
+            "WaveformLocation", "WaveformXt", "WaveformYt", "WaveformZt"]
+LAS_EXT = LAS_BASE + ["GpsTime", "ScanChannel", "ClassFlags"]
+LAS_POINT_FORMATS = {
+    0: LAS_BASE, 1: LAS_BASE + ["GpsTime"], 2: LAS_BASE + LAS_RGB,
+    3: LAS_BASE + ["GpsTime"] + LAS_RGB, 4: LAS_BASE + ["GpsTime"] + LAS_WAVE,
+    5: LAS_BASE + ["GpsTime"] + LAS_RGB + LAS_WAVE,
+    6: LAS_EXT, 7: LAS_EXT + LAS_RGB, 8: LAS_EXT + LAS_RGB + ["Infrared"],
+    9: LAS_EXT + LAS_WAVE, 10: LAS_EXT + LAS_RGB + ["Infrared"] + LAS_WAVE,
+}
+
+def _las_schemas(las):
+    fmt = las.header.point_format.id & 0x3F
+    dims = LAS_POINT_FORMATS.get(fmt)
+    if dims is None:
+        return None
+    return [{"name": n, "size": LAS_DIM_SIZES[n][0], "type": LAS_DIM_SIZES[n][1]} for n in dims]
+
+# lidR's LAS@data column order for the statistics (GpsTime follows X/Y/Z), and
+# the laspy attribute each spec dimension maps to.
+LIDR_STAT_ORDER = ["X", "Y", "Z", "GpsTime", "Intensity", "ReturnNumber", "NumberOfReturns",
+                   "ScanDirectionFlag", "EdgeOfFlightLine", "Classification", "ScanAngleRank",
+                   "UserData", "PointSourceId"]
+LASPY_ATTR = {"X": "x", "Y": "y", "Z": "z", "GpsTime": "gps_time", "Intensity": "intensity",
+              "ReturnNumber": "return_number", "NumberOfReturns": "number_of_returns",
+              "ScanDirectionFlag": "scan_direction_flag", "EdgeOfFlightLine": "edge_of_flight_line",
+              "Classification": "classification", "ScanAngleRank": "scan_angle_rank",
+              "UserData": "user_data", "PointSourceId": "point_source_id"}
+
+def _las_statistics(las, schemas):
+    import numpy as np
+    positions = {s["name"]: i for i, s in enumerate(schemas)}
+    out = []
+    for name in LIDR_STAT_ORDER:
+        if name not in positions:
+            continue
+        vals = np.asarray(getattr(las, LASPY_ATTR[name]), dtype="float64")
+        vals = vals[~np.isnan(vals)]
+        if vals.size == 0:
+            continue
+        var = float(np.var(vals, ddof=1)) if vals.size > 1 else None
+        out.append({"name": name, "position": positions[name],
+                    "average": float(np.mean(vals)), "count": int(vals.size),
+                    "maximum": float(np.max(vals)), "minimum": float(np.min(vals)),
+                    "stddev": float(np.sqrt(var)) if var is not None else None,
+                    "variance": var})
+    return out
+
+def _item_from_las(path, datetime_s=None, stats=False):
+    import laspy
+    from pyproj import Transformer
+    las = laspy.read(path)
+    h = las.header
+    crs = h.parse_crs()
+    mins = [float(v) for v in h.mins]
+    maxs = [float(v) for v in h.maxs]
+    # geometry: the file's bounding rectangle transformed to WGS84 (corner order
+    # xmin/ymin, xmax/ymin, xmax/ymax, xmin/ymax, closed), as in stacbuildr
+    if crs is not None and crs.to_epsg() != 4326:
+        tr = Transformer.from_crs(crs, "EPSG:4326", always_xy=True)
+        xs, ys = tr.transform([mins[0], maxs[0], maxs[0], mins[0]],
+                              [mins[1], mins[1], maxs[1], maxs[1]])
+    else:
+        xs = [mins[0], maxs[0], maxs[0], mins[0]]
+        ys = [mins[1], mins[1], maxs[1], maxs[1]]
+    geom = {"type": "Polygon",
+            "coordinates": [[[x, y] for x, y in zip(xs, ys)] + [[xs[0], ys[0]]]]}
+    bbox = [min(xs), min(ys), max(xs), max(ys)]
+    if datetime_s is None:
+        cd = h.creation_date  # from header File Creation Year / Day of Year
+        datetime_s = ("%sT00:00:00Z" % cd.isoformat()) if cd else None
+    item = pystac.Item(id=os.path.splitext(os.path.basename(path))[0].replace(".copc", ""),
+                       geometry=geom, bbox=bbox, datetime=dt(datetime_s), properties={})
+    item.add_asset("data", pystac.Asset(
+        href=os.path.abspath(path),
+        media_type="application/vnd.laszip" if path.lower().endswith(".laz") else "application/vnd.las",
+        roles=["data"]))
+    schemas = _las_schemas(las)
+    count = int(h.point_count)
+    if crs is not None:
+        add_ext(item, PROJ_V2)
+        epsg = crs.to_epsg()
+        if epsg is not None:
+            item.properties["proj:code"] = "EPSG:%d" % epsg
+        item.properties["proj:wkt2"] = crs.to_wkt()
+        item.properties["proj:bbox"] = [mins[0], mins[1], mins[2], maxs[0], maxs[1], maxs[2]]
+    add_ext(item, PC_V2)
+    item.properties["pc:count"] = count
+    item.properties["pc:type"] = "lidar"
+    if schemas:
+        item.properties["pc:schemas"] = schemas
+    area = (maxs[0] - mins[0]) * (maxs[1] - mins[1])
+    if area > 0:
+        item.properties["pc:density"] = count / area
+    if stats:
+        statistics = _las_statistics(las, schemas or [])
+    else:
+        # header-only statistics: X/Y/Z min/max/count from the public header block
+        positions = {s["name"]: i for i, s in enumerate(schemas or [])}
+        statistics = [{"name": a, "position": positions.get(a), "count": count,
+                       "minimum": mins[i], "maximum": maxs[i]}
+                      for i, a in enumerate(["X", "Y", "Z"])]
+    if statistics:
+        item.properties["pc:statistics"] = statistics
+    return item
+
+def _lidr_las():
+    return os.path.join(DATA_DIR, "test.las")
+
+scenarios["item_from_lidr"] = lambda: _item_from_las(_lidr_las(), "2023-06-15T10:30:00Z")
+scenarios["item_from_lidr_datetime_from_header"] = lambda: _item_from_las(_lidr_las())
+scenarios["item_from_lidr_stats"] = lambda: _item_from_las(_lidr_las(), "2023-06-15T10:30:00Z", stats=True)
+
+def _items_from_lascatalog():
+    ctg = os.path.join(DATA_DIR, "las_ctg")
+    files = sorted(f for f in os.listdir(ctg) if f.lower().endswith((".las", ".laz")))
+    return [_item_from_las(os.path.join(ctg, f), "2023-06-15T10:30:00Z").to_dict() for f in files]
+scenarios["items_from_lascatalog"] = _items_from_lascatalog
+
+def _schemas_from_lidr():
+    import laspy
+    return _las_schemas(laspy.read(_lidr_las()))
+scenarios["schemas_from_lidr"] = _schemas_from_lidr
 
 # ---- run ------------------------------------------------------------------------
 results = {}
