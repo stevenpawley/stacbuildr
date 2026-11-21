@@ -5,16 +5,75 @@
 # own serialization policy (same as stac_to_json()), builds the equivalent
 # objects with pystac via the companion dev/compare-with-pystac.py, and diffs
 # the two JSON sets (object key order ignored; link arrays compared as sets;
-# numbers at 1e-9 relative tolerance). Writes report.md and diffs.json.
+# numbers at 1e-9 relative tolerance).
 #
-# Usage:
+# ---------------------------------------------------------------------------
+# HOW TO RUN
+# ---------------------------------------------------------------------------
+# From the package root:
+#
 #   Rscript dev/compare-with-pystac.R [output-dir]
 #
-# Environment:
-#   STACBUILDR_PYTHON  python interpreter with pystac installed
-#                      (default: ~/.virtualenvs/pystac/bin/python)
+# e.g.:
 #
-# Keep the scenario names in this file in sync with dev/compare-with-pystac.py.
+#   Rscript dev/compare-with-pystac.R /tmp/stac-compare
+#
+# Prerequisites:
+#   * R with the package's dependencies installed (pkgload is used to load
+#     the package from this source checkout when available, otherwise the
+#     installed stacbuildr is used).
+#   * A python environment with pystac installed. By default the script uses
+#     ~/.virtualenvs/pystac/bin/python; point STACBUILDR_PYTHON at another
+#     interpreter if needed:
+#
+#       STACBUILDR_PYTHON=/path/to/python Rscript dev/compare-with-pystac.R /tmp/out
+#
+#   * Optional integrations: terra + sf for the item_from_* / thumbnail / band
+#     scenarios (skipped with an error entry if missing), lidR for the
+#     item_from_lidr / items_from_lascatalog scenarios, network access for the
+#     validate_stac_schema scenarios (remote JSON schemas).
+#
+# Outputs (written to the output dir, default tempdir()):
+#   r_results.json    raw JSON produced by stacbuildr for every scenario
+#   py_results.json   raw JSON produced by pystac for every scenario
+#   report.md         markdown table: scenario | status | differences
+#   diffs.json        machine-readable detail for every scenario
+#   data/             fixture files created by the R scenarios (GeoTIFFs,
+#                     GeoJSON) that the python side reads back
+#   r_out/, py_out/   catalog trees written by write_stac() vs pystac save()
+#
+# Statuses in the report:
+#   MATCH        identical JSON (key order ignored)
+#   MATCH*       identical except pystac emits an empty "stac_extensions": []
+#                on Items where stacbuildr omits the field when empty
+#   DIFF         real difference — read the NOTE column, most are known
+#                pystac-side conventions (auto root links, read_file injecting
+#                self links, ...) rather than stacbuildr bugs
+#   ERROR-R/-PY  the scenario errored on that side (e.g. lidR not installed)
+#   PY-ONLY      pystac-native extension output recorded for version-gap notes
+#
+# ---------------------------------------------------------------------------
+# ADDING A SCENARIO
+# ---------------------------------------------------------------------------
+# 1. Add a function to `scenarios` below, named after the stacbuildr function
+#    it exercises. It must return a stac_object (or a list of them); the runner
+#    serializes the return value with the package's own stac_to_json policy.
+# 2. Add the same-named scenario to dev/compare-with-pystac.py building the
+#    equivalent object with pystac (obj.to_dict() is applied for you).
+# 3. Re-run the script. Name mismatches show up as R-ONLY / PY-ONLY rows.
+#
+# The python script can also be run standalone while debugging the pystac side:
+#   python dev/compare-with-pystac.py --data-dir <out>/data --r-out <out>/r_out --out <out>
+# ---------------------------------------------------------------------------
+
+suppressMessages({
+  if (requireNamespace("pkgload", quietly = TRUE)) {
+    pkgload::load_all(".", quiet = TRUE)
+  } else {
+    library(stacbuildr)
+  }
+  library(jsonlite)
+})
 
 suppressMessages({
   if (requireNamespace("pkgload", quietly = TRUE)) {
