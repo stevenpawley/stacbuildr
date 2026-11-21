@@ -914,9 +914,13 @@ add_item_assets <- function(collection) {
           }
         }
 
-        # Carry over any additional asset fields (e.g. `nodata`, `bands`)
-        item_asset <- c(item_asset, asset$extra_fields)
-        
+        # Carry over any additional asset fields (e.g. `nodata`, `bands`).
+        # stac_to_nested_list() serialises any S3 objects in there (eo_band,
+        # raster_band, ...) to their plain JSON-ready lists; subsetting them
+        # raw instead would drop the class, leaving unprefixed field names,
+        # empty vectors as [] and a stray `extra_fields` key in the output.
+        item_asset <- c(item_asset, stac_to_nested_list(asset$extra_fields))
+
         # Statistics are per-asset measurements, so they don't belong in a
         # shared definition - drop them from any band entries
         if (!is.null(item_asset$bands)) {
