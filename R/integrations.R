@@ -339,6 +339,17 @@ geometry_from_sf <- function(sf_obj) {
     geom <- sf::st_union(geom)
   }
 
+  # st_union of heterogeneous geometry types (e.g. polygon + point) returns an
+  # sfc of length > 1 rather than a single GeometryCollection, and sfc_geojson
+  # then emits one JSON object per geometry, which fromJSON cannot parse. Wrap
+  # any remaining multiple geometries in an explicit GeometryCollection.
+  if (length(geom) > 1) {
+    geom <- sf::st_sfc(
+      sf::st_geometrycollection(geom),
+      crs = sf::st_crs(geom)
+    )
+  }
+
   geojson_str <- geojsonsf::sfc_geojson(geom)
   return(as_stac_geometry(jsonlite::fromJSON(
     geojson_str,

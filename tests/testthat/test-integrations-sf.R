@@ -174,3 +174,30 @@ test_that("item_from_sf reports a missing CRS instead of failing on NA", {
     "no CRS"
   )
 })
+
+test_that("geometry_from_sf wraps mixed geometry types in a GeometryCollection", {
+  # st_union of heterogeneous geometries returns an sfc of length > 1, which
+  # sfc_geojson used to serialise as concatenated JSON objects (parse error)
+  mixed <- sf::st_sf(
+    a = c(1, 2),
+    geometry = sf::st_sfc(
+      sf::st_polygon(list(matrix(
+        c(-105.5, 39.5, -104.5, 39.5, -104.5, 40.5, -105.5, 40.5, -105.5, 39.5),
+        ncol = 2, byrow = TRUE
+      ))),
+      sf::st_point(c(-100, 50)),
+      crs = 4326
+    )
+  )
+
+  geometry <- geometry_from_sf(mixed)
+  expect_true(inherits(geometry, "stac_geometry"))
+  expect_equal(geometry$type, "GeometryCollection")
+  expect_length(geometry$geometries, 2)
+
+  item <- item_from_sf(mixed, id = "mixed", datetime = "2025-01-01T00:00:00Z")
+  expect_equal(item$geometry$type, "GeometryCollection")
+  # serialises to a single JSON object
+  j <- jsonlite::toJSON(as.list(item$geometry), auto_unbox = TRUE, null = "null", digits = I(15))
+  expect_equal(jsonlite::fromJSON(j)$type, "GeometryCollection")
+})
