@@ -1,3 +1,39 @@
+# stacbuildr 0.1.0
+
+## Bug fixes
+
+* `extent_from_items()` no longer crashes when an Item has no bounding box:
+  non-spatial Items are skipped for the spatial extent with an informative
+  message while their datetimes still count towards the temporal extent, a
+  clear error is raised when no Item has a bbox, and 6-element 3D bboxes are
+  normalised to their 2D footprint instead of being read at the wrong
+  positions. Non-Item input is rejected up front.
+
+* `add_item_assets()` now serialises band objects in `item_assets` in their
+  proper JSON form: `eo_band()`/`raster_band()` fields keep their prefixed
+  names (`eo:common_name`, `raster:scale`), unset optional fields are omitted
+  rather than written as empty arrays, and no stray `extra_fields` key is
+  emitted. The output passes the official STAC JSON schemas.
+
+* `as.list()` on a Catalog now runs `extra_fields` through the same
+  conversion as Collections, so a Catalog built with an stacbuildr object via
+  `...` (e.g. `stac_catalog(..., foo = stac_link(...))`) no longer crashes at
+  write time with "No method asJSON S3 class: stac_object".
+
+* `set_bands()` (behind `add_eo_extension()`/`add_raster_extension()`) warns
+  when bands land in Item `properties` while no asset declares `bands`, a
+  shape STAC 1.1.0 core forbids; `validate_stac()` reports the same rule
+  offline. Pass `asset_key` to place the bands on an asset instead.
+
+* `gdal_nodata()` no longer returns `NA` — which serialised as the string
+  `"NA"` instead of a JSON number — when `gdalinfo` wraps its output across
+  lines. Non-finite values such as `nan` return `NULL`, since they cannot be
+  represented in JSON.
+
+* `geometry_from_sf()` wraps mixed geometry types (e.g. a polygon plus a
+  point) in an explicit GeometryCollection, so `item_from_sf()` produces a
+  single valid GeoJSON geometry instead of failing with a parse error.
+
 # stacbuildr 0.0.0.9000
 
 First development cycle. The package has not been released, so everything below
