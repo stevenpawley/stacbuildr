@@ -76,6 +76,10 @@ MultiSpectral Instrument (MSI) sensors.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="va">item</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="add_eo_extension.html">add_eo_extension</a></span><span class="op">(</span>bands <span class="op">=</span> <span class="va">bands</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Writing <span style="color: #00BB00;">bands</span> to item <span style="color: #00BB00;">properties</span>.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> STAC 1.1.0 only allows <span style="color: #00BB00;">properties$bands</span> when at least one asset also declares</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #00BB00;">bands</span>; otherwise the item fails core schema validation.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> → Pass `asset_key` to place the bands on an asset instead.</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

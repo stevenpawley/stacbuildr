@@ -176,6 +176,10 @@ scale=0.0001.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">item</span> <span class="op">&lt;-</span> <span class="fu">add_raster_extension</span><span class="op">(</span><span class="va">item</span>, bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">band</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Writing <span style="color: #00BB00;">bands</span> to item <span style="color: #00BB00;">properties</span>.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> STAC 1.1.0 only allows <span style="color: #00BB00;">properties$bands</span> when at least one asset also declares</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #00BB00;">bands</span>; otherwise the item fails core schema validation.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> → Pass `asset_key` to place the bands on an asset instead.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add multi-band raster with statistics</span></span></span>
 <span class="r-in"><span><span class="va">red_band</span> <span class="op">&lt;-</span> <span class="fu"><a href="raster_band.html">raster_band</a></span><span class="op">(</span></span></span>

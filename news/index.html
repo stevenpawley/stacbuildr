@@ -39,6 +39,18 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="stacbuildr-010">stacbuildr 0.1.0<a class="anchor" aria-label="anchor" href="#stacbuildr-010"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-0-1-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-1-0"></a></h3>
+<ul><li><p><code><a href="../reference/extent_from_items.html">extent_from_items()</a></code> no longer crashes when an Item has no bounding box: non-spatial Items are skipped for the spatial extent with an informative message while their datetimes still count towards the temporal extent, a clear error is raised when no Item has a bbox, and 6-element 3D bboxes are normalised to their 2D footprint instead of being read at the wrong positions. Non-Item input is rejected up front.</p></li>
+<li><p><code><a href="../reference/add_item_assets.html">add_item_assets()</a></code> now serialises band objects in <code>item_assets</code> in their proper JSON form: <code><a href="../reference/eo_band.html">eo_band()</a></code>/<code><a href="../reference/raster_band.html">raster_band()</a></code> fields keep their prefixed names (<code>eo:common_name</code>, <code>raster:scale</code>), unset optional fields are omitted rather than written as empty arrays, and no stray <code>extra_fields</code> key is emitted. The output passes the official STAC JSON schemas.</p></li>
+<li><p><code><a href="https://rspatial.github.io/terra/reference/as.list.html" class="external-link">as.list()</a></code> on a Catalog now runs <code>extra_fields</code> through the same conversion as Collections, so a Catalog built with an stacbuildr object via <code>...</code> (e.g. <code>stac_catalog(..., foo = stac_link(...))</code>) no longer crashes at write time with “No method asJSON S3 class: stac_object”.</p></li>
+<li><p><code>set_bands()</code> (behind <code><a href="../reference/add_eo_extension.html">add_eo_extension()</a></code>/<code><a href="../reference/add_raster_extension.html">add_raster_extension()</a></code>) warns when bands land in Item <code>properties</code> while no asset declares <code>bands</code>, a shape STAC 1.1.0 core forbids; <code><a href="../reference/validate_stac.html">validate_stac()</a></code> reports the same rule offline. Pass <code>asset_key</code> to place the bands on an asset instead.</p></li>
+<li><p><code>gdal_nodata()</code> no longer returns <code>NA</code> — which serialised as the string <code>"NA"</code> instead of a JSON number — when <code>gdalinfo</code> wraps its output across lines. Non-finite values such as <code>nan</code> return <code>NULL</code>, since they cannot be represented in JSON.</p></li>
+<li><p><code><a href="../reference/geometry_from_sf.html">geometry_from_sf()</a></code> wraps mixed geometry types (e.g. a polygon plus a point) in an explicit GeometryCollection, so <code><a href="../reference/item_from_sf.html">item_from_sf()</a></code> produces a single valid GeoJSON geometry instead of failing with a parse error.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9000" id="stacbuildr-0009000">stacbuildr 0.0.0.9000<a class="anchor" aria-label="anchor" href="#stacbuildr-0009000"></a></h2>
 <p>First development cycle. The package has not been released, so everything below is new, and breaking changes are still expected between commits.</p>
 <div class="section level3">

@@ -149,6 +149,10 @@ band <- raster_band(
 )
 
 item <- add_raster_extension(item, bands = list(band))
+#> Warning: Writing bands to item properties.
+#> ℹ STAC 1.1.0 only allows properties$bands when at least one asset also declares
+#>   bands; otherwise the item fails core schema validation.
+#> → Pass `asset_key` to place the bands on an asset instead.
 
 # Add multi-band raster with statistics
 red_band <- raster_band(

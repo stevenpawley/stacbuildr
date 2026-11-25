@@ -41,4 +41,8 @@ item <- stac_item(
 
 item <- item |>
   add_eo_extension(bands = bands)
+#> Warning: Writing bands to item properties.
+#> ℹ STAC 1.1.0 only allows properties$bands when at least one asset also declares
+#>   bands; otherwise the item fails core schema validation.
+#> → Pass `asset_key` to place the bands on an asset instead.
 ```

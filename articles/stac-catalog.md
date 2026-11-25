@@ -13,7 +13,6 @@ This vignette demonstrates how to build a STAC catalog with
 
 library(stacbuildr)
 library(terra)
-#> terra 1.9.50
 ```
 
 ## Create a synthetic DEM
@@ -94,12 +93,16 @@ item <- r |>
     type = "image/tiff; application=geotiff; profile=cloud-optimized",
     roles = "data"
   )
+#> Warning: Writing bands to item properties.
+#> ℹ STAC 1.1.0 only allows properties$bands when at least one asset also declares
+#>   bands; otherwise the item fails core schema validation.
+#> → Pass `asset_key` to place the bands on an asset instead.
 
 item
 #> <STAC Item>
 #>   id           : dem-001
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-11-07T19:25:32Z
+#>   datetime     : 2026-11-25T22:27:44Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -222,7 +225,7 @@ get_items(collection)
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-11-07T19:25:32Z
+#>   datetime     : 2026-11-25T22:27:44Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
@@ -330,7 +333,7 @@ write_stac(
   catalog_type = "self-contained",
   overwrite = TRUE
 )
-#> ✔ STAC catalog written to /tmp/Rtmp1fF4Yw/catalog
+#> ✔ STAC catalog written to /tmp/Rtmp6l9A30/catalog
 ```
 
 The resulting directory structure looks like:
@@ -360,7 +363,7 @@ item_read
 #>   id           : dem-001
 #>   collection   : terrain
 #>   stac_version : 1.1.0
-#>   datetime     : 2026-11-07T19:25:32Z
+#>   datetime     : 2026-11-25T22:27:44Z
 #>   geometry     : Polygon
 #>   bbox         : [-120.0000, 48.0000, -119.0000, 49.0000]
 #>   ▸ properties : 1 [bands]
