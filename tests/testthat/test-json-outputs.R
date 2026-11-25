@@ -459,3 +459,105 @@ test_that("item matches stac-spec example extended-item.json", {
 
   expect_equal(sort_fields(actual$assets), sort_fields(expected$assets))
 })
+
+test_that("item_assets serialises extension band objects with prefixed fields", {
+  item <- stac_item(
+    id = "i",
+    geometry = list(type = "Point", coordinates = c(0, 0)),
+    bbox = c(0, 0, 0, 0),
+    datetime = "2020-01-01T00:00:00Z"
+  ) |>
+    add_asset(
+      key = "data",
+      href = "./d.tif",
+      type = "image/tiff; application=geotiff",
+      roles = "data"
+    )
+  item <- add_eo_extension(
+    item,
+    asset_key = "data",
+    bands = list(eo_band(name = "B02", `eo:common_name` = "blue", `eo:center_wavelength` = 0.49))
+  )
+  item <- add_raster_extension(
+    item,
+    asset_key = "data",
+    bands = list(raster_band(
+      data_type = "uint16",
+      nodata = 0,
+      `raster:spatial_resolution` = 10,
+      statistics = raster_statistics(mean = 1, stddev = 2)
+    ))
+  )
+
+  collection <- stac_collection(
+    id = "c",
+    description = "d",
+    license = "CC-BY-4.0",
+    extent = stac_extent(
+      spatial_bbox = list(c(-1, -1, 1, 1)),
+      temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
+    )
+  ) |>
+    add_item(item) |>
+    add_item_assets()
+
+  actual <- jsonlite::fromJSON(
+    jsonlite::toJSON(as.list(collection), auto_unbox = TRUE, null = "null", digits = I(15)),
+    simplifyVector = FALSE
+  )
+
+  band <- actual$item_assets$data$bands[[1]]
+
+  # Extension fields keep their prefixes instead of leaking the raw S3 fields
+  expect_equal(band$`eo:common_name`, "blue")
+  expect_equal(band$`eo:center_wavelength`, 0.49)
+  expect_equal(band$`raster:spatial_resolution`, 10)
+  expect_false("common_name" %in% names(band))
+  expect_false("spatial_resolution" %in% names(band))
+
+  # Unset optional fields are omitted, not serialised as [] or an empty object
+  expect_false("extra_fields" %in% names(band))
+  expect_false(any(vapply(band, function(v) is.list(v) && length(v) == 0, logical(1))))
+
+  # Per-asset statistics are measurements, not shared definitions
+  expect_false("statistics" %in% names(band))
+
+  # href is item-specific and must not appear in item_assets
+  expect_false("href" %in% names(actual$item_assets$data))
+})
+
+test_that("S3 objects in catalog extra fields serialise to plain lists", {
+  # as.list.stac_catalog must run extra_fields through stac_to_nested_list(),
+  # as as.list.stac_collection() does, otherwise jsonlite fails with
+  # "No method asJSON S3 class: stac_object"
+  catalog <- stac_catalog(
+    id = "c",
+    description = "d",
+    foo = stac_link("related", "https://example.com/x")
+  )
+
+  json <- jsonlite::fromJSON(
+    jsonlite::toJSON(as.list(catalog), auto_unbox = TRUE, null = "null", digits = I(15)),
+    simplifyVector = FALSE
+  )
+
+  expect_equal(json$foo$rel, "related")
+  expect_equal(json$foo$href, "https://example.com/x")
+  expect_false("extra_fields" %in% names(json$foo))
+
+  collection <- stac_collection(
+    id = "c",
+    description = "d",
+    license = "CC-BY-4.0",
+    extent = stac_extent(
+      spatial_bbox = list(c(-1, -1, 1, 1)),
+      temporal_interval = list(list("2020-01-01T00:00:00Z", NULL))
+    ),
+    foo = stac_link("related", "https://example.com/x")
+  )
+  cjson <- jsonlite::fromJSON(
+    jsonlite::toJSON(as.list(collection), auto_unbox = TRUE, null = "null", digits = I(15)),
+    simplifyVector = FALSE
+  )
+  expect_equal(cjson$foo$rel, "related")
+})

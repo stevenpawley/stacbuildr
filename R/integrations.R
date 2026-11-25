@@ -339,6 +339,17 @@ geometry_from_sf <- function(sf_obj) {
     geom <- sf::st_union(geom)
   }
 
+  # st_union of heterogeneous geometry types (e.g. polygon + point) returns an
+  # sfc of length > 1 rather than a single GeometryCollection, and sfc_geojson
+  # then emits one JSON object per geometry, which fromJSON cannot parse. Wrap
+  # any remaining multiple geometries in an explicit GeometryCollection.
+  if (length(geom) > 1) {
+    geom <- sf::st_sfc(
+      sf::st_geometrycollection(geom),
+      crs = sf::st_crs(geom)
+    )
+  }
+
   geojson_str <- geojsonsf::sfc_geojson(geom)
   return(as_stac_geometry(jsonlite::fromJSON(
     geojson_str,
@@ -612,6 +623,10 @@ is_cog <- function(file) {
 #' @description
 #' Calculates the spatial and temporal extent for a collection from a list of items.
 #'
+#' Non-spatial items (those with `geometry = NULL` and therefore no `bbox`) are
+#' skipped for the spatial extent with a message; their datetimes still count
+#' towards the temporal extent. If no item has a `bbox`, an error is raised.
+#'
 #' @param items A list of STAC Item objects.
 #'
 #' @return A list with spatial and temporal extent suitable for `stac_collection()`.
@@ -634,10 +649,31 @@ extent_from_items <- function(items) {
   if (length(items) == 0) {
     cli::cli_abort("No items provided")
   }
+  if (!all(vapply(items, inherits, logical(1), "stac_item"))) {
+    cli::cli_abort("'items' must be a list of stac_item objects")
+  }
 
-  # Extract all bboxes
-  bboxes <- lapply(items, function(item) {
-    return(item$bbox)
+  # Non-spatial items carry no bbox and contribute nothing to the spatial
+  # extent; drop them here rather than crashing on NULL below
+  has_bbox <- !vapply(items, function(item) is.null(item$bbox), logical(1))
+  if (!any(has_bbox)) {
+    cli::cli_abort(c(
+      "No items with a 'bbox' found.",
+      i = "Cannot derive a spatial extent from non-spatial items (geometry = NULL)."
+    ))
+  }
+  if (!all(has_bbox)) {
+    cli::cli_inform(c(
+      "Skipping {sum(!has_bbox)} non-spatial item{?s} without a 'bbox'.",
+      i = "They contribute nothing to the spatial extent."
+    ))
+  }
+
+  # Extract all bboxes, normalising 3D bboxes to their 2D footprint
+  # (a 6-element bbox is west, south, min_elev, east, north, max_elev)
+  bboxes <- lapply(items[has_bbox], function(item) {
+    b <- item$bbox
+    if (length(b) == 6L) b[c(1L, 2L, 4L, 5L)] else b[1:4]
   })
 
   # Calculate overall spatial extent
@@ -804,12 +840,22 @@ gdal_nodata <- function(file) {
   return(tryCatch(
     {
       info <- sf::gdal_utils("info", source = file, quiet = TRUE)
-      m <- regmatches(info, regexpr("NoData Value=([^\\n\\r]+)", info))
+      # Capture only the value token. TRE does not treat \n/\r inside a
+      # character class as newline/carriage-return escapes, so the previous
+      # "[^\\n\\r]+" swallowed the rest of the gdalinfo output, as.numeric()
+      # returned NA, and the asset serialised as the string "NA" instead of a
+      # number. \S+ with perl = TRUE stops at the first whitespace.
+      m <- regmatches(info, regexpr("NoData Value=(\\S+)", info, perl = TRUE))
       if (length(m) == 0) {
         return(NULL)
       }
-      val <- trimws(sub("NoData Value=", "", m[[1]]))
-      as.numeric(val)
+      val <- as.numeric(sub("NoData Value=", "", m[[1]]))
+      # "nan" (float rasters) is not representable as a JSON number, so treat
+      # it as no usable nodata rather than emitting an invalid value
+      if (!is.finite(val)) {
+        return(NULL)
+      }
+      return(val)
     },
     error = function(e) {
       return(NULL)

@@ -324,6 +324,27 @@ validate_item <- function(item) {
     errors <- c(errors, asset_errors)
   }
 
+  # STAC 1.1.0 core only allows `bands` in item `properties` when at least one
+  # asset also declares `bands` (the item schema's if/then on `assets`), so
+  # mirror that rule here for offline validation
+  if (
+    !is.null(item$properties) &&
+      !is.null(item$properties$bands) &&
+      !any(vapply(
+        item$assets %||% list(),
+        function(a) !is.null(a$extra_fields[["bands"]]),
+        logical(1)
+      ))
+  ) {
+    errors <- c(
+      errors,
+      paste(
+        "Field 'properties$bands' is only valid when at least one asset",
+        "declares 'bands'; place bands on an asset with 'asset_key'"
+      )
+    )
+  }
+
   return(new_stac_validation(errors = errors))
 }
 

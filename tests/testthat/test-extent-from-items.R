@@ -150,3 +150,61 @@ test_that("extent_from_items returns an Extent S3 object", {
     fixed = TRUE
   )))
 })
+
+# --- Non-spatial and 3D-bbox items ---
+
+test_that("extent_from_items skips non-spatial items for the spatial extent", {
+  non_spatial <- stac_item(
+    id = "ns",
+    geometry = NULL,
+    bbox = NULL,
+    datetime = "2024-01-01T00:00:00Z"
+  )
+  items <- list(
+    make_item("a", c(-10, -20, 10, 20), datetime = "2023-06-01T00:00:00Z"),
+    non_spatial
+  )
+
+  expect_message(
+    result <- extent_from_items(items),
+    "Skipping 1 non-spatial item"
+  )
+
+  # Spatial extent comes only from the item with a bbox
+  expect_equal(result$spatial$bbox[[1]], c(-10, -20, 10, 20))
+  # ...but the non-spatial item's datetime still counts temporally
+  interval <- result$temporal$interval[[1]]
+  expect_equal(interval[[1]], "2023-06-01T00:00:00Z")
+  expect_equal(interval[[2]], "2024-01-01T00:00:00Z")
+})
+
+test_that("extent_from_items errors when no item has a bbox", {
+  non_spatial <- stac_item(
+    id = "ns",
+    geometry = NULL,
+    bbox = NULL,
+    datetime = "2024-01-01T00:00:00Z"
+  )
+  expect_error(
+    extent_from_items(list(non_spatial)),
+    "No items with a 'bbox'"
+  )
+})
+
+test_that("extent_from_items uses the 2D footprint of 3D bboxes", {
+  item_3d <- stac_item(
+    id = "lidar",
+    geometry = list(type = "Point", coordinates = c(-100, 30, 1500)),
+    bbox = c(-100, 30, 1500, -100, 30, 1500),
+    datetime = "2023-06-01T00:00:00Z"
+  )
+  result <- extent_from_items(list(item_3d))
+  expect_equal(result$spatial$bbox[[1]], c(-100, 30, -100, 30))
+})
+
+test_that("extent_from_items rejects non-item input", {
+  expect_error(
+    extent_from_items(list("not an item")),
+    "list of stac_item"
+  )
+})

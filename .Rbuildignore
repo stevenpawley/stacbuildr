@@ -11,3 +11,4 @@
 ^\.claude$
 ^scratch
 ^tests/testthat/_problems$
+^dev$

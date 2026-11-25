@@ -207,11 +207,14 @@ test_that("item_from_terra records the CRS authority in proj:code", {
 
   # OGC:CRS84 is WGS84 lon/lat and has no EPSG code; proj:code carries the
   # authority alongside the code, so it is recorded as-is
+  # (add_raster_bands = FALSE: without an href the bands would land in
+  # properties, which warns because no asset declares bands)
   item <- expect_no_warning(
     item_from_terra(
       make("OGC:CRS84"),
       id = "crs84",
-      datetime = "2020-01-01T00:00:00Z"
+      datetime = "2020-01-01T00:00:00Z",
+      add_raster_bands = FALSE
     )
   )
   expect_equal(item$properties$`proj:code`, "OGC:CRS84")
@@ -308,4 +311,26 @@ test_that("band_from_file output attaches to an item as raster bands", {
   expect_length(item$assets$data$extra_fields$bands, 6)
   expect_equal(item$assets$data$extra_fields$bands[[1]]$data_type, "uint8")
   expect_true(any(grepl("raster/v2.0.0", item$stac_extensions)))
+})
+
+test_that("gdal_nodata returns a finite number or NULL, never NA", {
+  r <- terra::rast(
+    nrows = 4, ncols = 4, xmin = 0, ymin = 0, xmax = 4, ymax = 4,
+    crs = "EPSG:4326", vals = 1:16
+  )
+  f <- withr::local_tempfile(fileext = ".tif")
+  terra::writeRaster(r, f, overwrite = TRUE)
+
+  nd <- gdal_nodata(f)
+  # The old regex captured past the newline, so as.numeric() returned NA and
+  # the asset serialised as the string "NA" instead of a JSON number
+  expect_true(is.null(nd) || (is.numeric(nd) && length(nd) == 1 && is.finite(nd)))
+
+  # item_from_terra reads nodata from the file backing the SpatRaster
+  item <- item_from_terra(terra::rast(f), href = f, id = "nd-test", datetime = "2023-06-15T10:30:00Z")
+  if (!is.null(nd)) {
+    expect_equal(item$assets$data$extra_fields$nodata, nd)
+  }
+  j <- jsonlite::toJSON(as.list(item), auto_unbox = TRUE, null = "null", digits = I(15))
+  expect_false(grepl('"NA"', j, fixed = TRUE))
 })

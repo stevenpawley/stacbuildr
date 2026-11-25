@@ -128,6 +128,21 @@ set_bands <- function(item, bands, asset_key = NULL) {
       bands
     )
   } else {
+    # STAC 1.1.0 core only allows `bands` in item `properties` when at least
+    # one asset also declares `bands` (the item schema's if/then on `assets`),
+    # so warn when the bands would land in properties with no asset bands
+    asset_has_bands <- any(vapply(
+      item$assets %||% list(),
+      function(a) !is.null(a$extra_fields[["bands"]]),
+      logical(1)
+    ))
+    if (!asset_has_bands) {
+      cli::cli_warn(c(
+        "Writing {.field bands} to item {.field properties}.",
+        i = "STAC 1.1.0 only allows {.field properties$bands} when at least one asset also declares {.field bands}; otherwise the item fails core schema validation.",
+        ">" = "Pass {.arg asset_key} to place the bands on an asset instead."
+      ))
+    }
     item$properties[["bands"]] <- merge_bands(
       item$properties[["bands"]],
       bands

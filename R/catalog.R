@@ -234,9 +234,13 @@ as.list.stac_catalog <- function(x, ...) {
   }
 
   out$links <- stac_to_nested_list(x$links)
-  
+
+  # stac_to_nested_list() serialises any stac_object in extra fields (e.g. a
+  # stac_link passed via ...) to its plain list form, matching what
+  # as.list.stac_collection() does - without it jsonlite fails with
+  # "No method asJSON S3 class: stac_object"
   if (length(x$extra_fields) > 0) {
-    out <- c(out, x$extra_fields)
+    out <- c(out, stac_to_nested_list(x$extra_fields))
   }
 
   return(out)

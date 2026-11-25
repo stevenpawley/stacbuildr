@@ -24,7 +24,10 @@
 #' @param asset_key (character, optional) If provided, adds the bands to a specific
 #'   asset rather than to the item properties. The cloud_cover and snow_cover
 #'   properties will always be added to item properties (not assets) as they
-#'   typically apply to the entire scene.
+#'   typically apply to the entire scene. Note that under STAC 1.1.0 core,
+#'   `bands` in item `properties` is only valid when at least one asset also
+#'   declares `bands`, so passing `asset_key` is recommended; a warning is
+#'   raised when bands are written to properties with no asset bands.
 #'
 #' @details
 #' ## Extension Schema URI

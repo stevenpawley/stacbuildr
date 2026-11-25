@@ -424,3 +424,52 @@ py_combined_result = py_item.to_dict()
     "center_wavelength"
   ))
 })
+
+# Bands in item properties vs assets (STAC 1.1.0 core rule) -----------------
+
+test_that("bands written to properties warn when no asset declares bands", {
+  item <- make_r_item()
+
+  # No assets at all: properties$bands would fail the core 1.1.0 schema
+  expect_warning(
+    add_eo_extension(item, bands = list(eo_band(name = "B4", common_name = "red"))),
+    "properties"
+  )
+  expect_warning(
+    add_raster_extension(item, bands = list(raster_band(data_type = "uint16"))),
+    "properties"
+  )
+})
+
+test_that("no warning when an asset already declares bands", {
+  item <- make_r_item() |>
+    add_asset("data", href = "https://example.com/d.tif") |>
+    add_raster_extension(
+      bands = list(raster_band(data_type = "uint16")),
+      asset_key = "data"
+    )
+
+  expect_no_warning(
+    add_eo_extension(item, bands = list(eo_band(name = "B4", common_name = "red")))
+  )
+})
+
+test_that("validate_stac flags properties$bands without asset bands", {
+  item <- suppressWarnings(add_eo_extension(
+    make_r_item(),
+    bands = list(eo_band(name = "B4", common_name = "red"))
+  ))
+
+  result <- validate_stac(item)
+  expect_false(result$valid)
+  expect_true(any(grepl("properties$bands", result$errors, fixed = TRUE)))
+
+  # Once an asset declares bands, properties$bands is allowed by the core schema
+  item_with_asset <- item |>
+    add_asset("data", href = "https://example.com/d.tif") |>
+    add_raster_extension(
+      bands = list(raster_band(data_type = "uint16")),
+      asset_key = "data"
+    )
+  expect_true(validate_stac(item_with_asset)$valid)
+})
