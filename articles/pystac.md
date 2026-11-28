@@ -92,7 +92,7 @@ online home.
 
 r_path <- file.path(tempdir(), "r-stac")
 write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
-#> ✔ STAC catalog written to /tmp/RtmpPaYoRr/r-stac
+#> ✔ STAC catalog written to /tmp/RtmpwoytHh/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 py_path <- file.path(tempdir(), "py-stac")
@@ -296,7 +296,7 @@ JSON:
 ``` r
 
 write_stac(catalog, r_path, catalog_type = "self-contained", overwrite = TRUE)
-#> ✔ STAC catalog written to /tmp/RtmpPaYoRr/r-stac
+#> ✔ STAC catalog written to /tmp/RtmpwoytHh/r-stac
 catalog_rjson <- jsonlite::read_json(file.path(r_path, "catalog.json"))
 
 catalog_py$normalize_hrefs(py_path)
